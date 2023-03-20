@@ -7,4 +7,4 @@ A multi-asset, multi-strategy, event-driven trading platform for back testing st
 
 This will contain all entities, enums, exceptions, interfaces, types and logic specific to the domain layer.
 
-A key extension class here is the [DecimalArrayExtensions class(./doc/DecimalArrayExtensions.md)].
+A key extension class here is the [DecimalArrayExtensions class](./doc/DecimalArrayExtensions.md).
