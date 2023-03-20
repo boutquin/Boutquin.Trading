@@ -27,12 +27,10 @@ Throws an `InvalidInputDataException` if the input array is empty or null.
 ```csharp
 decimal[] values = { 1.5m, 2.0m, 3.5m, 4.2m, 5.8m };
 decimal average = values.Average();
+```
 
 
 ### `Variance(this decimal[] values, CalculationType calculationType = CalculationType.Sample) -> decimal`
-
-```markdown
-#### `Variance(this decimal[] values, CalculationType calculationType = CalculationType.Sample) -> decimal`
 
 Calculates the variance of an array of decimal values.
 
@@ -52,12 +50,10 @@ Throws an `EmptyOrNullArrayException` if the input array is empty, and an `Insuf
 ```csharp
 decimal[] values = { 1.5m, 2.0m, 3.5m, 4.2m, 5.8m };
 decimal variance = values.Variance();
+```
 
 
 ### `StandardDeviation(this decimal[] values, CalculationType calculationType = CalculationType.Sample) -> decimal`
-
-```markdown
-#### `StandardDeviation(this decimal[] values, CalculationType calculationType = CalculationType.Sample) -> decimal`
 
 Calculates the standard deviation of an array of decimal values.
 
@@ -77,12 +73,10 @@ Throws an `EmptyOrNullArrayException` if the input array is empty, and an `Insuf
 ```csharp
 decimal[] values = { 1.5m, 2.0m, 3.5m, 4.2m, 5.8m };
 decimal std_deviation = values.StandardDeviation();
+```
 
 
 ### `SharpeRatio(this decimal[] dailyReturns, decimal riskFreeRate = 0m) -> decimal`
-
-```markdown
-#### `SharpeRatio(this decimal[] dailyReturns, decimal riskFreeRate = 0m) -> decimal`
 
 Calculates the Sharpe Ratio of daily returns for a given array of decimal values.
 
@@ -100,6 +94,7 @@ Calculates the Sharpe Ratio of daily returns for a given array of decimal values
 ```csharp
 decimal[] daily_returns = { 0.01m, 0.02m, 0.03m, -0.01m, -0.02m, 0.01m };
 decimal sharpe_ratio = daily_returns.SharpeRatio();
+```
 
 
 ### `AnnualizedSharpeRatio(this decimal[] dailyReturns, decimal riskFreeRate = 0m, int tradingDaysPerYear = 252) -> decimal`
@@ -121,21 +116,20 @@ Calculates the Annualized Sharpe Ratio of daily returns for a given array of dec
 ```csharp
 decimal[] daily_returns = { 0.01m, 0.02m, 0.03m, -0.01m, -0.02m, 0.01m };
 decimal annualized_sharpe_ratio = daily_returns.AnnualizedSharpeRatio();
+```
 
+## Exceptions
 
-#### `EmptyOrNullArrayException`
-
-```markdown
-#### `EmptyOrNullArrayException`
+### `EmptyOrNullArrayException`
 
 Custom exception for an empty or null input array.
 
 
-#### `InsufficientDataException`
+### `InsufficientDataException`
 
 Custom exception for insufficient data for a sample calculation.
 
 
-#### `InvalidInputDataException`
+### `InvalidInputDataException`
 
 Custom exception for invalid input data.
