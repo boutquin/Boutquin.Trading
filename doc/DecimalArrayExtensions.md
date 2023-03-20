@@ -124,12 +124,75 @@ decimal annualized_sharpe_ratio = daily_returns.AnnualizedSharpeRatio();
 
 Custom exception for an empty or null input array.
 
+#### Constructor Parameters
+
+- `message` (string): The exception message.
+
+#### Example Usage
+
+```csharp
+throw new EmptyOrNullArrayException("Input array is null.");
+```
+
 
 ### `InsufficientDataException`
 
 Custom exception for insufficient data for a sample calculation.
 
+#### Constructor Parameters
+
+- `message` (string): The exception message.
+
+#### Example Usage
+
+```csharp
+throw new InsufficientDataException("Not enough data for sample calculation.");
+```
+
 
 ### `InvalidInputDataException`
 
 Custom exception for invalid input data.
+
+#### Constructor Parameters
+
+- `message` (string): The exception message.
+
+#### Example Usage
+
+```csharp
+throw new InvalidInputDataException("Invalid input data.");
+```
+
+## Inner Classes
+
+### `ExceptionMessages`
+
+Contains constants for exception messages.
+
+#### Fields
+
+- `EmptyOrNullArray` (string): Input array must not be empty or null.
+- `InsufficientDataForSampleCalculation` (string): Input array must have at least two elements for sample calculation.
+
+#### Example Usage
+
+```csharp
+public decimal Variance(this decimal[] values, CalculationType calculationType = CalculationType.Sample)
+{
+    if (values == null || values.Length == 0)
+    {
+        throw new EmptyOrNullArrayException(ExceptionMessages.EmptyOrNullArray);
+    }
+
+    if (calculationType == CalculationType.Sample && values.Length == 1)
+    {
+        throw new InsufficientDataException(ExceptionMessages.InsufficientDataForSampleCalculation);
+    }
+
+    var avg = values.Average();
+    var sumOfSquares = values.Sum(x => (x - avg) * (x - avg));
+    var denominator = calculationType == CalculationType.Sample ? values.Length - 1 : values.Length;
+    return sumOfSquares / denominator;
+}
+```
