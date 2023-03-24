@@ -17,7 +17,7 @@ namespace Boutquin.Trading.Domain.Exceptions;
 /// <summary>
 /// Custom exception for when the risk-free rate is negative.
 /// </summary>
-public class NegativeRiskFreeRateException : Exception
+public sealed class NegativeRiskFreeRateException : Exception
 {
     /// <summary>
     /// Constructor for the NegativeRiskFreeRateException class.

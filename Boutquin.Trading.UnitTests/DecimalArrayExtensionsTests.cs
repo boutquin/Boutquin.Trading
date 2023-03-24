@@ -13,56 +13,13 @@
 //  limitations under the License.
 //
 
-using Boutquin.Trading.Domain.Exceptions;
+using Boutquin.Domain.Exceptions;
 using Boutquin.Trading.Domain.Extensions;
-
 using static Boutquin.Trading.Domain.Extensions.DecimalArrayExtensions;
 
 namespace Boutquin.Trading.UnitTests;
-public class DecimalArrayExtensionsTests
+public sealed class DecimalArrayExtensionsTests
 {
-        /// <summary>
-    /// Tests the Average method using test data provided by AverageData.
-    /// </summary>
-    [Theory]
-    [MemberData(nameof(DecimalArrayExtensionsTestData.AverageData), MemberType = typeof(DecimalArrayExtensionsTestData))]
-    public void Average_ShouldCalculateCorrectly(decimal[] values, decimal expected)
-    {
-        // Act
-        var result = values.Average();
-
-        // Assert
-        result.Should().BeApproximately(expected, 1e-12m);
-    }
-
-    /// <summary>
-    /// Tests the Variance method using test data provided by VarianceData.
-    /// </summary>
-    [Theory]
-    [MemberData(nameof(DecimalArrayExtensionsTestData.VarianceData), MemberType = typeof(DecimalArrayExtensionsTestData))]
-    public void Variance_ShouldCalculateCorrectly(decimal[] values, CalculationType calculationType, decimal expected)
-    {
-        // Act
-        var result = values.Variance(calculationType);
-
-        // Assert
-        result.Should().BeApproximately(expected, 1e-12m);
-    }
-
-    /// <summary>
-    /// Tests the StandardDeviation method using test data provided by StandardDeviationData.
-    /// </summary>
-    [Theory]
-    [MemberData(nameof(DecimalArrayExtensionsTestData.StandardDeviationData), MemberType = typeof(DecimalArrayExtensionsTestData))]
-    public void StandardDeviation_ShouldCalculateCorrectly(decimal[] values, CalculationType calculationType, decimal expected)
-    {
-        // Act
-        var result = values.StandardDeviation(calculationType);
-
-        // Assert
-        result.Should().BeApproximately(expected, 1e-12m);
-    }
-
     /// <summary>
     /// Tests the SharpeRatio method with various input arrays and verifies if the correct Sharpe Ratio is returned.
     /// </summary>
@@ -98,19 +55,74 @@ public class DecimalArrayExtensionsTests
     }
 
     /// <summary>
+    /// Tests the SortinoRatio method with various inputs.
+    /// </summary>
+    /// <param name="dailyReturns">An array of daily returns as doubles.</param>
+    /// <param name="riskFreeRate">The risk-free rate.</param>
+    /// <param name="expectedSortinoRatio">The expected Sortino ratio.</param>
+    [Theory]
+    [MemberData(nameof(DecimalArrayExtensionsTestData.SortinoRatioData), MemberType = typeof(DecimalArrayExtensionsTestData))]
+    public void TestSortinoRatio(decimal[] dailyReturns, decimal riskFreeRate, decimal expectedSortinoRatio)
+    {
+        // Act
+        var actualSortinoRatio = dailyReturns.SortinoRatio((decimal)riskFreeRate);
+
+        // Assert
+        actualSortinoRatio.Should().BeApproximately((decimal)expectedSortinoRatio, 1e-12m);
+    }
+
+    /// <summary>
+    /// Tests the AnnualizedSortinoRatio method with various inputs.
+    /// </summary>
+    /// <param name="dailyReturns">An array of daily returns as doubles.</param>
+    /// <param name="riskFreeRate">The risk-free rate.</param>
+    /// <param name="tradingDaysPerYear">The number of trading days per year.</param>
+    /// <param name="expectedAnnualizedSortinoRatio">The expected annualized Sortino ratio.</param>
+    [Theory]
+    [MemberData(nameof(DecimalArrayExtensionsTestData.AnnualizedSortinoRatioData), MemberType = typeof(DecimalArrayExtensionsTestData))]
+    public void TestAnnualizedSortinoRatio(decimal[] dailyReturns, decimal riskFreeRate, int tradingDaysPerYear, decimal expectedAnnualizedSortinoRatio)
+    {
+        // Act
+        var actualAnnualizedSortinoRatio = dailyReturns.AnnualizedSortinoRatio(riskFreeRate, tradingDaysPerYear);
+
+        // Assert
+        actualAnnualizedSortinoRatio.Should().BeApproximately(expectedAnnualizedSortinoRatio, 1e-12m);
+    }
+
+    /// <summary>
+    /// Tests the DownsideDeviation method with various inputs.
+    /// </summary>
+    /// <param name="dailyReturns">An array of daily returns as doubles.</param>
+    /// <param name="riskFreeRate">The risk-free rate.</param>
+    /// <param name="expectedDownsideDeviation">The expected downside deviation.</param>
+    [Theory]
+    [MemberData(nameof(DecimalArrayExtensionsTestData.DownsideDeviationData), MemberType = typeof(DecimalArrayExtensionsTestData))]
+    public void TestDownsideDeviation(decimal[] dailyReturns, decimal riskFreeRate, decimal expectedDownsideDeviation)
+    {
+        // Act
+        var actualDownsideDeviation = dailyReturns.DownsideDeviation(riskFreeRate);
+
+        // Assert
+        actualDownsideDeviation.Should().BeApproximately(expectedDownsideDeviation, 1e-12m);
+    }
+
+    /// <summary>
     /// Tests the InsufficientDataForSampleCalculation for all extension methods that require sample calculations with an input array containing only one element.
     /// </summary>
     [Fact]
     public void AllMethods_ShouldThrowInsufficientDataForSampleCalculation_WhenArrayHasOneElement()
     {
+        // Arrange
         var values = new decimal[] { 0.01m };
         var exceptionType = typeof(InsufficientDataException);
         var exceptionMessage = ExceptionMessages.InsufficientDataForSampleCalculation;
 
-        Assert.Throws(exceptionType, () => values.Variance(CalculationType.Sample)).Message.Should().Be(exceptionMessage);
-        Assert.Throws(exceptionType, () => values.StandardDeviation(CalculationType.Sample)).Message.Should().Be(exceptionMessage);
+        // Act & Assert
         Assert.Throws(exceptionType, () => values.SharpeRatio()).Message.Should().Be(exceptionMessage);
         Assert.Throws(exceptionType, () => values.AnnualizedSharpeRatio()).Message.Should().Be(exceptionMessage);
+        Assert.Throws(exceptionType, () => values.SortinoRatio()).Message.Should().Be(exceptionMessage);
+        Assert.Throws(exceptionType, () => values.AnnualizedSortinoRatio()).Message.Should().Be(exceptionMessage);
+        Assert.Throws(exceptionType, () => values.DownsideDeviation()).Message.Should().Be(exceptionMessage);
     }
 
     /// <summary>
@@ -119,18 +131,21 @@ public class DecimalArrayExtensionsTests
     [Fact]
     public void AllMethods_ShouldThrowEmptyOrNullArrayException_WhenArrayIsNull()
     {
+        // Arrange
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
         decimal[] values = null;
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
         var exceptionType = typeof(EmptyOrNullArrayException);
         var exceptionMessage = ExceptionMessages.EmptyOrNullArray;
 
+        // Act & Assert
 #pragma warning disable CS8604 // Possible null reference argument.
-        Assert.Throws(exceptionType, () => values.Average()).Message.Should().Be(exceptionMessage);
-        Assert.Throws(exceptionType, () => values.Variance()).Message.Should().Be(exceptionMessage);
-        Assert.Throws(exceptionType, () => values.StandardDeviation()).Message.Should().Be(exceptionMessage);
         Assert.Throws(exceptionType, () => values.SharpeRatio()).Message.Should().Be(exceptionMessage);
         Assert.Throws(exceptionType, () => values.AnnualizedSharpeRatio()).Message.Should().Be(exceptionMessage);
+        Assert.Throws(exceptionType, () => values.SortinoRatio()).Message.Should().Be(exceptionMessage);
+        Assert.Throws(exceptionType, () => values.AnnualizedSortinoRatio()).Message.Should().Be(exceptionMessage);
+        Assert.Throws(exceptionType, () => values.DownsideDeviation()).Message.Should().Be(exceptionMessage);
+        Assert.Throws(exceptionType, () => values.EquityCurve()).Message.Should().Be(exceptionMessage);
 #pragma warning restore CS8604 // Possible null reference argument.
     }
 
@@ -140,14 +155,17 @@ public class DecimalArrayExtensionsTests
     [Fact]
     public void AllMethods_ShouldThrowEmptyOrNullArrayException_WhenArrayIsEmpty()
     {
+        // Arrange
         var values = Array.Empty<decimal>();
         var exceptionType = typeof(EmptyOrNullArrayException);
         var exceptionMessage = ExceptionMessages.EmptyOrNullArray;
 
-        Assert.Throws(exceptionType, () => values.Average()).Message.Should().Be(exceptionMessage);
-        Assert.Throws(exceptionType, () => values.Variance()).Message.Should().Be(exceptionMessage);
-        Assert.Throws(exceptionType, () => values.StandardDeviation()).Message.Should().Be(exceptionMessage);
+        // Act & Assert
         Assert.Throws(exceptionType, () => values.SharpeRatio()).Message.Should().Be(exceptionMessage);
         Assert.Throws(exceptionType, () => values.AnnualizedSharpeRatio()).Message.Should().Be(exceptionMessage);
+        Assert.Throws(exceptionType, () => values.SortinoRatio()).Message.Should().Be(exceptionMessage);
+        Assert.Throws(exceptionType, () => values.AnnualizedSortinoRatio()).Message.Should().Be(exceptionMessage);
+        Assert.Throws(exceptionType, () => values.DownsideDeviation()).Message.Should().Be(exceptionMessage);
+        Assert.Throws(exceptionType, () => values.EquityCurve()).Message.Should().Be(exceptionMessage);
     }
 }

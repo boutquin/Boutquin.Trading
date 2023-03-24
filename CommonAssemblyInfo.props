@@ -1,0 +1,19 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>10.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>Pierre G. Boutquin</Authors>
+    <Company>Boutquin Computer Consulting</Company>
+    <PackageProjectUrl>file://C:/Users/pierre/source/repos/packages</PackageProjectUrl>
+    <RepositoryUrl>file://C:/Users/pierre/source/repos/packages</RepositoryUrl>
+    <RepositoryType>file</RepositoryType>
+    <Version>0.1.0.0-beta02</Version>
+    <Copyright>Copyright © 2023, Boutquin Computer Consulting. All rights reserved.</Copyright>
+    <NeutralLanguage>en</NeutralLanguage>
+    <PackageIconUrl>folder</PackageIconUrl>
+  </PropertyGroup>
+</Project>

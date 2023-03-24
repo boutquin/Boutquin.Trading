@@ -17,12 +17,11 @@ using Boutquin.Trading.Domain.Extensions;
 
 namespace Boutquin.Trading.BenchMark;
 
-
 /// <summary>
 /// Benchmark class to measure the performance of the DecimalArrayExtensions's AnnualizedSharpeRatio method.
 /// </summary>
 [MemoryDiagnoser]
-public class CalculationBenchmark
+public sealed class CalculationBenchmark
 {
     private decimal[] _dailyReturns = Array.Empty<decimal>();
     private decimal _riskFreeRate = 0m;

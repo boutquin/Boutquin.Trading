@@ -1,13 +1,34 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="../CommonAssemblyInfo.props" />
+
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <Description>Common abstractions (entities, enums, exceptions, interfaces, types and logic) specific to a Trading Domain layer.</Description>
+    <PackageTags>CleanArchitecture,Domain,Entities,Shared</PackageTags>
+    <PackageReleaseNotes>Initial version.</PackageReleaseNotes>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <Copyright>Copyright (c) 2023 Pierre G. Boutquin. All rights reserved.</Copyright>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <PackageIcon>icon.png</PackageIcon>
+    <RepositoryUrl>https://github.com/boutquin/Boutquin.Trading</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/users/boutquin/projects/2/</PackageProjectUrl>
+    <Title>Common abstractions specific to trading.</Title>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\Resources\icon.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Boutquin.Domain" Version="0.1.0-beta02" />
+  </ItemGroup>
 
 </Project>

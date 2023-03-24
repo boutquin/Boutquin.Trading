@@ -19,7 +19,7 @@ namespace Boutquin.Trading.BenchMark;
 /// <summary>
 /// Main program class to run the benchmark.
 /// </summary>
-public class Program
+public sealed class Program
 {
     /// <summary>
     /// The main entry point for the application.

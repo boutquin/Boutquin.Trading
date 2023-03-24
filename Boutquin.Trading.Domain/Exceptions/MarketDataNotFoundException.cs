@@ -18,7 +18,7 @@ namespace Boutquin.Trading.Domain.Exceptions;
 /// The MarketDataNotFoundException class represents an exception that is thrown when the requested
 /// market data is not found for a specified symbol and timestamp.
 /// </summary>
-public class MarketDataNotFoundException : Exception
+public sealed class MarketDataNotFoundException : Exception
 {
     /// <summary>
     /// Initializes a new instance of the MarketDataNotFoundException class with a specified
