@@ -18,8 +18,19 @@ namespace Boutquin.Trading.UnitTests;
 public sealed class DecimalArrayExtensionsTestData
 {
     /// <summary>
-    /// Gets a collection of test cases containing varied decimal arrays and their corresponding Sharpe Ratio values.
+    /// Gets an array of test data and their corresponding result for the <see cref="DecimalExtensions.AnnualizedReturn"/> method.
     /// </summary>
+    public static IEnumerable<object[]> AnnualizedReturnData => new List<object[]>
+    {
+        new object[]{ new decimal[] { 0.01m, -0.02m, 0.03m, 0.04m, -0.05m }, 252, 0.43991742034859m },
+        new object[]{ new decimal[] { 0.02m, -0.03m, 0.01m, -0.05m, 0.04m, 0.02m, -0.01m, 0.03m }, 252, 1.30658087675057m },
+        new object[]{ new decimal[] { 0.005m, 0.015m, -0.01m, 0.02m, -0.015m, 0.01m }, 365, 3.4295408134865m },
+        new object[]{ new decimal[] { 0.01m, 0.015m, 0.02m, 0.025m, 0.03m }, 260, 170.132009610452m }
+    };
+
+    /// <summary>
+    /// Gets a collection of test cases containing varied decimal arrays and their corresponding Sharpe Ratio values.
+    /// </summary>w decimal[]
     public static IEnumerable<object[]> SharpeRatioData => new List<object[]>
     {
         new object[] { new decimal[] { 0.01m, 0.02m, -0.01m, 0.03m, -0.02m }, 0m, 0.289345693302247559290018236m },
