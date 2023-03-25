@@ -66,4 +66,37 @@ public sealed class DecimalArrayExtensionsTestData
             new object[] { new decimal[] { 0.01m, -0.02m, 0.03m, -0.01m, 0.02m }, 0, 0.01m },
             new object[] { new decimal[] { 0.01m, -0.02m, 0.03m, -0.01m, 0.02m }, 0.001m, 0.0106018866245589m }
         };
+
+    /// <summary>
+    /// A collection of test cases for the EquityCurve.Compute method.
+    /// Each test case includes an array of daily returns, an initial investment value,
+    /// and an expected equity curve array.
+    /// </summary>
+    public static IEnumerable<object[]> EquityCurveData => new List<object[]>
+        {
+            new object[]
+            {
+                new decimal[] { 0.02m, -0.01m, 0.03m },
+                1000m,
+                new decimal[] { 1000m, 1020m, 1009.8000m, 1040.094000m }
+            },
+            new object[]
+            {
+                new decimal[] { 0.05m, 0.03m, -0.02m, -0.04m },
+                2000m,
+                new decimal[] { 2000m, 2100m, 2163m, 2119.740000m, 2034.95040000m }
+            },
+            new object[]
+            {
+                new decimal[] { 0m, 0m, 0m },
+                3000m,
+                new decimal[] { 3000m, 3000m, 3000m, 3000m }
+            },
+            new object[]
+            {
+                new decimal[] { -0.02m, 0.01m, 0.05m },
+                1000m,
+                new decimal[] { 1000m, 980m, 989.80m, 1039.29m }
+            }
+        };
 }

@@ -62,7 +62,7 @@ public sealed class DecimalArrayExtensionsTests
     /// <param name="expectedSortinoRatio">The expected Sortino ratio.</param>
     [Theory]
     [MemberData(nameof(DecimalArrayExtensionsTestData.SortinoRatioData), MemberType = typeof(DecimalArrayExtensionsTestData))]
-    public void TestSortinoRatio(decimal[] dailyReturns, decimal riskFreeRate, decimal expectedSortinoRatio)
+    public void SortinoRatio_ShouldReturnCorrectResult(decimal[] dailyReturns, decimal riskFreeRate, decimal expectedSortinoRatio)
     {
         // Act
         var actualSortinoRatio = dailyReturns.SortinoRatio((decimal)riskFreeRate);
@@ -80,7 +80,7 @@ public sealed class DecimalArrayExtensionsTests
     /// <param name="expectedAnnualizedSortinoRatio">The expected annualized Sortino ratio.</param>
     [Theory]
     [MemberData(nameof(DecimalArrayExtensionsTestData.AnnualizedSortinoRatioData), MemberType = typeof(DecimalArrayExtensionsTestData))]
-    public void TestAnnualizedSortinoRatio(decimal[] dailyReturns, decimal riskFreeRate, int tradingDaysPerYear, decimal expectedAnnualizedSortinoRatio)
+    public void AnnualizedSortinoRatio_ShouldReturnCorrectResult(decimal[] dailyReturns, decimal riskFreeRate, int tradingDaysPerYear, decimal expectedAnnualizedSortinoRatio)
     {
         // Act
         var actualAnnualizedSortinoRatio = dailyReturns.AnnualizedSortinoRatio(riskFreeRate, tradingDaysPerYear);
@@ -97,13 +97,30 @@ public sealed class DecimalArrayExtensionsTests
     /// <param name="expectedDownsideDeviation">The expected downside deviation.</param>
     [Theory]
     [MemberData(nameof(DecimalArrayExtensionsTestData.DownsideDeviationData), MemberType = typeof(DecimalArrayExtensionsTestData))]
-    public void TestDownsideDeviation(decimal[] dailyReturns, decimal riskFreeRate, decimal expectedDownsideDeviation)
+    public void DownsideDeviation_ShouldReturnCorrectResult(decimal[] dailyReturns, decimal riskFreeRate, decimal expectedDownsideDeviation)
     {
         // Act
         var actualDownsideDeviation = dailyReturns.DownsideDeviation(riskFreeRate);
 
         // Assert
         actualDownsideDeviation.Should().BeApproximately(expectedDownsideDeviation, 1e-12m);
+    }
+
+    /// <summary>
+    /// Tests the EquityCurve method using test cases provided by the DecimalArrayExtensionsTestData.EquityCurveData property.
+    /// </summary>
+    /// <param name="dailyReturns">An array of daily returns for the test case.</param>
+    /// <param name="initialInvestment">The initial investment value for the test case.</param>
+    /// <param name="expectedEquityCurve">The expected equity curve array for the test case.</param>
+    [Theory]
+    [MemberData(nameof(DecimalArrayExtensionsTestData.EquityCurveData), MemberType = typeof(DecimalArrayExtensionsTestData))]
+    public void EquityCurve_ShouldReturnCorrectResult(decimal[] dailyReturns, decimal initialInvestment, decimal[] expectedEquityCurve)
+    {
+        // Act
+        decimal[] actualEquityCurve = dailyReturns.EquityCurve(initialInvestment);
+
+        // Assert
+        actualEquityCurve.Should().BeEquivalentTo(expectedEquityCurve, options => options.WithStrictOrdering());
     }
 
     /// <summary>
