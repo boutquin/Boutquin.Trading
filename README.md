@@ -1,4 +1,8 @@
 # Boutquin.Trading
+
+![Nuget](https://img.shields.io/nuget/vpre/boutquin.trading?style=for-the-badge) ![License](https://img.shields.io/github/license/boutquin/boutquin.trading?style=for-the-badge)
+
+
 A multi-asset, multi-strategy, event-driven trading platform for back testing strategies with portfolio-based risk management and %-per-strategy capital allocation.
 
 ## Overview
