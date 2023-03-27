@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>Common abstractions (entities, enums, exceptions, interfaces, types and logic) specific to a Trading Domain layer.</Description>
-    <PackageTags>CleanArchitecture,Domain,Entities,Shared</PackageTags>
+    <PackageTags>CleanArchitecture,Domain,Entities,Shared,Trading Strategy,Back Testing</PackageTags>
     <PackageReleaseNotes>Initial version.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
