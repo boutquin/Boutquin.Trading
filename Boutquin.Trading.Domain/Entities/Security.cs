@@ -13,6 +13,7 @@
 //  limitations under the License.
 //
 
+using Boutquin.Domain.Helpers;
 using Boutquin.Trading.Domain.Enums;
 
 namespace Boutquin.Trading.Domain.Entities;
@@ -31,12 +32,12 @@ public sealed class Security
     /// <summary>
     /// Gets the market identifier code of the exchange.
     /// </summary>
-    public ExchangeCode MarketIdentifierCode { get; }
+    public ExchangeCode ExchangeCode { get; }
 
     /// <summary>
     /// Gets the identifier of the asset class.
     /// </summary>
-    public int AssetClassId { get; }
+    public AssetClassCode AssetClassCode { get; }
 
     /// <summary>
     /// Navigation property to the related SecuritySymbols.
@@ -49,37 +50,23 @@ public sealed class Security
     /// </summary>
     /// <param name="id">The identifier of the security.</param>
     /// <param name="name">The name of the security.</param>
-    /// <param name="marketIdentifierCode">The market identifier code of the exchange.</param>
-    /// <param name="assetClassId">The identifier of the asset class.</param>
+    /// <param name="exchangeCode">The market identifier code of the exchange.</param>
+    /// <param name="assetClassCode">The identifier of the asset class.</param>
     public Security(
         int id, 
         string name, 
-        ExchangeCode marketIdentifierCode, 
-        int assetClassId)
+        ExchangeCode exchangeCode,
+        AssetClassCode assetClassCode)
     {
-        if (id <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(id), "Id must be greater than 0.");
-        }
-
-        if (string.IsNullOrEmpty(name) || name.Length > ColumnConstants.Security_Name_Length)
-        {
-            throw new ArgumentException($"Name must be non-empty and less than {ColumnConstants.Security_Name_Length} characters.", nameof(name));
-        }
-
-        if (!Enum.IsDefined(typeof(ExchangeCode), marketIdentifierCode))
-        {
-            throw new ArgumentOutOfRangeException(nameof(marketIdentifierCode), "Market identifier code is not defined in the enumeration.");
-        }
-
-        if (assetClassId <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(assetClassId), "Asset class id must be greater than 0.");
-        }
+        // Validate parameters
+        Guard.AgainstNegativeOrZero(id, nameof(id));
+        Guard.AgainstNullOrWhiteSpace(name, nameof(name), ColumnConstants.Security_Name_Length);
+        Guard.AgainstUndefinedEnumValue(exchangeCode, nameof(exchangeCode));
+        Guard.AgainstUndefinedEnumValue(assetClassCode, nameof(assetClassCode));
 
         Id = id;
         Name = name;
-        MarketIdentifierCode = marketIdentifierCode;
-        AssetClassId = assetClassId;
+        ExchangeCode = exchangeCode;
+        AssetClassCode = assetClassCode;
     }
 }

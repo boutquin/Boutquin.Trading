@@ -19,6 +19,7 @@ using Boutquin.Trading.Domain.Enums;
 namespace Boutquin.Trading.Domain.Entities;
 
 using System;
+using Boutquin.Domain.Helpers;
 
 /// <summary>
 /// Represents an asset class.
@@ -57,30 +58,10 @@ public sealed class AssetClass
         string name, 
         string description)
     {
-        if (!Enum.IsDefined(typeof(AssetClassCode), id))
-        {
-            throw new ArgumentOutOfRangeException(nameof(id), "Invalid asset class code.");
-        }
-
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name), "Name cannot be null.");
-        }
-
-        if (name.Length == 0 || name.Length > ColumnConstants.AssetClass_Name_Length)
-        {
-            throw new ArgumentOutOfRangeException(nameof(name), $"Name must be between 1 and {ColumnConstants.AssetClass_Name_Length} characters.");
-        }
-
-        if (description == null)
-        {
-            throw new ArgumentNullException(nameof(description), "Description cannot be null.");
-        }
-
-        if (description.Length == 0 || description.Length > ColumnConstants.AssetClass_Description_Length)
-        {
-            throw new ArgumentOutOfRangeException(nameof(description), $"Description must be between 1 and {ColumnConstants.AssetClass_Description_Length} characters.");
-        }
+        // Validate parameters
+        Guard.AgainstUndefinedEnumValue(id, nameof(id));
+        Guard.AgainstNullOrWhiteSpace(name, nameof(name), ColumnConstants.AssetClass_Name_Length);
+        Guard.AgainstNullOrWhiteSpace(description, nameof(description), ColumnConstants.AssetClass_Description_Length);
 
         Id = id;
         Name = name;

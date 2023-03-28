@@ -88,14 +88,15 @@ public static class ColumnConstants
 
     // Security table
     /// <summary>
-    /// The length of the Symbol column in the Security table.
-    /// </summary>
-    public const int Security_Symbol_Length = 50;
-
-    /// <summary>
     /// The length of the Name column in the Security table.
     /// </summary>
     public const int Security_Name_Length = 200;
+
+    // SecuritySymbol table
+    /// <summary>
+    /// The length of the Symbol column in the Security table.
+    /// </summary>
+    public const int SecuritySymbol_Symbol_Length = 50;
 
     // SecurityPrice table
     /// <summary>
@@ -124,4 +125,21 @@ public static class ColumnConstants
     /// The length of the Description column in the ExchangeHoliday table.
     /// </summary>
     public const int ExchangeHoliday_Description_Length = 50;
+
+    // City table
+    /// <summary>
+    /// The length of the Name column in the City table.
+    /// </summary>
+    public const int City_Name_Length = 50;
+
+    /// <summary>
+    /// The length of the TimeZoneCode column in the City table.
+    /// </summary>
+    public const int City_TimeZoneCode_Length = 10;
+
+    /// <summary>
+    /// The length of the CountryCode column in the City table.
+    /// </summary>
+    public const int City_CountryCode_Length = 2;
+
 }

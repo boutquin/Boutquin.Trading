@@ -13,6 +13,10 @@
 //  limitations under the License.
 //
 
+using Boutquin.Domain.Helpers;
+using Boutquin.Trading.Domain.Enums;
+using System.Xml.Linq;
+
 namespace Boutquin.Trading.Domain.Entities;
 
 /// <summary>
@@ -89,44 +93,15 @@ public sealed class SecurityPrice
         int volume, 
         decimal dividend)
     {
-        if (id <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(id), "Id must be greater than 0.");
-        }
-
-        if (securityId <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(securityId), "SecurityId must be greater than 0.");
-        }
-
-        if (openPrice < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(openPrice), "OpenPrice must be greater than or equal to 0.");
-        }
-
-        if (highPrice < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(highPrice), "HighPrice must be greater than or equal to 0.");
-        }
-        if (lowPrice < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(lowPrice), "LowPrice must be greater than or equal to 0.");
-        }
-
-        if (closePrice < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(closePrice), "ClosePrice must be greater than or equal to 0.");
-        }
-
-        if (volume <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(volume), "Volume must be greater than 0.");
-        }
-
-        if (dividend < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(dividend), "Dividend must be greater than or equal to 0.");
-        }
+        // Validate parameters
+        Guard.AgainstNegativeOrZero(id, nameof(id));
+        Guard.AgainstNegativeOrZero(securityId, nameof(securityId));
+        Guard.AgainstNegativeOrZero(openPrice, nameof(openPrice));
+        Guard.AgainstNegativeOrZero(highPrice, nameof(highPrice));
+        Guard.AgainstNegativeOrZero(lowPrice, nameof(lowPrice));
+        Guard.AgainstNegativeOrZero(closePrice, nameof(closePrice));
+        Guard.AgainstNegativeOrZero(volume, nameof(volume));
+        Guard.AgainstNegative(dividend, nameof(dividend));
 
         Id = id;
         SecurityId = securityId;

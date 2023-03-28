@@ -13,7 +13,11 @@
 //  limitations under the License.
 //
 
+using Boutquin.Domain.Helpers;
 using Boutquin.Trading.Domain.Enums;
+
+namespace Boutquin.Trading.Domain.Entities;
+
 /// <summary>
 /// Represents an exchange where securities are traded.
 /// </summary>
@@ -30,66 +34,29 @@ public sealed class Exchange
     public string Name { get; }
 
     /// <summary>
-    /// Gets the time zone ID associated with the exchange.
+    /// Gets the city identifier.
     /// </summary>
-    public TimeZoneCode TimeZoneId { get; }
-
-    /// <summary>
-    /// Gets the city where the exchange is located.
-    /// </summary>
-    public string City { get; }
-
-    /// <summary>
-    /// Gets the country code associated with the exchange.
-    /// </summary>
-    public CountryCode CountryCode { get; }
+    public int CityId { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Exchange"/> class.
     /// </summary>
-    /// <param name="code">The market identifier code.</param>
-    /// <param name="name">The exchange name. Must not be null or empty.</param>
-    /// <param name="timeZoneId">The time zone ID associated with the exchange.</param>
-    /// <param name="city">The city where the exchange is located. Must not be null or empty.</param>
-    /// <param name="countryCode">The country code associated with the exchange.</param>
-    /// <exception cref="ArgumentNullException">Thrown when name or city is null or empty.</exception>
-    /// <exception cref="ArgumentException">Thrown when code, timeZoneId, or countryCode is undefined in their respective enums.</exception>
+    /// <param name="exchangeCode">The market identifier code.</param>
+    /// <param name="name">The exchange name.</param>
+    /// <param name="cityId">The city identifier.</param>
+    /// <exception cref="ArgumentNullException">Thrown when name is null.</exception>
     public Exchange(
-        ExchangeCode code, 
+        ExchangeCode exchangeCode, 
         string name, 
-        TimeZoneCode timeZoneId, 
-        string city, 
-        CountryCode countryCode)
+        int cityId)
     {
-        if (!Enum.IsDefined(typeof(ExchangeCode), code))
-        {
-            throw new ArgumentException($"Invalid ExchangeCode: {code}", nameof(code));
-        }
-        
-        if (!Enum.IsDefined(typeof(TimeZoneCode), timeZoneId))
-        {
-            throw new ArgumentException($"Invalid TimeZoneCode: {timeZoneId}", nameof(timeZoneId));
-        }
-        
-        if (!Enum.IsDefined(typeof(CountryCode), countryCode))
-        {
-            throw new ArgumentException($"Invalid CountryCode: {countryCode}", nameof(countryCode));
-        }
-        
-        if (string.IsNullOrEmpty(name))
-        {
-            throw new ArgumentNullException(nameof(name), "Name must not be null or empty.");
-        }
-        
-        if (string.IsNullOrEmpty(city))
-        {
-            throw new ArgumentNullException(nameof(city), "City must not be null or empty.");
-        }
+        // Validate parameters
+        Guard.AgainstUndefinedEnumValue(exchangeCode, nameof(exchangeCode));
+        Guard.AgainstNullOrWhiteSpace(name, nameof(name), ColumnConstants.Exchange_Name_Length);
+        Guard.AgainstNegativeOrZero(cityId, nameof(cityId));
 
-        Code = code;
+        Code = exchangeCode;
         Name = name;
-        TimeZoneId = timeZoneId;
-        City = city;
-        CountryCode = countryCode;
+        CityId = cityId;
     }
 }

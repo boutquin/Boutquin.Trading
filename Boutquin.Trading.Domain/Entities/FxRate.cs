@@ -14,6 +14,8 @@
 //
 
 
+using Boutquin.Domain.Helpers;
+using System.Xml.Linq;
 using Boutquin.Trading.Domain.Enums;
 
 namespace Boutquin.Trading.Domain.Entities;
@@ -66,25 +68,11 @@ public sealed class FxRate
         decimal rate, 
         DateTime rateDate)
     {
-        if (id <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(id), "Id must be greater than 0.");
-        }
-
-        if (!Enum.IsDefined(typeof(CurrencyCode), baseCurrencyCode))
-        {
-            throw new ArgumentOutOfRangeException(nameof(baseCurrencyCode), "Base currency code is not defined in the enumeration.");
-        }
-
-        if (!Enum.IsDefined(typeof(CurrencyCode), quoteCurrencyCode))
-        {
-            throw new ArgumentOutOfRangeException(nameof(quoteCurrencyCode), "Quote currency code is not defined in the enumeration.");
-        }
-
-        if (rate <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(rate), "Rate must be greater than 0.");
-        }
+        // Validate parameters
+        Guard.AgainstNegativeOrZero(id, nameof(id));
+        Guard.AgainstUndefinedEnumValue(baseCurrencyCode, nameof(baseCurrencyCode));
+        Guard.AgainstUndefinedEnumValue(quoteCurrencyCode, nameof(quoteCurrencyCode));
+        Guard.AgainstNegativeOrZero(rate, nameof(rate));
 
         Id = id;
         BaseCurrencyCode = baseCurrencyCode;

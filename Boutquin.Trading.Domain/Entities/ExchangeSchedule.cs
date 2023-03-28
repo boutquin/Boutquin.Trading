@@ -14,6 +14,8 @@
 //
 
 
+using Boutquin.Domain.Helpers;
+using System.Xml.Linq;
 using Boutquin.Trading.Domain.Enums;
 
 namespace Boutquin.Trading.Domain.Entities;
@@ -51,20 +53,21 @@ public sealed class ExchangeSchedule
     /// <param name="openTime">The opening time of the exchange.</param>
     /// <param name="closeTime">The closing time of the exchange.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the id is less than or equal to 0, the exchangeCode is not defined in the enumeration, or the openTime and closeTime are not valid time values.</exception>
-    public ExchangeSchedule(int id, ExchangeCode exchangeCode, TimeSpan openTime, TimeSpan closeTime)
+    public ExchangeSchedule(
+        int id, 
+        ExchangeCode exchangeCode, 
+        TimeSpan openTime, 
+        TimeSpan closeTime)
     {
-        if (id <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(id), "Id must be greater than 0.");
-        }
-        if (!Enum.IsDefined(typeof(ExchangeCode), exchangeCode))
-        {
-            throw new ArgumentOutOfRangeException(nameof(exchangeCode), "Exchange code is not defined in the enumeration.");
-        }
+        // Validate parameters
+        Guard.AgainstNegativeOrZero(id, nameof(id));
+        Guard.AgainstUndefinedEnumValue(exchangeCode, nameof(exchangeCode));
+
         if (openTime < TimeSpan.Zero || openTime >= TimeSpan.FromDays(1))
         {
             throw new ArgumentOutOfRangeException(nameof(openTime), "Open time must be within the range of a single day.");
         }
+
         if (closeTime < TimeSpan.Zero || closeTime >= TimeSpan.FromDays(1))
         {
             throw new ArgumentOutOfRangeException(nameof(closeTime), "Close time must be within the range of a single day.");

@@ -13,6 +13,7 @@
 //  limitations under the License.
 //
 
+using Boutquin.Domain.Helpers;
 using Boutquin.Trading.Domain.Enums;
 
 namespace Boutquin.Trading.Domain.Entities;
@@ -52,30 +53,15 @@ public sealed class SecuritySymbol
         string symbol, 
         SecuritySymbolStandard standard)
     {
-        if (id <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(id), "Id must be greater than 0.");
-        }
-
-        if (securityId <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(securityId), "SecurityId must be greater than 0.");
-        }
-
-        Symbol = symbol ?? throw new ArgumentNullException(nameof(symbol));
-
-        if (string.IsNullOrEmpty(symbol) || symbol.Length > ColumnConstants.Security_Symbol_Length)
-        {
-            throw new ArgumentException($"Symbol must be non-empty and less than {ColumnConstants.Security_Symbol_Length} characters.", nameof(symbol));
-        }
-
-        if (!Enum.IsDefined(typeof(SecuritySymbolStandard), standard))
-        {
-            throw new ArgumentOutOfRangeException(nameof(standard), "Security symbol standard is not defined in the enumeration.");
-        }
+        // Validate parameters
+        Guard.AgainstNegativeOrZero(id, nameof(id));
+        Guard.AgainstNegativeOrZero(securityId, nameof(securityId));
+        Guard.AgainstNullOrWhiteSpace(symbol, nameof(symbol), ColumnConstants.SecuritySymbol_Symbol_Length);
+        Guard.AgainstUndefinedEnumValue(standard, nameof(standard));
 
         Id = id;
         SecurityId = securityId;
+        Symbol = symbol;
         Standard = standard;
     }
 }

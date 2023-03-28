@@ -14,6 +14,8 @@
 //
 
 
+using Boutquin.Domain.Helpers;
+using System.Xml.Linq;
 using Boutquin.Trading.Domain.Enums;
 
 namespace Boutquin.Trading.Domain.Entities;
@@ -59,25 +61,14 @@ public sealed class ExchangeHoliday
         DateTime holidayDate, 
         string description)
     {
-        if (id <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(id), "Id must be greater than 0.");
-        }
-        
-        if (!Enum.IsDefined(typeof(ExchangeCode), exchangeCode))
-        {
-            throw new ArgumentOutOfRangeException(nameof(exchangeCode), "Exchange code is not defined in the enumeration.");
-        }
-
-        Description = description ?? throw new ArgumentNullException(nameof(description));
-
-        if (string.IsNullOrEmpty(description) || description.Length > ColumnConstants.ExchangeHoliday_Description_Length)
-        {
-            throw new ArgumentException($"Description must be non-empty and less than {ColumnConstants.ExchangeHoliday_Description_Length} characters.", nameof(description));
-        }
+        // Validate parameters
+        Guard.AgainstNegativeOrZero(id, nameof(id));
+        Guard.AgainstUndefinedEnumValue(exchangeCode, nameof(exchangeCode));
+        Guard.AgainstNullOrWhiteSpace(description, nameof(description), ColumnConstants.ExchangeHoliday_Description_Length);
 
         Id = id;
         ExchangeCode = exchangeCode;
         HolidayDate = holidayDate;
+        Description = description;
     }
 }

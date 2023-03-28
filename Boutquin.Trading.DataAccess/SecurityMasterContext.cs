@@ -35,6 +35,11 @@ namespace Boutquin.Trading.DataAccess
         public DbSet<AssetClass> AssetClasses { get; set; }
 
         /// <summary>
+        /// Gets or sets the DbSet for the City entity.
+        /// </summary>
+        public DbSet<City> Cities { get; set; }
+
+        /// <summary>
         /// Gets or sets the DbSet for the Continent entity.
         /// </summary>
         public DbSet<Continent> Continents { get; set; }

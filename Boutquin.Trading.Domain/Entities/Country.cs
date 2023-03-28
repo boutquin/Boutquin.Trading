@@ -18,6 +18,7 @@ using Boutquin.Trading.Domain.Enums;
 namespace Boutquin.Trading.Domain.Entities;
 
 using System;
+using Boutquin.Domain.Helpers;
 
 /// <summary>
 /// Represents a country.
@@ -70,30 +71,12 @@ public sealed class Country
         CurrencyCode currencyCode, 
         ContinentCode continentCode)
     {
-        if (!Enum.IsDefined(typeof(CountryCode), code))
-        {
-            throw new ArgumentOutOfRangeException(nameof(code), "Invalid country code.");
-        }
-
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name), "Name cannot be null.");
-        }
-
-        if (name.Length == 0 || name.Length > ColumnConstants.Country_Name_Length)
-        {
-            throw new ArgumentOutOfRangeException(nameof(name), $"Name must be between 1 and {ColumnConstants.Country_Name_Length} characters.");
-        }
-
-        if (!Enum.IsDefined(typeof(CurrencyCode), currencyCode))
-        {
-            throw new ArgumentOutOfRangeException(nameof(currencyCode), "Invalid currency code.");
-        }
-
-        if (!Enum.IsDefined(typeof(ContinentCode), continentCode))
-        {
-            throw new ArgumentOutOfRangeException(nameof(continentCode), "Invalid continent code.");
-        }
+        // Validate parameters
+        Guard.AgainstUndefinedEnumValue(code, nameof(code));
+        Guard.AgainstNullOrWhiteSpace(name, nameof(name), ColumnConstants.Country_Name_Length);
+        Guard.AgainstNegativeOrZero(numericCode, nameof(numericCode));
+        Guard.AgainstUndefinedEnumValue(currencyCode, nameof(currencyCode));
+        Guard.AgainstUndefinedEnumValue(continentCode, nameof(continentCode));
 
         Code = code;
         Name = name;

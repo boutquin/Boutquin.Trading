@@ -13,6 +13,7 @@
 //  limitations under the License.
 //
 
+using Boutquin.Domain.Helpers;
 using Boutquin.Trading.Domain.Enums;
 
 namespace Boutquin.Trading.Domain.Entities;
@@ -61,35 +62,11 @@ public sealed class Currency
         string name,
         string symbol)
     {
-        if (!Enum.IsDefined(typeof(CurrencyCode), code))
-        {
-            throw new ArgumentOutOfRangeException(nameof(code), "Invalid currency code.");
-        }
-
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name), "Name cannot be null.");
-        }
-
-        if (name.Length == 0 || name.Length > ColumnConstants.Currency_Name_Length)
-        {
-            throw new ArgumentOutOfRangeException(nameof(name), $"Name must be between 1 and {ColumnConstants.Currency_Name_Length} characters.");
-        }
-
-        if (symbol == null)
-        {
-            throw new ArgumentNullException(nameof(symbol), "Symbol cannot be null.");
-        }
-
-        if (symbol.Length == 0 || symbol.Length > ColumnConstants.Currency_Symbol_Length)
-        {
-            throw new ArgumentOutOfRangeException(nameof(symbol), $"Symbol must be between 1 and {ColumnConstants.Currency_Symbol_Length} characters.");
-        }
-
-        if (numericCode < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(numericCode), "Numeric code cannot be negative.");
-        }
+        // Validate parameters
+        Guard.AgainstUndefinedEnumValue(code, nameof(code));
+        Guard.AgainstNegative(numericCode, nameof(numericCode)); // TODO: OrZero???
+        Guard.AgainstNullOrWhiteSpace(name, nameof(name), ColumnConstants.Currency_Name_Length);
+        Guard.AgainstNullOrWhiteSpace(symbol, nameof(symbol), ColumnConstants.Currency_Symbol_Length);
 
         Code = code;
         NumericCode = numericCode;

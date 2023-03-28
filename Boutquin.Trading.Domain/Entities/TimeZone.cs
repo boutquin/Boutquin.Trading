@@ -16,7 +16,7 @@
 namespace Boutquin.Trading.Domain.Entities;
 
 using System;
-
+using Boutquin.Domain.Helpers;
 using Boutquin.Trading.Domain.Enums;
 
 /// <summary>
@@ -42,7 +42,7 @@ public sealed class TimeZone
     /// <summary>
     /// Gets a value indicating whether the time zone uses daylight saving time.
     /// </summary>
-    public bool IsDaylightSaving { get; }
+    public bool UsesDaylightSaving { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TimeZone"/> class.
@@ -50,7 +50,7 @@ public sealed class TimeZone
     /// <param name="code">The time zone code.</param>
     /// <param name="name">The name of the time zone.</param>
     /// <param name="timeZoneOffset">The time zone offset.</param>
-    /// <param name="isDaylightSaving">A value indicating whether the time zone uses daylight saving time.</param>
+    /// <param name="usesDaylightSaving">A value indicating whether the time zone uses daylight saving time.</param>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="name"/> or <paramref name="timeZoneOffset"/> is null.
     /// </exception>
@@ -61,28 +61,16 @@ public sealed class TimeZone
         TimeZoneCode code, 
         string name, 
         string timeZoneOffset, 
-        bool isDaylightSaving)
+        bool usesDaylightSaving)
     {
-        if (!Enum.IsDefined(typeof(TimeZoneCode), code))
-        {
-            throw new ArgumentOutOfRangeException(nameof(code), "Invalid time zone code.");
-        }
+        // Validate parameters
+        Guard.AgainstUndefinedEnumValue(code, nameof(code));
+        Guard.AgainstNullOrWhiteSpace(name, nameof(name), ColumnConstants.TimeZone_Name_Length);
+        Guard.AgainstNullOrWhiteSpace(timeZoneOffset, nameof(timeZoneOffset), ColumnConstants.TimeZone_TimeZoneOffset_Length);
 
-        Name = name ?? throw new ArgumentNullException(nameof(name), "Name cannot be null.");
-
-        if (name.Length == 0 || name.Length > ColumnConstants.TimeZone_Name_Length)
-        {
-            throw new ArgumentOutOfRangeException(nameof(name), $"Name must be between 1 and {ColumnConstants.TimeZone_Name_Length} characters.");
-        }
-
-        TimeZoneOffset = timeZoneOffset ?? throw new ArgumentNullException(nameof(timeZoneOffset), "Time zone offset cannot be null.");
-
-        if (timeZoneOffset.Length == 0 || timeZoneOffset.Length > ColumnConstants.TimeZone_TimeZoneOffset_Length)
-        {
-            throw new ArgumentOutOfRangeException(nameof(timeZoneOffset), $"Time zone offset must be between 1 and {ColumnConstants.TimeZone_TimeZoneOffset_Length} characters.");
-        }
-
+        Name = name;
+        TimeZoneOffset = timeZoneOffset;
         Code = code;
-        IsDaylightSaving = isDaylightSaving;
+        UsesDaylightSaving = usesDaylightSaving;
     }
 }

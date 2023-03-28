@@ -18,6 +18,7 @@ using Boutquin.Trading.Domain.Enums;
 namespace Boutquin.Trading.Domain.Entities;
 
 using System;
+using Boutquin.Domain.Helpers;
 
 /// <summary>
 /// Represents a continent.
@@ -49,20 +50,9 @@ public sealed class Continent
         ContinentCode code, 
         string name)
     {
-        if (!Enum.IsDefined(typeof(ContinentCode), code))
-        {
-            throw new ArgumentOutOfRangeException(nameof(code), "Invalid continent code.");
-        }
-
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name), "Name cannot be null.");
-        }
-
-        if (name.Length == 0 || name.Length > ColumnConstants.Continent_Name_Length)
-        {
-            throw new ArgumentOutOfRangeException(nameof(name), $"Name must be between 1 and {ColumnConstants.Continent_Name_Length} characters.");
-        }
+        // Validate parameters
+        Guard.AgainstUndefinedEnumValue(code, nameof(code));
+        Guard.AgainstNullOrWhiteSpace(name, nameof(name), ColumnConstants.Continent_Name_Length);
 
         Code = code;
         Name = name;
