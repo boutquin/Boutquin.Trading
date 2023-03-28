@@ -52,7 +52,7 @@ public sealed class Exchange
     {
         // Validate parameters
         Guard.AgainstUndefinedEnumValue(exchangeCode, nameof(exchangeCode));
-        Guard.AgainstNullOrWhiteSpace(name, nameof(name), ColumnConstants.Exchange_Name_Length);
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(name, nameof(name), ColumnConstants.Exchange_Name_Length);
         Guard.AgainstNegativeOrZero(cityId, nameof(cityId));
 
         Code = exchangeCode;

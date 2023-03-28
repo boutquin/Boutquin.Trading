@@ -60,7 +60,7 @@ public sealed class Security
     {
         // Validate parameters
         Guard.AgainstNegativeOrZero(id, nameof(id));
-        Guard.AgainstNullOrWhiteSpace(name, nameof(name), ColumnConstants.Security_Name_Length);
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(name, nameof(name), ColumnConstants.Security_Name_Length);
         Guard.AgainstUndefinedEnumValue(exchangeCode, nameof(exchangeCode));
         Guard.AgainstUndefinedEnumValue(assetClassCode, nameof(assetClassCode));
 

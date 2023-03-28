@@ -64,7 +64,7 @@ public sealed class ExchangeHoliday
         // Validate parameters
         Guard.AgainstNegativeOrZero(id, nameof(id));
         Guard.AgainstUndefinedEnumValue(exchangeCode, nameof(exchangeCode));
-        Guard.AgainstNullOrWhiteSpace(description, nameof(description), ColumnConstants.ExchangeHoliday_Description_Length);
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(description, nameof(description), ColumnConstants.ExchangeHoliday_Description_Length);
 
         Id = id;
         ExchangeCode = exchangeCode;

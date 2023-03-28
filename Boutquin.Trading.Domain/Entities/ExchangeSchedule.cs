@@ -17,6 +17,7 @@
 using Boutquin.Domain.Helpers;
 using System.Xml.Linq;
 using Boutquin.Trading.Domain.Enums;
+using System;
 
 namespace Boutquin.Trading.Domain.Entities;
 
@@ -36,6 +37,11 @@ public sealed class ExchangeSchedule
     public ExchangeCode ExchangeCode { get; }
 
     /// <summary>
+    /// Gets the day of the week for the schedule.
+    /// </summary>
+    public DayOfWeek DayOfWeek { get; }
+
+    /// <summary>
     /// Gets the opening time of the exchange.
     /// </summary>
     public TimeSpan OpenTime { get; }
@@ -50,31 +56,27 @@ public sealed class ExchangeSchedule
     /// </summary>
     /// <param name="id">The identifier of the exchange schedule.</param>
     /// <param name="exchangeCode">The exchange code.</param>
+    /// <param name="dayOfWeek">The day of the week for the schedule.</param>
     /// <param name="openTime">The opening time of the exchange.</param>
     /// <param name="closeTime">The closing time of the exchange.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the id is less than or equal to 0, the exchangeCode is not defined in the enumeration, or the openTime and closeTime are not valid time values.</exception>
     public ExchangeSchedule(
         int id, 
         ExchangeCode exchangeCode, 
+        DayOfWeek dayOfWeek,
         TimeSpan openTime, 
         TimeSpan closeTime)
     {
         // Validate parameters
         Guard.AgainstNegativeOrZero(id, nameof(id));
         Guard.AgainstUndefinedEnumValue(exchangeCode, nameof(exchangeCode));
-
-        if (openTime < TimeSpan.Zero || openTime >= TimeSpan.FromDays(1))
-        {
-            throw new ArgumentOutOfRangeException(nameof(openTime), "Open time must be within the range of a single day.");
-        }
-
-        if (closeTime < TimeSpan.Zero || closeTime >= TimeSpan.FromDays(1))
-        {
-            throw new ArgumentOutOfRangeException(nameof(closeTime), "Close time must be within the range of a single day.");
-        }
+        Guard.AgainstUndefinedEnumValue(dayOfWeek, nameof(dayOfWeek));
+        Guard.AgainstOutOfRange(openTime, TimeSpan.Zero, TimeSpan.FromHours(24), nameof(openTime));
+        Guard.AgainstOutOfRange(closeTime, TimeSpan.Zero, TimeSpan.FromHours(24), nameof(closeTime));
 
         Id = id;
         ExchangeCode = exchangeCode;
+        DayOfWeek = dayOfWeek;
         OpenTime = openTime;
         CloseTime = closeTime;
     }

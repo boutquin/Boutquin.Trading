@@ -60,8 +60,8 @@ public sealed class AssetClass
     {
         // Validate parameters
         Guard.AgainstUndefinedEnumValue(id, nameof(id));
-        Guard.AgainstNullOrWhiteSpace(name, nameof(name), ColumnConstants.AssetClass_Name_Length);
-        Guard.AgainstNullOrWhiteSpace(description, nameof(description), ColumnConstants.AssetClass_Description_Length);
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(name, nameof(name), ColumnConstants.AssetClass_Name_Length);
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(description, nameof(description), ColumnConstants.AssetClass_Description_Length);
 
         Id = id;
         Name = name;

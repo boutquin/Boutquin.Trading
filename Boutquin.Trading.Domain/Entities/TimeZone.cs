@@ -65,8 +65,8 @@ public sealed class TimeZone
     {
         // Validate parameters
         Guard.AgainstUndefinedEnumValue(code, nameof(code));
-        Guard.AgainstNullOrWhiteSpace(name, nameof(name), ColumnConstants.TimeZone_Name_Length);
-        Guard.AgainstNullOrWhiteSpace(timeZoneOffset, nameof(timeZoneOffset), ColumnConstants.TimeZone_TimeZoneOffset_Length);
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(name, nameof(name), ColumnConstants.TimeZone_Name_Length);
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(timeZoneOffset, nameof(timeZoneOffset), ColumnConstants.TimeZone_TimeZoneOffset_Length);
 
         Name = name;
         TimeZoneOffset = timeZoneOffset;

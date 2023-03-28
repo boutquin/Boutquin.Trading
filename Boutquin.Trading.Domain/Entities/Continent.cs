@@ -52,7 +52,7 @@ public sealed class Continent
     {
         // Validate parameters
         Guard.AgainstUndefinedEnumValue(code, nameof(code));
-        Guard.AgainstNullOrWhiteSpace(name, nameof(name), ColumnConstants.Continent_Name_Length);
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(name, nameof(name), ColumnConstants.Continent_Name_Length);
 
         Code = code;
         Name = name;

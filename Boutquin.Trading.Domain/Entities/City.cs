@@ -59,7 +59,7 @@ public sealed class City
     {
         // Validate parameters
         Guard.AgainstNegativeOrZero(id, nameof(id));
-        Guard.AgainstNullOrWhiteSpace(name, nameof(name), ColumnConstants.City_Name_Length);
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(name, nameof(name), ColumnConstants.City_Name_Length);
         Guard.AgainstUndefinedEnumValue(timeZoneCode, nameof(timeZoneCode));
         Guard.AgainstUndefinedEnumValue(countryCode, nameof(countryCode));
 

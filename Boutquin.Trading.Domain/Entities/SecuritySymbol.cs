@@ -56,7 +56,7 @@ public sealed class SecuritySymbol
         // Validate parameters
         Guard.AgainstNegativeOrZero(id, nameof(id));
         Guard.AgainstNegativeOrZero(securityId, nameof(securityId));
-        Guard.AgainstNullOrWhiteSpace(symbol, nameof(symbol), ColumnConstants.SecuritySymbol_Symbol_Length);
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(symbol, nameof(symbol), ColumnConstants.SecuritySymbol_Symbol_Length);
         Guard.AgainstUndefinedEnumValue(standard, nameof(standard));
 
         Id = id;

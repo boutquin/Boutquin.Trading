@@ -73,7 +73,7 @@ public sealed class Country
     {
         // Validate parameters
         Guard.AgainstUndefinedEnumValue(code, nameof(code));
-        Guard.AgainstNullOrWhiteSpace(name, nameof(name), ColumnConstants.Country_Name_Length);
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(name, nameof(name), ColumnConstants.Country_Name_Length);
         Guard.AgainstNegativeOrZero(numericCode, nameof(numericCode));
         Guard.AgainstUndefinedEnumValue(currencyCode, nameof(currencyCode));
         Guard.AgainstUndefinedEnumValue(continentCode, nameof(continentCode));

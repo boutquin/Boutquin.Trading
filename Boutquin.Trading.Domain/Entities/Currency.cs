@@ -65,8 +65,8 @@ public sealed class Currency
         // Validate parameters
         Guard.AgainstUndefinedEnumValue(code, nameof(code));
         Guard.AgainstNegative(numericCode, nameof(numericCode)); // TODO: OrZero???
-        Guard.AgainstNullOrWhiteSpace(name, nameof(name), ColumnConstants.Currency_Name_Length);
-        Guard.AgainstNullOrWhiteSpace(symbol, nameof(symbol), ColumnConstants.Currency_Symbol_Length);
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(name, nameof(name), ColumnConstants.Currency_Name_Length);
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(symbol, nameof(symbol), ColumnConstants.Currency_Symbol_Length);
 
         Code = code;
         NumericCode = numericCode;
