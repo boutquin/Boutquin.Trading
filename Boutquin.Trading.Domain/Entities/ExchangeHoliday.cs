@@ -15,7 +15,6 @@
 
 
 using Boutquin.Domain.Helpers;
-using System.Xml.Linq;
 using Boutquin.Trading.Domain.Enums;
 
 namespace Boutquin.Trading.Domain.Entities;

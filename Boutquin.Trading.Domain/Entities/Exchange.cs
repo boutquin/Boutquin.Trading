@@ -39,6 +39,18 @@ public sealed class Exchange
     public int CityId { get; }
 
     /// <summary>
+    /// Gets or sets the collection of ExchangeSchedule entities associated with the Exchange.
+    /// </summary>
+    public ICollection<ExchangeSchedule> ExchangeSchedules { get; }
+        = new HashSet<ExchangeSchedule>();
+
+    /// <summary>
+    /// Gets or sets the collection of ExchangeHoliday entities associated with the Exchange.
+    /// </summary>
+    public ICollection<ExchangeHoliday> ExchangeHolidays { get; }
+        = new HashSet<ExchangeHoliday>();   
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="Exchange"/> class.
     /// </summary>
     /// <param name="exchangeCode">The market identifier code.</param>
@@ -58,5 +70,9 @@ public sealed class Exchange
         Code = exchangeCode;
         Name = name;
         CityId = cityId;
+    }
+
+    public Exchange()
+    {
     }
 }
