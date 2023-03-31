@@ -13,15 +13,12 @@
 //  limitations under the License.
 //
 
-namespace Boutquin.Trading.DataAccess.Configuration;
-
 using Boutquin.Domain.Helpers;
 using Boutquin.Trading.Domain.Entities;
-using Boutquin.Trading.Domain.Enums;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
+using Microsoft.EntityFrameworkCore;
 
+namespace Boutquin.Trading.DataAccess.Configuration;
 
 /// <summary>
 /// This class is responsible for defining the structure and constraints for the <see cref="City"/> entity in the database.
