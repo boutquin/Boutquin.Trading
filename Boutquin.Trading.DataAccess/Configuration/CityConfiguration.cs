@@ -24,13 +24,12 @@ using System;
 
 
 /// <summary>
-/// Represents the configuration for the City entity.
-/// This class is responsible for defining the structure and constraints for the City entity in the database.
+/// This class is responsible for defining the structure and constraints for the <see cref="City"/> entity in the database.
 /// </summary>
 public sealed class CityConfiguration : IEntityTypeConfiguration<City>
 {
     /// <summary>
-    /// Configures the entity of type City.
+    /// Configures the entity mapping for the <see cref="City"/> entity.
     /// </summary>
     /// <param name="builder">An API surface for configuring an entity type.</param>
     /// <exception cref="ArgumentNullException">Thrown when the builder is null.</exception>
