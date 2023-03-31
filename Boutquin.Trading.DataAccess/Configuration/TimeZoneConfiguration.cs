@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2023 Pierre G. Boutquin. All rights reserved.
+// Copyright (c) 2023 Pierre G. Boutquin. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License").
 //  You may not use this file except in compliance with the License.
@@ -23,12 +23,12 @@ using TimeZone = Boutquin.Trading.Domain.Entities.TimeZone;
 namespace Boutquin.Trading.DataAccess.Configuration;
 
 /// <summary>
-/// Configures the entity mapping for the <see cref="TimeZone"/> entity.
+/// This class is responsible for defining the structure and constraints for the <see cref="TimeZone"/> entity in the database.
 /// </summary>
 public sealed class TimeZoneConfiguration : IEntityTypeConfiguration<TimeZone>
 {
     /// <summary>
-    /// Configures the entity of type <see cref="TimeZone"/>.
+    /// Configures the entity mapping for the <see cref="TimeZone"/> entity.
     /// </summary>
     /// <param name="builder">The builder to be used for configuring the entity.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is null.</exception>
@@ -36,23 +36,27 @@ public sealed class TimeZoneConfiguration : IEntityTypeConfiguration<TimeZone>
     {
         // Validate parameters
         Guard.AgainstNull(builder, nameof(builder));
+        
         // Configure the primary key
         builder.HasKey(tz => tz.Code);
 
-        // Configure properties
+        // Configure Code property with required constraint, max length, and enum conversion
         builder.Property(tz => tz.Code)
             .IsRequired()
             .HasConversion<string>()
             .HasMaxLength(ColumnConstants.TimeZone_Code_Length);
 
+        // Configure Name property with required constraint and max length
         builder.Property(tz => tz.Name)
             .IsRequired()
             .HasMaxLength(ColumnConstants.TimeZone_Name_Length);
 
+        // Configure TimeZoneOffset property with required constraint and max length
         builder.Property(tz => tz.TimeZoneOffset)
             .IsRequired()
             .HasMaxLength(ColumnConstants.TimeZone_TimeZoneOffset_Length);
 
+        // Configure UsesDaylightSaving property with required constraint and max length
         builder.Property(tz => tz.UsesDaylightSaving)
             .IsRequired();
     }
