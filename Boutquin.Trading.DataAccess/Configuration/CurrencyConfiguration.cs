@@ -20,10 +20,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Boutquin.Trading.DataAccess.Configuration;
 
+/// <summary>
+/// This class is responsible for defining the structure and constraints for the <see cref="Currency"/> entity in the database.
+/// </summary>
 public sealed class CurrencyConfiguration : IEntityTypeConfiguration<Currency>
 {
     /// <summary>
-    /// Configures the entity of type <see cref="Currency"/>.
+    /// Configures the entity mapping for the <see cref="Currency"/> entity.
     /// </summary>
     /// <param name="builder">The builder to be used for configuring the entity.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is null.</exception>
@@ -35,19 +38,22 @@ public sealed class CurrencyConfiguration : IEntityTypeConfiguration<Currency>
         // Configure the primary key
         builder.HasKey(c => c.Code);
 
-        // Configure properties
+        // Configure Code property with required constraint, max length, and enum conversion
         builder.Property(c => c.Code)
             .IsRequired()
             .HasConversion<string>()
             .HasMaxLength(ColumnConstants.Currency_Code_Length);
 
+        // Configure NumericCode property with required constraint
         builder.Property(c => c.NumericCode)
             .IsRequired();
 
+        // Configure Name property with required constraint and max length
         builder.Property(c => c.Name)
             .IsRequired()
             .HasMaxLength(ColumnConstants.Currency_Name_Length);
 
+        // Configure Symbol property with required constraint and max length
         builder.Property(c => c.Symbol)
             .IsRequired()
             .HasMaxLength(ColumnConstants.Currency_Symbol_Length);
