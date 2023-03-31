@@ -31,8 +31,8 @@ public static class ExchangeExtensionsTestData
         get
         {
             var exchange = new Exchange();
-            exchange.ExchangeSchedules.Add(new ExchangeSchedule(1, ExchangeCode.XNYS, DayOfWeek.Monday, new TimeSpan(9, 0, 0), new TimeSpan(17, 0, 0)));
-            exchange.ExchangeHolidays.Add(new ExchangeHoliday(1, ExchangeCode.XNYS, new DateTime(2023, 1, 1), "New Year's Day"));
+            exchange.ExchangeSchedules.Add(new ExchangeSchedule(ExchangeCode.XNYS, DayOfWeek.Monday, new TimeSpan(9, 0, 0), new TimeSpan(17, 0, 0)));
+            exchange.ExchangeHolidays.Add(new ExchangeHoliday(ExchangeCode.XNYS, new DateTime(2023, 1, 1), "New Year's Day"));
 
             // Test case 1: Normal trading day, exchange should be open.
             yield return new object[]
@@ -62,8 +62,8 @@ public static class ExchangeExtensionsTestData
         get
         {
             var exchange = new Exchange();
-            exchange.ExchangeSchedules.Add(new ExchangeSchedule(1, ExchangeCode.XNYS, DayOfWeek.Monday, new TimeSpan(9, 0, 0), new TimeSpan(17, 0, 0)));
-            exchange.ExchangeHolidays.Add(new ExchangeHoliday(1, ExchangeCode.XNYS, new DateTime(2023, 1, 1), "New Year's Day"));
+            exchange.ExchangeSchedules.Add(new ExchangeSchedule(ExchangeCode.XNYS, DayOfWeek.Monday, new TimeSpan(9, 0, 0), new TimeSpan(17, 0, 0)));
+            exchange.ExchangeHolidays.Add(new ExchangeHoliday(ExchangeCode.XNYS, new DateTime(2023, 1, 1), "New Year's Day"));
 
             // Test case 1: Normal trading day, should return the closing time.
             yield return new object[]

@@ -40,7 +40,7 @@ public sealed class CityConfiguration : IEntityTypeConfiguration<City>
         Guard.AgainstNull(builder, nameof(builder));
 
         // Configure primary key
-        builder.HasKey(c => c.Id);
+        builder.HasKey("_id");
 
         // Configure Name property with required constraint and max length
         builder.Property(c => c.Name)
