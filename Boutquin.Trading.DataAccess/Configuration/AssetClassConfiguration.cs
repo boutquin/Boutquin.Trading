@@ -20,10 +20,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Boutquin.Trading.DataAccess.Configuration;
 
+/// <summary>
+/// This class is responsible for defining the structure and constraints for the <see cref="AssetClass"/> entity in the database.
+/// </summary>
 public sealed class AssetClassConfiguration : IEntityTypeConfiguration<AssetClass>
 {
     /// <summary>
-    /// Configures the entity of type <see cref="AssetClass"/>.
+    /// Configures the entity mapping for the <see cref="City"/> entity.
     /// </summary>
     /// <param name="builder">The builder to be used for configuring the entity.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is null.</exception>
