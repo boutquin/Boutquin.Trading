@@ -22,27 +22,27 @@ public sealed class Security
     /// <summary>
     /// Gets the identifier of the security.
     /// </summary>
-    public int Id { get; }
+    public int Id { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the name of the security.
     /// </summary>
-    public string Name { get; }
+    public string Name { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the market identifier code of the exchange.
     /// </summary>
-    public ExchangeCode ExchangeCode { get; }
+    public ExchangeCode ExchangeCode { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the identifier of the asset class.
     /// </summary>
-    public AssetClassCode AssetClassCode { get; }
+    public AssetClassCode AssetClassCode { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Navigation property to the related SecuritySymbols.
     /// </summary>
-    public ICollection<SecuritySymbol> SecuritySymbols { get; } 
+    public ICollection<SecuritySymbol> SecuritySymbols { get; private set; } // Setter is for EF 
         = new List<SecuritySymbol>();
 
     /// <summary>

@@ -26,22 +26,22 @@ public sealed class Currency
     /// <summary>
     /// Gets the ISO 4217 currency code.
     /// </summary>
-    public CurrencyCode Code { get; }
+    public CurrencyCode Code { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the ISO 4217 currency numeric code.
     /// </summary>
-    public int NumericCode { get; }
+    public int NumericCode { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the currency name.
     /// </summary>
-    public string Name { get; }
+    public string Name { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the currency symbol.
     /// </summary>
-    public string Symbol { get; }
+    public string Symbol { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Currency"/> class.

@@ -24,24 +24,24 @@ namespace Boutquin.Trading.Domain.Entities;
 public sealed class City
 {
     /// <summary>
-    /// Gets the city identifier.
+    /// The city identifier.
     /// </summary>
-    public int Id { get; }
+    private int _id; // Private key for EF
 
     /// <summary>
     /// Gets the city name.
     /// </summary>
-    public string Name { get; }
+    public string Name { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the time zone code associated with the city.
     /// </summary>
-    public TimeZoneCode TimeZoneCode { get; }
+    public TimeZoneCode TimeZoneCode { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the country code associated with the city.
     /// </summary>
-    public CountryCode CountryCode { get; }
+    public CountryCode CountryCode { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Initializes a new instance of the <see cref="City"/> class.
@@ -52,18 +52,15 @@ public sealed class City
     /// <param name="countryCode">The country code associated with the city.</param>
     /// <exception cref="ArgumentNullException">Thrown when name is null.</exception>
     public City(
-        int id, 
         string name, 
         TimeZoneCode timeZoneCode, 
         CountryCode countryCode)
     {
         // Validate parameters
-        Guard.AgainstNegativeOrZero(id, nameof(id));
         Guard.AgainstNullOrWhiteSpaceAndOverflow(name, nameof(name), ColumnConstants.City_Name_Length);
         Guard.AgainstUndefinedEnumValue(timeZoneCode, nameof(timeZoneCode));
         Guard.AgainstUndefinedEnumValue(countryCode, nameof(countryCode));
 
-        Id = id;
         Name = name;
         TimeZoneCode = timeZoneCode;
         CountryCode = countryCode;

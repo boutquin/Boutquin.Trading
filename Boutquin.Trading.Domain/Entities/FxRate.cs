@@ -25,34 +25,33 @@ namespace Boutquin.Trading.Domain.Entities;
 public sealed class FxRate
 {
     /// <summary>
-    /// Gets the foreign exchange rate identifier.
+    /// The foreign exchange rate identifier.
     /// </summary>
-    public int Id { get; }
+    private int _id; // Private key for EF
 
     /// <summary>
     /// Gets the base currency code.
     /// </summary>
-    public CurrencyCode BaseCurrencyCode { get; }
+    public CurrencyCode BaseCurrencyCode { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the quote currency code.
     /// </summary>
-    public CurrencyCode QuoteCurrencyCode { get; }
+    public CurrencyCode QuoteCurrencyCode { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the exchange rate value.
     /// </summary>
-    public decimal Rate { get; }
+    public decimal Rate { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the rate date.
     /// </summary>
-    public DateTime RateDate { get; }
+    public DateTime RateDate { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FxRate"/> class.
     /// </summary>
-    /// <param name="id">The foreign exchange rate identifier.</param>
     /// <param name="baseCurrencyCode">The base currency code.</param>
     /// <param name="quoteCurrencyCode">The quote currency code.</param>
     /// <param name="rate">The exchange rate value.</param>
@@ -61,19 +60,16 @@ public sealed class FxRate
     /// Thrown when <paramref name="id"/> is less than or equal to 0, or when <paramref name="baseCurrencyCode"/> or <paramref name="quoteCurrencyCode"/> is not defined in the enumeration.
     /// </exception>
     public FxRate(
-        int id, 
         CurrencyCode baseCurrencyCode, 
         CurrencyCode quoteCurrencyCode, 
         decimal rate, 
         DateTime rateDate)
     {
         // Validate parameters
-        Guard.AgainstNegativeOrZero(id, nameof(id));
         Guard.AgainstUndefinedEnumValue(baseCurrencyCode, nameof(baseCurrencyCode));
         Guard.AgainstUndefinedEnumValue(quoteCurrencyCode, nameof(quoteCurrencyCode));
         Guard.AgainstNegativeOrZero(rate, nameof(rate));
 
-        Id = id;
         BaseCurrencyCode = baseCurrencyCode;
         QuoteCurrencyCode = quoteCurrencyCode;
         Rate = rate;

@@ -21,7 +21,7 @@ namespace Boutquin.Trading.UnitTests;
 /// <summary>
 /// Contains unit tests for the <see cref="ExchangeExtensions"/> methods.
 /// </summary>
-public class ExchangeExtensionsTests
+public sealed class ExchangeExtensionsTests
 {
     /// <summary>
     /// Tests the <see cref="ExchangeExtensions.IsOpen(Exchange, DateTime)/> method with various scenarios.

@@ -25,54 +25,50 @@ namespace Boutquin.Trading.Domain.Entities;
 public sealed class ExchangeSchedule
 {
     /// <summary>
-    /// Gets the identifier of the exchange schedule.
+    /// The identifier of the exchange schedule.
     /// </summary>
-    public int Id { get; }
+    private int _id; // Private key for EF
 
     /// <summary>
     /// Gets the exchange code.
     /// </summary>
-    public ExchangeCode ExchangeCode { get; }
+    public ExchangeCode ExchangeCode { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the day of the week for the schedule.
     /// </summary>
-    public DayOfWeek DayOfWeek { get; }
+    public DayOfWeek DayOfWeek { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the opening time of the exchange.
     /// </summary>
-    public TimeSpan OpenTime { get; }
+    public TimeSpan OpenTime { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the closing time of the exchange.
     /// </summary>
-    public TimeSpan CloseTime { get; }
+    public TimeSpan CloseTime { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ExchangeSchedule"/> class.
     /// </summary>
-    /// <param name="id">The identifier of the exchange schedule.</param>
     /// <param name="exchangeCode">The exchange code.</param>
     /// <param name="dayOfWeek">The day of the week for the schedule.</param>
     /// <param name="openTime">The opening time of the exchange.</param>
     /// <param name="closeTime">The closing time of the exchange.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the id is less than or equal to 0, the exchangeCode is not defined in the enumeration, or the openTime and closeTime are not valid time values.</exception>
     public ExchangeSchedule(
-        int id, 
         ExchangeCode exchangeCode, 
         DayOfWeek dayOfWeek,
         TimeSpan openTime, 
         TimeSpan closeTime)
     {
         // Validate parameters
-        Guard.AgainstNegativeOrZero(id, nameof(id));
         Guard.AgainstUndefinedEnumValue(exchangeCode, nameof(exchangeCode));
         Guard.AgainstUndefinedEnumValue(dayOfWeek, nameof(dayOfWeek));
         Guard.AgainstOutOfRange(openTime, TimeSpan.Zero, TimeSpan.FromHours(24), nameof(openTime));
         Guard.AgainstOutOfRange(closeTime, TimeSpan.Zero, TimeSpan.FromHours(24), nameof(closeTime));
 
-        Id = id;
         ExchangeCode = exchangeCode;
         DayOfWeek = dayOfWeek;
         OpenTime = openTime;

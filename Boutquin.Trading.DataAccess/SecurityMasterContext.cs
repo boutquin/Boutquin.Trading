@@ -27,7 +27,7 @@ namespace Boutquin.Trading.DataAccess
     /// <summary>
     /// Represents the database context for the security master.
     /// </summary>    
-    public class SecurityMasterContext : DbContext
+    public sealed class SecurityMasterContext : DbContext
     {
         /// <summary>
         /// Gets or sets the DbSet for the AssetClass entity.

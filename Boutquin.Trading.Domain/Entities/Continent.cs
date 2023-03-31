@@ -28,12 +28,12 @@ public sealed class Continent
     /// <summary>
     /// Gets the code of the continent.
     /// </summary>
-    public ContinentCode Code { get; }
+    public ContinentCode Code { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the name of the continent.
     /// </summary>
-    public string Name { get; }
+    public string Name { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Continent"/> class.

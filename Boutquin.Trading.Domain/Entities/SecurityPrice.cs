@@ -23,54 +23,53 @@ namespace Boutquin.Trading.Domain.Entities;
 public sealed class SecurityPrice
 {
     /// <summary>
-    /// Gets the identifier of the security price.
+    /// The identifier of the security price.
     /// </summary>
-    public int Id { get; }
+    private int _id; // Private key for EF
 
     /// <summary>
     /// Gets the security identifier.
     /// </summary>
-    public int SecurityId { get; }
+    public int SecurityId { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the trade date.
     /// </summary>
-    public DateTime TradeDate { get; }
+    public DateTime TradeDate { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the open price.
     /// </summary>
-    public decimal OpenPrice { get; }
+    public decimal OpenPrice { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the high price.
     /// </summary>
-    public decimal HighPrice { get; }
+    public decimal HighPrice { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the low price.
     /// </summary>
-    public decimal LowPrice { get; }
+    public decimal LowPrice { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the close price.
     /// </summary>
-    public decimal ClosePrice { get; }
+    public decimal ClosePrice { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the volume.
     /// </summary>
-    public int Volume { get; }
+    public int Volume { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the dividend.
     /// </summary>
-    public decimal Dividend { get; }
+    public decimal Dividend { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SecurityPrice"/> class.
     /// </summary>
-    /// <param name="id">The identifier of the security price.</param>
     /// <param name="securityId">The security identifier.</param>
     /// <param name="tradeDate">The trade date.</param>
     /// <param name="openPrice">The open price.</param>
@@ -81,7 +80,6 @@ public sealed class SecurityPrice
     /// <param name="dividend">The dividend.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the id, securityId, volume is less than or equal to 0, or the openPrice, highPrice, lowPrice, closePrice, dividend is less than 0.</exception>
     public SecurityPrice(
-        int id, 
         int securityId, 
         DateTime tradeDate, 
         decimal openPrice, 
@@ -92,7 +90,6 @@ public sealed class SecurityPrice
         decimal dividend)
     {
         // Validate parameters
-        Guard.AgainstNegativeOrZero(id, nameof(id));
         Guard.AgainstNegativeOrZero(securityId, nameof(securityId));
         Guard.AgainstNegativeOrZero(openPrice, nameof(openPrice));
         Guard.AgainstNegativeOrZero(highPrice, nameof(highPrice));
@@ -101,7 +98,6 @@ public sealed class SecurityPrice
         Guard.AgainstNegativeOrZero(volume, nameof(volume));
         Guard.AgainstNegative(dividend, nameof(dividend));
 
-        Id = id;
         SecurityId = securityId;
         TradeDate = tradeDate;
         OpenPrice = openPrice;

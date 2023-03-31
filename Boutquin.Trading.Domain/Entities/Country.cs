@@ -13,12 +13,10 @@
 //  limitations under the License.
 //
 
+using Boutquin.Domain.Helpers;
 using Boutquin.Trading.Domain.Enums;
 
 namespace Boutquin.Trading.Domain.Entities;
-
-using System;
-using Boutquin.Domain.Helpers;
 
 /// <summary>
 /// Represents a country.
@@ -28,27 +26,27 @@ public sealed class Country
     /// <summary>
     /// Gets the code of the country.
     /// </summary>
-    public CountryCode Code { get; }
+    public CountryCode Code { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the name of the country.
     /// </summary>
-    public string Name { get; }
+    public string Name { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the numeric code of the country.
     /// </summary>
-    public int NumericCode { get; }
+    public int NumericCode { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the currency code of the country.
     /// </summary>
-    public CurrencyCode CurrencyCode { get; }
+    public CurrencyCode CurrencyCode { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the continent code of the country.
     /// </summary>
-    public ContinentCode ContinentCode { get; }
+    public ContinentCode ContinentCode { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Country"/> class.

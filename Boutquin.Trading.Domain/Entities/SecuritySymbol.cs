@@ -21,45 +21,41 @@ namespace Boutquin.Trading.Domain.Entities;
 public sealed class SecuritySymbol
 {
     /// <summary>
-    /// Gets the identifier of the security symbol.
+    /// The identifier of the security symbol.
     /// </summary>
-    public int Id { get; }
+    private int _id; // Private key for EF
 
     /// <summary>
     /// Gets the identifier of the security.
     /// </summary>
-    public int SecurityId { get; }
+    public int SecurityId { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the symbol of the security.
     /// </summary>
-    public string Symbol { get; }
+    public string Symbol { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the security symbol standard.
     /// </summary>
-    public SecuritySymbolStandard Standard { get; }
+    public SecuritySymbolStandard Standard { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SecuritySymbol"/> class.
     /// </summary>
-    /// <param name="id">The identifier of the security symbol.</param>
     /// <param name="securityId">The identifier of the security.</param>
     /// <param name="symbol">The symbol of the security.</param>
     /// <param name="standard">The security symbol standard.</param>
     public SecuritySymbol(
-        int id, 
         int securityId, 
         string symbol, 
         SecuritySymbolStandard standard)
     {
         // Validate parameters
-        Guard.AgainstNegativeOrZero(id, nameof(id));
         Guard.AgainstNegativeOrZero(securityId, nameof(securityId));
         Guard.AgainstNullOrWhiteSpaceAndOverflow(symbol, nameof(symbol), ColumnConstants.SecuritySymbol_Symbol_Length);
         Guard.AgainstUndefinedEnumValue(standard, nameof(standard));
 
-        Id = id;
         SecurityId = securityId;
         Symbol = symbol;
         Standard = standard;

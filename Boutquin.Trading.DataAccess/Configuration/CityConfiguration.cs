@@ -27,7 +27,7 @@ using System;
 /// Represents the configuration for the City entity.
 /// This class is responsible for defining the structure and constraints for the City entity in the database.
 /// </summary>
-public class CityConfiguration : IEntityTypeConfiguration<City>
+public sealed class CityConfiguration : IEntityTypeConfiguration<City>
 {
     /// <summary>
     /// Configures the entity of type City.

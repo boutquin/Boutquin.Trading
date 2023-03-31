@@ -27,22 +27,22 @@ public sealed class TimeZone
     /// <summary>
     /// Gets the ISO 8601 Time Zone Code.
     /// </summary>
-    public TimeZoneCode Code { get; }
+    public TimeZoneCode Code { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the name of the time zone.
     /// </summary>
-    public string Name { get; }
+    public string Name { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the time zone offset.
     /// </summary>
-    public string TimeZoneOffset { get; }
+    public string TimeZoneOffset { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets a value indicating whether the time zone uses daylight saving time.
     /// </summary>
-    public bool UsesDaylightSaving { get; }
+    public bool UsesDaylightSaving { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TimeZone"/> class.

@@ -20,7 +20,7 @@ namespace Boutquin.Trading.Domain.Helpers;
 /// <summary>
 /// TimeZoneConverter is a class that provides methods to convert date/time between different time zones.
 /// </summary>
-public class TimeZoneConverter
+public sealed class TimeZoneConverter
 {
     /// <summary>
     /// Converts the specified date/time from the source time zone to the target time zone.

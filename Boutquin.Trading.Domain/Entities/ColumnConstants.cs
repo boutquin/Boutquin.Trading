@@ -22,14 +22,14 @@ public static class ColumnConstants
 {
     // TimeZone table
     /// <summary>
+    /// The length of the Code column in the TimeZone table.
+    /// </summary>
+    public const int TimeZone_Code_Length = 10;
+
+    /// <summary>
     /// The length of the Name column in the TimeZone table.
     /// </summary>
     public const int TimeZone_Name_Length = 50;
-
-    /// <summary>
-    /// The length of the Abbreviation column in the TimeZone table.
-    /// </summary>
-    public const int TimeZone_Abbreviation_Length = 10;
 
     /// <summary>
     /// The length of the TimeZoneOffset column in the TimeZone table.
@@ -37,6 +37,11 @@ public static class ColumnConstants
     public const int TimeZone_TimeZoneOffset_Length = 6;
 
     // AssetClass table
+    /// <summary>
+    /// The length of the Code column in the AssetClass table.
+    /// </summary>
+    public const int AssetClass_Code_Length = 15;
+
     /// <summary>
     /// The length of the Name column in the AssetClass table.
     /// </summary>
@@ -65,6 +70,11 @@ public static class ColumnConstants
     public const int Country_Name_Length = 50;
 
     // Currency table
+    /// <summary>
+    /// The length of the Code column in the Currency table.
+    /// </summary>
+    public const int Currency_Code_Length = 3;
+
     /// <summary>
     /// The length of the Name column in the Currency table.
     /// </summary>

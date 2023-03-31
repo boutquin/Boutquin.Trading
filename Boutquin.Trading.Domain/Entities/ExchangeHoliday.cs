@@ -25,29 +25,28 @@ namespace Boutquin.Trading.Domain.Entities;
 public sealed class ExchangeHoliday
 {
     /// <summary>
-    /// Gets the identifier of the exchange holiday.
+    /// The identifier of the exchange holiday.
     /// </summary>
-    public int Id { get; }
+    private int _id; // Private key for EF
 
     /// <summary>
     /// Gets the exchange code.
     /// </summary>
-    public ExchangeCode ExchangeCode { get; }
+    public ExchangeCode ExchangeCode { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the holiday date.
     /// </summary>
-    public DateTime HolidayDate { get; }
+    public DateTime HolidayDate { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the holiday description.
     /// </summary>
-    public string Description { get; }
+    public string Description { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ExchangeHoliday"/> class.
     /// </summary>
-    /// <param name="id">The identifier of the exchange holiday.</param>
     /// <param name="exchangeCode">The exchange code.</param>
     /// <param name="holidayDate">The holiday date.</param>
     /// <param name="description">The holiday description.</param>
@@ -55,17 +54,14 @@ public sealed class ExchangeHoliday
     /// <exception cref="ArgumentException">Thrown when the description is null, empty or longer than the allowed length.</exception>
     /// <exception cref="ArgumentNullException">Thrown when the description is null.</exception>
     public ExchangeHoliday(
-        int id, 
         ExchangeCode exchangeCode, 
         DateTime holidayDate, 
         string description)
     {
         // Validate parameters
-        Guard.AgainstNegativeOrZero(id, nameof(id));
         Guard.AgainstUndefinedEnumValue(exchangeCode, nameof(exchangeCode));
         Guard.AgainstNullOrWhiteSpaceAndOverflow(description, nameof(description), ColumnConstants.ExchangeHoliday_Description_Length);
 
-        Id = id;
         ExchangeCode = exchangeCode;
         HolidayDate = holidayDate;
         Description = description;

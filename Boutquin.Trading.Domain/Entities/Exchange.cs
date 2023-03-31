@@ -26,28 +26,28 @@ public sealed class Exchange
     /// <summary>
     /// Gets the market identifier code.
     /// </summary>
-    public ExchangeCode Code { get; }
+    public ExchangeCode Code { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the exchange name.
     /// </summary>
-    public string Name { get; }
+    public string Name { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the city identifier.
     /// </summary>
-    public int CityId { get; }
+    public int CityId { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets or sets the collection of ExchangeSchedule entities associated with the Exchange.
     /// </summary>
-    public ICollection<ExchangeSchedule> ExchangeSchedules { get; }
+    public ICollection<ExchangeSchedule> ExchangeSchedules { get; private set; } // Setter is for EF
         = new HashSet<ExchangeSchedule>();
 
     /// <summary>
     /// Gets or sets the collection of ExchangeHoliday entities associated with the Exchange.
     /// </summary>
-    public ICollection<ExchangeHoliday> ExchangeHolidays { get; }
+    public ICollection<ExchangeHoliday> ExchangeHolidays { get; private set; } // Setter is for EF
         = new HashSet<ExchangeHoliday>();   
 
     /// <summary>

@@ -27,43 +27,43 @@ using Boutquin.Domain.Helpers;
 public sealed class AssetClass
 {
     /// <summary>
-    /// Gets the Id of the asset class.
+    /// Gets the Code of the asset class.
     /// </summary>
-    public AssetClassCode Id { get; }
+    public AssetClassCode Code { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the name of the asset class.
     /// </summary>
-    public string Name { get; }
+    public string Name { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the description of the asset class.
     /// </summary>
-    public string Description { get; }
+    public string Description { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AssetClass"/> class.
     /// </summary>
-    /// <param name="id">The Id of the asset class.</param>
+    /// <param name="code">The Code of the asset class.</param>
     /// <param name="name">The name of the asset class.</param>
     /// <param name="description">The description of the asset class.</param>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="name"/> or <paramref name="description"/> is null.
     /// </exception>
     /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown when <paramref name="name"/> length or <paramref name="description"/> length is not within the valid range, or when <paramref name="id"/> is not defined in the enumeration.
+    /// Thrown when <paramref name="name"/> length or <paramref name="description"/> length is not within the valid range, or when <paramref name="code"/> is not defined in the enumeration.
     /// </exception>
     public AssetClass(
-        AssetClassCode id, 
+        AssetClassCode code, 
         string name, 
         string description)
     {
         // Validate parameters
-        Guard.AgainstUndefinedEnumValue(id, nameof(id));
+        Guard.AgainstUndefinedEnumValue(code, nameof(code));
         Guard.AgainstNullOrWhiteSpaceAndOverflow(name, nameof(name), ColumnConstants.AssetClass_Name_Length);
         Guard.AgainstNullOrWhiteSpaceAndOverflow(description, nameof(description), ColumnConstants.AssetClass_Description_Length);
 
-        Id = id;
+        Code = code;
         Name = name;
         Description = description;
     }
