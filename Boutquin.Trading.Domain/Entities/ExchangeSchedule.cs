@@ -27,7 +27,7 @@ public sealed class ExchangeSchedule
     /// <summary>
     /// Initializes a new instance of the <see cref="ExchangeSchedule"/> class.
     /// </summary>
-    /// <param name="exchangeCode">The exchange code.</param>
+    /// <param name="exchangeCode">The ISO 10383 market identifier code of the exchange.</param>
     /// <param name="dayOfWeek">The day of the week for the schedule.</param>
     /// <param name="openTime">The opening time of the exchange.</param>
     /// <param name="closeTime">The closing time of the exchange.</param>
@@ -56,7 +56,7 @@ public sealed class ExchangeSchedule
     private int _id; // Private key for EF
 
     /// <summary>
-    /// Gets the exchange code.
+    /// Gets ISO 10383 market identifier code of the exchange.
     /// </summary>
     public ExchangeCode ExchangeCode { get; private set; } // Setter is for EF
 

@@ -28,7 +28,7 @@ public sealed class Security
     /// Initializes a new instance of the <see cref="Security"/> class.
     /// </summary>
     /// <param name="name">The name of the security.</param>
-    /// <param name="exchangeCode">The market identifier code of the exchange.</param>
+    /// <param name="exchangeCode">The ISO 10383 market identifier code of the exchange.</param>
     /// <param name="assetClassCode">The identifier of the asset class.</param>
     public Security(
         string name,
@@ -61,7 +61,7 @@ public sealed class Security
     public string Name { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the market identifier code of the exchange.
+    /// Gets ISO 10383 market identifier code of the exchange.
     /// </summary>
     public ExchangeCode ExchangeCode { get; private set; } // Setter is for EF
 

@@ -28,8 +28,8 @@ public sealed class City
     /// </summary>
     /// <param name="id">The city identifier.</param>
     /// <param name="name">The city name.</param>
-    /// <param name="timeZoneCode">The time zone code associated with the city.</param>
-    /// <param name="countryCode">The country code associated with the city.</param>
+    /// <param name="timeZoneCode">The ISO 8601 time zone code associated with the city.</param>
+    /// <param name="countryCode">The ISO 3166-1:2020 alpha-2 country code associated with the city.</param>
     /// <exception cref="ArgumentNullException">Thrown when name is null.</exception>
     public City(
         string name,
@@ -57,12 +57,12 @@ public sealed class City
     public string Name { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the time zone code associated with the city.
+    /// Gets the ISO 8601 time zone code associated with the city.
     /// </summary>
     public TimeZoneCode TimeZoneCode { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the country code associated with the city.
+    /// Gets the ISO 3166-1:2020 alpha-2 country code associated with the city.
     /// </summary>
     public CountryCode CountryCode { get; private set; } // Setter is for EF
 

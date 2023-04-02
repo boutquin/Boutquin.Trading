@@ -26,10 +26,10 @@ public sealed class Country
     /// <summary>
     /// Initializes a new instance of the <see cref="Country"/> class.
     /// </summary>
-    /// <param name="code">The code of the country.</param>
+    /// <param name="code">The ISO 3166-1:2020 alpha-2 code of the country.</param>
     /// <param name="name">The name of the country.</param>
     /// <param name="numericCode">The numeric code of the country.</param>
-    /// <param name="currencyCode">The currency code of the country.</param>
+    /// <param name="currencyCode">The ISO 4217 currency code of the country.</param>
     /// <param name="continentCode">The continent code of the country.</param>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="name"/> is null.
@@ -59,7 +59,7 @@ public sealed class Country
     }
 
     /// <summary>
-    /// Gets the code of the country.
+    /// Gets the ISO 3166-1:2020 alpha-2 code of the country.
     /// </summary>
     public CountryCode Code { get; private set; } // Setter is for EF
 
@@ -74,7 +74,7 @@ public sealed class Country
     public int NumericCode { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the currency code of the country.
+    /// Gets the ISO 4217 currency code of the country.
     /// </summary>
     public CurrencyCode CurrencyCode { get; private set; } // Setter is for EF
 

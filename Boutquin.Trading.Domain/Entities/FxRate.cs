@@ -28,8 +28,8 @@ public sealed class FxRate
     /// Initializes a new instance of the <see cref="FxRate"/> class.
     /// </summary>
     /// <param name="rateDate">The rate date.</param>
-    /// <param name="baseCurrencyCode">The base currency code.</param>
-    /// <param name="quoteCurrencyCode">The quote currency code.</param>
+    /// <param name="baseCurrencyCode">The base ISO 4217 currency code.</param>
+    /// <param name="quoteCurrencyCode">The quote ISO 4217 currency code.</param>
     /// <param name="rate">The exchange rate value.</param>
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when <paramref name="id"/> is less than or equal to 0, or when <paramref name="baseCurrencyCode"/> or <paramref name="quoteCurrencyCode"/> is not defined in the enumeration.
@@ -63,12 +63,12 @@ public sealed class FxRate
     public DateTime RateDate { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the base currency code.
+    /// Gets the base ISO 4217 currency code.
     /// </summary>
     public CurrencyCode BaseCurrencyCode { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the quote currency code.
+    /// Gets the quote ISO 4217 currency code.
     /// </summary>
     public CurrencyCode QuoteCurrencyCode { get; private set; } // Setter is for EF
 

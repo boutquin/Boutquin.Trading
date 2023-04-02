@@ -26,8 +26,8 @@ public sealed class Currency
     /// <summary>
     /// Initializes a new instance of the <see cref="Currency"/> class.
     /// </summary>
-    /// <param name="code">The code of the currency.</param>
-    /// <param name="numericCode">The numeric code of the currency.</param>
+    /// <param name="code">The ISO 4217 code of the currency.</param>
+    /// <param name="numericCode">The ISO 4217 numeric code of the currency.</param>
     /// <param name="name">The name of the currency.</param>
     /// <param name="symbol">The symbol of the currency.</param>
     /// <exception cref="ArgumentNullException">

@@ -27,7 +27,7 @@ public sealed class ExchangeHoliday
     /// <summary>
     /// Initializes a new instance of the <see cref="ExchangeHoliday"/> class.
     /// </summary>
-    /// <param name="exchangeCode">The exchange code.</param>
+    /// <param name="exchangeCode">The ISO 10383 market identifier code of the exchange.</param>
     /// <param name="holidayDate">The holiday date.</param>
     /// <param name="description">The holiday description.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the id is less than or equal to 0 or the exchangeCode is not defined in the enumeration.</exception>
@@ -53,7 +53,7 @@ public sealed class ExchangeHoliday
     private int _id; // Private key for EF
 
     /// <summary>
-    /// Gets the exchange code.
+    /// Gets the ISO 10383 market identifier code of the exchange.
     /// </summary>
     public ExchangeCode ExchangeCode { get; private set; } // Setter is for EF
 

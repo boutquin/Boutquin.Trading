@@ -27,7 +27,7 @@ public sealed class TimeZone
     /// <summary>
     /// Initializes a new instance of the <see cref="TimeZone"/> class.
     /// </summary>
-    /// <param name="code">The time zone code.</param>
+    /// <param name="code">The ISO 8601 Time Zone Code.</param>
     /// <param name="name">The name of the time zone.</param>
     /// <param name="timeZoneOffset">The time zone offset.</param>
     /// <param name="usesDaylightSaving">A value indicating whether the time zone uses daylight saving time.</param>

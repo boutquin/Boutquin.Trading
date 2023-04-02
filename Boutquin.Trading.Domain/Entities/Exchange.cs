@@ -26,7 +26,7 @@ public sealed class Exchange
     /// <summary>
     /// Initializes a new instance of the <see cref="Exchange"/> class.
     /// </summary>
-    /// <param name="exchangeCode">The market identifier code.</param>
+    /// <param name="exchangeCode">The ISO 10383 market identifier code of the exchange.</param>
     /// <param name="name">The exchange name.</param>
     /// <param name="cityId">The city identifier.</param>
     /// <exception cref="ArgumentNullException">Thrown when name is null.</exception>
@@ -53,7 +53,7 @@ public sealed class Exchange
     }
 
     /// <summary>
-    /// Gets the market identifier code.
+    /// Gets the ISO 10383 market identifier code of the exchange.
     /// </summary>
     public ExchangeCode Code { get; private set; } // Setter is for EF
 
