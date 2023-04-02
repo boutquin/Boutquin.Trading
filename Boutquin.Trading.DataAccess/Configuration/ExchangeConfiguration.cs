@@ -50,6 +50,18 @@ public sealed class ExchangeConfiguration : IEntityTypeConfiguration<Exchange>
             .IsRequired()
             .HasMaxLength(ColumnConstants.Exchange_Name_Length);
 
+        // Configure navigation for ExchangeSchedules collection
+        builder
+            .HasMany(s => s.ExchangeSchedules)
+            .WithOne()
+            .HasForeignKey(x => x.ExchangeCode);
+
+        // Configure navigation for ExchangeHolidays collection
+        builder
+            .HasMany(s => s.ExchangeHolidays)
+            .WithOne()
+            .HasForeignKey(x => x.ExchangeCode);
+
         // Configure Unique Index on Name
         builder.HasIndex(c => c.Name)
             .IsUnique();

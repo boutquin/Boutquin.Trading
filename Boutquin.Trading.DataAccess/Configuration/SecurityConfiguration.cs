@@ -18,6 +18,7 @@ using Boutquin.Trading.Domain.Entities;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
 using Boutquin.Trading.Domain.Enums;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Boutquin.Trading.DataAccess.Configuration;
 
@@ -54,6 +55,18 @@ public sealed class SecurityConfiguration : IEntityTypeConfiguration<Security>
         builder.Property(s => s.AssetClassCode)
             .IsRequired().HasMaxLength(ColumnConstants.Security_AssetClassCode_Length)
             .HasConversion<string>();
+
+        // Configure navigation for SecuritySymbols collection
+        builder
+            .HasMany(s => s.SecuritySymbols)
+            .WithOne()
+            .HasForeignKey(x => x.SecurityId);
+
+        // Configure navigation for SecurityPrices collection
+        builder
+            .HasMany(s => s.SecurityPrices)
+            .WithOne()
+            .HasForeignKey(x => x.SecurityId);
 
         // Configure Unique Index on Name
         builder.HasIndex(c => c.Name)
