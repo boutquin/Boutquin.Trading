@@ -26,16 +26,6 @@ using Boutquin.Domain.Helpers;
 public sealed class Continent
 {
     /// <summary>
-    /// Gets the code of the continent.
-    /// </summary>
-    public ContinentCode Code { get; private set; } // Setter is for EF
-
-    /// <summary>
-    /// Gets the name of the continent.
-    /// </summary>
-    public string Name { get; private set; } // Setter is for EF
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="Continent"/> class.
     /// </summary>
     /// <param name="code">The code of the continent.</param>
@@ -47,7 +37,7 @@ public sealed class Continent
     /// Thrown when <paramref name="name"/> length is not within the valid range, or when <paramref name="code"/> is not defined in the <see cref="ContinentCode"/> enumeration.
     /// </exception>
     public Continent(
-        ContinentCode code, 
+        ContinentCode code,
         string name)
     {
         // Validate parameters
@@ -57,4 +47,14 @@ public sealed class Continent
         Code = code;
         Name = name;
     }
+
+    /// <summary>
+    /// Gets the code of the continent.
+    /// </summary>
+    public ContinentCode Code { get; private set; } // Setter is for EF
+
+    /// <summary>
+    /// Gets the name of the continent.
+    /// </summary>
+    public string Name { get; private set; } // Setter is for EF
 }

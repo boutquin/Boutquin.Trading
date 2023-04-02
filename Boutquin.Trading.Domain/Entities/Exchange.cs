@@ -24,6 +24,35 @@ namespace Boutquin.Trading.Domain.Entities;
 public sealed class Exchange
 {
     /// <summary>
+    /// Initializes a new instance of the <see cref="Exchange"/> class.
+    /// </summary>
+    /// <param name="exchangeCode">The market identifier code.</param>
+    /// <param name="name">The exchange name.</param>
+    /// <param name="cityId">The city identifier.</param>
+    /// <exception cref="ArgumentNullException">Thrown when name is null.</exception>
+    public Exchange(
+        ExchangeCode exchangeCode,
+        string name,
+        int cityId)
+    {
+        // Validate parameters
+        Guard.AgainstUndefinedEnumValue(exchangeCode, nameof(exchangeCode));
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(name, nameof(name), ColumnConstants.Exchange_Name_Length);
+        Guard.AgainstNegativeOrZero(cityId, nameof(cityId));
+
+        Code = exchangeCode;
+        Name = name;
+        CityId = cityId;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Exchange"/> class.
+    /// </summary>
+    public Exchange()
+    {
+    }
+
+    /// <summary>
     /// Gets the market identifier code.
     /// </summary>
     public ExchangeCode Code { get; private set; } // Setter is for EF
@@ -48,31 +77,5 @@ public sealed class Exchange
     /// Gets the collection of ExchangeHoliday entities associated with the Exchange.
     /// </summary>
     public ICollection<ExchangeHoliday> ExchangeHolidays { get; private set; } // Setter is for EF
-        = new HashSet<ExchangeHoliday>();   
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="Exchange"/> class.
-    /// </summary>
-    /// <param name="exchangeCode">The market identifier code.</param>
-    /// <param name="name">The exchange name.</param>
-    /// <param name="cityId">The city identifier.</param>
-    /// <exception cref="ArgumentNullException">Thrown when name is null.</exception>
-    public Exchange(
-        ExchangeCode exchangeCode, 
-        string name, 
-        int cityId)
-    {
-        // Validate parameters
-        Guard.AgainstUndefinedEnumValue(exchangeCode, nameof(exchangeCode));
-        Guard.AgainstNullOrWhiteSpaceAndOverflow(name, nameof(name), ColumnConstants.Exchange_Name_Length);
-        Guard.AgainstNegativeOrZero(cityId, nameof(cityId));
-
-        Code = exchangeCode;
-        Name = name;
-        CityId = cityId;
-    }
-
-    public Exchange()
-    {
-    }
+        = new HashSet<ExchangeHoliday>();
 }

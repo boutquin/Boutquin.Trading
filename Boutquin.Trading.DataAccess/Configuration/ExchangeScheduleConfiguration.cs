@@ -47,5 +47,20 @@ public sealed class ExchangeScheduleConfiguration : IEntityTypeConfiguration<Exc
                 code => code.ToString(),
                 code => (ExchangeCode)Enum.Parse(typeof(ExchangeCode), code));
 
+        // Configure DayOfWeek  property with required constraint
+        builder.Property(c => c.DayOfWeek)
+            .IsRequired();
+
+        // Configure CloseTime property with required constraint
+        builder.Property(c => c.CloseTime)
+            .IsRequired();
+
+        // Configure OpenTime property with required constraint
+        builder.Property(c => c.OpenTime)
+            .IsRequired();
+
+        // Configure Unique Index on ExchangeCode & DayOfWeek
+        builder.HasIndex(c => new { c.ExchangeCode, c.DayOfWeek })
+            .IsUnique();
     }
 }

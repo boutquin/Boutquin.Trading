@@ -42,6 +42,10 @@ public sealed class SecurityPriceConfiguration : IEntityTypeConfiguration<Securi
         builder.Property(c => c.TradeDate)
             .IsRequired();
 
+        // Configure SecurityId  property with required constraint
+        builder.Property(c => c.SecurityId)
+            .IsRequired();
+
         // Configure OpenPrice property with required constraint
         builder.Property(c => c.OpenPrice)
             .IsRequired();

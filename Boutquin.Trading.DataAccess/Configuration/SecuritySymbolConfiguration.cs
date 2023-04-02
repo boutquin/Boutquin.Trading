@@ -37,6 +37,10 @@ public sealed class SecuritySymbolConfiguration : IEntityTypeConfiguration<Secur
         // Validate parameters
         Guard.AgainstNull(builder, nameof(builder));
 
+        // Configure SecurityId  property with required constraint
+        builder.Property(c => c.SecurityId)
+            .IsRequired();
+
         // Configure primary key
         builder.HasKey(SecuritySymbol.SecuritySymbol_Key_Name);
 

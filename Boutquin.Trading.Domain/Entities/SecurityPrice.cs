@@ -24,17 +24,52 @@ namespace Boutquin.Trading.Domain.Entities;
 public sealed class SecurityPrice
 {
     /// <summary>
-    /// The name of the primary key column in the SecurityPrice table.
+    /// Initializes a new instance of the <see cref="SecurityPrice"/> class.
     /// </summary>
-    public const string SecurityPrice_Key_Name = nameof(SecurityPrice._id);
+    /// <param name="tradeDate">The trade date.</param>
+    /// <param name="securityId">The security identifier.</param>
+    /// <param name="openPrice">The open price.</param>
+    /// <param name="highPrice">The high price.</param>
+    /// <param name="lowPrice">The low price.</param>
+    /// <param name="closePrice">The close price.</param>
+    /// <param name="volume">The volume.</param>
+    /// <param name="dividend">The dividend.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the id, securityId, volume is less than or equal to 0, or the openPrice, highPrice, lowPrice, closePrice, dividend is less than 0.</exception>
+    public SecurityPrice(
+        DateTime tradeDate,
+        SecurityId securityId,
+        decimal openPrice,
+        decimal highPrice,
+        decimal lowPrice,
+        decimal closePrice,
+        int volume,
+        decimal dividend)
+    {
+        // Validate parameters
+        Guard.AgainstNegativeOrZero((int)securityId, nameof(securityId));
+        Guard.AgainstNegativeOrZero(openPrice, nameof(openPrice));
+        Guard.AgainstNegativeOrZero(highPrice, nameof(highPrice));
+        Guard.AgainstNegativeOrZero(lowPrice, nameof(lowPrice));
+        Guard.AgainstNegativeOrZero(closePrice, nameof(closePrice));
+        Guard.AgainstNegativeOrZero(volume, nameof(volume));
+        Guard.AgainstNegative(dividend, nameof(dividend));
+
+        TradeDate = tradeDate;
+        SecurityId = securityId;
+        OpenPrice = openPrice;
+        HighPrice = highPrice;
+        LowPrice = lowPrice;
+        ClosePrice = closePrice;
+        Volume = volume;
+        Dividend = dividend;
+    }
 
     /// <summary>
     /// The identifier of the security price.
     /// </summary>
     private int _id; // Private key for EF
 
-
-    /// <summary>
+        /// <summary>
     /// Gets the trade date.
     /// </summary>
     public DateTime TradeDate { get; private set; } // Setter is for EF
@@ -75,43 +110,7 @@ public sealed class SecurityPrice
     public decimal Dividend { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="SecurityPrice"/> class.
+    /// The name of the primary key column in the SecurityPrice table.
     /// </summary>
-    /// <param name="tradeDate">The trade date.</param>
-    /// <param name="securityId">The security identifier.</param>
-    /// <param name="openPrice">The open price.</param>
-    /// <param name="highPrice">The high price.</param>
-    /// <param name="lowPrice">The low price.</param>
-    /// <param name="closePrice">The close price.</param>
-    /// <param name="volume">The volume.</param>
-    /// <param name="dividend">The dividend.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when the id, securityId, volume is less than or equal to 0, or the openPrice, highPrice, lowPrice, closePrice, dividend is less than 0.</exception>
-    public SecurityPrice(
-        DateTime tradeDate,
-        SecurityId securityId, 
-        decimal openPrice, 
-        decimal highPrice, 
-        decimal lowPrice, 
-        decimal closePrice, 
-        int volume, 
-        decimal dividend)
-    {
-        // Validate parameters
-        Guard.AgainstNegativeOrZero((int)securityId, nameof(securityId));
-        Guard.AgainstNegativeOrZero(openPrice, nameof(openPrice));
-        Guard.AgainstNegativeOrZero(highPrice, nameof(highPrice));
-        Guard.AgainstNegativeOrZero(lowPrice, nameof(lowPrice));
-        Guard.AgainstNegativeOrZero(closePrice, nameof(closePrice));
-        Guard.AgainstNegativeOrZero(volume, nameof(volume));
-        Guard.AgainstNegative(dividend, nameof(dividend));
-
-        TradeDate = tradeDate;
-        SecurityId = securityId;
-        OpenPrice = openPrice;
-        HighPrice = highPrice;
-        LowPrice = lowPrice;
-        ClosePrice = closePrice;
-        Volume = volume;
-        Dividend = dividend;
-    }
+    public const string SecurityPrice_Key_Name = nameof(SecurityPrice._id);
 }

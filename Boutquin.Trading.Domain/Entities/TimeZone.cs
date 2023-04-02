@@ -25,6 +25,36 @@ using Boutquin.Trading.Domain.Enums;
 public sealed class TimeZone
 {
     /// <summary>
+    /// Initializes a new instance of the <see cref="TimeZone"/> class.
+    /// </summary>
+    /// <param name="code">The time zone code.</param>
+    /// <param name="name">The name of the time zone.</param>
+    /// <param name="timeZoneOffset">The time zone offset.</param>
+    /// <param name="usesDaylightSaving">A value indicating whether the time zone uses daylight saving time.</param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="name"/> or <paramref name="timeZoneOffset"/> is null.
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="name"/> length or <paramref name="timeZoneOffset"/> length is not within the valid range, or when <paramref name="code"/> is not defined in the enumeration.
+    /// </exception>
+    public TimeZone(
+        TimeZoneCode code,
+        string name,
+        string timeZoneOffset,
+        bool usesDaylightSaving)
+    {
+        // Validate parameters
+        Guard.AgainstUndefinedEnumValue(code, nameof(code));
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(name, nameof(name), ColumnConstants.TimeZone_Name_Length);
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(timeZoneOffset, nameof(timeZoneOffset), ColumnConstants.TimeZone_TimeZoneOffset_Length);
+
+        Name = name;
+        TimeZoneOffset = timeZoneOffset;
+        Code = code;
+        UsesDaylightSaving = usesDaylightSaving;
+    }
+
+    /// <summary>
     /// Gets the ISO 8601 Time Zone Code.
     /// </summary>
     public TimeZoneCode Code { get; private set; } // Setter is for EF
@@ -43,34 +73,4 @@ public sealed class TimeZone
     /// Gets a value indicating whether the time zone uses daylight saving time.
     /// </summary>
     public bool UsesDaylightSaving { get; private set; } // Setter is for EF
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="TimeZone"/> class.
-    /// </summary>
-    /// <param name="code">The time zone code.</param>
-    /// <param name="name">The name of the time zone.</param>
-    /// <param name="timeZoneOffset">The time zone offset.</param>
-    /// <param name="usesDaylightSaving">A value indicating whether the time zone uses daylight saving time.</param>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="name"/> or <paramref name="timeZoneOffset"/> is null.
-    /// </exception>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown when <paramref name="name"/> length or <paramref name="timeZoneOffset"/> length is not within the valid range, or when <paramref name="code"/> is not defined in the enumeration.
-    /// </exception>
-    public TimeZone(
-        TimeZoneCode code, 
-        string name, 
-        string timeZoneOffset, 
-        bool usesDaylightSaving)
-    {
-        // Validate parameters
-        Guard.AgainstUndefinedEnumValue(code, nameof(code));
-        Guard.AgainstNullOrWhiteSpaceAndOverflow(name, nameof(name), ColumnConstants.TimeZone_Name_Length);
-        Guard.AgainstNullOrWhiteSpaceAndOverflow(timeZoneOffset, nameof(timeZoneOffset), ColumnConstants.TimeZone_TimeZoneOffset_Length);
-
-        Name = name;
-        TimeZoneOffset = timeZoneOffset;
-        Code = code;
-        UsesDaylightSaving = usesDaylightSaving;
-    }
 }

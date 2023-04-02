@@ -22,9 +22,25 @@ namespace Boutquin.Trading.Domain.Entities;
 public sealed class SecuritySymbol
 {
     /// <summary>
-    /// The name of the primary key column in the SecuritySymbol table.
+    /// Initializes a new instance of the <see cref="SecuritySymbol"/> class.
     /// </summary>
-    public const string SecuritySymbol_Key_Name = nameof(SecuritySymbol._id);
+    /// <param name="securityId">The identifier of the security.</param>
+    /// <param name="symbol">The symbol of the security.</param>
+    /// <param name="standard">The security symbol standard.</param>
+    public SecuritySymbol(
+        SecurityId securityId,
+        string symbol,
+        SecuritySymbolStandard standard)
+    {
+        // Validate parameters
+        Guard.AgainstNegativeOrZero((int)securityId, nameof(securityId));
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(symbol, nameof(symbol), ColumnConstants.SecuritySymbol_Symbol_Length);
+        Guard.AgainstUndefinedEnumValue(standard, nameof(standard));
+
+        SecurityId = securityId;
+        Symbol = symbol;
+        Standard = standard;
+    }
 
     /// <summary>
     /// The identifier of the security symbol.
@@ -47,23 +63,7 @@ public sealed class SecuritySymbol
     public SecuritySymbolStandard Standard { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="SecuritySymbol"/> class.
+    /// The name of the primary key column in the SecuritySymbol table.
     /// </summary>
-    /// <param name="securityId">The identifier of the security.</param>
-    /// <param name="symbol">The symbol of the security.</param>
-    /// <param name="standard">The security symbol standard.</param>
-    public SecuritySymbol(
-        SecurityId securityId, 
-        string symbol, 
-        SecuritySymbolStandard standard)
-    {
-        // Validate parameters
-        Guard.AgainstNegativeOrZero((int)securityId, nameof(securityId));
-        Guard.AgainstNullOrWhiteSpaceAndOverflow(symbol, nameof(symbol), ColumnConstants.SecuritySymbol_Symbol_Length);
-        Guard.AgainstUndefinedEnumValue(standard, nameof(standard));
-
-        SecurityId = securityId;
-        Symbol = symbol;
-        Standard = standard;
-    }
+    public const string SecuritySymbol_Key_Name = nameof(SecuritySymbol._id);
 }

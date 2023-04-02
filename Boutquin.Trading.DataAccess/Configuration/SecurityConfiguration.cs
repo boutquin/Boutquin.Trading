@@ -17,6 +17,7 @@ using Boutquin.Domain.Helpers;
 using Boutquin.Trading.Domain.Entities;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
+using Boutquin.Trading.Domain.Enums;
 
 namespace Boutquin.Trading.DataAccess.Configuration;
 
@@ -34,5 +35,28 @@ public sealed class SecurityConfiguration : IEntityTypeConfiguration<Security>
     {
         // Validate parameters
         Guard.AgainstNull(builder, nameof(builder));
+
+        // Configure primary key
+        builder.HasKey(Security.Security_Key_Name);
+
+        // Configure Name property with required constraint and max length
+        builder.Property(s => s.Name)
+            .IsRequired()
+            .HasMaxLength(ColumnConstants.Security_Name_Length);
+
+        // Configure ExchangeCode property with required constraint, max length, and enum conversion
+        builder.Property(s => s.ExchangeCode)
+            .IsRequired()
+            .HasMaxLength(ColumnConstants.Security_ExchangeCode_Length)
+            .HasConversion(
+                code => code.ToString(),
+                code => (ExchangeCode)Enum.Parse(typeof(ExchangeCode), code));
+
+        // Configure AssetClassCode property with required constraint, max length, and enum conversion
+        builder.Property(s => s.AssetClassCode)
+            .IsRequired().HasMaxLength(ColumnConstants.Security_AssetClassCode_Length)
+            .HasConversion(
+                code => code.ToString(),
+                code => (AssetClassCode)Enum.Parse(typeof(AssetClassCode), code));
     }
 }

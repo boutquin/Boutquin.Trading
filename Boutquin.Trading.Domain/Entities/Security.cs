@@ -18,8 +18,33 @@ using Boutquin.Trading.Domain.Enums;
 using Boutquin.Trading.Domain.ValueObjects;
 
 namespace Boutquin.Trading.Domain.Entities;
+
+/// <summary>
+/// Represents a security.
+/// </summary>
 public sealed class Security
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Security"/> class.
+    /// </summary>
+    /// <param name="name">The name of the security.</param>
+    /// <param name="exchangeCode">The market identifier code of the exchange.</param>
+    /// <param name="assetClassCode">The identifier of the asset class.</param>
+    public Security(
+        string name,
+        ExchangeCode exchangeCode,
+        AssetClassCode assetClassCode)
+    {
+        // Validate parameters
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(name, nameof(name), ColumnConstants.Security_Name_Length);
+        Guard.AgainstUndefinedEnumValue(exchangeCode, nameof(exchangeCode));
+        Guard.AgainstUndefinedEnumValue(assetClassCode, nameof(assetClassCode));
+
+        Name = name;
+        ExchangeCode = exchangeCode;
+        AssetClassCode = assetClassCode;
+    }
+
     /// <summary>
     /// The internal security ID value.
     /// </summary>
@@ -52,23 +77,7 @@ public sealed class Security
         = new List<SecuritySymbol>();
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Security"/> class.
+    /// The name of the primary key column in the Security table.
     /// </summary>
-    /// <param name="name">The name of the security.</param>
-    /// <param name="exchangeCode">The market identifier code of the exchange.</param>
-    /// <param name="assetClassCode">The identifier of the asset class.</param>
-    public Security(
-        string name, 
-        ExchangeCode exchangeCode,
-        AssetClassCode assetClassCode)
-    {
-        // Validate parameters
-        Guard.AgainstNullOrWhiteSpaceAndOverflow(name, nameof(name), ColumnConstants.Security_Name_Length);
-        Guard.AgainstUndefinedEnumValue(exchangeCode, nameof(exchangeCode));
-        Guard.AgainstUndefinedEnumValue(assetClassCode, nameof(assetClassCode));
-
-        Name = name;
-        ExchangeCode = exchangeCode;
-        AssetClassCode = assetClassCode;
-    }
+    public const string Security_Key_Name = nameof(Security._id);
 }

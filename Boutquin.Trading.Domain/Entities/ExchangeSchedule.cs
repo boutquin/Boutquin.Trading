@@ -25,9 +25,30 @@ namespace Boutquin.Trading.Domain.Entities;
 public sealed class ExchangeSchedule
 {
     /// <summary>
-    /// The name of the primary key column in the ExchangeSchedule table.
+    /// Initializes a new instance of the <see cref="ExchangeSchedule"/> class.
     /// </summary>
-    public const string ExchangeSchedule_Key_Name = nameof(ExchangeSchedule._id);
+    /// <param name="exchangeCode">The exchange code.</param>
+    /// <param name="dayOfWeek">The day of the week for the schedule.</param>
+    /// <param name="openTime">The opening time of the exchange.</param>
+    /// <param name="closeTime">The closing time of the exchange.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the id is less than or equal to 0, the exchangeCode is not defined in the enumeration, or the openTime and closeTime are not valid time values.</exception>
+    public ExchangeSchedule(
+        ExchangeCode exchangeCode,
+        DayOfWeek dayOfWeek,
+        TimeSpan openTime,
+        TimeSpan closeTime)
+    {
+        // Validate parameters
+        Guard.AgainstUndefinedEnumValue(exchangeCode, nameof(exchangeCode));
+        Guard.AgainstUndefinedEnumValue(dayOfWeek, nameof(dayOfWeek));
+        Guard.AgainstOutOfRange(openTime, TimeSpan.Zero, TimeSpan.FromHours(24), nameof(openTime));
+        Guard.AgainstOutOfRange(closeTime, TimeSpan.Zero, TimeSpan.FromHours(24), nameof(closeTime));
+
+        ExchangeCode = exchangeCode;
+        DayOfWeek = dayOfWeek;
+        OpenTime = openTime;
+        CloseTime = closeTime;
+    }
 
     /// <summary>
     /// The identifier of the exchange schedule.
@@ -55,28 +76,7 @@ public sealed class ExchangeSchedule
     public TimeSpan CloseTime { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ExchangeSchedule"/> class.
+    /// The name of the primary key column in the ExchangeSchedule table.
     /// </summary>
-    /// <param name="exchangeCode">The exchange code.</param>
-    /// <param name="dayOfWeek">The day of the week for the schedule.</param>
-    /// <param name="openTime">The opening time of the exchange.</param>
-    /// <param name="closeTime">The closing time of the exchange.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when the id is less than or equal to 0, the exchangeCode is not defined in the enumeration, or the openTime and closeTime are not valid time values.</exception>
-    public ExchangeSchedule(
-        ExchangeCode exchangeCode, 
-        DayOfWeek dayOfWeek,
-        TimeSpan openTime, 
-        TimeSpan closeTime)
-    {
-        // Validate parameters
-        Guard.AgainstUndefinedEnumValue(exchangeCode, nameof(exchangeCode));
-        Guard.AgainstUndefinedEnumValue(dayOfWeek, nameof(dayOfWeek));
-        Guard.AgainstOutOfRange(openTime, TimeSpan.Zero, TimeSpan.FromHours(24), nameof(openTime));
-        Guard.AgainstOutOfRange(closeTime, TimeSpan.Zero, TimeSpan.FromHours(24), nameof(closeTime));
-
-        ExchangeCode = exchangeCode;
-        DayOfWeek = dayOfWeek;
-        OpenTime = openTime;
-        CloseTime = closeTime;
-    }
+    public const string ExchangeSchedule_Key_Name = nameof(ExchangeSchedule._id);
 }

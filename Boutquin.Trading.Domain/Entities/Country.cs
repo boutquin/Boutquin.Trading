@@ -24,6 +24,41 @@ namespace Boutquin.Trading.Domain.Entities;
 public sealed class Country
 {
     /// <summary>
+    /// Initializes a new instance of the <see cref="Country"/> class.
+    /// </summary>
+    /// <param name="code">The code of the country.</param>
+    /// <param name="name">The name of the country.</param>
+    /// <param name="numericCode">The numeric code of the country.</param>
+    /// <param name="currencyCode">The currency code of the country.</param>
+    /// <param name="continentCode">The continent code of the country.</param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="name"/> is null.
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="name"/> length is not within the valid range, or when <paramref name="code"/>, <paramref name="currencyCode"/>, or <paramref name="continentCode"/> are not defined in their respective enumerations.
+    /// </exception>
+    public Country(
+        CountryCode code,
+        string name,
+        int numericCode,
+        CurrencyCode currencyCode,
+        ContinentCode continentCode)
+    {
+        // Validate parameters
+        Guard.AgainstUndefinedEnumValue(code, nameof(code));
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(name, nameof(name), ColumnConstants.Country_Name_Length);
+        Guard.AgainstNegativeOrZero(numericCode, nameof(numericCode));
+        Guard.AgainstUndefinedEnumValue(currencyCode, nameof(currencyCode));
+        Guard.AgainstUndefinedEnumValue(continentCode, nameof(continentCode));
+
+        Code = code;
+        Name = name;
+        NumericCode = numericCode;
+        CurrencyCode = currencyCode;
+        ContinentCode = continentCode;
+    }
+
+    /// <summary>
     /// Gets the code of the country.
     /// </summary>
     public CountryCode Code { get; private set; } // Setter is for EF
@@ -47,39 +82,4 @@ public sealed class Country
     /// Gets the continent code of the country.
     /// </summary>
     public ContinentCode ContinentCode { get; private set; } // Setter is for EF
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="Country"/> class.
-    /// </summary>
-    /// <param name="code">The code of the country.</param>
-    /// <param name="name">The name of the country.</param>
-    /// <param name="numericCode">The numeric code of the country.</param>
-    /// <param name="currencyCode">The currency code of the country.</param>
-    /// <param name="continentCode">The continent code of the country.</param>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="name"/> is null.
-    /// </exception>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown when <paramref name="name"/> length is not within the valid range, or when <paramref name="code"/>, <paramref name="currencyCode"/>, or <paramref name="continentCode"/> are not defined in their respective enumerations.
-    /// </exception>
-    public Country(
-        CountryCode code, 
-        string name, 
-        int numericCode, 
-        CurrencyCode currencyCode, 
-        ContinentCode continentCode)
-    {
-        // Validate parameters
-        Guard.AgainstUndefinedEnumValue(code, nameof(code));
-        Guard.AgainstNullOrWhiteSpaceAndOverflow(name, nameof(name), ColumnConstants.Country_Name_Length);
-        Guard.AgainstNegativeOrZero(numericCode, nameof(numericCode));
-        Guard.AgainstUndefinedEnumValue(currencyCode, nameof(currencyCode));
-        Guard.AgainstUndefinedEnumValue(continentCode, nameof(continentCode));
-
-        Code = code;
-        Name = name;
-        NumericCode = numericCode;
-        CurrencyCode = currencyCode;
-        ContinentCode = continentCode;
-    }
 }

@@ -24,9 +24,27 @@ namespace Boutquin.Trading.Domain.Entities;
 public sealed class City
 {
     /// <summary>
-    /// The name of the primary key column in the City table.
+    /// Initializes a new instance of the <see cref="City"/> class.
     /// </summary>
-    public const string City_Key_Name = nameof(City._id);
+    /// <param name="id">The city identifier.</param>
+    /// <param name="name">The city name.</param>
+    /// <param name="timeZoneCode">The time zone code associated with the city.</param>
+    /// <param name="countryCode">The country code associated with the city.</param>
+    /// <exception cref="ArgumentNullException">Thrown when name is null.</exception>
+    public City(
+        string name,
+        TimeZoneCode timeZoneCode,
+        CountryCode countryCode)
+    {
+        // Validate parameters
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(name, nameof(name), ColumnConstants.City_Name_Length);
+        Guard.AgainstUndefinedEnumValue(timeZoneCode, nameof(timeZoneCode));
+        Guard.AgainstUndefinedEnumValue(countryCode, nameof(countryCode));
+
+        Name = name;
+        TimeZoneCode = timeZoneCode;
+        CountryCode = countryCode;
+    }
 
     /// <summary>
     /// The city identifier.
@@ -49,25 +67,7 @@ public sealed class City
     public CountryCode CountryCode { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="City"/> class.
+    /// The name of the primary key column in the City table.
     /// </summary>
-    /// <param name="id">The city identifier.</param>
-    /// <param name="name">The city name.</param>
-    /// <param name="timeZoneCode">The time zone code associated with the city.</param>
-    /// <param name="countryCode">The country code associated with the city.</param>
-    /// <exception cref="ArgumentNullException">Thrown when name is null.</exception>
-    public City(
-        string name, 
-        TimeZoneCode timeZoneCode, 
-        CountryCode countryCode)
-    {
-        // Validate parameters
-        Guard.AgainstNullOrWhiteSpaceAndOverflow(name, nameof(name), ColumnConstants.City_Name_Length);
-        Guard.AgainstUndefinedEnumValue(timeZoneCode, nameof(timeZoneCode));
-        Guard.AgainstUndefinedEnumValue(countryCode, nameof(countryCode));
-
-        Name = name;
-        TimeZoneCode = timeZoneCode;
-        CountryCode = countryCode;
-    }
+    public const string City_Key_Name = nameof(City._id);
 }

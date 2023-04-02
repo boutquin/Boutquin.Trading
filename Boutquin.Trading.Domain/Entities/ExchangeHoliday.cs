@@ -25,9 +25,27 @@ namespace Boutquin.Trading.Domain.Entities;
 public sealed class ExchangeHoliday
 {
     /// <summary>
-    /// The name of the primary key column in the ExchangeHoliday table.
+    /// Initializes a new instance of the <see cref="ExchangeHoliday"/> class.
     /// </summary>
-    public const string ExchangeHoliday_Key_Name = nameof(ExchangeHoliday._id);
+    /// <param name="exchangeCode">The exchange code.</param>
+    /// <param name="holidayDate">The holiday date.</param>
+    /// <param name="description">The holiday description.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the id is less than or equal to 0 or the exchangeCode is not defined in the enumeration.</exception>
+    /// <exception cref="ArgumentException">Thrown when the description is null, empty or longer than the allowed length.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when the description is null.</exception>
+    public ExchangeHoliday(
+        ExchangeCode exchangeCode,
+        DateTime holidayDate,
+        string description)
+    {
+        // Validate parameters
+        Guard.AgainstUndefinedEnumValue(exchangeCode, nameof(exchangeCode));
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(description, nameof(description), ColumnConstants.ExchangeHoliday_Description_Length);
+
+        ExchangeCode = exchangeCode;
+        HolidayDate = holidayDate;
+        Description = description;
+    }
 
     /// <summary>
     /// The identifier of the exchange holiday.
@@ -50,25 +68,7 @@ public sealed class ExchangeHoliday
     public string Description { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ExchangeHoliday"/> class.
+    /// The name of the primary key column in the ExchangeHoliday table.
     /// </summary>
-    /// <param name="exchangeCode">The exchange code.</param>
-    /// <param name="holidayDate">The holiday date.</param>
-    /// <param name="description">The holiday description.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when the id is less than or equal to 0 or the exchangeCode is not defined in the enumeration.</exception>
-    /// <exception cref="ArgumentException">Thrown when the description is null, empty or longer than the allowed length.</exception>
-    /// <exception cref="ArgumentNullException">Thrown when the description is null.</exception>
-    public ExchangeHoliday(
-        ExchangeCode exchangeCode, 
-        DateTime holidayDate, 
-        string description)
-    {
-        // Validate parameters
-        Guard.AgainstUndefinedEnumValue(exchangeCode, nameof(exchangeCode));
-        Guard.AgainstNullOrWhiteSpaceAndOverflow(description, nameof(description), ColumnConstants.ExchangeHoliday_Description_Length);
-
-        ExchangeCode = exchangeCode;
-        HolidayDate = holidayDate;
-        Description = description;
-    }
+    public const string ExchangeHoliday_Key_Name = nameof(ExchangeHoliday._id);
 }

@@ -46,5 +46,22 @@ public sealed class ExchangeHolidayConfiguration : IEntityTypeConfiguration<Exch
             .HasConversion(
                 code => code.ToString(),
                 code => (ExchangeCode)Enum.Parse(typeof(ExchangeCode), code));
+
+        // Configure HolidayDate property with required constraint
+        builder.Property(c => c.HolidayDate)
+            .IsRequired();
+
+        // Configure Description property with required constraint and max length
+        builder.Property(c => c.Description)
+            .IsRequired()
+            .HasMaxLength(ColumnConstants.ExchangeHoliday_Description_Length);
+
+        // Configure Unique Index on ExchangeCode & HolidayDate
+        builder.HasIndex(c => new { c.ExchangeCode, c.HolidayDate })
+            .IsUnique();
+
+        // Configure Unique Index on Description
+        builder.HasIndex(c => c.Description)
+            .IsUnique();
     }
 }

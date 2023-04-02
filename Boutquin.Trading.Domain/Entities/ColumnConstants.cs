@@ -123,6 +123,16 @@ public static class ColumnConstants
     /// </summary>
     public const int Security_Name_Length = 200;
 
+    /// <summary>
+    /// The length of the ExchangeCode column in the Security table.
+    /// </summary>
+    public const int Security_ExchangeCode_Length = Exchange_Code_Length;
+
+    /// <summary>
+    /// The length of the AssetClassCode  column in the Security table.
+    /// </summary>
+    public const int Security_AssetClassCode_Length = AssetClass_Code_Length;
+
     // SecuritySymbol table
     /// <summary>
     /// The length of the Symbol column in the SecuritySymbol table.
