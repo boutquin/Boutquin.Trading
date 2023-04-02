@@ -43,9 +43,7 @@ public sealed class CurrencyConfiguration : IEntityTypeConfiguration<Currency>
         builder.Property(c => c.Code)
             .IsRequired()
             .HasMaxLength(ColumnConstants.Currency_Code_Length)
-            .HasConversion(
-                code => code.ToString(),
-                code => (CurrencyCode)Enum.Parse(typeof(CurrencyCode), code));
+            .HasConversion<string>();
 
         // Configure NumericCode property with required constraint
         builder.Property(c => c.NumericCode)

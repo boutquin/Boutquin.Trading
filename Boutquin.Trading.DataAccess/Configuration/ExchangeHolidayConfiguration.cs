@@ -43,9 +43,7 @@ public sealed class ExchangeHolidayConfiguration : IEntityTypeConfiguration<Exch
         builder.Property(c => c.ExchangeCode)
             .IsRequired()
             .HasMaxLength(ColumnConstants.ExchangeHoliday_ExchangeCode_Length)
-            .HasConversion(
-                code => code.ToString(),
-                code => (ExchangeCode)Enum.Parse(typeof(ExchangeCode), code));
+            .HasConversion<string>();
 
         // Configure HolidayDate property with required constraint
         builder.Property(c => c.HolidayDate)

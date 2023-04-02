@@ -43,9 +43,7 @@ public sealed class CountryConfiguration : IEntityTypeConfiguration<Country>
         builder.Property(c => c.Code)
             .IsRequired()
             .HasMaxLength(ColumnConstants.Country_Code_Length)
-            .HasConversion(
-                code => code.ToString(),
-                code => (CountryCode)Enum.Parse(typeof(CountryCode), code));
+            .HasConversion<string>();
 
         // Configure Name property with required constraint and max length
         builder.Property(c => c.Name)
@@ -60,17 +58,13 @@ public sealed class CountryConfiguration : IEntityTypeConfiguration<Country>
         builder.Property(c => c.CurrencyCode)
             .IsRequired()
             .HasMaxLength(ColumnConstants.Country_CurrencyCode_Length)
-            .HasConversion(
-                cc => cc.ToString(),
-                cc => (CurrencyCode)Enum.Parse(typeof(CurrencyCode), cc));
+            .HasConversion<string>();
 
         // Configure ContinentCode property with required constraint, max length, and enum conversion
         builder.Property(c => c.ContinentCode)
             .IsRequired()
             .HasMaxLength(ColumnConstants.Country_ContinentCode_Length)
-            .HasConversion(
-                cc => cc.ToString(),
-                cc => (ContinentCode)Enum.Parse(typeof(ContinentCode), cc));
+            .HasConversion<string>();
 
         // Configure Unique Index on Name
         builder.HasIndex(c => c.Name)

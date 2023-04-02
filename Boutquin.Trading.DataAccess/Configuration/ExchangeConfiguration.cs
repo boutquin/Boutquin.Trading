@@ -43,9 +43,7 @@ public sealed class ExchangeConfiguration : IEntityTypeConfiguration<Exchange>
         builder.Property(c => c.Code)
             .IsRequired()
             .HasMaxLength(ColumnConstants.Exchange_Code_Length)
-            .HasConversion(
-                code => code.ToString(),
-                code => (ExchangeCode)Enum.Parse(typeof(ExchangeCode), code));
+            .HasConversion<string>();
 
         // Configure Name property with required constraint and max length
         builder.Property(c => c.Name)

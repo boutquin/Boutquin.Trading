@@ -38,9 +38,10 @@ public sealed class SecurityPriceConfiguration : IEntityTypeConfiguration<Securi
         // Configure primary key
         builder.HasKey(SecurityPrice.SecurityPrice_Key_Name);
 
-        // Configure TradeDate property with required constraint
+        // Configure TradeDate property with required constraint and data tyoe
         builder.Property(c => c.TradeDate)
-            .IsRequired();
+            .IsRequired()
+            .HasColumnType("Date)";
 
         // Configure SecurityId  property with required constraint
         builder.Property(c => c.SecurityId)

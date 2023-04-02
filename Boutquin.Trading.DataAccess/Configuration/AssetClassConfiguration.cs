@@ -42,9 +42,7 @@ public sealed class AssetClassConfiguration : IEntityTypeConfiguration<AssetClas
         // Configure Code property with required constraint, max length, and enum conversion
         builder.Property(ac => ac.Code)
             .IsRequired().HasMaxLength(ColumnConstants.AssetClass_Code_Length)
-            .HasConversion(
-                code => code.ToString(),
-                code => (AssetClassCode)Enum.Parse(typeof(AssetClassCode), code));
+            .HasConversion<string>();
 
         // Configure Name property with required constraint and max length
         builder.Property(ac => ac.Name)

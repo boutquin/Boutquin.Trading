@@ -39,25 +39,22 @@ public sealed class FxRateConfiguration : IEntityTypeConfiguration<FxRate>
         // Configure primary key
         builder.HasKey(FxRate.FxRate_Key_Name);
 
-        // Configure RateDate property with required constraint
+        // Configure RateDate property with required constraint and data type
         builder.Property(c => c.RateDate)
-            .IsRequired();
+            .IsRequired()
+            .HasColumnType("Date)";
 
         // Configure BaseCurrencyCode property with required constraint, max length, and enum conversion
         builder.Property(c => c.BaseCurrencyCode)
             .IsRequired()
             .HasMaxLength(ColumnConstants.FxRate_BaseCurrencyCode_Length)
-            .HasConversion(
-                code => code.ToString(),
-                code => (CurrencyCode)Enum.Parse(typeof(CurrencyCode), code));
+            .HasConversion<string>();
 
         // Configure QuoteCurrencyCode property with required constraint, max length, and enum conversion
         builder.Property(c => c.QuoteCurrencyCode)
             .IsRequired()
             .HasMaxLength(ColumnConstants.FxRate_QuoteCurrencyCode_Length)
-            .HasConversion(
-                code => code.ToString(),
-                code => (CurrencyCode)Enum.Parse(typeof(CurrencyCode), code));
+            .HasConversion<string>();
 
         // Configure RateDate property with required constraint and scale & precision
         builder.Property(c => c.Rate)

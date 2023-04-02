@@ -45,9 +45,8 @@ public sealed class TimeZoneConfiguration : IEntityTypeConfiguration<TimeZone>
         builder.Property(tz => tz.Code)
             .IsRequired()
             .HasMaxLength(ColumnConstants.TimeZone_Code_Length)
-            .HasConversion(
-                tz => tz.ToString(),
-                tz => (TimeZoneCode)Enum.Parse(typeof(TimeZoneCode), tz));
+            .HasConversion<string>();
+
 
         // Configure Name property with required constraint and max length
         builder.Property(tz => tz.Name)

@@ -43,9 +43,7 @@ public sealed class ExchangeScheduleConfiguration : IEntityTypeConfiguration<Exc
         builder.Property(c => c.ExchangeCode)
             .IsRequired()
             .HasMaxLength(ColumnConstants.ExchangeSchedule_ExchangeCode_Length)
-            .HasConversion(
-                code => code.ToString(),
-                code => (ExchangeCode)Enum.Parse(typeof(ExchangeCode), code));
+            .HasConversion<string>();
 
         // Configure DayOfWeek  property with required constraint
         builder.Property(c => c.DayOfWeek)

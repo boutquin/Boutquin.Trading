@@ -48,15 +48,15 @@ public sealed class SecurityConfiguration : IEntityTypeConfiguration<Security>
         builder.Property(s => s.ExchangeCode)
             .IsRequired()
             .HasMaxLength(ColumnConstants.Security_ExchangeCode_Length)
-            .HasConversion(
-                code => code.ToString(),
-                code => (ExchangeCode)Enum.Parse(typeof(ExchangeCode), code));
+            .HasConversion<string>();
 
         // Configure AssetClassCode property with required constraint, max length, and enum conversion
         builder.Property(s => s.AssetClassCode)
             .IsRequired().HasMaxLength(ColumnConstants.Security_AssetClassCode_Length)
-            .HasConversion(
-                code => code.ToString(),
-                code => (AssetClassCode)Enum.Parse(typeof(AssetClassCode), code));
+            .HasConversion<string>();
+
+        // Configure Unique Index on Name
+        builder.HasIndex(c => c.Name)
+            .IsUnique();
     }
 }

@@ -53,9 +53,7 @@ public sealed class SecuritySymbolConfiguration : IEntityTypeConfiguration<Secur
         builder.Property(c => c.Standard)
             .IsRequired()
             .HasMaxLength(ColumnConstants.SecuritySymbol_Standard_Length)
-            .HasConversion(
-                code => code.ToString(),
-                code => (SecuritySymbolStandard)Enum.Parse(typeof(SecuritySymbolStandard), code));
+            .HasConversion<string>();
 
         // Configure Unique Index on SecurityId & Standard
         builder.HasIndex(c => new { c.SecurityId, c.Standard })

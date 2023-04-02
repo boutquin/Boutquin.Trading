@@ -48,17 +48,13 @@ public sealed class CityConfiguration : IEntityTypeConfiguration<City>
         builder.Property(c => c.TimeZoneCode)
             .IsRequired()
             .HasMaxLength(ColumnConstants.City_TimeZoneCode_Length)
-            .HasConversion(
-                tz => tz.ToString(),
-                tz => (TimeZoneCode)Enum.Parse(typeof(TimeZoneCode), tz));
+            .HasConversion<string>();
 
         // Configure CountryCode property with required constraint, max length, and enum conversion
         builder.Property(c => c.CountryCode)
             .IsRequired()
             .HasMaxLength(ColumnConstants.City_CountryCode_Length)
-            .HasConversion(
-                cc => cc.ToString(),
-                cc => (CountryCode)Enum.Parse(typeof(CountryCode), cc));
+            .HasConversion<string>();
 
         // Configure Unique Index on CountryCode & Name
         builder.HasIndex(c => new { c.CountryCode, c.Name })
