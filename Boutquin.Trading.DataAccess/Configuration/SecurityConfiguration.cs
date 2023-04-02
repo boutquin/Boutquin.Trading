@@ -17,43 +17,22 @@ using Boutquin.Domain.Helpers;
 using Boutquin.Trading.Domain.Entities;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
-using Boutquin.Trading.Domain.Enums;
 
 namespace Boutquin.Trading.DataAccess.Configuration;
 
 /// <summary>
-/// This class is responsible for defining the structure and constraints for the <see cref="Continent"/> entity in the database.
+/// Configures the entity mapping for the <see cref="Security"/> entity.
 /// </summary>
-public sealed class ContinentConfiguration : IEntityTypeConfiguration<Continent>
+public sealed class SecurityConfiguration : IEntityTypeConfiguration<Security>
 {
     /// <summary>
-    /// Configures the entity of type <see cref="Continent"/>.
+    /// Configures the entity of type <see cref="Security"/>.
     /// </summary>
     /// <param name="builder">The builder to be used for configuring the entity.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is null.</exception>
-    public void Configure(EntityTypeBuilder<Continent> builder)
+    public void Configure(EntityTypeBuilder<Security> builder)
     {
         // Validate parameters
         Guard.AgainstNull(builder, nameof(builder));
-
-        // Configure the primary key
-        builder.HasKey(c => c.Code);
-
-        // Configure Code property with required constraint, max length, and enum conversion
-        builder.Property(c => c.Code)
-            .IsRequired()
-            .HasMaxLength(ColumnConstants.Continent_Code_Length)
-            .HasConversion(
-                code => code.ToString(),
-                code => (ContinentCode)Enum.Parse(typeof(ContinentCode), code));
-
-        // Configure Name property with required constraint and max length
-        builder.Property(c => c.Name)
-            .IsRequired()
-            .HasMaxLength(ColumnConstants.Continent_Name_Length);
-
-        // Configure Unique Index on Name
-        builder.HasIndex(c => c.Name)
-            .IsUnique();
     }
 }

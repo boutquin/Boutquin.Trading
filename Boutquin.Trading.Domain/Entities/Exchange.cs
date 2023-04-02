@@ -39,13 +39,13 @@ public sealed class Exchange
     public int CityId { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets or sets the collection of ExchangeSchedule entities associated with the Exchange.
+    /// Gets the collection of ExchangeSchedule entities associated with the Exchange.
     /// </summary>
     public ICollection<ExchangeSchedule> ExchangeSchedules { get; private set; } // Setter is for EF
         = new HashSet<ExchangeSchedule>();
 
     /// <summary>
-    /// Gets or sets the collection of ExchangeHoliday entities associated with the Exchange.
+    /// Gets the collection of ExchangeHoliday entities associated with the Exchange.
     /// </summary>
     public ICollection<ExchangeHoliday> ExchangeHolidays { get; private set; } // Setter is for EF
         = new HashSet<ExchangeHoliday>();   

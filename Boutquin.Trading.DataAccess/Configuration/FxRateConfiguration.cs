@@ -22,47 +22,50 @@ using Boutquin.Trading.Domain.Enums;
 namespace Boutquin.Trading.DataAccess.Configuration;
 
 /// <summary>
-/// This class is responsible for defining the structure and constraints for the <see cref="Currency"/> entity in the database.
+/// Configures the entity mapping for the <see cref="FxRate"/> entity.
 /// </summary>
-public sealed class CurrencyConfiguration : IEntityTypeConfiguration<Currency>
+public sealed class FxRateConfiguration : IEntityTypeConfiguration<FxRate>
 {
     /// <summary>
-    /// Configures the entity mapping for the <see cref="Currency"/> entity.
+    /// Configures the entity of type <see cref="FxRate"/>.
     /// </summary>
     /// <param name="builder">The builder to be used for configuring the entity.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is null.</exception>
-    public void Configure(EntityTypeBuilder<Currency> builder)
+    public void Configure(EntityTypeBuilder<FxRate> builder)
     {
         // Validate parameters
         Guard.AgainstNull(builder, nameof(builder));
 
-        // Configure the primary key
-        builder.HasKey(c => c.Code);
+        // Configure primary key
+        builder.HasKey(FxRate.FxRate_Key_Name);
 
-        // Configure Code property with required constraint, max length, and enum conversion
-        builder.Property(c => c.Code)
+        // Configure RateDate property with required constraint
+        builder.Property(c => c.RateDate)
+            .IsRequired();
+
+        // Configure BaseCurrencyCode property with required constraint, max length, and enum conversion
+        builder.Property(c => c.BaseCurrencyCode)
             .IsRequired()
-            .HasMaxLength(ColumnConstants.Currency_Code_Length)
+            .HasMaxLength(ColumnConstants.FxRate_BaseCurrencyCode_Length)
             .HasConversion(
                 code => code.ToString(),
                 code => (CurrencyCode)Enum.Parse(typeof(CurrencyCode), code));
 
-        // Configure NumericCode property with required constraint
-        builder.Property(c => c.NumericCode)
-            .IsRequired();
-
-        // Configure Name property with required constraint and max length
-        builder.Property(c => c.Name)
+        // Configure QuoteCurrencyCode property with required constraint, max length, and enum conversion
+        builder.Property(c => c.QuoteCurrencyCode)
             .IsRequired()
-            .HasMaxLength(ColumnConstants.Currency_Name_Length);
+            .HasMaxLength(ColumnConstants.FxRate_QuoteCurrencyCode_Length)
+            .HasConversion(
+                code => code.ToString(),
+                code => (CurrencyCode)Enum.Parse(typeof(CurrencyCode), code));
 
-        // Configure Symbol property with required constraint and max length
-        builder.Property(c => c.Symbol)
+        // Configure RateDate property with required constraint and scale & precision
+        builder.Property(c => c.Rate)
             .IsRequired()
-            .HasMaxLength(ColumnConstants.Currency_Symbol_Length);
+            .HasPrecision(ColumnConstants.SecurityPrice_Price_Precision, ColumnConstants.SecurityPrice_Price_Scale);
 
-        // Configure Unique Index on Name
-        builder.HasIndex(c => c.Name)
+        // Configure Unique Index on RateDate, BaseCurrencyCode & QuoteCurrencyCode
+        builder.HasIndex(c => new { c.RateDate, c.BaseCurrencyCode, c.QuoteCurrencyCode })
             .IsUnique();
     }
 }

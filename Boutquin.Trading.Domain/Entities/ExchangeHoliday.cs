@@ -25,6 +25,11 @@ namespace Boutquin.Trading.Domain.Entities;
 public sealed class ExchangeHoliday
 {
     /// <summary>
+    /// The name of the primary key column in the ExchangeHoliday table.
+    /// </summary>
+    public const string ExchangeHoliday_Key_Name = nameof(ExchangeHoliday._id);
+
+    /// <summary>
     /// The identifier of the exchange holiday.
     /// </summary>
     private int _id; // Private key for EF

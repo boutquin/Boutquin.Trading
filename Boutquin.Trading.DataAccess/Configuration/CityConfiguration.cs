@@ -15,6 +15,7 @@
 
 using Boutquin.Domain.Helpers;
 using Boutquin.Trading.Domain.Entities;
+using Boutquin.Trading.Domain.Enums;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
 
@@ -36,7 +37,7 @@ public sealed class CityConfiguration : IEntityTypeConfiguration<City>
         Guard.AgainstNull(builder, nameof(builder));
 
         // Configure primary key
-        builder.HasKey("_id");
+        builder.HasKey(City.City_Key_Name);
 
         // Configure Name property with required constraint and max length
         builder.Property(c => c.Name)
@@ -58,5 +59,9 @@ public sealed class CityConfiguration : IEntityTypeConfiguration<City>
             .HasConversion(
                 cc => cc.ToString(),
                 cc => (CountryCode)Enum.Parse(typeof(CountryCode), cc));
+
+        // Configure Unique Index on CountryCode & Name
+        builder.HasIndex(c => new { c.CountryCode, c.Name })
+            .IsUnique();
     }
 }

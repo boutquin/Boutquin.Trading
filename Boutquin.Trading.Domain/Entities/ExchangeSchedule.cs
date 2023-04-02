@@ -25,6 +25,11 @@ namespace Boutquin.Trading.Domain.Entities;
 public sealed class ExchangeSchedule
 {
     /// <summary>
+    /// The name of the primary key column in the ExchangeSchedule table.
+    /// </summary>
+    public const string ExchangeSchedule_Key_Name = nameof(ExchangeSchedule._id);
+
+    /// <summary>
     /// The identifier of the exchange schedule.
     /// </summary>
     private int _id; // Private key for EF

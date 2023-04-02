@@ -19,49 +19,58 @@ using Boutquin.Trading.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-using TimeZone = Boutquin.Trading.Domain.Entities.TimeZone;
-
 namespace Boutquin.Trading.DataAccess.Configuration;
 
 /// <summary>
-/// This class is responsible for defining the structure and constraints for the <see cref="TimeZone"/> entity in the database.
+/// Configures the entity mapping for the <see cref="Country"/> entity.
 /// </summary>
-public sealed class TimeZoneConfiguration : IEntityTypeConfiguration<TimeZone>
+public sealed class CountryConfiguration : IEntityTypeConfiguration<Country>
 {
     /// <summary>
-    /// Configures the entity mapping for the <see cref="TimeZone"/> entity.
+    /// Configures the entity of type <see cref="Country"/>.
     /// </summary>
     /// <param name="builder">The builder to be used for configuring the entity.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is null.</exception>
-    public void Configure(EntityTypeBuilder<TimeZone> builder)
+    public void Configure(EntityTypeBuilder<Country> builder)
     {
         // Validate parameters
         Guard.AgainstNull(builder, nameof(builder));
-        
+
         // Configure the primary key
-        builder.HasKey(tz => tz.Code);
+        builder.HasKey(c => c.Code);
 
         // Configure Code property with required constraint, max length, and enum conversion
-        builder.Property(tz => tz.Code)
+        builder.Property(c => c.Code)
             .IsRequired()
-            .HasMaxLength(ColumnConstants.TimeZone_Code_Length)
+            .HasMaxLength(ColumnConstants.Country_Code_Length)
             .HasConversion(
-                tz => tz.ToString(),
-                tz => (TimeZoneCode)Enum.Parse(typeof(TimeZoneCode), tz));
+                code => code.ToString(),
+                code => (CountryCode)Enum.Parse(typeof(CountryCode), code));
 
         // Configure Name property with required constraint and max length
-        builder.Property(tz => tz.Name)
+        builder.Property(c => c.Name)
             .IsRequired()
-            .HasMaxLength(ColumnConstants.TimeZone_Name_Length);
+            .HasMaxLength(ColumnConstants.Country_Name_Length);
 
-        // Configure TimeZoneOffset property with required constraint and max length
-        builder.Property(tz => tz.TimeZoneOffset)
-            .IsRequired()
-            .HasMaxLength(ColumnConstants.TimeZone_TimeZoneOffset_Length);
-
-        // Configure UsesDaylightSaving property with required constraint and max length
-        builder.Property(tz => tz.UsesDaylightSaving)
+        // Configure NumericCode property with required constraint
+        builder.Property(c => c.NumericCode)
             .IsRequired();
+
+        // Configure CurrencyCode property with required constraint, max length, and enum conversion
+        builder.Property(c => c.CurrencyCode)
+            .IsRequired()
+            .HasMaxLength(ColumnConstants.Country_CurrencyCode_Length)
+            .HasConversion(
+                cc => cc.ToString(),
+                cc => (CurrencyCode)Enum.Parse(typeof(CurrencyCode), cc));
+
+        // Configure ContinentCode property with required constraint, max length, and enum conversion
+        builder.Property(c => c.ContinentCode)
+            .IsRequired()
+            .HasMaxLength(ColumnConstants.Country_ContinentCode_Length)
+            .HasConversion(
+                cc => cc.ToString(),
+                cc => (ContinentCode)Enum.Parse(typeof(ContinentCode), cc));
 
         // Configure Unique Index on Name
         builder.HasIndex(c => c.Name)

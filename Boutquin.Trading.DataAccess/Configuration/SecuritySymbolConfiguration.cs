@@ -21,48 +21,40 @@ using Boutquin.Trading.Domain.Enums;
 
 namespace Boutquin.Trading.DataAccess.Configuration;
 
+
 /// <summary>
-/// This class is responsible for defining the structure and constraints for the <see cref="Currency"/> entity in the database.
+/// Configures the entity mapping for the <see cref="SecuritySymbol"/> entity.
 /// </summary>
-public sealed class CurrencyConfiguration : IEntityTypeConfiguration<Currency>
+public sealed class SecuritySymbolConfiguration : IEntityTypeConfiguration<SecuritySymbol>
 {
     /// <summary>
-    /// Configures the entity mapping for the <see cref="Currency"/> entity.
+    /// Configures the entity of type <see cref="SecuritySymbol"/>.
     /// </summary>
     /// <param name="builder">The builder to be used for configuring the entity.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is null.</exception>
-    public void Configure(EntityTypeBuilder<Currency> builder)
+    public void Configure(EntityTypeBuilder<SecuritySymbol> builder)
     {
         // Validate parameters
         Guard.AgainstNull(builder, nameof(builder));
 
-        // Configure the primary key
-        builder.HasKey(c => c.Code);
-
-        // Configure Code property with required constraint, max length, and enum conversion
-        builder.Property(c => c.Code)
-            .IsRequired()
-            .HasMaxLength(ColumnConstants.Currency_Code_Length)
-            .HasConversion(
-                code => code.ToString(),
-                code => (CurrencyCode)Enum.Parse(typeof(CurrencyCode), code));
-
-        // Configure NumericCode property with required constraint
-        builder.Property(c => c.NumericCode)
-            .IsRequired();
-
-        // Configure Name property with required constraint and max length
-        builder.Property(c => c.Name)
-            .IsRequired()
-            .HasMaxLength(ColumnConstants.Currency_Name_Length);
+        // Configure primary key
+        builder.HasKey(SecuritySymbol.SecuritySymbol_Key_Name);
 
         // Configure Symbol property with required constraint and max length
         builder.Property(c => c.Symbol)
             .IsRequired()
-            .HasMaxLength(ColumnConstants.Currency_Symbol_Length);
+            .HasMaxLength(ColumnConstants.SecuritySymbol_Symbol_Length);
 
-        // Configure Unique Index on Name
-        builder.HasIndex(c => c.Name)
+        // Configure Standard property with required constraint, max length, and enum conversion
+        builder.Property(c => c.Standard)
+            .IsRequired()
+            .HasMaxLength(ColumnConstants.SecuritySymbol_Standard_Length)
+            .HasConversion(
+                code => code.ToString(),
+                code => (SecuritySymbolStandard)Enum.Parse(typeof(SecuritySymbolStandard), code));
+
+        // Configure Unique Index on SecurityId & Standard
+        builder.HasIndex(c => new { c.SecurityId, c.Standard })
             .IsUnique();
     }
 }

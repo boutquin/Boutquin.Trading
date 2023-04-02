@@ -15,45 +15,36 @@
 
 using Boutquin.Domain.Helpers;
 using Boutquin.Trading.Domain.Entities;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Microsoft.EntityFrameworkCore;
 using Boutquin.Trading.Domain.Enums;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Boutquin.Trading.DataAccess.Configuration;
 
 /// <summary>
-/// This class is responsible for defining the structure and constraints for the <see cref="Continent"/> entity in the database.
+/// Configures the entity mapping for the <see cref="ExchangeHoliday"/> entity.
 /// </summary>
-public sealed class ContinentConfiguration : IEntityTypeConfiguration<Continent>
+public sealed class ExchangeHolidayConfiguration : IEntityTypeConfiguration<ExchangeHoliday>
 {
     /// <summary>
-    /// Configures the entity of type <see cref="Continent"/>.
+    /// Configures the entity of type <see cref="ExchangeHoliday"/>.
     /// </summary>
     /// <param name="builder">The builder to be used for configuring the entity.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is null.</exception>
-    public void Configure(EntityTypeBuilder<Continent> builder)
+    public void Configure(EntityTypeBuilder<ExchangeHoliday> builder)
     {
         // Validate parameters
         Guard.AgainstNull(builder, nameof(builder));
 
-        // Configure the primary key
-        builder.HasKey(c => c.Code);
+        // Configure primary key
+        builder.HasKey(ExchangeHoliday.ExchangeHoliday_Key_Name);
 
-        // Configure Code property with required constraint, max length, and enum conversion
-        builder.Property(c => c.Code)
+        // Configure ExchangeCode property with required constraint, max length, and enum conversion
+        builder.Property(c => c.ExchangeCode)
             .IsRequired()
-            .HasMaxLength(ColumnConstants.Continent_Code_Length)
+            .HasMaxLength(ColumnConstants.ExchangeHoliday_ExchangeCode_Length)
             .HasConversion(
                 code => code.ToString(),
-                code => (ContinentCode)Enum.Parse(typeof(ContinentCode), code));
-
-        // Configure Name property with required constraint and max length
-        builder.Property(c => c.Name)
-            .IsRequired()
-            .HasMaxLength(ColumnConstants.Continent_Name_Length);
-
-        // Configure Unique Index on Name
-        builder.HasIndex(c => c.Name)
-            .IsUnique();
+                code => (ExchangeCode)Enum.Parse(typeof(ExchangeCode), code));
     }
 }

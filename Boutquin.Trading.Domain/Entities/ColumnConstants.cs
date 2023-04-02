@@ -65,6 +65,22 @@ public static class ColumnConstants
 
     // Country table
     /// <summary>
+    /// The length of the Code column in the Country table.
+    /// </summary>
+    public const int Country_Code_Length = 2;
+
+    /// <summary>
+    /// The length of the CurrencyCode column in the Country table.
+    /// </summary>
+    public const int Country_CurrencyCode_Length = Currency_Code_Length;
+
+    /// <summary>
+    /// The length of the ContinentCode column in the Country table.
+    /// </summary>
+    public const int Country_ContinentCode_Length = Continent_Code_Length;
+
+
+    /// <summary>
     /// The length of the Name column in the Country table.
     /// </summary>
     public const int Country_Name_Length = 50;
@@ -87,6 +103,11 @@ public static class ColumnConstants
 
     // Exchange table
     /// <summary>
+    /// The length of the Code column in the Exchange table.
+    /// </summary>
+    public const int Exchange_Code_Length = 4;
+
+    /// <summary>
     /// The length of the Name column in the Exchange table.
     /// </summary>
     public const int Exchange_Name_Length = 50;
@@ -104,9 +125,14 @@ public static class ColumnConstants
 
     // SecuritySymbol table
     /// <summary>
-    /// The length of the Symbol column in the Security table.
+    /// The length of the Symbol column in the SecuritySymbol table.
     /// </summary>
     public const int SecuritySymbol_Symbol_Length = 50;
+
+    /// <summary>
+    /// The length of the Symbol column in the SecuritySymbol table.
+    /// </summary>
+    public const int SecuritySymbol_Standard_Length = 50;
 
     // SecurityPrice table
     /// <summary>
@@ -120,6 +146,16 @@ public static class ColumnConstants
     public const int SecurityPrice_Price_Scale = 2;
 
     // FxRate table
+    /// <summary>
+    /// The length of the BaseCurrencyCode column in the FxRate table.
+    /// </summary>
+    public const int FxRate_BaseCurrencyCode_Length = Currency_Code_Length;
+
+    /// <summary>
+    /// The length of the QuoteCurrencyCode column in the FxRate table.
+    /// </summary>
+    public const int FxRate_QuoteCurrencyCode_Length = Currency_Code_Length;
+
     /// <summary>
     /// The precision of the Rate column in the FxRate table.
     /// </summary>
@@ -136,6 +172,17 @@ public static class ColumnConstants
     /// </summary>
     public const int ExchangeHoliday_Description_Length = 50;
 
+    /// <summary>
+    /// The length of the ExchangeCode column in the ExchangeHoliday table.
+    /// </summary>
+    public const int ExchangeHoliday_ExchangeCode_Length = Exchange_Code_Length;
+
+    // ExchangeSchedule table
+    /// <summary>
+    /// The length of the ExchangeCode column in the ExchangeSchedule table.
+    /// </summary>
+    public const int ExchangeSchedule_ExchangeCode_Length = Exchange_Code_Length;
+
     // City table
     /// <summary>
     /// The length of the Name column in the City table.
@@ -145,11 +192,11 @@ public static class ColumnConstants
     /// <summary>
     /// The length of the TimeZoneCode column in the City table.
     /// </summary>
-    public const int City_TimeZoneCode_Length = 10;
+    public const int City_TimeZoneCode_Length = TimeZone_Code_Length;
 
     /// <summary>
     /// The length of the CountryCode column in the City table.
     /// </summary>
-    public const int City_CountryCode_Length = 2;
+    public const int City_CountryCode_Length = Country_Code_Length;
 
 }

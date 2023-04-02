@@ -25,9 +25,19 @@ namespace Boutquin.Trading.Domain.Entities;
 public sealed class FxRate
 {
     /// <summary>
+    /// The name of the primary key column in the FxRate table.
+    /// </summary>
+    public const string FxRate_Key_Name = nameof(FxRate._id);
+
+    /// <summary>
     /// The foreign exchange rate identifier.
     /// </summary>
     private int _id; // Private key for EF
+
+    /// <summary>
+    /// Gets the rate date.
+    /// </summary>
+    public DateTime RateDate { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the base currency code.
@@ -45,34 +55,30 @@ public sealed class FxRate
     public decimal Rate { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the rate date.
-    /// </summary>
-    public DateTime RateDate { get; private set; } // Setter is for EF
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="FxRate"/> class.
     /// </summary>
+    /// <param name="rateDate">The rate date.</param>
     /// <param name="baseCurrencyCode">The base currency code.</param>
     /// <param name="quoteCurrencyCode">The quote currency code.</param>
     /// <param name="rate">The exchange rate value.</param>
-    /// <param name="rateDate">The rate date.</param>
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when <paramref name="id"/> is less than or equal to 0, or when <paramref name="baseCurrencyCode"/> or <paramref name="quoteCurrencyCode"/> is not defined in the enumeration.
     /// </exception>
     public FxRate(
+        DateTime rateDate,
         CurrencyCode baseCurrencyCode, 
         CurrencyCode quoteCurrencyCode, 
-        decimal rate, 
-        DateTime rateDate)
+        decimal rate
+        )
     {
         // Validate parameters
         Guard.AgainstUndefinedEnumValue(baseCurrencyCode, nameof(baseCurrencyCode));
         Guard.AgainstUndefinedEnumValue(quoteCurrencyCode, nameof(quoteCurrencyCode));
         Guard.AgainstNegativeOrZero(rate, nameof(rate));
 
+        RateDate = rateDate;
         BaseCurrencyCode = baseCurrencyCode;
         QuoteCurrencyCode = quoteCurrencyCode;
         Rate = rate;
-        RateDate = rateDate;
     }
 }

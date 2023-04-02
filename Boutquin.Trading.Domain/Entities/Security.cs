@@ -15,14 +15,20 @@
 
 using Boutquin.Domain.Helpers;
 using Boutquin.Trading.Domain.Enums;
+using Boutquin.Trading.Domain.ValueObjects;
 
 namespace Boutquin.Trading.Domain.Entities;
 public sealed class Security
 {
     /// <summary>
+    /// The internal security ID value.
+    /// </summary>
+    private int? _id;
+
+    /// <summary>
     /// Gets the identifier of the security.
     /// </summary>
-    public int Id { get; private set; } // Setter is for EF
+    public SecurityId Id => SecurityId.Create((int)_id);
 
     /// <summary>
     /// Gets the name of the security.
@@ -48,23 +54,19 @@ public sealed class Security
     /// <summary>
     /// Initializes a new instance of the <see cref="Security"/> class.
     /// </summary>
-    /// <param name="id">The identifier of the security.</param>
     /// <param name="name">The name of the security.</param>
     /// <param name="exchangeCode">The market identifier code of the exchange.</param>
     /// <param name="assetClassCode">The identifier of the asset class.</param>
     public Security(
-        int id, 
         string name, 
         ExchangeCode exchangeCode,
         AssetClassCode assetClassCode)
     {
         // Validate parameters
-        Guard.AgainstNegativeOrZero(id, nameof(id));
         Guard.AgainstNullOrWhiteSpaceAndOverflow(name, nameof(name), ColumnConstants.Security_Name_Length);
         Guard.AgainstUndefinedEnumValue(exchangeCode, nameof(exchangeCode));
         Guard.AgainstUndefinedEnumValue(assetClassCode, nameof(assetClassCode));
 
-        Id = id;
         Name = name;
         ExchangeCode = exchangeCode;
         AssetClassCode = assetClassCode;
