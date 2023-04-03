@@ -21,7 +21,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Boutquin.Trading.DataAccess.Configuration;
 
 /// <summary>
-/// Configures the entity mapping for the <see cref="Security"/> entity.
+/// This class is responsible for defining the structure and constraints for the <see cref="Security"/> entity in the database.
 /// </summary>
 public sealed class SecurityConfiguration : IEntityTypeConfiguration<Security>
 {
@@ -43,16 +43,14 @@ public sealed class SecurityConfiguration : IEntityTypeConfiguration<Security>
             .IsRequired()
             .HasMaxLength(ColumnConstants.Security_Name_Length);
 
-        // Configure ExchangeCode property with required constraint, max length, and enum conversion
-        builder.Property(s => s.ExchangeCode)
-            .IsRequired()
-            .HasMaxLength(ColumnConstants.Security_ExchangeCode_Length)
-            .HasConversion<string>();
-
         // Configure AssetClassCode property with required constraint, max length, and enum conversion
         builder.Property(s => s.AssetClassCode)
             .IsRequired().HasMaxLength(ColumnConstants.Security_AssetClassCode_Length)
             .HasConversion<string>();
+
+        // Configure Exchange property with required constraint
+        builder.Property(s => s.Exchange)
+            .IsRequired();
 
         // Configure navigation for SecuritySymbols collection
         builder

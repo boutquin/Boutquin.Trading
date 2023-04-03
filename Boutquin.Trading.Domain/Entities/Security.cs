@@ -28,21 +28,22 @@ public sealed class Security
     /// Initializes a new instance of the <see cref="Security"/> class.
     /// </summary>
     /// <param name="name">The name of the security.</param>
-    /// <param name="exchangeCode">The ISO 10383 market identifier code of the exchange.</param>
     /// <param name="assetClassCode">The identifier of the asset class.</param>
+    /// <param name="exchange">The exchange where the security is traded.</param>
     public Security(
         string name,
-        ExchangeCode exchangeCode,
-        AssetClassCode assetClassCode)
+        AssetClassCode assetClassCode,
+        Exchange exchange
+        )
     {
         // Validate parameters
         Guard.AgainstNullOrWhiteSpaceAndOverflow(name, nameof(name), ColumnConstants.Security_Name_Length);
-        Guard.AgainstUndefinedEnumValue(exchangeCode, nameof(exchangeCode));
         Guard.AgainstUndefinedEnumValue(assetClassCode, nameof(assetClassCode));
+        Guard.AgainstNull(exchange, nameof(exchange));
 
         Name = name;
-        ExchangeCode = exchangeCode;
         AssetClassCode = assetClassCode;
+        Exchange = exchange;
     }
 
     /// <summary>
@@ -61,14 +62,14 @@ public sealed class Security
     public string Name { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets ISO 10383 market identifier code of the exchange.
-    /// </summary>
-    public ExchangeCode ExchangeCode { get; private set; } // Setter is for EF
-
-    /// <summary>
     /// Gets the identifier of the asset class.
     /// </summary>
     public AssetClassCode AssetClassCode { get; private set; } // Setter is for EF
+
+    /// <summary>
+    /// Gets ISO 10383 market identifier code of the exchange.
+    /// </summary>
+    public Exchange Exchange { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Navigation property to the related SecuritySymbols.
@@ -85,5 +86,5 @@ public sealed class Security
     /// <summary>
     /// The name of the primary key column in the Security table.
     /// </summary>
-    public const string Security_Key_Name = nameof(Security._id);
+    public const string Security_Key_Name = nameof(_id);
 }

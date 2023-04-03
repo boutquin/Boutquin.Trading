@@ -112,5 +112,5 @@ public sealed class SecurityPrice
     /// <summary>
     /// The name of the primary key column in the SecurityPrice table.
     /// </summary>
-    public const string SecurityPrice_Key_Name = nameof(SecurityPrice._id);
+    public const string SecurityPrice_Key_Name = nameof(_id);
 }

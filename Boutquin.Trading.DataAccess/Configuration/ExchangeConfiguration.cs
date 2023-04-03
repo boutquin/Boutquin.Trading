@@ -21,7 +21,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Boutquin.Trading.DataAccess.Configuration;
 
 /// <summary>
-/// Configures the entity mapping for the <see cref="Exchange"/> entity.
+/// This class is responsible for defining the structure and constraints for the <see cref="Exchange"/> entity in the database.
 /// </summary>
 public sealed class ExchangeConfiguration : IEntityTypeConfiguration<Exchange>
 {
@@ -48,6 +48,10 @@ public sealed class ExchangeConfiguration : IEntityTypeConfiguration<Exchange>
         builder.Property(c => c.Name)
             .IsRequired()
             .HasMaxLength(ColumnConstants.Exchange_Name_Length);
+
+        // Configure City property with required constraint
+        builder.Property(s => s.City)
+            .IsRequired();
 
         // Configure navigation for ExchangeSchedules collection
         builder

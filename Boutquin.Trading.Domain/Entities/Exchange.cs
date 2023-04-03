@@ -28,21 +28,21 @@ public sealed class Exchange
     /// </summary>
     /// <param name="exchangeCode">The ISO 10383 market identifier code of the exchange.</param>
     /// <param name="name">The exchange name.</param>
-    /// <param name="cityId">The city identifier.</param>
+    /// <param name="city">The city where the exchange resides.</param>
     /// <exception cref="ArgumentNullException">Thrown when name is null.</exception>
     public Exchange(
         ExchangeCode exchangeCode,
         string name,
-        int cityId)
+        City city)
     {
         // Validate parameters
         Guard.AgainstUndefinedEnumValue(exchangeCode, nameof(exchangeCode));
         Guard.AgainstNullOrWhiteSpaceAndOverflow(name, nameof(name), ColumnConstants.Exchange_Name_Length);
-        Guard.AgainstNegativeOrZero(cityId, nameof(cityId));
+        Guard.AgainstNull(city, nameof(city));
 
         Code = exchangeCode;
         Name = name;
-        CityId = cityId;
+        City = city;
     }
 
     /// <summary>
@@ -63,9 +63,9 @@ public sealed class Exchange
     public string Name { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the city identifier.
+    /// Gets the city where the exchange resides.
     /// </summary>
-    public int CityId { get; private set; } // Setter is for EF
+    public City City { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the collection of ExchangeSchedule entities associated with the Exchange.

@@ -70,5 +70,5 @@ public sealed class ExchangeHoliday
     /// <summary>
     /// The name of the primary key column in the ExchangeHoliday table.
     /// </summary>
-    public const string ExchangeHoliday_Key_Name = nameof(ExchangeHoliday._id);
+    public const string ExchangeHoliday_Key_Name = nameof(_id);
 }

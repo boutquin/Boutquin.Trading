@@ -69,5 +69,5 @@ public sealed class City
     /// <summary>
     /// The name of the primary key column in the City table.
     /// </summary>
-    public const string City_Key_Name = nameof(City._id);
+    public const string City_Key_Name = nameof(_id);
 }

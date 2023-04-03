@@ -21,7 +21,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Boutquin.Trading.DataAccess.Configuration;
 
 /// <summary>
-/// Configures the entity mapping for the <see cref="FxRate"/> entity.
+/// This class is responsible for defining the structure and constraints for the <see cref="FxRate"/> entity in the database.
 /// </summary>
 public sealed class FxRateConfiguration : IEntityTypeConfiguration<FxRate>
 {

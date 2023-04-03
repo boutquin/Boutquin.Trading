@@ -21,7 +21,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Boutquin.Trading.DataAccess.Configuration;
 
 /// <summary>
-/// Configures the entity mapping for the <see cref="SecurityPrice"/> entity.
+/// This class is responsible for defining the structure and constraints for the <see cref="SecurityPrice"/> entity in the database.
 /// </summary>
 public sealed class SecurityPriceConfiguration : IEntityTypeConfiguration<SecurityPrice>
 {

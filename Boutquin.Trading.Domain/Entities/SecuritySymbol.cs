@@ -65,5 +65,5 @@ public sealed class SecuritySymbol
     /// <summary>
     /// The name of the primary key column in the SecuritySymbol table.
     /// </summary>
-    public const string SecuritySymbol_Key_Name = nameof(SecuritySymbol._id);
+    public const string SecuritySymbol_Key_Name = nameof(_id);
 }

@@ -13,7 +13,6 @@
 //  limitations under the License.
 //
 
-
 using Boutquin.Trading.Domain.Enums;
 
 namespace Boutquin.Trading.Domain.Entities;
@@ -30,7 +29,6 @@ public sealed class AssetClass
     /// Initializes a new instance of the <see cref="AssetClass"/> class.
     /// </summary>
     /// <param name="code">The Code of the asset class.</param>
-    /// <param name="name">The name of the asset class.</param>
     /// <param name="description">The description of the asset class.</param>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="name"/> or <paramref name="description"/> is null.
@@ -40,16 +38,13 @@ public sealed class AssetClass
     /// </exception>
     public AssetClass(
         AssetClassCode code,
-        string name,
         string description)
     {
         // Validate parameters
         Guard.AgainstUndefinedEnumValue(code, nameof(code));
-        Guard.AgainstNullOrWhiteSpaceAndOverflow(name, nameof(name), ColumnConstants.AssetClass_Name_Length);
         Guard.AgainstNullOrWhiteSpaceAndOverflow(description, nameof(description), ColumnConstants.AssetClass_Description_Length);
 
         Code = code;
-        Name = name;
         Description = description;
     }
 
@@ -57,11 +52,6 @@ public sealed class AssetClass
     /// Gets the Code of the asset class.
     /// </summary>
     public AssetClassCode Code { get; private set; } // Setter is for EF
-
-    /// <summary>
-    /// Gets the name of the asset class.
-    /// </summary>
-    public string Name { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the description of the asset class.

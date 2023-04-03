@@ -80,5 +80,5 @@ public sealed class FxRate
     /// <summary>
     /// The name of the primary key column in the FxRate table.
     /// </summary>
-    public const string FxRate_Key_Name = nameof(FxRate._id);
+    public const string FxRate_Key_Name = nameof(_id);
 }

@@ -21,7 +21,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace Boutquin.Trading.DataAccess.Configuration;
 
 /// <summary>
-/// Configures the entity mapping for the <see cref="Country"/> entity.
+/// This class is responsible for defining the structure and constraints for the <see cref="Country"/> entity in the database.
 /// </summary>
 public sealed class CountryConfiguration : IEntityTypeConfiguration<Country>
 {

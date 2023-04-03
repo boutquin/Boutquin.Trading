@@ -26,47 +26,47 @@ public enum AssetClassCode
     /// Cash or cash equivalents.
     /// </summary>
     [Description("Cash or cash equivalents")]
-    Cash,
+    CaE,
 
     /// <summary>
     /// Fixed income securities.
     /// </summary>
     [Description("Fixed income securities")]
-    FixedIncome,
+    FxI,
 
     /// <summary>
     /// Equity securities.
     /// </summary>
     [Description("Equity securities")]
-    Equity,
+    Equ,
 
     /// <summary>
     /// Real estate.
     /// </summary>
     [Description("Real estate")]
-    RealEstate,
+    REs,
 
     /// <summary>
     /// Commodities.
     /// </summary>
     [Description("Commodities")]
-    Commodities,
+    Com,
 
     /// <summary>
     /// Alternative investments.
     /// </summary>
     [Description("Alternative investments")]
-    Alternatives,
+    Alt,
 
     /// <summary>
     /// Cryptocurrencies.
     /// </summary>
     [Description("Cryptocurrencies")]
-    Crypto,
+    Cry,
 
     /// <summary>
     /// Other.
     /// </summary>
     [Description("Other")]
-    Other
+    Oth
 }

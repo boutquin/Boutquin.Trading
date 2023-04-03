@@ -40,17 +40,12 @@ public static class ColumnConstants
     /// <summary>
     /// The length of the Code column in the AssetClass table.
     /// </summary>
-    public const int AssetClass_Code_Length = 15;
-
-    /// <summary>
-    /// The length of the Name column in the AssetClass table.
-    /// </summary>
-    public const int AssetClass_Name_Length = 50;
+    public const int AssetClass_Code_Length = 3;
 
     /// <summary>
     /// The length of the Description column in the AssetClass table.
     /// </summary>
-    public const int AssetClass_Description_Length = 200;
+    public const int AssetClass_Description_Length = 50;
 
     // Continent table
     /// <summary>

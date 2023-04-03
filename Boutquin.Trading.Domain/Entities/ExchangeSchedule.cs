@@ -78,5 +78,5 @@ public sealed class ExchangeSchedule
     /// <summary>
     /// The name of the primary key column in the ExchangeSchedule table.
     /// </summary>
-    public const string ExchangeSchedule_Key_Name = nameof(ExchangeSchedule._id);
+    public const string ExchangeSchedule_Key_Name = nameof(_id);
 }

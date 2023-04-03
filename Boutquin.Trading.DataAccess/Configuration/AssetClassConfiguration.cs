@@ -26,7 +26,7 @@ namespace Boutquin.Trading.DataAccess.Configuration;
 public sealed class AssetClassConfiguration : IEntityTypeConfiguration<AssetClass>
 {
     /// <summary>
-    /// Configures the entity mapping for the <see cref="City"/> entity.
+    /// Configures the entity mapping for the <see cref="AssetClass"/> entity.
     /// </summary>
     /// <param name="builder">The builder to be used for configuring the entity.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is null.</exception>
@@ -43,19 +43,13 @@ public sealed class AssetClassConfiguration : IEntityTypeConfiguration<AssetClas
             .IsRequired().HasMaxLength(ColumnConstants.AssetClass_Code_Length)
             .HasConversion<string>();
 
-        // Configure Name property with required constraint and max length
-        builder.Property(ac => ac.Name)
-            .IsRequired()
-            .HasMaxLength(ColumnConstants.AssetClass_Name_Length);
-
         // Configure Description property with required constraint and max length
         builder.Property(ac => ac.Description)
             .IsRequired()
             .HasMaxLength(ColumnConstants.AssetClass_Description_Length);
 
-        // Configure Unique Index on Name
-        builder.HasIndex(c => c.Name)
+        // Configure Unique Index on Description
+        builder.HasIndex(c => c.Description)
             .IsUnique();
-
     }
 }
