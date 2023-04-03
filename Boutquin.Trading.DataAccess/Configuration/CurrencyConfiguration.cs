@@ -61,5 +61,9 @@ public sealed class CurrencyConfiguration : IEntityTypeConfiguration<Currency>
         // Configure Unique Index on Name
         builder.HasIndex(c => c.Name)
             .IsUnique();
+
+        // Configure Unique Index on NumericCode
+        builder.HasIndex(c => c.NumericCode)
+            .IsUnique();
     }
 }

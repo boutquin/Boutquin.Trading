@@ -52,6 +52,11 @@ public sealed class SecurityConfiguration : IEntityTypeConfiguration<Security>
         builder.Property(s => s.Exchange)
             .IsRequired();
 
+        // Configure navigation for Exchange property
+        builder
+            .HasOne(s => s.Exchange)
+            .WithMany();
+
         // Configure navigation for SecuritySymbols collection
         builder
             .HasMany(s => s.SecuritySymbols)

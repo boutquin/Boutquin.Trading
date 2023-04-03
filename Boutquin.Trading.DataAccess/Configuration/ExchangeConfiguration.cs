@@ -53,6 +53,11 @@ public sealed class ExchangeConfiguration : IEntityTypeConfiguration<Exchange>
         builder.Property(s => s.City)
             .IsRequired();
 
+        // Configure navigation for City property
+        builder
+            .HasOne(s => s.City)
+            .WithMany();
+
         // Configure navigation for ExchangeSchedules collection
         builder
             .HasMany(s => s.ExchangeSchedules)

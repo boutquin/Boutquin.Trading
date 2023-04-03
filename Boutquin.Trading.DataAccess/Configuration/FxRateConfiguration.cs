@@ -41,7 +41,7 @@ public sealed class FxRateConfiguration : IEntityTypeConfiguration<FxRate>
         // Configure RateDate property with required constraint and data type
         builder.Property(c => c.RateDate)
             .IsRequired()
-            .HasColumnType("Date)";
+            .HasColumnType("Date");
 
         // Configure BaseCurrencyCode property with required constraint, max length, and enum conversion
         builder.Property(c => c.BaseCurrencyCode)

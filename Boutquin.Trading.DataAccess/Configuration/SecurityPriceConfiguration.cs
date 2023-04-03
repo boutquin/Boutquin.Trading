@@ -41,7 +41,7 @@ public sealed class SecurityPriceConfiguration : IEntityTypeConfiguration<Securi
         // Configure TradeDate property with required constraint and data tyoe
         builder.Property(c => c.TradeDate)
             .IsRequired()
-            .HasColumnType("Date)";
+            .HasColumnType("Date");
 
         // Configure SecurityId  property with required constraint
         builder.Property(c => c.SecurityId)
