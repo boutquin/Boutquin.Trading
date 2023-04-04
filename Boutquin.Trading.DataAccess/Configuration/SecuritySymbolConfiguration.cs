@@ -18,6 +18,7 @@ using Boutquin.Trading.Domain.Entities;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
 using Boutquin.Trading.Domain.ValueObjects;
+using Boutquin.Trading.Domain.Enums;
 
 namespace Boutquin.Trading.DataAccess.Configuration;
 
@@ -43,23 +44,19 @@ public sealed class SecuritySymbolConfiguration : IEntityTypeConfiguration<Secur
         builder.Property(SecuritySymbol.SecuritySymbol_Key_Name)
             .HasColumnName(ColumnConstants.Default_Primary_Key_Name);
 
-        // Configure SecurityId property with required constraint
-        builder.Property(c => c.SecurityId)
-            .IsRequired();
-
         // Configure Symbol property with required constraint and max length
-        builder.Property(c => c.Symbol)
+        builder.Property(ss => ss.Symbol)
             .IsRequired()
             .HasMaxLength(ColumnConstants.SecuritySymbol_Symbol_Length);
 
         // Configure Standard property with required constraint, max length, and enum conversion
-        builder.Property(c => c.Standard)
+        builder.Property(ss => ss.Standard)
             .IsRequired()
             .HasMaxLength(ColumnConstants.SecuritySymbol_Standard_Length)
             .HasConversion<string>();
 
         // Configure Unique Index on SecurityId & Standard
-        builder.HasIndex(c => new { c.SecurityId, c.Standard })
+        builder.HasIndex(ss => new { ss.SecurityId, ss.Standard })
             .IsUnique();
     }
 }

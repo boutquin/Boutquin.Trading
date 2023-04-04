@@ -65,6 +65,18 @@ public sealed class CountryConfiguration : IEntityTypeConfiguration<Country>
             .HasMaxLength(ColumnConstants.Country_ContinentCode_Length)
             .HasConversion<string>();
 
+        // Configure CurrencyCode navigation property
+        builder.HasOne<Currency>()
+            .WithMany()
+            .HasForeignKey(c => c.CurrencyCode)
+            .IsRequired();
+
+        // Configure ContinentCode navigation property
+        builder.HasOne<Continent>()
+            .WithMany()
+            .HasForeignKey(c => c.ContinentCode)
+            .IsRequired();
+
         // Configure Unique Index on Name
         builder.HasIndex(c => c.Name)
             .IsUnique();

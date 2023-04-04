@@ -52,6 +52,12 @@ public sealed class SecurityConfiguration : IEntityTypeConfiguration<Security>
             .IsRequired().HasMaxLength(ColumnConstants.Security_AssetClassCode_Length)
             .HasConversion<string>();
 
+        // Configure AssetClassCode navigation property
+        builder.HasOne<AssetClass>()
+            .WithMany()
+            .HasForeignKey(s => s.AssetClassCode)
+            .IsRequired();
+
         // Configure navigation for Exchange property
         builder
             .HasOne(s => s.Exchange)
@@ -65,13 +71,13 @@ public sealed class SecurityConfiguration : IEntityTypeConfiguration<Security>
         builder
             .HasMany(s => s.SecuritySymbols)
             .WithOne()
-            .HasForeignKey("SecurityId");
+            .HasForeignKey(s => s.SecurityId);
 
         // Configure navigation for SecurityPrices collection
         builder
             .HasMany(s => s.SecurityPrices)
             .WithOne()
-            .HasForeignKey("SecurityId");
+            .HasForeignKey(s => s.SecurityId);
 
         // Configure Unique Index on Name
         builder.HasIndex(s => s.Name)

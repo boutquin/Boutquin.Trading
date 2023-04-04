@@ -64,6 +64,18 @@ public sealed class FxRateConfiguration : IEntityTypeConfiguration<FxRate>
             .IsRequired()
             .HasPrecision(ColumnConstants.SecurityPrice_Price_Precision, ColumnConstants.SecurityPrice_Price_Scale);
 
+        // Configure BaseCurrencyCode navigation property
+        builder.HasOne<Currency>()
+            .WithMany()
+            .HasForeignKey(c => c.BaseCurrencyCode)
+            .IsRequired();
+
+        // Configure QuoteCurrencyCode navigation property
+        builder.HasOne<Currency>()
+            .WithMany()
+            .HasForeignKey(c => c.QuoteCurrencyCode)
+            .IsRequired();
+
         // Configure Unique Index on RateDate, BaseCurrencyCode & QuoteCurrencyCode
         builder.HasIndex(c => new { c.RateDate, c.BaseCurrencyCode, c.QuoteCurrencyCode })
             .IsUnique();

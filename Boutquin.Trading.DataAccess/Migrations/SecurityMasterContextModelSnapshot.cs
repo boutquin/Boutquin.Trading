@@ -67,6 +67,8 @@ namespace Boutquin.Trading.DataAccess.Migrations
 
                     b.HasKey("_id");
 
+                    b.HasIndex("TimeZoneCode");
+
                     b.HasIndex("CountryCode", "Name")
                         .IsUnique();
 
@@ -118,6 +120,10 @@ namespace Boutquin.Trading.DataAccess.Migrations
 
                     b.HasKey("Code");
 
+                    b.HasIndex("ContinentCode");
+
+                    b.HasIndex("CurrencyCode");
+
                     b.HasIndex("Name")
                         .IsUnique();
 
@@ -160,7 +166,7 @@ namespace Boutquin.Trading.DataAccess.Migrations
                         .HasMaxLength(4)
                         .HasColumnType("nvarchar(4)");
 
-                    b.Property<int>("City_id")
+                    b.Property<int>("CityId")
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
@@ -170,7 +176,7 @@ namespace Boutquin.Trading.DataAccess.Migrations
 
                     b.HasKey("Code");
 
-                    b.HasIndex("City_id");
+                    b.HasIndex("CityId");
 
                     b.HasIndex("Name")
                         .IsUnique();
@@ -270,6 +276,10 @@ namespace Boutquin.Trading.DataAccess.Migrations
 
                     b.HasKey("_id");
 
+                    b.HasIndex("BaseCurrencyCode");
+
+                    b.HasIndex("QuoteCurrencyCode");
+
                     b.HasIndex("RateDate", "BaseCurrencyCode", "QuoteCurrencyCode")
                         .IsUnique();
 
@@ -300,6 +310,8 @@ namespace Boutquin.Trading.DataAccess.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.HasKey("_id");
+
+                    b.HasIndex("AssetClassCode");
 
                     b.HasIndex("ExchangeCode");
 
@@ -414,11 +426,41 @@ namespace Boutquin.Trading.DataAccess.Migrations
                     b.ToTable("TimeZones");
                 });
 
+            modelBuilder.Entity("Boutquin.Trading.Domain.Entities.City", b =>
+                {
+                    b.HasOne("Boutquin.Trading.Domain.Entities.Country", null)
+                        .WithMany()
+                        .HasForeignKey("CountryCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Boutquin.Trading.Domain.Entities.TimeZone", null)
+                        .WithMany()
+                        .HasForeignKey("TimeZoneCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Boutquin.Trading.Domain.Entities.Country", b =>
+                {
+                    b.HasOne("Boutquin.Trading.Domain.Entities.Continent", null)
+                        .WithMany()
+                        .HasForeignKey("ContinentCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Boutquin.Trading.Domain.Entities.Currency", null)
+                        .WithMany()
+                        .HasForeignKey("CurrencyCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Boutquin.Trading.Domain.Entities.Exchange", b =>
                 {
                     b.HasOne("Boutquin.Trading.Domain.Entities.City", "City")
                         .WithMany()
-                        .HasForeignKey("City_id")
+                        .HasForeignKey("CityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -443,8 +485,29 @@ namespace Boutquin.Trading.DataAccess.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Boutquin.Trading.Domain.Entities.FxRate", b =>
+                {
+                    b.HasOne("Boutquin.Trading.Domain.Entities.Currency", null)
+                        .WithMany()
+                        .HasForeignKey("BaseCurrencyCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Boutquin.Trading.Domain.Entities.Currency", null)
+                        .WithMany()
+                        .HasForeignKey("QuoteCurrencyCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Boutquin.Trading.Domain.Entities.Security", b =>
                 {
+                    b.HasOne("Boutquin.Trading.Domain.Entities.AssetClass", null)
+                        .WithMany()
+                        .HasForeignKey("AssetClassCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Boutquin.Trading.Domain.Entities.Exchange", "Exchange")
                         .WithMany()
                         .HasForeignKey("ExchangeCode")

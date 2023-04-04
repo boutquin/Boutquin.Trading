@@ -43,25 +43,25 @@ public sealed class ExchangeScheduleConfiguration : IEntityTypeConfiguration<Exc
             .HasColumnName(ColumnConstants.Default_Primary_Key_Name);
 
         // Configure ExchangeCode property with required constraint, max length, and enum conversion
-        builder.Property(c => c.ExchangeCode)
+        builder.Property(es => es.ExchangeCode)
             .IsRequired()
             .HasMaxLength(ColumnConstants.ExchangeSchedule_ExchangeCode_Length)
             .HasConversion<string>();
 
         // Configure DayOfWeek  property with required constraint
-        builder.Property(c => c.DayOfWeek)
+        builder.Property(es => es.DayOfWeek)
             .IsRequired();
 
         // Configure CloseTime property with required constraint
-        builder.Property(c => c.CloseTime)
+        builder.Property(es => es.CloseTime)
             .IsRequired();
 
         // Configure OpenTime property with required constraint
-        builder.Property(c => c.OpenTime)
+        builder.Property(es => es.OpenTime)
             .IsRequired();
 
         // Configure Unique Index on ExchangeCode & DayOfWeek
-        builder.HasIndex(c => new { c.ExchangeCode, c.DayOfWeek })
+        builder.HasIndex(es => new { es.ExchangeCode, es.DayOfWeek })
             .IsUnique();
     }
 }

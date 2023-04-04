@@ -36,42 +36,43 @@ public sealed class ExchangeConfiguration : IEntityTypeConfiguration<Exchange>
         Guard.AgainstNull(builder, nameof(builder));
 
         // Configure the primary key
-        builder.HasKey(c => c.Code);
+        builder.HasKey(e => e.Code);
 
         // Configure Code property with required constraint, max length, and enum conversion
-        builder.Property(c => c.Code)
+        builder.Property(e => e.Code)
             .IsRequired()
             .HasMaxLength(ColumnConstants.Exchange_Code_Length)
             .HasConversion<string>();
 
         // Configure Name property with required constraint and max length
-        builder.Property(c => c.Name)
+        builder.Property(e => e.Name)
             .IsRequired()
             .HasMaxLength(ColumnConstants.Exchange_Name_Length);
 
         // Configure navigation for City property
         builder
-            .HasOne(s => s.City)
-            .WithMany();
+            .HasOne(e => e.City)
+            .WithMany()
+            .HasForeignKey("CityId");
 
         // Configure City navigation property with required constraint
-        builder.Navigation(s => s.City)
+        builder.Navigation(e => e.City)
             .IsRequired();
 
         // Configure navigation for ExchangeSchedules collection
         builder
-            .HasMany(s => s.ExchangeSchedules)
+            .HasMany(e => e.ExchangeSchedules)
             .WithOne()
             .HasForeignKey(x => x.ExchangeCode);
 
         // Configure navigation for ExchangeHolidays collection
         builder
-            .HasMany(s => s.ExchangeHolidays)
+            .HasMany(e => e.ExchangeHolidays)
             .WithOne()
             .HasForeignKey(x => x.ExchangeCode);
 
         // Configure Unique Index on Name
-        builder.HasIndex(c => c.Name)
+        builder.HasIndex(e => e.Name)
             .IsUnique();
     }
 }

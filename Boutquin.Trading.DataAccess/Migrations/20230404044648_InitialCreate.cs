@@ -24,21 +24,6 @@ namespace Boutquin.Trading.DataAccess.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Cities",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    TimeZoneCode = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
-                    CountryCode = table.Column<string>(type: "nvarchar(2)", maxLength: 2, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Cities", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Continents",
                 columns: table => new
                 {
@@ -48,21 +33,6 @@ namespace Boutquin.Trading.DataAccess.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Continents", x => x.Code);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Countries",
-                columns: table => new
-                {
-                    Code = table.Column<string>(type: "nvarchar(2)", maxLength: 2, nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    NumericCode = table.Column<int>(type: "int", nullable: false),
-                    CurrencyCode = table.Column<string>(type: "nvarchar(3)", maxLength: 3, nullable: false),
-                    ContinentCode = table.Column<string>(type: "nvarchar(2)", maxLength: 2, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Countries", x => x.Code);
                 });
 
             migrationBuilder.CreateTable(
@@ -80,22 +50,6 @@ namespace Boutquin.Trading.DataAccess.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "FxRates",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    RateDate = table.Column<DateTime>(type: "Date", nullable: false),
-                    BaseCurrencyCode = table.Column<string>(type: "nvarchar(3)", maxLength: 3, nullable: false),
-                    QuoteCurrencyCode = table.Column<string>(type: "nvarchar(3)", maxLength: 3, nullable: false),
-                    Rate = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_FxRates", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "TimeZones",
                 columns: table => new
                 {
@@ -110,19 +64,101 @@ namespace Boutquin.Trading.DataAccess.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Countries",
+                columns: table => new
+                {
+                    Code = table.Column<string>(type: "nvarchar(2)", maxLength: 2, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    NumericCode = table.Column<int>(type: "int", nullable: false),
+                    CurrencyCode = table.Column<string>(type: "nvarchar(3)", maxLength: 3, nullable: false),
+                    ContinentCode = table.Column<string>(type: "nvarchar(2)", maxLength: 2, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Countries", x => x.Code);
+                    table.ForeignKey(
+                        name: "FK_Countries_Continents_ContinentCode",
+                        column: x => x.ContinentCode,
+                        principalTable: "Continents",
+                        principalColumn: "Code",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Countries_Currencies_CurrencyCode",
+                        column: x => x.CurrencyCode,
+                        principalTable: "Currencies",
+                        principalColumn: "Code",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "FxRates",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    RateDate = table.Column<DateTime>(type: "Date", nullable: false),
+                    BaseCurrencyCode = table.Column<string>(type: "nvarchar(3)", maxLength: 3, nullable: false),
+                    QuoteCurrencyCode = table.Column<string>(type: "nvarchar(3)", maxLength: 3, nullable: false),
+                    Rate = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FxRates", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_FxRates_Currencies_BaseCurrencyCode",
+                        column: x => x.BaseCurrencyCode,
+                        principalTable: "Currencies",
+                        principalColumn: "Code",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_FxRates_Currencies_QuoteCurrencyCode",
+                        column: x => x.QuoteCurrencyCode,
+                        principalTable: "Currencies",
+                        principalColumn: "Code",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Cities",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    TimeZoneCode = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    CountryCode = table.Column<string>(type: "nvarchar(2)", maxLength: 2, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Cities", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Cities_Countries_CountryCode",
+                        column: x => x.CountryCode,
+                        principalTable: "Countries",
+                        principalColumn: "Code",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Cities_TimeZones_TimeZoneCode",
+                        column: x => x.TimeZoneCode,
+                        principalTable: "TimeZones",
+                        principalColumn: "Code",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Exchanges",
                 columns: table => new
                 {
                     Code = table.Column<string>(type: "nvarchar(4)", maxLength: 4, nullable: false),
                     Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    City_id = table.Column<int>(type: "int", nullable: false)
+                    CityId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Exchanges", x => x.Code);
                     table.ForeignKey(
-                        name: "FK_Exchanges_Cities_City_id",
-                        column: x => x.City_id,
+                        name: "FK_Exchanges_Cities_CityId",
+                        column: x => x.CityId,
                         principalTable: "Cities",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -184,6 +220,12 @@ namespace Boutquin.Trading.DataAccess.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Securities", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Securities_AssetClasses_AssetClassCode",
+                        column: x => x.AssetClassCode,
+                        principalTable: "AssetClasses",
+                        principalColumn: "Code",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Securities_Exchanges_ExchangeCode",
                         column: x => x.ExchangeCode,
@@ -252,10 +294,25 @@ namespace Boutquin.Trading.DataAccess.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Cities_TimeZoneCode",
+                table: "Cities",
+                column: "TimeZoneCode");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Continents_Name",
                 table: "Continents",
                 column: "Name",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Countries_ContinentCode",
+                table: "Countries",
+                column: "ContinentCode");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Countries_CurrencyCode",
+                table: "Countries",
+                column: "CurrencyCode");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Countries_Name",
@@ -288,9 +345,9 @@ namespace Boutquin.Trading.DataAccess.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Exchanges_City_id",
+                name: "IX_Exchanges_CityId",
                 table: "Exchanges",
-                column: "City_id");
+                column: "CityId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Exchanges_Name",
@@ -305,10 +362,25 @@ namespace Boutquin.Trading.DataAccess.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_FxRates_BaseCurrencyCode",
+                table: "FxRates",
+                column: "BaseCurrencyCode");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FxRates_QuoteCurrencyCode",
+                table: "FxRates",
+                column: "QuoteCurrencyCode");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_FxRates_RateDate_BaseCurrencyCode_QuoteCurrencyCode",
                 table: "FxRates",
                 columns: new[] { "RateDate", "BaseCurrencyCode", "QuoteCurrencyCode" },
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Securities_AssetClassCode",
+                table: "Securities",
+                column: "AssetClassCode");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Securities_ExchangeCode",
@@ -349,18 +421,6 @@ namespace Boutquin.Trading.DataAccess.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "AssetClasses");
-
-            migrationBuilder.DropTable(
-                name: "Continents");
-
-            migrationBuilder.DropTable(
-                name: "Countries");
-
-            migrationBuilder.DropTable(
-                name: "Currencies");
-
-            migrationBuilder.DropTable(
                 name: "ExchangeHolidays");
 
             migrationBuilder.DropTable(
@@ -376,16 +436,28 @@ namespace Boutquin.Trading.DataAccess.Migrations
                 name: "SecuritySymbols");
 
             migrationBuilder.DropTable(
-                name: "TimeZones");
+                name: "Securities");
 
             migrationBuilder.DropTable(
-                name: "Securities");
+                name: "AssetClasses");
 
             migrationBuilder.DropTable(
                 name: "Exchanges");
 
             migrationBuilder.DropTable(
                 name: "Cities");
+
+            migrationBuilder.DropTable(
+                name: "Countries");
+
+            migrationBuilder.DropTable(
+                name: "TimeZones");
+
+            migrationBuilder.DropTable(
+                name: "Continents");
+
+            migrationBuilder.DropTable(
+                name: "Currencies");
         }
     }
 }

@@ -49,7 +49,7 @@ public sealed class AssetClassConfiguration : IEntityTypeConfiguration<AssetClas
             .HasMaxLength(ColumnConstants.AssetClass_Description_Length);
 
         // Configure Unique Index on Description
-        builder.HasIndex(c => c.Description)
+        builder.HasIndex(ac => ac.Description)
             .IsUnique();
     }
 }

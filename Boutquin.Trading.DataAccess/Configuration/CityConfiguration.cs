@@ -17,6 +17,7 @@ using Boutquin.Domain.Helpers;
 using Boutquin.Trading.Domain.Entities;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
+using TimeZone = Boutquin.Trading.Domain.Entities.TimeZone;
 
 namespace Boutquin.Trading.DataAccess.Configuration;
 
@@ -58,6 +59,18 @@ public sealed class CityConfiguration : IEntityTypeConfiguration<City>
             .IsRequired()
             .HasMaxLength(ColumnConstants.City_CountryCode_Length)
             .HasConversion<string>();
+
+        // Configure TimeZoneCode navigation property
+        builder.HasOne<TimeZone>()
+            .WithMany()
+            .HasForeignKey(c => c.TimeZoneCode)
+            .IsRequired();
+
+        // Configure CountryCode navigation property
+        builder.HasOne<Country>()
+            .WithMany()
+            .HasForeignKey(c => c.CountryCode)
+            .IsRequired();
 
         // Configure Unique Index on CountryCode & Name
         builder.HasIndex(c => new { c.CountryCode, c.Name })

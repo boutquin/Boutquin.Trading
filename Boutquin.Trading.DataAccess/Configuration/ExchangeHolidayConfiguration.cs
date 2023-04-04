@@ -43,26 +43,26 @@ public sealed class ExchangeHolidayConfiguration : IEntityTypeConfiguration<Exch
             .HasColumnName(ColumnConstants.Default_Primary_Key_Name);
 
         // Configure ExchangeCode property with required constraint, max length, and enum conversion
-        builder.Property(c => c.ExchangeCode)
+        builder.Property(eh => eh.ExchangeCode)
             .IsRequired()
             .HasMaxLength(ColumnConstants.ExchangeHoliday_ExchangeCode_Length)
             .HasConversion<string>();
 
         // Configure HolidayDate property with required constraint
-        builder.Property(c => c.HolidayDate)
+        builder.Property(eh => eh.HolidayDate)
             .IsRequired();
 
         // Configure Description property with required constraint and max length
-        builder.Property(c => c.Description)
+        builder.Property(eh => eh.Description)
             .IsRequired()
             .HasMaxLength(ColumnConstants.ExchangeHoliday_Description_Length);
 
         // Configure Unique Index on ExchangeCode & HolidayDate
-        builder.HasIndex(c => new { c.ExchangeCode, c.HolidayDate })
+        builder.HasIndex(eh => new { eh.ExchangeCode, eh.HolidayDate })
             .IsUnique();
 
         // Configure Unique Index on Description
-        builder.HasIndex(c => c.Description)
+        builder.HasIndex(eh => eh.Description)
             .IsUnique();
     }
 }

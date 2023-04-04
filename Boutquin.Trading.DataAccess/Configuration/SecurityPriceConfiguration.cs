@@ -44,45 +44,41 @@ public sealed class SecurityPriceConfiguration : IEntityTypeConfiguration<Securi
             .HasColumnName(ColumnConstants.Default_Primary_Key_Name);
 
         // Configure TradeDate property with required constraint and data tyoe
-        builder.Property(c => c.TradeDate)
+        builder.Property(sp => sp.TradeDate)
             .IsRequired()
             .HasColumnType("Date");
 
-        // Configure SecurityId property with required constraint
-        builder.Property(c => c.SecurityId)
-            .IsRequired();
-
-    // Configure OpenPrice property with required constraint and precision
-    builder.Property(c => c.OpenPrice)
+        // Configure OpenPrice property with required constraint and precision
+        builder.Property(sp => sp.OpenPrice)
             .IsRequired()
             .HasPrecision(ColumnConstants.SecurityPrice_Price_Precision, ColumnConstants.SecurityPrice_Price_Scale);
 
         // Configure HighPrice property with required constraint and precision
-        builder.Property(c => c.HighPrice)
+        builder.Property(sp => sp.HighPrice)
             .IsRequired()
             .HasPrecision(ColumnConstants.SecurityPrice_Price_Precision, ColumnConstants.SecurityPrice_Price_Scale);
 
         // Configure LowPrice property with required constraint and precision
-        builder.Property(c => c.LowPrice)
+        builder.Property(sp => sp.LowPrice)
             .IsRequired()
             .HasPrecision(ColumnConstants.SecurityPrice_Price_Precision, ColumnConstants.SecurityPrice_Price_Scale);
 
         // Configure ClosePrice property with required constraint and precision
-        builder.Property(c => c.ClosePrice)
+        builder.Property(sp => sp.ClosePrice)
             .IsRequired()
             .HasPrecision(ColumnConstants.SecurityPrice_Price_Precision, ColumnConstants.SecurityPrice_Price_Scale);
 
         // Configure Volume property with required constraint
-        builder.Property(c => c.Volume)
+        builder.Property(sp => sp.Volume)
             .IsRequired();
 
         // Configure Dividend property with required constraint and precision
-        builder.Property(c => c.Dividend)
+        builder.Property(sp => sp.Dividend)
             .IsRequired()
             .HasPrecision(ColumnConstants.SecurityPrice_Price_Precision, ColumnConstants.SecurityPrice_Price_Scale);
 
         // Configure Unique Index on TradeDate & SecurityId
-        builder.HasIndex(c => new { c.TradeDate, c.SecurityId })
+        builder.HasIndex(sp => new { sp.TradeDate, sp.SecurityId })
             .IsUnique();
     }
 }
