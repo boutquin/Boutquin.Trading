@@ -47,14 +47,21 @@ public sealed class Security
     }
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="Security"/> class.
+    /// </summary>
+    public Security()
+    {
+    }
+
+    /// <summary>
     /// The internal security ID value.
     /// </summary>
-    private int? _id;
+    private int _id;
 
     /// <summary>
     /// Gets the identifier of the security.
     /// </summary>
-    public SecurityId Id => SecurityId.Create((int)_id);
+    public SecurityId Id => SecurityId.Create(_id);
 
     /// <summary>
     /// Gets the name of the security.

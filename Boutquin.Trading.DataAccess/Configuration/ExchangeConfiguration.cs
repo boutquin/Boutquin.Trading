@@ -49,14 +49,14 @@ public sealed class ExchangeConfiguration : IEntityTypeConfiguration<Exchange>
             .IsRequired()
             .HasMaxLength(ColumnConstants.Exchange_Name_Length);
 
-        // Configure City property with required constraint
-        builder.Property(s => s.City)
-            .IsRequired();
-
         // Configure navigation for City property
         builder
             .HasOne(s => s.City)
             .WithMany();
+
+        // Configure City navigation property with required constraint
+        builder.Navigation(s => s.City)
+            .IsRequired();
 
         // Configure navigation for ExchangeSchedules collection
         builder

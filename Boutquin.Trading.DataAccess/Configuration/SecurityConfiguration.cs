@@ -38,6 +38,10 @@ public sealed class SecurityConfiguration : IEntityTypeConfiguration<Security>
         // Configure primary key
         builder.HasKey(Security.Security_Key_Name);
 
+        // Configure Id property with proper column name
+        builder.Property(Security.Security_Key_Name)
+            .HasColumnName(ColumnConstants.Default_Primary_Key_Name);
+
         // Configure Name property with required constraint and max length
         builder.Property(s => s.Name)
             .IsRequired()
@@ -48,29 +52,29 @@ public sealed class SecurityConfiguration : IEntityTypeConfiguration<Security>
             .IsRequired().HasMaxLength(ColumnConstants.Security_AssetClassCode_Length)
             .HasConversion<string>();
 
-        // Configure Exchange property with required constraint
-        builder.Property(s => s.Exchange)
-            .IsRequired();
-
         // Configure navigation for Exchange property
         builder
             .HasOne(s => s.Exchange)
             .WithMany();
 
+        // Configure Exchange navigation property with required constraint
+        builder.Navigation(s => s.Exchange)
+            .IsRequired();
+
         // Configure navigation for SecuritySymbols collection
         builder
             .HasMany(s => s.SecuritySymbols)
             .WithOne()
-            .HasForeignKey(x => x.SecurityId);
+            .HasForeignKey("SecurityId");
 
         // Configure navigation for SecurityPrices collection
         builder
             .HasMany(s => s.SecurityPrices)
             .WithOne()
-            .HasForeignKey(x => x.SecurityId);
+            .HasForeignKey("SecurityId");
 
         // Configure Unique Index on Name
-        builder.HasIndex(c => c.Name)
+        builder.HasIndex(s => s.Name)
             .IsUnique();
     }
 }

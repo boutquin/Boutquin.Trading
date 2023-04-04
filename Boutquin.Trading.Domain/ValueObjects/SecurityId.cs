@@ -21,7 +21,7 @@ namespace Boutquin.Trading.Domain.ValueObjects
     /// Represents a security identifier (ID) in the system.
     /// See alse: https://www.fearofoblivion.com/dont-let-ef-call-the-shots
     /// </summary>
-    public readonly struct SecurityId : IEquatable<SecurityId>
+    public readonly struct SecurityId : IEquatable<SecurityId>, IComparable<SecurityId>
     {
         /// <summary>
         /// The internal security ID value.
@@ -100,6 +100,17 @@ namespace Boutquin.Trading.Domain.ValueObjects
         /// <param name="b">The integer value.</param>
         /// <returns>true if the <see cref="SecurityId"/> instance is not equal to the integer value; otherwise, false.</returns>
         public static bool operator !=(SecurityId a, int b) => a._id != b;
+
+        /// <summary>
+        /// Compares the current instance with another <see cref="SecurityId"/> and returns an integer that indicates
+        /// their relative position in the sort order.
+        /// </summary>
+        /// <param name="other">The <see cref="SecurityId"/> to compare to this instance.</param>
+        /// <returns>A signed integer that indicates the relative order of the objects being compared.</returns>
+        public int CompareTo(SecurityId other)
+        {
+            return _id.CompareTo(other._id);
+        }
 
         /// <summary>
         /// Converts a <see cref="SecurityId"/> object to an integer value.

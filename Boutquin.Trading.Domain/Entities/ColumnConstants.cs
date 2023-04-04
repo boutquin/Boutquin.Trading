@@ -20,6 +20,11 @@ namespace Boutquin.Trading.Domain.Entities;
 /// </summary>
 public static class ColumnConstants
 {
+    /// <summary>
+    /// The name of the porimary key column in a table.
+    /// </summary>
+    public const string Default_Primary_Key_Name = "Id";
+
     // TimeZone table
     /// <summary>
     /// The length of the Code column in the TimeZone table.

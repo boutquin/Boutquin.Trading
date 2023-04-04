@@ -15,7 +15,6 @@
 
 using Boutquin.Domain.Helpers;
 using Boutquin.Trading.Domain.Enums;
-using Boutquin.Trading.Domain.ValueObjects;
 
 namespace Boutquin.Trading.Domain.Entities;
 
@@ -28,12 +27,12 @@ public sealed class SecuritySymbol
     /// <param name="symbol">The symbol of the security.</param>
     /// <param name="standard">The security symbol standard.</param>
     public SecuritySymbol(
-        SecurityId securityId,
+        int securityId,
         string symbol,
         SecuritySymbolStandard standard)
     {
         // Validate parameters
-        Guard.AgainstNegativeOrZero((int)securityId, nameof(securityId));
+        Guard.AgainstNegativeOrZero(securityId, nameof(securityId));
         Guard.AgainstNullOrWhiteSpaceAndOverflow(symbol, nameof(symbol), ColumnConstants.SecuritySymbol_Symbol_Length);
         Guard.AgainstUndefinedEnumValue(standard, nameof(standard));
 
@@ -50,7 +49,7 @@ public sealed class SecuritySymbol
     /// <summary>
     /// Gets the identifier of the security.
     /// </summary>
-    public SecurityId SecurityId { get; private set; } // Setter is for EF
+    public int SecurityId { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the symbol of the security.

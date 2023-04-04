@@ -14,7 +14,6 @@
 //
 
 using Boutquin.Domain.Helpers;
-using Boutquin.Trading.Domain.ValueObjects;
 
 namespace Boutquin.Trading.Domain.Entities;
 
@@ -37,7 +36,7 @@ public sealed class SecurityPrice
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the id, securityId, volume is less than or equal to 0, or the openPrice, highPrice, lowPrice, closePrice, dividend is less than 0.</exception>
     public SecurityPrice(
         DateTime tradeDate,
-        SecurityId securityId,
+        int securityId,
         decimal openPrice,
         decimal highPrice,
         decimal lowPrice,
@@ -46,7 +45,7 @@ public sealed class SecurityPrice
         decimal dividend)
     {
         // Validate parameters
-        Guard.AgainstNegativeOrZero((int)securityId, nameof(securityId));
+        Guard.AgainstNegativeOrZero(securityId, nameof(securityId));
         Guard.AgainstNegativeOrZero(openPrice, nameof(openPrice));
         Guard.AgainstNegativeOrZero(highPrice, nameof(highPrice));
         Guard.AgainstNegativeOrZero(lowPrice, nameof(lowPrice));
@@ -77,7 +76,7 @@ public sealed class SecurityPrice
     /// <summary>
     /// Gets the security identifier.
     /// </summary>
-    public SecurityId SecurityId { get; private set; } // Setter is for EF
+    public int SecurityId { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the open price.

@@ -38,6 +38,10 @@ public sealed class FxRateConfiguration : IEntityTypeConfiguration<FxRate>
         // Configure primary key
         builder.HasKey(FxRate.FxRate_Key_Name);
 
+        // Configure Id property with proper column name
+        builder.Property(FxRate.FxRate_Key_Name)
+            .HasColumnName(ColumnConstants.Default_Primary_Key_Name);
+
         // Configure RateDate property with required constraint and data type
         builder.Property(c => c.RateDate)
             .IsRequired()

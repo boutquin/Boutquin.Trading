@@ -38,6 +38,10 @@ public sealed class CityConfiguration : IEntityTypeConfiguration<City>
         // Configure primary key
         builder.HasKey(City.City_Key_Name);
 
+        // Configure Id property with proper column name
+        builder.Property(City.City_Key_Name)
+            .HasColumnName(ColumnConstants.Default_Primary_Key_Name);
+
         // Configure Name property with required constraint and max length
         builder.Property(c => c.Name)
             .IsRequired()

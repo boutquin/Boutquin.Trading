@@ -17,6 +17,7 @@ using Boutquin.Domain.Helpers;
 using Boutquin.Trading.Domain.Entities;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
+using Boutquin.Trading.Domain.ValueObjects;
 
 namespace Boutquin.Trading.DataAccess.Configuration;
 
@@ -35,12 +36,16 @@ public sealed class SecuritySymbolConfiguration : IEntityTypeConfiguration<Secur
         // Validate parameters
         Guard.AgainstNull(builder, nameof(builder));
 
-        // Configure SecurityId  property with required constraint
-        builder.Property(c => c.SecurityId)
-            .IsRequired();
-
         // Configure primary key
         builder.HasKey(SecuritySymbol.SecuritySymbol_Key_Name);
+
+        // Configure Id property with proper column name
+        builder.Property(SecuritySymbol.SecuritySymbol_Key_Name)
+            .HasColumnName(ColumnConstants.Default_Primary_Key_Name);
+
+        // Configure SecurityId property with required constraint
+        builder.Property(c => c.SecurityId)
+            .IsRequired();
 
         // Configure Symbol property with required constraint and max length
         builder.Property(c => c.Symbol)

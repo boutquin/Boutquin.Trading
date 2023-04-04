@@ -38,6 +38,10 @@ public sealed class ExchangeHolidayConfiguration : IEntityTypeConfiguration<Exch
         // Configure primary key
         builder.HasKey(ExchangeHoliday.ExchangeHoliday_Key_Name);
 
+        // Configure Id property with proper column name
+        builder.Property(ExchangeHoliday.ExchangeHoliday_Key_Name)
+            .HasColumnName(ColumnConstants.Default_Primary_Key_Name);
+
         // Configure ExchangeCode property with required constraint, max length, and enum conversion
         builder.Property(c => c.ExchangeCode)
             .IsRequired()
