@@ -1,10 +1,31 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="../CommonAssemblyInfo.props" />
+
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <Description>Common abstractions (DbContext, Entity Configurations) specific to a Trading Data Access layer.</Description>
+    <PackageTags>CleanArchitecture,Domain,Entities,Shared,Data Access layer,Security Master,Trading Strategy,Back Testing</PackageTags>
+    <PackageReleaseNotes>Initial version.</PackageReleaseNotes>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <PackageIcon>icon.png</PackageIcon>
+    <RepositoryUrl>https://github.com/boutquin/Boutquin.Trading</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/users/boutquin/projects/2/</PackageProjectUrl>
+    <Title>A Data Access layer specific for trading.</Title>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\Resources\icon.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include=".\doc\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.4" />
