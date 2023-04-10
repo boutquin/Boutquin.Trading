@@ -24,16 +24,15 @@ namespace Boutquin.Trading.DataAccess.Migrations
 
             modelBuilder.Entity("Boutquin.Trading.Domain.Entities.AssetClass", b =>
                 {
-                    b.Property<string>("Code")
-                        .HasMaxLength(3)
-                        .HasColumnType("nvarchar(3)");
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.HasKey("Code");
+                    b.HasKey("Id");
 
                     b.HasIndex("Description")
                         .IsUnique();
@@ -295,10 +294,8 @@ namespace Boutquin.Trading.DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("_id"));
 
-                    b.Property<string>("AssetClassCode")
-                        .IsRequired()
-                        .HasMaxLength(3)
-                        .HasColumnType("nvarchar(3)");
+                    b.Property<int>("AssetClassCode")
+                        .HasColumnType("int");
 
                     b.Property<string>("ExchangeCode")
                         .IsRequired()
@@ -381,10 +378,8 @@ namespace Boutquin.Trading.DataAccess.Migrations
                     b.Property<int>("SecurityId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Standard")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<int>("Standard")
+                        .HasColumnType("int");
 
                     b.Property<string>("Symbol")
                         .IsRequired()
@@ -393,10 +388,30 @@ namespace Boutquin.Trading.DataAccess.Migrations
 
                     b.HasKey("_id");
 
+                    b.HasIndex("Standard");
+
                     b.HasIndex("SecurityId", "Standard")
                         .IsUnique();
 
                     b.ToTable("SecuritySymbols");
+                });
+
+            modelBuilder.Entity("Boutquin.Trading.Domain.Entities.SymbolStandard", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Description")
+                        .IsUnique();
+
+                    b.ToTable("SymbolStandards");
                 });
 
             modelBuilder.Entity("Boutquin.Trading.Domain.Entities.TimeZone", b =>
@@ -531,6 +546,12 @@ namespace Boutquin.Trading.DataAccess.Migrations
                     b.HasOne("Boutquin.Trading.Domain.Entities.Security", null)
                         .WithMany("SecuritySymbols")
                         .HasForeignKey("SecurityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Boutquin.Trading.Domain.Entities.SymbolStandard", null)
+                        .WithMany()
+                        .HasForeignKey("Standard")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

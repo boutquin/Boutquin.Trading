@@ -21,16 +21,16 @@ using Microsoft.EntityFrameworkCore;
 namespace Boutquin.Trading.DataAccess.Configuration;
 
 /// <summary>
-/// This class is responsible for defining the structure and constraints for the <see cref="AssetClass"/> entity in the database.
+/// This class is responsible for defining the structure and constraints for the <see cref="SymbolStandard"/> entity in the database.
 /// </summary>
-public sealed class AssetClassConfiguration : IEntityTypeConfiguration<AssetClass>
+public sealed class SymbolStandardConfiguration : IEntityTypeConfiguration<SymbolStandard>
 {
     /// <summary>
-    /// Configures the entity mapping for the <see cref="AssetClass"/> entity.
+    /// Configures the entity mapping for the <see cref="SymbolStandard"/> entity.
     /// </summary>
     /// <param name="builder">The builder to be used for configuring the entity.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is null.</exception>
-    public void Configure(EntityTypeBuilder<AssetClass> builder)
+    public void Configure(EntityTypeBuilder<SymbolStandard> builder)
     {
         // Validate parameters
         Guard.AgainstNull(builder, nameof(builder));
@@ -46,7 +46,7 @@ public sealed class AssetClassConfiguration : IEntityTypeConfiguration<AssetClas
         // Configure Description property with required constraint and max length
         builder.Property(ac => ac.Description)
             .IsRequired()
-            .HasMaxLength(ColumnConstants.AssetClass_Description_Length);
+            .HasMaxLength(ColumnConstants.SymbolStandard_Description_Length);
 
         // Configure Unique Index on Description
         builder.HasIndex(ac => ac.Description)

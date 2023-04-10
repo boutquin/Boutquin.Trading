@@ -12,9 +12,9 @@ BEGIN TRANSACTION;
 GO
 
 CREATE TABLE [AssetClasses] (
-    [Code] nvarchar(3) NOT NULL,
+    [Id] int NOT NULL,
     [Description] nvarchar(50) NOT NULL,
-    CONSTRAINT [PK_AssetClasses] PRIMARY KEY ([Code])
+    CONSTRAINT [PK_AssetClasses] PRIMARY KEY ([Id])
 );
 GO
 
@@ -31,6 +31,13 @@ CREATE TABLE [Currencies] (
     [Name] nvarchar(50) NOT NULL,
     [Symbol] nvarchar(5) NOT NULL,
     CONSTRAINT [PK_Currencies] PRIMARY KEY ([Code])
+);
+GO
+
+CREATE TABLE [SymbolStandards] (
+    [Id] int NOT NULL,
+    [Description] nvarchar(20) NOT NULL,
+    CONSTRAINT [PK_SymbolStandards] PRIMARY KEY ([Id])
 );
 GO
 
@@ -111,10 +118,10 @@ GO
 CREATE TABLE [Securities] (
     [Id] int NOT NULL IDENTITY,
     [Name] nvarchar(200) NOT NULL,
-    [AssetClassCode] nvarchar(3) NOT NULL,
+    [AssetClassCode] int NOT NULL,
     [ExchangeCode] nvarchar(4) NOT NULL,
     CONSTRAINT [PK_Securities] PRIMARY KEY ([Id]),
-    CONSTRAINT [FK_Securities_AssetClasses_AssetClassCode] FOREIGN KEY ([AssetClassCode]) REFERENCES [AssetClasses] ([Code]) ON DELETE CASCADE,
+    CONSTRAINT [FK_Securities_AssetClasses_AssetClassCode] FOREIGN KEY ([AssetClassCode]) REFERENCES [AssetClasses] ([Id]) ON DELETE CASCADE,
     CONSTRAINT [FK_Securities_Exchanges_ExchangeCode] FOREIGN KEY ([ExchangeCode]) REFERENCES [Exchanges] ([Code]) ON DELETE CASCADE
 );
 GO
@@ -138,9 +145,10 @@ CREATE TABLE [SecuritySymbols] (
     [Id] int NOT NULL IDENTITY,
     [SecurityId] int NOT NULL,
     [Symbol] nvarchar(50) NOT NULL,
-    [Standard] nvarchar(50) NOT NULL,
+    [Standard] int NOT NULL,
     CONSTRAINT [PK_SecuritySymbols] PRIMARY KEY ([Id]),
-    CONSTRAINT [FK_SecuritySymbols_Securities_SecurityId] FOREIGN KEY ([SecurityId]) REFERENCES [Securities] ([Id]) ON DELETE CASCADE
+    CONSTRAINT [FK_SecuritySymbols_Securities_SecurityId] FOREIGN KEY ([SecurityId]) REFERENCES [Securities] ([Id]) ON DELETE CASCADE,
+    CONSTRAINT [FK_SecuritySymbols_SymbolStandards_Standard] FOREIGN KEY ([Standard]) REFERENCES [SymbolStandards] ([Id]) ON DELETE CASCADE
 );
 GO
 
@@ -213,11 +221,17 @@ GO
 CREATE UNIQUE INDEX [IX_SecuritySymbols_SecurityId_Standard] ON [SecuritySymbols] ([SecurityId], [Standard]);
 GO
 
+CREATE INDEX [IX_SecuritySymbols_Standard] ON [SecuritySymbols] ([Standard]);
+GO
+
+CREATE UNIQUE INDEX [IX_SymbolStandards_Description] ON [SymbolStandards] ([Description]);
+GO
+
 CREATE UNIQUE INDEX [IX_TimeZones_Name] ON [TimeZones] ([Name]);
 GO
 
 INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-VALUES (N'20230404044648_InitialCreate', N'7.0.4');
+VALUES (N'20230410014641_InitialCreate', N'7.0.4');
 GO
 
 COMMIT;

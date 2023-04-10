@@ -90,6 +90,11 @@ namespace Boutquin.Trading.DataAccess
         public DbSet<SecuritySymbol> SecuritySymbols { get; set; }
 
         /// <summary>
+        /// Gets or sets the DbSet for the SymbolStandard entity.
+        /// </summary>
+        public DbSet<SymbolStandard> SymbolStandards { get; set; }        
+
+        /// <summary>
         /// Gets or sets the DbSet for the TimeZone entity.
         /// </summary>
         public DbSet<TimeZone> TimeZones { get; set; }

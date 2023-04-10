@@ -47,10 +47,10 @@ public sealed class SecurityConfiguration : IEntityTypeConfiguration<Security>
             .IsRequired()
             .HasMaxLength(ColumnConstants.Security_Name_Length);
 
-        // Configure AssetClassCode property with required constraint, max length, and enum conversion
+        // Configure AssetClassCode property with required constraint and enum conversion
         builder.Property(s => s.AssetClassCode)
-            .IsRequired().HasMaxLength(ColumnConstants.Security_AssetClassCode_Length)
-            .HasConversion<string>();
+            .IsRequired()
+            .HasConversion<int>();
 
         // Configure AssetClassCode navigation property
         builder.HasOne<AssetClass>()

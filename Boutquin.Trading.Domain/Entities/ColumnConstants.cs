@@ -209,4 +209,9 @@ public static class ColumnConstants
     /// </summary>
     public const int City_CountryCode_Length = Country_Code_Length;
 
+    // SymbolStandard table
+    /// <summary>
+    /// The length of the Description column in the SymbolStandard table.
+    /// </summary>
+    public const int SymbolStandard_Description_Length = 20;
 }

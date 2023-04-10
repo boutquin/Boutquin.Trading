@@ -53,10 +53,7 @@ public sealed class ExchangeConfiguration : IEntityTypeConfiguration<Exchange>
         builder
             .HasOne(e => e.City)
             .WithMany()
-            .HasForeignKey("CityId");
-
-        // Configure City navigation property with required constraint
-        builder.Navigation(e => e.City)
+            .HasForeignKey("CityId")
             .IsRequired();
 
         // Configure navigation for ExchangeSchedules collection

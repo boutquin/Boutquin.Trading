@@ -23,50 +23,50 @@ namespace Boutquin.Trading.Domain.Enums;
 public enum AssetClassCode
 {
     /// <summary>
-    /// Cash or cash equivalents.
+    /// Cash or Cash Equivalents.
     /// </summary>
-    [Description("Cash or cash equivalents")]
-    CaE,
+    [Description("Cash or Cash Equivalents")]
+    CashAndCashEquivalents,
 
     /// <summary>
-    /// Fixed income securities.
+    /// Fixed Income Securities.
     /// </summary>
-    [Description("Fixed income securities")]
-    FxI,
+    [Description("Fixed Income Securities")]
+    FixedIncome,
 
     /// <summary>
-    /// Equity securities.
+    /// Equity Securities.
     /// </summary>
-    [Description("Equity securities")]
-    Equ,
+    [Description("Equity Securities")]
+    Equities,
 
     /// <summary>
-    /// Real estate.
+    /// Real Estate.
     /// </summary>
-    [Description("Real estate")]
-    REs,
+    [Description("Real Estate")]
+    RealEstate,
 
     /// <summary>
     /// Commodities.
     /// </summary>
     [Description("Commodities")]
-    Com,
+    Commodities,
 
     /// <summary>
-    /// Alternative investments.
+    /// Alternative Investments.
     /// </summary>
-    [Description("Alternative investments")]
-    Alt,
+    [Description("Alternative Investments")]
+    Alternatives,
 
     /// <summary>
     /// Cryptocurrencies.
     /// </summary>
-    [Description("Cryptocurrencies")]
-    Cry,
+    [Description("Crypto-Currencies")]
+    CryptoCurrencies,
 
     /// <summary>
     /// Other.
     /// </summary>
     [Description("Other")]
-    Oth
+    Other
 }

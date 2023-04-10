@@ -15,12 +15,12 @@ namespace Boutquin.Trading.DataAccess.Migrations
                 name: "AssetClasses",
                 columns: table => new
                 {
-                    Code = table.Column<string>(type: "nvarchar(3)", maxLength: 3, nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AssetClasses", x => x.Code);
+                    table.PrimaryKey("PK_AssetClasses", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -47,6 +47,18 @@ namespace Boutquin.Trading.DataAccess.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Currencies", x => x.Code);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SymbolStandards",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SymbolStandards", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -214,7 +226,7 @@ namespace Boutquin.Trading.DataAccess.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    AssetClassCode = table.Column<string>(type: "nvarchar(3)", maxLength: 3, nullable: false),
+                    AssetClassCode = table.Column<int>(type: "int", nullable: false),
                     ExchangeCode = table.Column<string>(type: "nvarchar(4)", nullable: false)
                 },
                 constraints: table =>
@@ -224,7 +236,7 @@ namespace Boutquin.Trading.DataAccess.Migrations
                         name: "FK_Securities_AssetClasses_AssetClassCode",
                         column: x => x.AssetClassCode,
                         principalTable: "AssetClasses",
-                        principalColumn: "Code",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Securities_Exchanges_ExchangeCode",
@@ -268,7 +280,7 @@ namespace Boutquin.Trading.DataAccess.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     SecurityId = table.Column<int>(type: "int", nullable: false),
                     Symbol = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Standard = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
+                    Standard = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -277,6 +289,12 @@ namespace Boutquin.Trading.DataAccess.Migrations
                         name: "FK_SecuritySymbols_Securities_SecurityId",
                         column: x => x.SecurityId,
                         principalTable: "Securities",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_SecuritySymbols_SymbolStandards_Standard",
+                        column: x => x.Standard,
+                        principalTable: "SymbolStandards",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -411,6 +429,17 @@ namespace Boutquin.Trading.DataAccess.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_SecuritySymbols_Standard",
+                table: "SecuritySymbols",
+                column: "Standard");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SymbolStandards_Description",
+                table: "SymbolStandards",
+                column: "Description",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_TimeZones_Name",
                 table: "TimeZones",
                 column: "Name",
@@ -437,6 +466,9 @@ namespace Boutquin.Trading.DataAccess.Migrations
 
             migrationBuilder.DropTable(
                 name: "Securities");
+
+            migrationBuilder.DropTable(
+                name: "SymbolStandards");
 
             migrationBuilder.DropTable(
                 name: "AssetClasses");
