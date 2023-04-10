@@ -38,4 +38,4 @@ If you'd like to contribute to the development of Boutquin.Trading, please feel 
 
 ## License
 
-This project is licensed under the Apache 2.0 License. See the LICENSE file for more information.
+This project is licensed under the Apache 2.0 License. See the [LICENSE file](https://github.com/boutquin/Boutquin.Trading/blob/master/LICENSE.txt) for more information.

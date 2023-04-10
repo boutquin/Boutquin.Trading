@@ -22,7 +22,8 @@ It includes configuration classes and a `SecurityMasterDbContext` that encompass
 10. Security
 11. SecurityPrice
 12. SecuritySymbol
-13. TimeZone
+13. SymbolStandard
+14. TimeZone
 
 ## Getting Started
 
@@ -47,4 +48,4 @@ If you'd like to contribute to the development of the Security Master Data Acces
 
 ## License
 
-This project is licensed under the Apache 2.0 License. See the LICENSE file for more information.
+This project is licensed under the Apache 2.0 License. See the [LICENSE file](https://github.com/boutquin/Boutquin.Trading/blob/master/LICENSE.txt) for more information.
