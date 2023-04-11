@@ -31,7 +31,11 @@ public sealed class ExchangeSchedule
     /// <param name="dayOfWeek">The day of the week for the schedule.</param>
     /// <param name="openTime">The opening time of the exchange.</param>
     /// <param name="closeTime">The closing time of the exchange.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when the id is less than or equal to 0, the exchangeCode is not defined in the enumeration, or the openTime and closeTime are not valid time values.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="exchangeCode"/> or <paramref name="dayOfWeek"/> are not defined in 
+    /// their respective enumerations or when the <paramref name="openTime"/> and 
+    /// <paramref name="closeTime"/> are not valid time values.
+    /// </exception>
     public ExchangeSchedule(
         ExchangeCode exchangeCode,
         DayOfWeek dayOfWeek,

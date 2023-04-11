@@ -43,7 +43,7 @@ public sealed class SecurityPriceConfiguration : IEntityTypeConfiguration<Securi
         builder.Property(SecurityPrice.SecurityPrice_Key_Name)
             .HasColumnName(ColumnConstants.Default_Primary_Key_Name);
 
-        // Configure TradeDate property with required constraint and data tyoe
+        // Configure TradeDate property with required constraint and column type
         builder.Property(sp => sp.TradeDate)
             .IsRequired()
             .HasColumnType("Date");

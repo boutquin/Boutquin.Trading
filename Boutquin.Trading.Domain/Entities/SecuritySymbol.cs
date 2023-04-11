@@ -26,6 +26,10 @@ public sealed class SecuritySymbol
     /// <param name="securityId">The identifier of the security.</param>
     /// <param name="symbol">The symbol of the security.</param>
     /// <param name="standard">The security symbol standard.</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="standard"/> is not defined in 
+    /// the <see cref="SecuritySymbolStandard"/> enumeration.
+    /// </exception>
     public SecuritySymbol(
         int securityId,
         string symbol,

@@ -29,7 +29,16 @@ public sealed class Exchange
     /// <param name="exchangeCode">The ISO 10383 market identifier code of the exchange.</param>
     /// <param name="name">The exchange name.</param>
     /// <param name="city">The city where the exchange resides.</param>
-    /// <exception cref="ArgumentNullException">Thrown when name is null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="exchangeCode"/> is not defined in 
+    /// the <see cref="ExchangeCode"/> enumeration.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the <paramref name="name"/> is null, empty or 
+    /// longer than the allowed length.</exception>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="city"/> is null.
+    /// </exception>
     public Exchange(
         ExchangeCode exchangeCode,
         string name,

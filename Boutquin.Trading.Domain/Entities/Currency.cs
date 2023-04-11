@@ -30,11 +30,13 @@ public sealed class Currency
     /// <param name="numericCode">The ISO 4217 numeric code of the currency.</param>
     /// <param name="name">The name of the currency.</param>
     /// <param name="symbol">The symbol of the currency.</param>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="name"/> or <paramref name="symbol"/> is null.
-    /// </exception>
     /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown when <paramref name="name"/> length, <paramref name="symbol"/> length, or <paramref name="numericCode"/> is not within the valid range, or when <paramref name="code"/> is not defined in the enumeration.
+    /// Thrown when <paramref name="code"/> is not defined in 
+    /// the <see cref="CurrencyCode"/> enumeration.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the <paramref name="name"/> or <paramref name="symbol"/> are null, empty or 
+    /// longer than the allowed length.
     /// </exception>
     public Currency(
         CurrencyCode code,

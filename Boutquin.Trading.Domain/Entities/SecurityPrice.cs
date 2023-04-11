@@ -35,7 +35,7 @@ public sealed class SecurityPrice
     /// <param name="dividend">The dividend.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the id, securityId, volume is less than or equal to 0, or the openPrice, highPrice, lowPrice, closePrice, dividend is less than 0.</exception>
     public SecurityPrice(
-        DateTime tradeDate,
+        DateOnly tradeDate,
         int securityId,
         decimal openPrice,
         decimal highPrice,
@@ -68,10 +68,10 @@ public sealed class SecurityPrice
     /// </summary>
     private int _id; // Private key for EF
 
-        /// <summary>
+    /// <summary>
     /// Gets the trade date.
     /// </summary>
-    public DateTime TradeDate { get; private set; } // Setter is for EF
+    public DateOnly TradeDate { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the security identifier.

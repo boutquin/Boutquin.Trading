@@ -35,7 +35,8 @@ public sealed class Country
     /// Thrown when <paramref name="name"/> is null.
     /// </exception>
     /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown when <paramref name="name"/> length is not within the valid range, or when <paramref name="code"/>, <paramref name="currencyCode"/>, or <paramref name="continentCode"/> are not defined in their respective enumerations.
+    /// Thrown when <paramref name="code"/>, <paramref name="currencyCode"/>, or 
+    /// <paramref name="continentCode"/> are not defined in their respective enumerations.
     /// </exception>
     public Country(
         CountryCode code,

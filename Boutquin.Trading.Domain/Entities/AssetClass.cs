@@ -30,11 +30,12 @@ public sealed class AssetClass
     /// </summary>
     /// <param name="id">The Code of the asset class.</param>
     /// <param name="description">The description of the asset class.</param>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="name"/> or <paramref name="description"/> is null.
-    /// </exception>
     /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown when <paramref name="name"/> length or <paramref name="description"/> length is not within the valid range, or when <paramref name="id"/> is not defined in the enumeration.
+    /// Thrown when <paramref name="id"/> is not defined in the <see cref="AssetClassCode"/> enumeration.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the <paramref name="description"/> is null, empty 
+    /// or longer than the allowed length.
     /// </exception>
     public AssetClass(
         AssetClassCode id,

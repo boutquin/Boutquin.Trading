@@ -30,12 +30,17 @@ public sealed class ExchangeHoliday
     /// <param name="exchangeCode">The ISO 10383 market identifier code of the exchange.</param>
     /// <param name="holidayDate">The holiday date.</param>
     /// <param name="description">The holiday description.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when the id is less than or equal to 0 or the exchangeCode is not defined in the enumeration.</exception>
-    /// <exception cref="ArgumentException">Thrown when the description is null, empty or longer than the allowed length.</exception>
-    /// <exception cref="ArgumentNullException">Thrown when the description is null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when the <paramref name="exchangeCode"/> is not defined 
+    /// in the <see cref="ExchangeCode"/> enumeration.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the <paramref name="description"/> is null, empty or 
+    /// longer than the allowed length.
+    /// </exception>
     public ExchangeHoliday(
         ExchangeCode exchangeCode,
-        DateTime holidayDate,
+        DateOnly holidayDate,
         string description)
     {
         // Validate parameters
@@ -60,7 +65,7 @@ public sealed class ExchangeHoliday
     /// <summary>
     /// Gets the holiday date.
     /// </summary>
-    public DateTime HolidayDate { get; private set; } // Setter is for EF
+    public DateOnly HolidayDate { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the holiday description.

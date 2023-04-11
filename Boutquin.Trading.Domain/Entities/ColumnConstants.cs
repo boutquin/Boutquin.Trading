@@ -21,7 +21,7 @@ namespace Boutquin.Trading.Domain.Entities;
 public static class ColumnConstants
 {
     /// <summary>
-    /// The name of the porimary key column in a table.
+    /// The name of the primary key column in a table.
     /// </summary>
     public const string Default_Primary_Key_Name = "Id";
 

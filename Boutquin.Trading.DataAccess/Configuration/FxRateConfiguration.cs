@@ -42,7 +42,7 @@ public sealed class FxRateConfiguration : IEntityTypeConfiguration<FxRate>
         builder.Property(FxRate.FxRate_Key_Name)
             .HasColumnName(ColumnConstants.Default_Primary_Key_Name);
 
-        // Configure RateDate property with required constraint and data type
+        // Configure RateDate property with required constraint and column type
         builder.Property(c => c.RateDate)
             .IsRequired()
             .HasColumnType("Date");

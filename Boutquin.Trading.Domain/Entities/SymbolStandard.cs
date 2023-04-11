@@ -31,10 +31,11 @@ public sealed class SymbolStandard
     /// <param name="id">The Code of the symbol standard.</param>
     /// <param name="description">The description of the security symbol standard.</param>
     /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="name"/> or <paramref name="description"/> is null.
+    /// Thrown when <paramref name="description"/> is null.
     /// </exception>
     /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown when <paramref name="name"/> length or <paramref name="description"/> length is not within the valid range, or when <paramref name="id"/> is not defined in the enumeration.
+    /// Thrown when <paramref name="description"/> length is not within the valid range, or 
+    /// when <paramref name="id"/> is not defined in the <see cref="SecuritySymbolStandard"/> enumeration.
     /// </exception>
     public SymbolStandard(
         SecuritySymbolStandard id,

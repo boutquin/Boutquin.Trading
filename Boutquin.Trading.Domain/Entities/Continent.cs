@@ -34,7 +34,7 @@ public sealed class Continent
     /// Thrown when <paramref name="name"/> is null.
     /// </exception>
     /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown when <paramref name="name"/> length is not within the valid range, or when <paramref name="code"/> is not defined in the <see cref="ContinentCode"/> enumeration.
+    /// Thrown when <paramref name="code"/> is not defined in the <see cref="ContinentCode"/> enumeration.
     /// </exception>
     public Continent(
         ContinentCode code,

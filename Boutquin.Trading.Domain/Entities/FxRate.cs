@@ -32,10 +32,12 @@ public sealed class FxRate
     /// <param name="quoteCurrencyCode">The quote ISO 4217 currency code.</param>
     /// <param name="rate">The exchange rate value.</param>
     /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown when <paramref name="id"/> is less than or equal to 0, or when <paramref name="baseCurrencyCode"/> or <paramref name="quoteCurrencyCode"/> is not defined in the enumeration.
+    /// Thrown when <paramref name="rate"/> is less than or equal to 0, or 
+    /// when <paramref name="baseCurrencyCode"/> or <paramref name="quoteCurrencyCode"/> 
+    /// are not defined in the <see cref="CurrencyCode"/> enumeration.
     /// </exception>
     public FxRate(
-        DateTime rateDate,
+        DateOnly rateDate,
         CurrencyCode baseCurrencyCode,
         CurrencyCode quoteCurrencyCode,
         decimal rate
@@ -60,7 +62,7 @@ public sealed class FxRate
     /// <summary>
     /// Gets the rate date.
     /// </summary>
-    public DateTime RateDate { get; private set; } // Setter is for EF
+    public DateOnly RateDate { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the base ISO 4217 currency code.

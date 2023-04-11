@@ -30,6 +30,9 @@ public sealed class Security
     /// <param name="name">The name of the security.</param>
     /// <param name="assetClassCode">The identifier of the asset class.</param>
     /// <param name="exchange">The exchange where the security is traded.</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="assetClassCode"/> is not defined in the <see cref="AssetClassCode"/> enumeration.
+    /// </exception>
     public Security(
         string name,
         AssetClassCode assetClassCode,

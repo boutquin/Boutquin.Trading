@@ -48,9 +48,10 @@ public sealed class ExchangeHolidayConfiguration : IEntityTypeConfiguration<Exch
             .HasMaxLength(ColumnConstants.ExchangeHoliday_ExchangeCode_Length)
             .HasConversion<string>();
 
-        // Configure HolidayDate property with required constraint
+        // Configure HolidayDate property with required constraint and column type
         builder.Property(eh => eh.HolidayDate)
-            .IsRequired();
+            .IsRequired()
+            .HasColumnType("Date");
 
         // Configure Description property with required constraint and max length
         builder.Property(eh => eh.Description)

@@ -30,7 +30,15 @@ public sealed class City
     /// <param name="name">The city name.</param>
     /// <param name="timeZoneCode">The ISO 8601 time zone code associated with the city.</param>
     /// <param name="countryCode">The ISO 3166-1:2020 alpha-2 country code associated with the city.</param>
-    /// <exception cref="ArgumentNullException">Thrown when name is null.</exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the <paramref name="name"/> is null, empty or 
+    /// longer than the allowed length.
+    /// </exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="name"/> is null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="timeZoneCode"/>, or <paramref name="countryCode"/> 
+    /// are not defined in their respective enumerations.
+    /// </exception>
     public City(
         string name,
         TimeZoneCode timeZoneCode,
