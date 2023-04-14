@@ -17,6 +17,7 @@ using Boutquin.Domain.Helpers;
 using Boutquin.Trading.Domain.Entities;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
+using Boutquin.Trading.Domain.Enums;
 
 namespace Boutquin.Trading.DataAccess.Configuration;
 
@@ -65,5 +66,20 @@ public sealed class CurrencyConfiguration : IEntityTypeConfiguration<Currency>
         // Configure Unique Index on NumericCode
         builder.HasIndex(c => c.NumericCode)
             .IsUnique();
+
+        // Seed the currencies table with the major currencies
+        builder.HasData(
+            new Currency(CurrencyCode.USD, 840, "United States dollar", "$"),
+            new Currency(CurrencyCode.CAD, 124, "Canadian dollar", "$"),
+            new Currency(CurrencyCode.MXN, 484, "Mexican peso", "$"),
+            new Currency(CurrencyCode.GBP, 826, "British pound", "£"),
+            new Currency(CurrencyCode.EUR, 978, "Euro", "€"),
+            new Currency(CurrencyCode.JPY, 392, "Japanese yen", "¥"),
+            new Currency(CurrencyCode.CNY, 156, "Chinese yuan", "¥"),
+            new Currency(CurrencyCode.INR, 356, "Indian rupee", "₹"),
+            new Currency(CurrencyCode.AUD, 36, "Australian dollar", "$"),
+            new Currency(CurrencyCode.BRL, 986, "Brazilian real", "R$"),
+            new Currency(CurrencyCode.RUB, 643, "Russian ruble", "₽"),
+            new Currency(CurrencyCode.KRW, 410, "South Korean won", "₩"));
     }
 }

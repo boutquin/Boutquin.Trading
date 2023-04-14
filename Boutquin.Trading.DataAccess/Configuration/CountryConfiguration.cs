@@ -15,6 +15,7 @@
 
 using Boutquin.Domain.Helpers;
 using Boutquin.Trading.Domain.Entities;
+using Boutquin.Trading.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -80,5 +81,19 @@ public sealed class CountryConfiguration : IEntityTypeConfiguration<Country>
         // Configure Unique Index on Name
         builder.HasIndex(c => c.Name)
             .IsUnique();
+
+        // Seed the Countries table with some sample data
+        builder.HasData(
+            new Country(CountryCode.CA, "Canada", 124, CurrencyCode.CAD, ContinentCode.NA),
+            new Country(CountryCode.CN, "China", 156, CurrencyCode.CNY, ContinentCode.AS),
+            new Country(CountryCode.FR, "France", 250, CurrencyCode.EUR, ContinentCode.EU),
+            new Country(CountryCode.DE, "Germany", 276, CurrencyCode.EUR, ContinentCode.EU),
+            new Country(CountryCode.IN, "India", 356, CurrencyCode.INR, ContinentCode.AS),
+            new Country(CountryCode.JP, "Japan", 392, CurrencyCode.JPY, ContinentCode.AS),
+            new Country(CountryCode.RU, "Russia", 643, CurrencyCode.RUB, ContinentCode.EU),
+            new Country(CountryCode.KR, "South Korea", 410, CurrencyCode.KRW, ContinentCode.AS),
+            new Country(CountryCode.GB, "United Kingdom", 826, CurrencyCode.GBP, ContinentCode.EU),
+            new Country(CountryCode.US, "United States", 840, CurrencyCode.USD, ContinentCode.NA)
+        );
     }
 }

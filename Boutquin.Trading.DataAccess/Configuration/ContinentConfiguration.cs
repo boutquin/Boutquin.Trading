@@ -17,6 +17,7 @@ using Boutquin.Domain.Helpers;
 using Boutquin.Trading.Domain.Entities;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
+using Boutquin.Trading.Domain.Enums;
 
 namespace Boutquin.Trading.DataAccess.Configuration;
 
@@ -52,5 +53,15 @@ public sealed class ContinentConfiguration : IEntityTypeConfiguration<Continent>
         // Configure Unique Index on Name
         builder.HasIndex(c => c.Name)
             .IsUnique();
+
+        // Seed the currencies table with the major currencies
+        builder.HasData(
+            new Continent(ContinentCode.AF, "Africa"),
+            new Continent(ContinentCode.AN, "Antarctica"),
+            new Continent(ContinentCode.AS, "Asia"),
+            new Continent(ContinentCode.EU, "Europe"),
+            new Continent(ContinentCode.NA, "North America"),
+            new Continent(ContinentCode.OC, "Oceania"),
+            new Continent(ContinentCode.SA, "South America"));
     }
 }
