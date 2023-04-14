@@ -32,14 +32,14 @@ public static class ExchangeExtensions
     /// <example>
     /// <code>
     /// var exchange = new Exchange { ... };
-    /// DateTime day = DateTime.Now;
+    /// DateOnly day = DateOnly.FromDateTime(DateTime.Now);
     /// bool isOpen = exchange.IsOpen(day);
     /// </code>
     /// </example>
     /// <exception cref="ArgumentNullException">Thrown when the exchange is null.</exception>
     public static bool IsOpen(
         this Exchange exchange, 
-        DateTime day)
+        DateOnly day)
     {
         Guard.AgainstNull(exchange, nameof(exchange));
 
@@ -51,7 +51,7 @@ public static class ExchangeExtensions
             return false;
         }
 
-        var isHoliday = exchange.ExchangeHolidays.Any(eh => eh.HolidayDate.Date == day.Date);
+        var isHoliday = exchange.ExchangeHolidays.Any(eh => eh.HolidayDate == day);
 
         return !isHoliday;
     }
@@ -79,7 +79,7 @@ public static class ExchangeExtensions
     {
         Guard.AgainstNull(exchange, nameof(exchange));
 
-        if (!exchange.IsOpen(day))
+        if (!exchange.IsOpen(DateOnly.FromDateTime(day)))
         {
             return null;
         }
@@ -92,6 +92,6 @@ public static class ExchangeExtensions
             return null;
         }
 
-        return day.Date.Add(schedule.CloseTime).AddMinutes(-minutesBeforeClosing);
+        return day.Add(schedule.CloseTime).AddMinutes(-minutesBeforeClosing);
     }
 }

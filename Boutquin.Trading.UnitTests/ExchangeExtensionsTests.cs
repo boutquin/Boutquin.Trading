@@ -33,7 +33,7 @@ public sealed class ExchangeExtensionsTests
     [MemberData(nameof(ExchangeExtensionsTestData.IsExchangeOpenData), MemberType = typeof(ExchangeExtensionsTestData))]
     public void IsExchangeOpen_WithVariousScenarios_ReturnsExpectedResult(
         Exchange exchange, 
-        DateTime dateTime, 
+        DateOnly dateTime, 
         bool expectedResult)
     {
         // Act
