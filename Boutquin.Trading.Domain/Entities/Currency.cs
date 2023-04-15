@@ -45,10 +45,10 @@ public sealed class Currency
         string symbol)
     {
         // Validate parameters
-        Guard.AgainstUndefinedEnumValue(code, nameof(code));
-        Guard.AgainstNegative(numericCode, nameof(numericCode)); // TODO: OrZero???
-        Guard.AgainstNullOrWhiteSpaceAndOverflow(name, nameof(name), ColumnConstants.Currency_Name_Length);
-        Guard.AgainstNullOrWhiteSpaceAndOverflow(symbol, nameof(symbol), ColumnConstants.Currency_Symbol_Length);
+        Guard.AgainstUndefinedEnumValue(() => code);
+        Guard.AgainstNegativeOrZero(() => numericCode);
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(() => name, ColumnConstants.Currency_Name_Length);
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(() => symbol, ColumnConstants.Currency_Symbol_Length);
 
         Code = code;
         NumericCode = numericCode;

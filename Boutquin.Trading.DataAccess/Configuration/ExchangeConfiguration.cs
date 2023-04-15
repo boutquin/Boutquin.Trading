@@ -33,7 +33,7 @@ public sealed class ExchangeConfiguration : IEntityTypeConfiguration<Exchange>
     public void Configure(EntityTypeBuilder<Exchange> builder)
     {
         // Validate parameters
-        Guard.AgainstNull(builder, nameof(builder));
+        Guard.AgainstNull(() => builder);
 
         // Configure the primary key
         builder.HasKey(e => e.Code);

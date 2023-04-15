@@ -33,7 +33,7 @@ public sealed class AssetClassConfiguration : IEntityTypeConfiguration<AssetClas
     public void Configure(EntityTypeBuilder<AssetClass> builder)
     {
         // Validate parameters
-        Guard.AgainstNull(builder, nameof(builder));
+        Guard.AgainstNull(() => builder);
 
         // Configure the primary key
         builder.HasKey(ac => ac.Id);

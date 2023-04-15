@@ -45,13 +45,13 @@ public sealed class SecurityPrice
         decimal dividend)
     {
         // Validate parameters
-        Guard.AgainstNegativeOrZero(securityId, nameof(securityId));
-        Guard.AgainstNegativeOrZero(openPrice, nameof(openPrice));
-        Guard.AgainstNegativeOrZero(highPrice, nameof(highPrice));
-        Guard.AgainstNegativeOrZero(lowPrice, nameof(lowPrice));
-        Guard.AgainstNegativeOrZero(closePrice, nameof(closePrice));
-        Guard.AgainstNegativeOrZero(volume, nameof(volume));
-        Guard.AgainstNegative(dividend, nameof(dividend));
+        Guard.AgainstNegativeOrZero(() => securityId);
+        Guard.AgainstNegativeOrZero(() => openPrice);
+        Guard.AgainstNegativeOrZero(() => highPrice);
+        Guard.AgainstNegativeOrZero(() => lowPrice);
+        Guard.AgainstNegativeOrZero(() => closePrice);
+        Guard.AgainstNegativeOrZero(() => volume);
+        Guard.AgainstNegative(() => dividend);
 
         TradeDate = tradeDate;
         SecurityId = securityId;

@@ -43,10 +43,10 @@ public sealed class ExchangeSchedule
         TimeSpan closeTime)
     {
         // Validate parameters
-        Guard.AgainstUndefinedEnumValue(exchangeCode, nameof(exchangeCode));
-        Guard.AgainstUndefinedEnumValue(dayOfWeek, nameof(dayOfWeek));
-        Guard.AgainstOutOfRange(openTime, TimeSpan.Zero, TimeSpan.FromHours(24), nameof(openTime));
-        Guard.AgainstOutOfRange(closeTime, TimeSpan.Zero, TimeSpan.FromHours(24), nameof(closeTime));
+        Guard.AgainstUndefinedEnumValue(() => exchangeCode);
+        Guard.AgainstUndefinedEnumValue(() => dayOfWeek);
+        Guard.AgainstOutOfRange(() => openTime, TimeSpan.Zero, TimeSpan.FromHours(24));
+        Guard.AgainstOutOfRange(() => closeTime, TimeSpan.Zero, TimeSpan.FromHours(24));
 
         ExchangeCode = exchangeCode;
         DayOfWeek = dayOfWeek;

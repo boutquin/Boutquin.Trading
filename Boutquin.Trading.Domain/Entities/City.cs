@@ -45,9 +45,9 @@ public sealed class City
         CountryCode countryCode)
     {
         // Validate parameters
-        Guard.AgainstNullOrWhiteSpaceAndOverflow(name, nameof(name), ColumnConstants.City_Name_Length);
-        Guard.AgainstUndefinedEnumValue(timeZoneCode, nameof(timeZoneCode));
-        Guard.AgainstUndefinedEnumValue(countryCode, nameof(countryCode));
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(() => name, ColumnConstants.City_Name_Length);
+        Guard.AgainstUndefinedEnumValue(() => timeZoneCode);
+        Guard.AgainstUndefinedEnumValue(() => countryCode);
 
         Name = name;
         TimeZoneCode = timeZoneCode;

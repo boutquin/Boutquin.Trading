@@ -44,8 +44,8 @@ public sealed class ExchangeHoliday
         string description)
     {
         // Validate parameters
-        Guard.AgainstUndefinedEnumValue(exchangeCode, nameof(exchangeCode));
-        Guard.AgainstNullOrWhiteSpaceAndOverflow(description, nameof(description), ColumnConstants.ExchangeHoliday_Description_Length);
+        Guard.AgainstUndefinedEnumValue(() => exchangeCode);
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(() => description, ColumnConstants.ExchangeHoliday_Description_Length);
 
         ExchangeCode = exchangeCode;
         HolidayDate = holidayDate;

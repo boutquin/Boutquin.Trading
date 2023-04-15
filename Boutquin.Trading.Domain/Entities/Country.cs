@@ -46,11 +46,11 @@ public sealed class Country
         ContinentCode continentCode)
     {
         // Validate parameters
-        Guard.AgainstUndefinedEnumValue(code, nameof(code));
-        Guard.AgainstNullOrWhiteSpaceAndOverflow(name, nameof(name), ColumnConstants.Country_Name_Length);
-        Guard.AgainstNegativeOrZero(numericCode, nameof(numericCode));
-        Guard.AgainstUndefinedEnumValue(currencyCode, nameof(currencyCode));
-        Guard.AgainstUndefinedEnumValue(continentCode, nameof(continentCode));
+        Guard.AgainstUndefinedEnumValue(() => code);
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(() => name, ColumnConstants.Country_Name_Length);
+        Guard.AgainstNegativeOrZero(() => numericCode);
+        Guard.AgainstUndefinedEnumValue(() => currencyCode);
+        Guard.AgainstUndefinedEnumValue(() => continentCode);
 
         Code = code;
         Name = name;

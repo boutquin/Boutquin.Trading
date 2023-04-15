@@ -36,9 +36,9 @@ public sealed class SecuritySymbol
         SecuritySymbolStandard standard)
     {
         // Validate parameters
-        Guard.AgainstNegativeOrZero(securityId, nameof(securityId));
-        Guard.AgainstNullOrWhiteSpaceAndOverflow(symbol, nameof(symbol), ColumnConstants.SecuritySymbol_Symbol_Length);
-        Guard.AgainstUndefinedEnumValue(standard, nameof(standard));
+        Guard.AgainstNegativeOrZero(() => securityId);
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(() => symbol, ColumnConstants.SecuritySymbol_Symbol_Length);
+        Guard.AgainstUndefinedEnumValue(() => standard);
 
         SecurityId = securityId;
         Symbol = symbol;

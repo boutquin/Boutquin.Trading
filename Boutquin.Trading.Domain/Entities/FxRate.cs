@@ -44,9 +44,9 @@ public sealed class FxRate
         )
     {
         // Validate parameters
-        Guard.AgainstUndefinedEnumValue(baseCurrencyCode, nameof(baseCurrencyCode));
-        Guard.AgainstUndefinedEnumValue(quoteCurrencyCode, nameof(quoteCurrencyCode));
-        Guard.AgainstNegativeOrZero(rate, nameof(rate));
+        Guard.AgainstUndefinedEnumValue(() => baseCurrencyCode);
+        Guard.AgainstUndefinedEnumValue(() => quoteCurrencyCode);
+        Guard.AgainstNegativeOrZero(() => rate);
 
         RateDate = rateDate;
         BaseCurrencyCode = baseCurrencyCode;

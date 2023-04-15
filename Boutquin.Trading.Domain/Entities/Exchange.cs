@@ -45,9 +45,9 @@ public sealed class Exchange
         City city)
     {
         // Validate parameters
-        Guard.AgainstUndefinedEnumValue(exchangeCode, nameof(exchangeCode));
-        Guard.AgainstNullOrWhiteSpaceAndOverflow(name, nameof(name), ColumnConstants.Exchange_Name_Length);
-        Guard.AgainstNull(city, nameof(city));
+        Guard.AgainstUndefinedEnumValue(() => exchangeCode);
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(() => name, ColumnConstants.Exchange_Name_Length);
+        Guard.AgainstNull(() => city);
 
         Code = exchangeCode;
         Name = name;

@@ -34,7 +34,7 @@ public sealed class ContinentConfiguration : IEntityTypeConfiguration<Continent>
     public void Configure(EntityTypeBuilder<Continent> builder)
     {
         // Validate parameters
-        Guard.AgainstNull(builder, nameof(builder));
+        Guard.AgainstNull(() => builder);
 
         // Configure the primary key
         builder.HasKey(c => c.Code);

@@ -40,9 +40,9 @@ public sealed class Security
         )
     {
         // Validate parameters
-        Guard.AgainstNullOrWhiteSpaceAndOverflow(name, nameof(name), ColumnConstants.Security_Name_Length);
-        Guard.AgainstUndefinedEnumValue(assetClassCode, nameof(assetClassCode));
-        Guard.AgainstNull(exchange, nameof(exchange));
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(() => name, ColumnConstants.Security_Name_Length);
+        Guard.AgainstUndefinedEnumValue(() => assetClassCode);
+        Guard.AgainstNull(() => exchange);
 
         Name = name;
         AssetClassCode = assetClassCode;

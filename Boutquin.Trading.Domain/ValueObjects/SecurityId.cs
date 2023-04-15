@@ -130,7 +130,7 @@ namespace Boutquin.Trading.Domain.ValueObjects
         public static SecurityId Create(int id)
         {
             // Validate parameters
-            Guard.AgainstNegativeOrZero(id, nameof(id));
+            Guard.AgainstNegativeOrZero(() => id);
 
             return new SecurityId(id);
         }

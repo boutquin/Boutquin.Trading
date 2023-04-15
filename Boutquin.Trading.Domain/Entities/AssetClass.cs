@@ -42,8 +42,8 @@ public sealed class AssetClass
         string description)
     {
         // Validate parameters
-        Guard.AgainstUndefinedEnumValue(id, nameof(id));
-        Guard.AgainstNullOrWhiteSpaceAndOverflow(description, nameof(description), ColumnConstants.AssetClass_Description_Length);
+        Guard.AgainstUndefinedEnumValue(() => id);
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(() => description, ColumnConstants.AssetClass_Description_Length);
 
         Id = id;
         Description = description;

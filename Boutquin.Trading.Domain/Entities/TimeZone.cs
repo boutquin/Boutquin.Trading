@@ -45,9 +45,9 @@ public sealed class TimeZone
         bool usesDaylightSaving)
     {
         // Validate parameters
-        Guard.AgainstUndefinedEnumValue(code, nameof(code));
-        Guard.AgainstNullOrWhiteSpaceAndOverflow(name, nameof(name), ColumnConstants.TimeZone_Name_Length);
-        Guard.AgainstNullOrWhiteSpaceAndOverflow(timeZoneOffset, nameof(timeZoneOffset), ColumnConstants.TimeZone_TimeZoneOffset_Length);
+        Guard.AgainstUndefinedEnumValue(() => code);
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(() => name, ColumnConstants.TimeZone_Name_Length);
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(() => timeZoneOffset, ColumnConstants.TimeZone_TimeZoneOffset_Length);
 
         Name = name;
         TimeZoneOffset = timeZoneOffset;

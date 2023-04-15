@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="../CommonAssemblyInfo.props" />
 
@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Boutquin.Domain" Version="0.1.0-beta10" />
+    <PackageReference Include="Boutquin.Domain" Version="0.1.0-beta14" />
   </ItemGroup>
 
 </Project>

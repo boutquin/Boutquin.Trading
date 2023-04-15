@@ -33,7 +33,7 @@ public sealed class SecurityConfiguration : IEntityTypeConfiguration<Security>
     public void Configure(EntityTypeBuilder<Security> builder)
     {
         // Validate parameters
-        Guard.AgainstNull(builder, nameof(builder));
+        Guard.AgainstNull(() => builder);
 
         // Configure primary key
         builder.HasKey(Security.Security_Key_Name);

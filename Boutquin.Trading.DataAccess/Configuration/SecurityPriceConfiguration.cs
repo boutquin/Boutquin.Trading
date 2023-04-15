@@ -34,7 +34,7 @@ public sealed class SecurityPriceConfiguration : IEntityTypeConfiguration<Securi
     public void Configure(EntityTypeBuilder<SecurityPrice> builder)
     {
         // Validate parameters
-        Guard.AgainstNull(builder, nameof(builder));
+        Guard.AgainstNull(() => builder);
 
         // Configure primary key
         builder.HasKey(SecurityPrice.SecurityPrice_Key_Name);
