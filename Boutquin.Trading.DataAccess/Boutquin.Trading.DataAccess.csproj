@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>Common abstractions (DbContext, Entity Configurations) specific to a Trading Data Access layer.</Description>
-    <PackageTags>CleanArchitecture,Domain,Entities,Shared,Data Access layer,Security Master,Trading Strategy,Back Testing</PackageTags>
+    <PackageTags>CleanArchitecture,Domain,Entities,Shared,DataAccessLayer,SecurityMaster,TradingStrategy,BackTesting</PackageTags>
     <PackageReleaseNotes>Initial version.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>

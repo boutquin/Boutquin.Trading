@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>Common abstractions (entities, enums, exceptions, interfaces, types and logic) specific to a Trading Domain layer.</Description>
-    <PackageTags>CleanArchitecture,Domain,Entities,Shared,Trading Strategy,Back Testing</PackageTags>
+    <PackageTags>CleanArchitecture,Domain,Entities,Shared,TradingStrategy,BackTesting</PackageTags>
     <PackageReleaseNotes>Initial version.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Boutquin.Domain" Version="0.1.0-beta14" />
+    <PackageReference Include="Boutquin.Domain" Version="0.1.0-beta15" />
   </ItemGroup>
 
 </Project>
