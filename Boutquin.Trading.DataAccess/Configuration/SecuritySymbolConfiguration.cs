@@ -17,8 +17,6 @@ using Boutquin.Domain.Helpers;
 using Boutquin.Trading.Domain.Entities;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
-using Boutquin.Trading.Domain.ValueObjects;
-using Boutquin.Trading.Domain.Enums;
 
 namespace Boutquin.Trading.DataAccess.Configuration;
 

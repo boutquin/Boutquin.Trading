@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace Boutquin.Trading.DataAccess.Migrations
 {
     /// <inheritdoc />
@@ -183,7 +185,7 @@ namespace Boutquin.Trading.DataAccess.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ExchangeCode = table.Column<string>(type: "nvarchar(4)", maxLength: 4, nullable: false),
-                    HolidayDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    HolidayDate = table.Column<DateTime>(type: "Date", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
@@ -297,6 +299,83 @@ namespace Boutquin.Trading.DataAccess.Migrations
                         principalTable: "SymbolStandards",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.InsertData(
+                table: "AssetClasses",
+                columns: new[] { "Id", "Description" },
+                values: new object[,]
+                {
+                    { 0, "Cash or Cash Equivalents" },
+                    { 1, "Fixed Income Securities" },
+                    { 2, "Equity Securities" },
+                    { 3, "Real Estate" },
+                    { 4, "Commodities" },
+                    { 5, "Alternative Investments" },
+                    { 6, "Crypto-Currencies" },
+                    { 7, "Other" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Continents",
+                columns: new[] { "Code", "Name" },
+                values: new object[,]
+                {
+                    { "AF", "Africa" },
+                    { "AN", "Antarctica" },
+                    { "AS", "Asia" },
+                    { "EU", "Europe" },
+                    { "NA", "North America" },
+                    { "OC", "Oceania" },
+                    { "SA", "South America" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Currencies",
+                columns: new[] { "Code", "Name", "NumericCode", "Symbol" },
+                values: new object[,]
+                {
+                    { "AUD", "Australian dollar", 36, "$" },
+                    { "BRL", "Brazilian real", 986, "R$" },
+                    { "CAD", "Canadian dollar", 124, "$" },
+                    { "CNY", "Chinese yuan", 156, "¥" },
+                    { "EUR", "Euro", 978, "€" },
+                    { "GBP", "British pound", 826, "£" },
+                    { "INR", "Indian rupee", 356, "₹" },
+                    { "JPY", "Japanese yen", 392, "¥" },
+                    { "KRW", "South Korean won", 410, "₩" },
+                    { "MXN", "Mexican peso", 484, "$" },
+                    { "RUB", "Russian ruble", 643, "₽" },
+                    { "USD", "United States dollar", 840, "$" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "SymbolStandards",
+                columns: new[] { "Id", "Description" },
+                values: new object[,]
+                {
+                    { 0, "CUSIP" },
+                    { 1, "ISIN" },
+                    { 2, "SEDOL" },
+                    { 3, "RIC" },
+                    { 4, "Bloomberg Ticker" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Countries",
+                columns: new[] { "Code", "ContinentCode", "CurrencyCode", "Name", "NumericCode" },
+                values: new object[,]
+                {
+                    { "CA", "NA", "CAD", "Canada", 124 },
+                    { "CN", "AS", "CNY", "China", 156 },
+                    { "DE", "EU", "EUR", "Germany", 276 },
+                    { "FR", "EU", "EUR", "France", 250 },
+                    { "GB", "EU", "GBP", "United Kingdom", 826 },
+                    { "IN", "AS", "INR", "India", 356 },
+                    { "JP", "AS", "JPY", "Japan", 392 },
+                    { "KR", "AS", "KRW", "South Korea", 410 },
+                    { "RU", "EU", "RUB", "Russia", 643 },
+                    { "US", "NA", "USD", "United States", 840 }
                 });
 
             migrationBuilder.CreateIndex(

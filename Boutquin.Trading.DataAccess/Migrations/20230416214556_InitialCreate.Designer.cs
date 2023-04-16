@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Boutquin.Trading.DataAccess.Migrations
 {
     [DbContext(typeof(SecurityMasterContext))]
-    [Migration("20230410014641_InitialCreate")]
+    [Migration("20230416214556_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -20,7 +20,7 @@ namespace Boutquin.Trading.DataAccess.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.4")
+                .HasAnnotation("ProductVersion", "7.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -41,6 +41,48 @@ namespace Boutquin.Trading.DataAccess.Migrations
                         .IsUnique();
 
                     b.ToTable("AssetClasses");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 0,
+                            Description = "Cash or Cash Equivalents"
+                        },
+                        new
+                        {
+                            Id = 1,
+                            Description = "Fixed Income Securities"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Description = "Equity Securities"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Description = "Real Estate"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Description = "Commodities"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Description = "Alternative Investments"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Description = "Crypto-Currencies"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Description = "Other"
+                        });
                 });
 
             modelBuilder.Entity("Boutquin.Trading.Domain.Entities.City", b =>
@@ -94,6 +136,43 @@ namespace Boutquin.Trading.DataAccess.Migrations
                         .IsUnique();
 
                     b.ToTable("Continents");
+
+                    b.HasData(
+                        new
+                        {
+                            Code = "AF",
+                            Name = "Africa"
+                        },
+                        new
+                        {
+                            Code = "AN",
+                            Name = "Antarctica"
+                        },
+                        new
+                        {
+                            Code = "AS",
+                            Name = "Asia"
+                        },
+                        new
+                        {
+                            Code = "EU",
+                            Name = "Europe"
+                        },
+                        new
+                        {
+                            Code = "NA",
+                            Name = "North America"
+                        },
+                        new
+                        {
+                            Code = "OC",
+                            Name = "Oceania"
+                        },
+                        new
+                        {
+                            Code = "SA",
+                            Name = "South America"
+                        });
                 });
 
             modelBuilder.Entity("Boutquin.Trading.Domain.Entities.Country", b =>
@@ -130,6 +209,88 @@ namespace Boutquin.Trading.DataAccess.Migrations
                         .IsUnique();
 
                     b.ToTable("Countries");
+
+                    b.HasData(
+                        new
+                        {
+                            Code = "CA",
+                            ContinentCode = "NA",
+                            CurrencyCode = "CAD",
+                            Name = "Canada",
+                            NumericCode = 124
+                        },
+                        new
+                        {
+                            Code = "CN",
+                            ContinentCode = "AS",
+                            CurrencyCode = "CNY",
+                            Name = "China",
+                            NumericCode = 156
+                        },
+                        new
+                        {
+                            Code = "FR",
+                            ContinentCode = "EU",
+                            CurrencyCode = "EUR",
+                            Name = "France",
+                            NumericCode = 250
+                        },
+                        new
+                        {
+                            Code = "DE",
+                            ContinentCode = "EU",
+                            CurrencyCode = "EUR",
+                            Name = "Germany",
+                            NumericCode = 276
+                        },
+                        new
+                        {
+                            Code = "IN",
+                            ContinentCode = "AS",
+                            CurrencyCode = "INR",
+                            Name = "India",
+                            NumericCode = 356
+                        },
+                        new
+                        {
+                            Code = "JP",
+                            ContinentCode = "AS",
+                            CurrencyCode = "JPY",
+                            Name = "Japan",
+                            NumericCode = 392
+                        },
+                        new
+                        {
+                            Code = "RU",
+                            ContinentCode = "EU",
+                            CurrencyCode = "RUB",
+                            Name = "Russia",
+                            NumericCode = 643
+                        },
+                        new
+                        {
+                            Code = "KR",
+                            ContinentCode = "AS",
+                            CurrencyCode = "KRW",
+                            Name = "South Korea",
+                            NumericCode = 410
+                        },
+                        new
+                        {
+                            Code = "GB",
+                            ContinentCode = "EU",
+                            CurrencyCode = "GBP",
+                            Name = "United Kingdom",
+                            NumericCode = 826
+                        },
+                        new
+                        {
+                            Code = "US",
+                            ContinentCode = "NA",
+                            CurrencyCode = "USD",
+                            Name = "United States",
+                            NumericCode = 840
+                        });
                 });
 
             modelBuilder.Entity("Boutquin.Trading.Domain.Entities.Currency", b =>
@@ -160,6 +321,92 @@ namespace Boutquin.Trading.DataAccess.Migrations
                         .IsUnique();
 
                     b.ToTable("Currencies");
+
+                    b.HasData(
+                        new
+                        {
+                            Code = "USD",
+                            Name = "United States dollar",
+                            NumericCode = 840,
+                            Symbol = "$"
+                        },
+                        new
+                        {
+                            Code = "CAD",
+                            Name = "Canadian dollar",
+                            NumericCode = 124,
+                            Symbol = "$"
+                        },
+                        new
+                        {
+                            Code = "MXN",
+                            Name = "Mexican peso",
+                            NumericCode = 484,
+                            Symbol = "$"
+                        },
+                        new
+                        {
+                            Code = "GBP",
+                            Name = "British pound",
+                            NumericCode = 826,
+                            Symbol = "£"
+                        },
+                        new
+                        {
+                            Code = "EUR",
+                            Name = "Euro",
+                            NumericCode = 978,
+                            Symbol = "€"
+                        },
+                        new
+                        {
+                            Code = "JPY",
+                            Name = "Japanese yen",
+                            NumericCode = 392,
+                            Symbol = "¥"
+                        },
+                        new
+                        {
+                            Code = "CNY",
+                            Name = "Chinese yuan",
+                            NumericCode = 156,
+                            Symbol = "¥"
+                        },
+                        new
+                        {
+                            Code = "INR",
+                            Name = "Indian rupee",
+                            NumericCode = 356,
+                            Symbol = "₹"
+                        },
+                        new
+                        {
+                            Code = "AUD",
+                            Name = "Australian dollar",
+                            NumericCode = 36,
+                            Symbol = "$"
+                        },
+                        new
+                        {
+                            Code = "BRL",
+                            Name = "Brazilian real",
+                            NumericCode = 986,
+                            Symbol = "R$"
+                        },
+                        new
+                        {
+                            Code = "RUB",
+                            Name = "Russian ruble",
+                            NumericCode = 643,
+                            Symbol = "₽"
+                        },
+                        new
+                        {
+                            Code = "KRW",
+                            Name = "South Korean won",
+                            NumericCode = 410,
+                            Symbol = "₩"
+                        });
                 });
 
             modelBuilder.Entity("Boutquin.Trading.Domain.Entities.Exchange", b =>
@@ -206,7 +453,7 @@ namespace Boutquin.Trading.DataAccess.Migrations
                         .HasColumnType("nvarchar(4)");
 
                     b.Property<DateTime>("HolidayDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("Date");
 
                     b.HasKey("_id");
 
@@ -415,6 +662,33 @@ namespace Boutquin.Trading.DataAccess.Migrations
                         .IsUnique();
 
                     b.ToTable("SymbolStandards");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 0,
+                            Description = "CUSIP"
+                        },
+                        new
+                        {
+                            Id = 1,
+                            Description = "ISIN"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Description = "SEDOL"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Description = "RIC"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Description = "Bloomberg Ticker"
+                        });
                 });
 
             modelBuilder.Entity("Boutquin.Trading.Domain.Entities.TimeZone", b =>

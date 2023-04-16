@@ -56,12 +56,12 @@ public sealed class ContinentConfiguration : IEntityTypeConfiguration<Continent>
 
         // Seed the currencies table with the major currencies
         builder.HasData(
-            new Continent(ContinentCode.AF, "Africa"),
-            new Continent(ContinentCode.AN, "Antarctica"),
-            new Continent(ContinentCode.AS, "Asia"),
-            new Continent(ContinentCode.EU, "Europe"),
-            new Continent(ContinentCode.NA, "North America"),
-            new Continent(ContinentCode.OC, "Oceania"),
-            new Continent(ContinentCode.SA, "South America"));
+            new Continent(ContinentCode.AF),
+            new Continent(ContinentCode.AN),
+            new Continent(ContinentCode.AS),
+            new Continent(ContinentCode.EU),
+            new Continent(ContinentCode.NA),
+            new Continent(ContinentCode.OC),
+            new Continent(ContinentCode.SA));
     }
 }

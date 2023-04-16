@@ -97,7 +97,7 @@ GO
 CREATE TABLE [ExchangeHolidays] (
     [Id] int NOT NULL IDENTITY,
     [ExchangeCode] nvarchar(4) NOT NULL,
-    [HolidayDate] datetime2 NOT NULL,
+    [HolidayDate] Date NOT NULL,
     [Description] nvarchar(50) NOT NULL,
     CONSTRAINT [PK_ExchangeHolidays] PRIMARY KEY ([Id]),
     CONSTRAINT [FK_ExchangeHolidays_Exchanges_ExchangeCode] FOREIGN KEY ([ExchangeCode]) REFERENCES [Exchanges] ([Code]) ON DELETE CASCADE
@@ -150,6 +150,83 @@ CREATE TABLE [SecuritySymbols] (
     CONSTRAINT [FK_SecuritySymbols_Securities_SecurityId] FOREIGN KEY ([SecurityId]) REFERENCES [Securities] ([Id]) ON DELETE CASCADE,
     CONSTRAINT [FK_SecuritySymbols_SymbolStandards_Standard] FOREIGN KEY ([Standard]) REFERENCES [SymbolStandards] ([Id]) ON DELETE CASCADE
 );
+GO
+
+IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Id', N'Description') AND [object_id] = OBJECT_ID(N'[AssetClasses]'))
+    SET IDENTITY_INSERT [AssetClasses] ON;
+INSERT INTO [AssetClasses] ([Id], [Description])
+VALUES (0, N'Cash or Cash Equivalents'),
+(1, N'Fixed Income Securities'),
+(2, N'Equity Securities'),
+(3, N'Real Estate'),
+(4, N'Commodities'),
+(5, N'Alternative Investments'),
+(6, N'Crypto-Currencies'),
+(7, N'Other');
+IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Id', N'Description') AND [object_id] = OBJECT_ID(N'[AssetClasses]'))
+    SET IDENTITY_INSERT [AssetClasses] OFF;
+GO
+
+IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Code', N'Name') AND [object_id] = OBJECT_ID(N'[Continents]'))
+    SET IDENTITY_INSERT [Continents] ON;
+INSERT INTO [Continents] ([Code], [Name])
+VALUES (N'AF', N'Africa'),
+(N'AN', N'Antarctica'),
+(N'AS', N'Asia'),
+(N'EU', N'Europe'),
+(N'NA', N'North America'),
+(N'OC', N'Oceania'),
+(N'SA', N'South America');
+IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Code', N'Name') AND [object_id] = OBJECT_ID(N'[Continents]'))
+    SET IDENTITY_INSERT [Continents] OFF;
+GO
+
+IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Code', N'Name', N'NumericCode', N'Symbol') AND [object_id] = OBJECT_ID(N'[Currencies]'))
+    SET IDENTITY_INSERT [Currencies] ON;
+INSERT INTO [Currencies] ([Code], [Name], [NumericCode], [Symbol])
+VALUES (N'AUD', N'Australian dollar', 36, N'$'),
+(N'BRL', N'Brazilian real', 986, N'R$'),
+(N'CAD', N'Canadian dollar', 124, N'$'),
+(N'CNY', N'Chinese yuan', 156, N'¥'),
+(N'EUR', N'Euro', 978, N'€'),
+(N'GBP', N'British pound', 826, N'£'),
+(N'INR', N'Indian rupee', 356, N'₹'),
+(N'JPY', N'Japanese yen', 392, N'¥'),
+(N'KRW', N'South Korean won', 410, N'₩'),
+(N'MXN', N'Mexican peso', 484, N'$'),
+(N'RUB', N'Russian ruble', 643, N'₽'),
+(N'USD', N'United States dollar', 840, N'$');
+IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Code', N'Name', N'NumericCode', N'Symbol') AND [object_id] = OBJECT_ID(N'[Currencies]'))
+    SET IDENTITY_INSERT [Currencies] OFF;
+GO
+
+IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Id', N'Description') AND [object_id] = OBJECT_ID(N'[SymbolStandards]'))
+    SET IDENTITY_INSERT [SymbolStandards] ON;
+INSERT INTO [SymbolStandards] ([Id], [Description])
+VALUES (0, N'CUSIP'),
+(1, N'ISIN'),
+(2, N'SEDOL'),
+(3, N'RIC'),
+(4, N'Bloomberg Ticker');
+IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Id', N'Description') AND [object_id] = OBJECT_ID(N'[SymbolStandards]'))
+    SET IDENTITY_INSERT [SymbolStandards] OFF;
+GO
+
+IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Code', N'ContinentCode', N'CurrencyCode', N'Name', N'NumericCode') AND [object_id] = OBJECT_ID(N'[Countries]'))
+    SET IDENTITY_INSERT [Countries] ON;
+INSERT INTO [Countries] ([Code], [ContinentCode], [CurrencyCode], [Name], [NumericCode])
+VALUES (N'CA', N'NA', N'CAD', N'Canada', 124),
+(N'CN', N'AS', N'CNY', N'China', 156),
+(N'DE', N'EU', N'EUR', N'Germany', 276),
+(N'FR', N'EU', N'EUR', N'France', 250),
+(N'GB', N'EU', N'GBP', N'United Kingdom', 826),
+(N'IN', N'AS', N'INR', N'India', 356),
+(N'JP', N'AS', N'JPY', N'Japan', 392),
+(N'KR', N'AS', N'KRW', N'South Korea', 410),
+(N'RU', N'EU', N'RUB', N'Russia', 643),
+(N'US', N'NA', N'USD', N'United States', 840);
+IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Code', N'ContinentCode', N'CurrencyCode', N'Name', N'NumericCode') AND [object_id] = OBJECT_ID(N'[Countries]'))
+    SET IDENTITY_INSERT [Countries] OFF;
 GO
 
 CREATE UNIQUE INDEX [IX_AssetClasses_Description] ON [AssetClasses] ([Description]);
@@ -231,7 +308,7 @@ CREATE UNIQUE INDEX [IX_TimeZones_Name] ON [TimeZones] ([Name]);
 GO
 
 INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-VALUES (N'20230410014641_InitialCreate', N'7.0.4');
+VALUES (N'20230416214556_InitialCreate', N'7.0.5');
 GO
 
 COMMIT;

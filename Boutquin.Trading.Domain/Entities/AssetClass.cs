@@ -18,6 +18,7 @@ using Boutquin.Trading.Domain.Enums;
 namespace Boutquin.Trading.Domain.Entities;
 
 using System;
+using Boutquin.Domain.Extensions;
 using Boutquin.Domain.Helpers;
 
 /// <summary>
@@ -34,19 +35,21 @@ public sealed class AssetClass
     /// Thrown when <paramref name="id"/> is not defined in the <see cref="AssetClassCode"/> enumeration.
     /// </exception>
     /// <exception cref="ArgumentException">
-    /// Thrown when the <paramref name="description"/> is null, empty 
-    /// or longer than the allowed length.
+    /// Thrown when the <paramref name="description"/> is longer than the allowed length.
     /// </exception>
     public AssetClass(
         AssetClassCode id,
-        string description)
+        string? description = null)
     {
         // Validate parameters
         Guard.AgainstUndefinedEnumValue(() => id);
-        Guard.AgainstNullOrWhiteSpaceAndOverflow(() => description, ColumnConstants.AssetClass_Description_Length);
+        if (!description.IsNullOrWhiteSpace())
+        {
+            Guard.AgainstOverflow(() => description, ColumnConstants.AssetClass_Description_Length);
+        }
 
         Id = id;
-        Description = description;
+        Description = description.IsNullOrWhiteSpace() ? id.GetDescription() : description;
     }
 
     /// <summary>

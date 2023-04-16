@@ -30,6 +30,7 @@ These classes cover a wide range of entities related to the financial trading do
 - Security
 - SecurityPrice
 - SecuritySymbol
+- SymbolStandard
 - TimeZone
 
 ## Contributing

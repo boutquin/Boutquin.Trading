@@ -17,6 +17,7 @@ using Boutquin.Domain.Helpers;
 using Boutquin.Trading.Domain.Entities;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
+using Boutquin.Trading.Domain.Enums;
 
 namespace Boutquin.Trading.DataAccess.Configuration;
 
@@ -51,5 +52,16 @@ public sealed class AssetClassConfiguration : IEntityTypeConfiguration<AssetClas
         // Configure Unique Index on Description
         builder.HasIndex(ac => ac.Description)
             .IsUnique();
+
+        // Seed the asset class table with the major asset classes
+        builder.HasData(
+            new AssetClass(AssetClassCode.CashAndCashEquivalents),
+            new AssetClass(AssetClassCode.FixedIncome),
+            new AssetClass(AssetClassCode.Equities),
+            new AssetClass(AssetClassCode.RealEstate),    
+            new AssetClass(AssetClassCode.Commodities),
+            new AssetClass(AssetClassCode.Alternatives),
+            new AssetClass(AssetClassCode.CryptoCurrencies),
+            new AssetClass(AssetClassCode.Other));
     }
 }

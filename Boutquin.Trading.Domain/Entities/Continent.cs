@@ -18,6 +18,7 @@ using Boutquin.Trading.Domain.Enums;
 namespace Boutquin.Trading.Domain.Entities;
 
 using System;
+using Boutquin.Domain.Extensions;
 using Boutquin.Domain.Helpers;
 
 /// <summary>
@@ -38,14 +39,17 @@ public sealed class Continent
     /// </exception>
     public Continent(
         ContinentCode code,
-        string name)
+        string? name = null)
     {
         // Validate parameters
-        Guard.AgainstUndefinedEnumValue(() => code);
-        Guard.AgainstNullOrWhiteSpaceAndOverflow(() => name, ColumnConstants.Continent_Name_Length);
+        Guard.AgainstUndefinedEnumValue(() => code);     
+        if (!name.IsNullOrWhiteSpace())
+        {
+            Guard.AgainstOverflow(() => name, ColumnConstants.Continent_Name_Length);
+        }
 
         Code = code;
-        Name = name;
+        Name = name.IsNullOrWhiteSpace() ? code.GetDescription() : name;
     }
 
     /// <summary>

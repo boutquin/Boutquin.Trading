@@ -17,7 +17,6 @@ using Boutquin.Domain.Helpers;
 using Boutquin.Trading.Domain.Entities;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
-using Boutquin.Trading.Domain.ValueObjects;
 
 namespace Boutquin.Trading.DataAccess.Configuration;
 
@@ -45,8 +44,9 @@ public sealed class SecurityPriceConfiguration : IEntityTypeConfiguration<Securi
 
         // Configure TradeDate property with required constraint and column type
         builder.Property(sp => sp.TradeDate)
-            .IsRequired()
-            .HasColumnType("Date");
+            .HasConversion<DateOnlyConverter>()
+            .HasColumnType("Date")
+            .IsRequired();
 
         // Configure OpenPrice property with required constraint and precision
         builder.Property(sp => sp.OpenPrice)

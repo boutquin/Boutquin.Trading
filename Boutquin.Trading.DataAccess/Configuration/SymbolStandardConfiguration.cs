@@ -17,6 +17,7 @@ using Boutquin.Domain.Helpers;
 using Boutquin.Trading.Domain.Entities;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
+using Boutquin.Trading.Domain.Enums;
 
 namespace Boutquin.Trading.DataAccess.Configuration;
 
@@ -51,5 +52,13 @@ public sealed class SymbolStandardConfiguration : IEntityTypeConfiguration<Symbo
         // Configure Unique Index on Description
         builder.HasIndex(ac => ac.Description)
             .IsUnique();
+
+        // Seed the symbol standards table with the major symbol standards
+        builder.HasData(
+            new SymbolStandard(SecuritySymbolStandard.Cusip),
+            new SymbolStandard(SecuritySymbolStandard.Isin),
+            new SymbolStandard(SecuritySymbolStandard.Sedol),
+            new SymbolStandard(SecuritySymbolStandard.Ric),
+            new SymbolStandard(SecuritySymbolStandard.BloombergTicker));
     }
 }

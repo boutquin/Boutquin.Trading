@@ -18,6 +18,7 @@ using Boutquin.Trading.Domain.Enums;
 namespace Boutquin.Trading.Domain.Entities;
 
 using System;
+using Boutquin.Domain.Extensions;
 using Boutquin.Domain.Helpers;
 
 /// <summary>
@@ -39,14 +40,17 @@ public sealed class SymbolStandard
     /// </exception>
     public SymbolStandard(
         SecuritySymbolStandard id,
-        string description)
+        string? description = null)
     {
         // Validate parameters
         Guard.AgainstUndefinedEnumValue(() => id);
-        Guard.AgainstNullOrWhiteSpaceAndOverflow(() => description, ColumnConstants.SymbolStandard_Description_Length);
+        if (!description.IsNullOrWhiteSpace())
+        {
+            Guard.AgainstOverflow(() => description, ColumnConstants.SymbolStandard_Description_Length);
+        }
 
         Id = id;
-        Description = description;
+        Description = description.IsNullOrWhiteSpace() ? id.GetDescription() : description;
     }
 
     /// <summary>
