@@ -18,6 +18,7 @@ using Boutquin.Trading.Domain.Entities;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
 using TimeZone = Boutquin.Trading.Domain.Entities.TimeZone;
+using Boutquin.Trading.Domain.Enums;
 
 namespace Boutquin.Trading.DataAccess.Configuration;
 
@@ -75,5 +76,18 @@ public sealed class CityConfiguration : IEntityTypeConfiguration<City>
         // Configure Unique Index on CountryCode & Name
         builder.HasIndex(c => new { c.CountryCode, c.Name })
             .IsUnique();
+
+        // Seed the cities table with the major cities
+        builder.HasData(
+            new { _id = IdLookup.GetCityId("New York"), Name = "New York", TimeZoneCode = TimeZoneCode.UTC, CountryCode = CountryCode.US },
+            new { _id = IdLookup.GetCityId("Tokyo"), Name = "Tokyo", TimeZoneCode = TimeZoneCode.JST, CountryCode = CountryCode.JP },
+            new { _id = IdLookup.GetCityId("Shanghai"), Name = "Shanghai", TimeZoneCode = TimeZoneCode.CST, CountryCode = CountryCode.CN },
+            new { _id = IdLookup.GetCityId("Hong Kong"), Name = "Hong Kong", TimeZoneCode = TimeZoneCode.HKT, CountryCode = CountryCode.HK },
+            new { _id = IdLookup.GetCityId("Paris"), Name = "Paris", TimeZoneCode = TimeZoneCode.CET, CountryCode = CountryCode.FR },
+            new { _id = IdLookup.GetCityId("London"), Name = "London", TimeZoneCode = TimeZoneCode.GMT, CountryCode = CountryCode.GB },
+            new { _id = IdLookup.GetCityId("Frankfurt"), Name = "Frankfurt", TimeZoneCode = TimeZoneCode.CET, CountryCode = CountryCode.DE },
+            new { _id = IdLookup.GetCityId("Moscow"), Name = "Moscow", TimeZoneCode = TimeZoneCode.MSK, CountryCode = CountryCode.RU },
+            new { _id = IdLookup.GetCityId("Toronto"), Name = "Toronto", TimeZoneCode = TimeZoneCode.EST, CountryCode = CountryCode.CA }
+        );
     }
 }

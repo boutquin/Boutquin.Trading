@@ -92,6 +92,11 @@ public enum CurrencyCode
     /// South Korean won.
     /// </summary>
     [Description("South Korean won")]
-    KRW = 410
-}
+    KRW = 410,
 
+    /// <summary>
+    /// Hong Kong dollar.
+    /// </summary>
+    [Description("Hong Kong dollar")]
+    HKD = 344
+}

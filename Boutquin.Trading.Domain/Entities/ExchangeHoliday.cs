@@ -47,6 +47,7 @@ public sealed class ExchangeHoliday
         Guard.AgainstUndefinedEnumValue(() => exchangeCode);
         Guard.AgainstNullOrWhiteSpaceAndOverflow(() => description, ColumnConstants.ExchangeHoliday_Description_Length);
 
+        _id = -1;
         ExchangeCode = exchangeCode;
         HolidayDate = holidayDate;
         Description = description;

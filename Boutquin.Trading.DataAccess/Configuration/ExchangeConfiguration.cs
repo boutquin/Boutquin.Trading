@@ -17,6 +17,7 @@ using Boutquin.Domain.Helpers;
 using Boutquin.Trading.Domain.Entities;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
+using Boutquin.Trading.Domain.Enums;
 
 namespace Boutquin.Trading.DataAccess.Configuration;
 
@@ -71,5 +72,19 @@ public sealed class ExchangeConfiguration : IEntityTypeConfiguration<Exchange>
         // Configure Unique Index on Name
         builder.HasIndex(e => e.Name)
             .IsUnique();
+
+        // Seed the Exchange table using the City IDs as foreign keys
+        builder.HasData(
+            new { Code = ExchangeCode.XNYS, Name = "New York Stock Exchange", CityId = IdLookup.GetCityId("New York") },
+            new { Code = ExchangeCode.XNAS, Name = "NASDAQ Stock Market", CityId = IdLookup.GetCityId("New York") },
+            new { Code = ExchangeCode.XTSE, Name = "Tokyo Stock Exchange", CityId = IdLookup.GetCityId("Tokyo") },
+            new { Code = ExchangeCode.XSHG, Name = "Shanghai Stock Exchange", CityId = IdLookup.GetCityId("Shanghai") },
+            new { Code = ExchangeCode.XHKG, Name = "Hong Kong Stock Exchange", CityId = IdLookup.GetCityId("Hong Kong") },
+            new { Code = ExchangeCode.XPAR, Name = "Euronext Paris", CityId = IdLookup.GetCityId("Paris") },
+            new { Code = ExchangeCode.XLON, Name = "London Stock Exchange", CityId = IdLookup.GetCityId("London") },
+            new { Code = ExchangeCode.XETR, Name = "Deutsche Boerse XETRA", CityId = IdLookup.GetCityId("Frankfurt") },
+            new { Code = ExchangeCode.XMOS, Name = "Moscow Exchange", CityId = IdLookup.GetCityId("Moscow") },
+            new { Code = ExchangeCode.XTOR, Name = "Toronto Stock Exchange", CityId = IdLookup.GetCityId("Toronto") }
+        );
     }
 }

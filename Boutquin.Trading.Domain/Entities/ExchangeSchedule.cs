@@ -48,6 +48,7 @@ public sealed class ExchangeSchedule
         Guard.AgainstOutOfRange(() => openTime, TimeSpan.Zero, TimeSpan.FromHours(24));
         Guard.AgainstOutOfRange(() => closeTime, TimeSpan.Zero, TimeSpan.FromHours(24));
 
+        _id = -1;
         ExchangeCode = exchangeCode;
         DayOfWeek = dayOfWeek;
         OpenTime = openTime;

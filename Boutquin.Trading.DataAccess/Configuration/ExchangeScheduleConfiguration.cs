@@ -15,6 +15,7 @@
 
 using Boutquin.Domain.Helpers;
 using Boutquin.Trading.Domain.Entities;
+using Boutquin.Trading.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -63,5 +64,45 @@ public sealed class ExchangeScheduleConfiguration : IEntityTypeConfiguration<Exc
         // Configure Unique Index on ExchangeCode & DayOfWeek
         builder.HasIndex(es => new { es.ExchangeCode, es.DayOfWeek })
             .IsUnique();
+
+        const DayOfWeek FirstTradingDay = DayOfWeek.Monday;
+        const DayOfWeek LastTradingDay = DayOfWeek.Friday;
+        var exchangeSchedules = new List<object>();
+
+        var exchangeTradingHours = new Dictionary<ExchangeCode, (TimeSpan Open, TimeSpan Close)>
+            {
+                { ExchangeCode.XNYS, (new TimeSpan(9, 30, 0), new TimeSpan(16, 0, 0)) },
+                { ExchangeCode.XNAS, (new TimeSpan(9, 30, 0), new TimeSpan(16, 0, 0)) },
+                { ExchangeCode.XTSE, (new TimeSpan(9, 0, 0), new TimeSpan(15, 0, 0)) },
+                { ExchangeCode.XSHG, (new TimeSpan(9, 30, 0), new TimeSpan(15, 0, 0)) },
+                { ExchangeCode.XHKG, (new TimeSpan(9, 30, 0), new TimeSpan(16, 0, 0)) },
+                { ExchangeCode.XPAR, (new TimeSpan(9, 0, 0), new TimeSpan(17, 30, 0)) },
+                { ExchangeCode.XLON, (new TimeSpan(8, 0, 0), new TimeSpan(16, 30, 0)) },
+                { ExchangeCode.XETR, (new TimeSpan(9, 0, 0), new TimeSpan(17, 30, 0)) },
+                { ExchangeCode.XMOS, (new TimeSpan(10, 0, 0), new TimeSpan(18, 45, 0)) },
+                { ExchangeCode.XTOR, (new TimeSpan(9, 30, 0), new TimeSpan(16, 0, 0)) },
+            };
+
+        // Construct the data to seed the ExchangeSchedule table
+        var scheduleId = 1;
+        foreach (ExchangeCode exchangeCode in Enum.GetValues(typeof(ExchangeCode)))
+        {
+            for (var day = FirstTradingDay; day <= LastTradingDay; day++)
+            {
+                var (open, close) = exchangeTradingHours[exchangeCode];
+                exchangeSchedules.Add(new
+                    {
+                        _id = scheduleId,
+                        ExchangeCode = exchangeCode,
+                        DayOfWeek = day,
+                        OpenTime = open,
+                        CloseTime = close
+                    });
+                scheduleId++;
+            }
+        }
+
+        // Seed the ExchangeSchedule table
+        builder.HasData(exchangeSchedules);
     }
 }

@@ -341,6 +341,7 @@ namespace Boutquin.Trading.DataAccess.Migrations
                     { "CNY", "Chinese yuan", 156, "¥" },
                     { "EUR", "Euro", 978, "€" },
                     { "GBP", "British pound", 826, "£" },
+                    { "HKD", "Hong Kong dollar", 344, "HK$" },
                     { "INR", "Indian rupee", 356, "₹" },
                     { "JPY", "Japanese yen", 392, "¥" },
                     { "KRW", "South Korean won", 410, "₩" },
@@ -362,6 +363,22 @@ namespace Boutquin.Trading.DataAccess.Migrations
                 });
 
             migrationBuilder.InsertData(
+                table: "TimeZones",
+                columns: new[] { "Code", "Name", "TimeZoneOffset", "UsesDaylightSaving" },
+                values: new object[,]
+                {
+                    { "AEST", "Australian Eastern Standard Time", "+10:00", false },
+                    { "CET", "Central European Time", "+01:00", false },
+                    { "CST", "China Standard Time", "+08:00", false },
+                    { "EST", "Eastern Standard Time", "-05:00", false },
+                    { "GMT", "Greenwich Mean Time", "GMT", false },
+                    { "HKT", "Hong Kong Time", "+08:00", false },
+                    { "JST", "Japan Standard Time", "+09:00", false },
+                    { "MSK", "Moscow Standard Time", "+04:00", false },
+                    { "UTC", "Coordinated Universal Time", "Z", false }
+                });
+
+            migrationBuilder.InsertData(
                 table: "Countries",
                 columns: new[] { "Code", "ContinentCode", "CurrencyCode", "Name", "NumericCode" },
                 values: new object[,]
@@ -371,11 +388,102 @@ namespace Boutquin.Trading.DataAccess.Migrations
                     { "DE", "EU", "EUR", "Germany", 276 },
                     { "FR", "EU", "EUR", "France", 250 },
                     { "GB", "EU", "GBP", "United Kingdom", 826 },
+                    { "HK", "AS", "HKD", "Hong Kong", 344 },
                     { "IN", "AS", "INR", "India", 356 },
                     { "JP", "AS", "JPY", "Japan", 392 },
                     { "KR", "AS", "KRW", "South Korea", 410 },
                     { "RU", "EU", "RUB", "Russia", 643 },
                     { "US", "NA", "USD", "United States", 840 }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Cities",
+                columns: new[] { "Id", "CountryCode", "Name", "TimeZoneCode" },
+                values: new object[,]
+                {
+                    { 1, "US", "New York", "UTC" },
+                    { 2, "JP", "Tokyo", "JST" },
+                    { 3, "CN", "Shanghai", "CST" },
+                    { 4, "HK", "Hong Kong", "HKT" },
+                    { 5, "FR", "Paris", "CET" },
+                    { 6, "GB", "London", "GMT" },
+                    { 7, "DE", "Frankfurt", "CET" },
+                    { 8, "RU", "Moscow", "MSK" },
+                    { 9, "CA", "Toronto", "EST" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Exchanges",
+                columns: new[] { "Code", "CityId", "Name" },
+                values: new object[,]
+                {
+                    { "XETR", 7, "Deutsche Boerse XETRA" },
+                    { "XHKG", 4, "Hong Kong Stock Exchange" },
+                    { "XLON", 6, "London Stock Exchange" },
+                    { "XMOS", 8, "Moscow Exchange" },
+                    { "XNAS", 1, "NASDAQ Stock Market" },
+                    { "XNYS", 1, "New York Stock Exchange" },
+                    { "XPAR", 5, "Euronext Paris" },
+                    { "XSHG", 3, "Shanghai Stock Exchange" },
+                    { "XTOR", 9, "Toronto Stock Exchange" },
+                    { "XTSE", 2, "Tokyo Stock Exchange" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "ExchangeSchedules",
+                columns: new[] { "Id", "CloseTime", "DayOfWeek", "ExchangeCode", "OpenTime" },
+                values: new object[,]
+                {
+                    { 1, new TimeSpan(0, 16, 0, 0, 0), 1, "XNYS", new TimeSpan(0, 9, 30, 0, 0) },
+                    { 2, new TimeSpan(0, 16, 0, 0, 0), 2, "XNYS", new TimeSpan(0, 9, 30, 0, 0) },
+                    { 3, new TimeSpan(0, 16, 0, 0, 0), 3, "XNYS", new TimeSpan(0, 9, 30, 0, 0) },
+                    { 4, new TimeSpan(0, 16, 0, 0, 0), 4, "XNYS", new TimeSpan(0, 9, 30, 0, 0) },
+                    { 5, new TimeSpan(0, 16, 0, 0, 0), 5, "XNYS", new TimeSpan(0, 9, 30, 0, 0) },
+                    { 6, new TimeSpan(0, 16, 0, 0, 0), 1, "XNAS", new TimeSpan(0, 9, 30, 0, 0) },
+                    { 7, new TimeSpan(0, 16, 0, 0, 0), 2, "XNAS", new TimeSpan(0, 9, 30, 0, 0) },
+                    { 8, new TimeSpan(0, 16, 0, 0, 0), 3, "XNAS", new TimeSpan(0, 9, 30, 0, 0) },
+                    { 9, new TimeSpan(0, 16, 0, 0, 0), 4, "XNAS", new TimeSpan(0, 9, 30, 0, 0) },
+                    { 10, new TimeSpan(0, 16, 0, 0, 0), 5, "XNAS", new TimeSpan(0, 9, 30, 0, 0) },
+                    { 11, new TimeSpan(0, 15, 0, 0, 0), 1, "XTSE", new TimeSpan(0, 9, 0, 0, 0) },
+                    { 12, new TimeSpan(0, 15, 0, 0, 0), 2, "XTSE", new TimeSpan(0, 9, 0, 0, 0) },
+                    { 13, new TimeSpan(0, 15, 0, 0, 0), 3, "XTSE", new TimeSpan(0, 9, 0, 0, 0) },
+                    { 14, new TimeSpan(0, 15, 0, 0, 0), 4, "XTSE", new TimeSpan(0, 9, 0, 0, 0) },
+                    { 15, new TimeSpan(0, 15, 0, 0, 0), 5, "XTSE", new TimeSpan(0, 9, 0, 0, 0) },
+                    { 16, new TimeSpan(0, 15, 0, 0, 0), 1, "XSHG", new TimeSpan(0, 9, 30, 0, 0) },
+                    { 17, new TimeSpan(0, 15, 0, 0, 0), 2, "XSHG", new TimeSpan(0, 9, 30, 0, 0) },
+                    { 18, new TimeSpan(0, 15, 0, 0, 0), 3, "XSHG", new TimeSpan(0, 9, 30, 0, 0) },
+                    { 19, new TimeSpan(0, 15, 0, 0, 0), 4, "XSHG", new TimeSpan(0, 9, 30, 0, 0) },
+                    { 20, new TimeSpan(0, 15, 0, 0, 0), 5, "XSHG", new TimeSpan(0, 9, 30, 0, 0) },
+                    { 21, new TimeSpan(0, 16, 0, 0, 0), 1, "XHKG", new TimeSpan(0, 9, 30, 0, 0) },
+                    { 22, new TimeSpan(0, 16, 0, 0, 0), 2, "XHKG", new TimeSpan(0, 9, 30, 0, 0) },
+                    { 23, new TimeSpan(0, 16, 0, 0, 0), 3, "XHKG", new TimeSpan(0, 9, 30, 0, 0) },
+                    { 24, new TimeSpan(0, 16, 0, 0, 0), 4, "XHKG", new TimeSpan(0, 9, 30, 0, 0) },
+                    { 25, new TimeSpan(0, 16, 0, 0, 0), 5, "XHKG", new TimeSpan(0, 9, 30, 0, 0) },
+                    { 26, new TimeSpan(0, 17, 30, 0, 0), 1, "XPAR", new TimeSpan(0, 9, 0, 0, 0) },
+                    { 27, new TimeSpan(0, 17, 30, 0, 0), 2, "XPAR", new TimeSpan(0, 9, 0, 0, 0) },
+                    { 28, new TimeSpan(0, 17, 30, 0, 0), 3, "XPAR", new TimeSpan(0, 9, 0, 0, 0) },
+                    { 29, new TimeSpan(0, 17, 30, 0, 0), 4, "XPAR", new TimeSpan(0, 9, 0, 0, 0) },
+                    { 30, new TimeSpan(0, 17, 30, 0, 0), 5, "XPAR", new TimeSpan(0, 9, 0, 0, 0) },
+                    { 31, new TimeSpan(0, 16, 30, 0, 0), 1, "XLON", new TimeSpan(0, 8, 0, 0, 0) },
+                    { 32, new TimeSpan(0, 16, 30, 0, 0), 2, "XLON", new TimeSpan(0, 8, 0, 0, 0) },
+                    { 33, new TimeSpan(0, 16, 30, 0, 0), 3, "XLON", new TimeSpan(0, 8, 0, 0, 0) },
+                    { 34, new TimeSpan(0, 16, 30, 0, 0), 4, "XLON", new TimeSpan(0, 8, 0, 0, 0) },
+                    { 35, new TimeSpan(0, 16, 30, 0, 0), 5, "XLON", new TimeSpan(0, 8, 0, 0, 0) },
+                    { 36, new TimeSpan(0, 17, 30, 0, 0), 1, "XETR", new TimeSpan(0, 9, 0, 0, 0) },
+                    { 37, new TimeSpan(0, 17, 30, 0, 0), 2, "XETR", new TimeSpan(0, 9, 0, 0, 0) },
+                    { 38, new TimeSpan(0, 17, 30, 0, 0), 3, "XETR", new TimeSpan(0, 9, 0, 0, 0) },
+                    { 39, new TimeSpan(0, 17, 30, 0, 0), 4, "XETR", new TimeSpan(0, 9, 0, 0, 0) },
+                    { 40, new TimeSpan(0, 17, 30, 0, 0), 5, "XETR", new TimeSpan(0, 9, 0, 0, 0) },
+                    { 41, new TimeSpan(0, 18, 45, 0, 0), 1, "XMOS", new TimeSpan(0, 10, 0, 0, 0) },
+                    { 42, new TimeSpan(0, 18, 45, 0, 0), 2, "XMOS", new TimeSpan(0, 10, 0, 0, 0) },
+                    { 43, new TimeSpan(0, 18, 45, 0, 0), 3, "XMOS", new TimeSpan(0, 10, 0, 0, 0) },
+                    { 44, new TimeSpan(0, 18, 45, 0, 0), 4, "XMOS", new TimeSpan(0, 10, 0, 0, 0) },
+                    { 45, new TimeSpan(0, 18, 45, 0, 0), 5, "XMOS", new TimeSpan(0, 10, 0, 0, 0) },
+                    { 46, new TimeSpan(0, 16, 0, 0, 0), 1, "XTOR", new TimeSpan(0, 9, 30, 0, 0) },
+                    { 47, new TimeSpan(0, 16, 0, 0, 0), 2, "XTOR", new TimeSpan(0, 9, 30, 0, 0) },
+                    { 48, new TimeSpan(0, 16, 0, 0, 0), 3, "XTOR", new TimeSpan(0, 9, 30, 0, 0) },
+                    { 49, new TimeSpan(0, 16, 0, 0, 0), 4, "XTOR", new TimeSpan(0, 9, 30, 0, 0) },
+                    { 50, new TimeSpan(0, 16, 0, 0, 0), 5, "XTOR", new TimeSpan(0, 9, 30, 0, 0) }
                 });
 
             migrationBuilder.CreateIndex(

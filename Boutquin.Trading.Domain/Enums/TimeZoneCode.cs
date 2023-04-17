@@ -35,46 +35,22 @@ public enum TimeZoneCode
     CET,
 
     /// <summary>
-    /// Central European Summer Time.
+    /// Greenwich Mean Time.
     /// </summary>
-    [Description("+02:00")]
-    CEST,
+    [Description("GMT")]
+    GMT,
 
     /// <summary>
-    /// Eastern European Summer Time.
+    /// Eastern Standard Time.
     /// </summary>
-    [Description("+03:00")]
-    EEST,
+    [Description("-05:00")]
+    EST,
 
     /// <summary>
-    /// Moscow Standard Time.
-    /// </summary>
-    [Description("+04:00")]
-    MSD,
-
-    /// <summary>
-    /// Pakistan Standard Time.
-    /// </summary>
-    [Description("+05:00")]
-    PKT,
-
-    /// <summary>
-    /// Alma-Ata Time.
-    /// </summary>
-    [Description("+06:00")]
-    ALMT,
-
-    /// <summary>
-    /// Indochina Time.
-    /// </summary>
-    [Description("+07:00")]
-    ICT,
-
-    /// <summary>
-    /// Hong Kong Time.
+    /// China Standard Time.
     /// </summary>
     [Description("+08:00")]
-    HKT,
+    CST,
 
     /// <summary>
     /// Japan Standard Time.
@@ -83,20 +59,20 @@ public enum TimeZoneCode
     JST,
 
     /// <summary>
+    /// Hong Kong Time.
+    /// </summary>
+    [Description("+08:00")]
+    HKT,
+
+    /// <summary>
+    /// Moscow Standard Time.
+    /// </summary>
+    [Description("+04:00")]
+    MSK,
+
+    /// <summary>
     /// Australian Eastern Standard Time.
     /// </summary>
     [Description("+10:00")]
     AEST,
-
-    /// <summary>
-    /// Australian Eastern Daylight Time.
-    /// </summary>
-    [Description("+11:00")]
-    AEDT,
-
-    /// <summary>
-    /// New Zealand Daylight Time.
-    /// </summary>
-    [Description("+12:00")]
-    NZDT
 }

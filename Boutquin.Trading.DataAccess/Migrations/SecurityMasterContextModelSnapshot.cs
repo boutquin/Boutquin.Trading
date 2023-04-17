@@ -114,6 +114,71 @@ namespace Boutquin.Trading.DataAccess.Migrations
                         .IsUnique();
 
                     b.ToTable("Cities");
+
+                    b.HasData(
+                        new
+                        {
+                            _id = 1,
+                            CountryCode = "US",
+                            Name = "New York",
+                            TimeZoneCode = "UTC"
+                        },
+                        new
+                        {
+                            _id = 2,
+                            CountryCode = "JP",
+                            Name = "Tokyo",
+                            TimeZoneCode = "JST"
+                        },
+                        new
+                        {
+                            _id = 3,
+                            CountryCode = "CN",
+                            Name = "Shanghai",
+                            TimeZoneCode = "CST"
+                        },
+                        new
+                        {
+                            _id = 4,
+                            CountryCode = "HK",
+                            Name = "Hong Kong",
+                            TimeZoneCode = "HKT"
+                        },
+                        new
+                        {
+                            _id = 5,
+                            CountryCode = "FR",
+                            Name = "Paris",
+                            TimeZoneCode = "CET"
+                        },
+                        new
+                        {
+                            _id = 6,
+                            CountryCode = "GB",
+                            Name = "London",
+                            TimeZoneCode = "GMT"
+                        },
+                        new
+                        {
+                            _id = 7,
+                            CountryCode = "DE",
+                            Name = "Frankfurt",
+                            TimeZoneCode = "CET"
+                        },
+                        new
+                        {
+                            _id = 8,
+                            CountryCode = "RU",
+                            Name = "Moscow",
+                            TimeZoneCode = "MSK"
+                        },
+                        new
+                        {
+                            _id = 9,
+                            CountryCode = "CA",
+                            Name = "Toronto",
+                            TimeZoneCode = "EST"
+                        });
                 });
 
             modelBuilder.Entity("Boutquin.Trading.Domain.Entities.Continent", b =>
@@ -239,6 +304,14 @@ namespace Boutquin.Trading.DataAccess.Migrations
                             CurrencyCode = "EUR",
                             Name = "Germany",
                             NumericCode = 276
+                        },
+                        new
+                        {
+                            Code = "HK",
+                            ContinentCode = "AS",
+                            CurrencyCode = "HKD",
+                            Name = "Hong Kong",
+                            NumericCode = 344
                         },
                         new
                         {
@@ -403,6 +476,13 @@ namespace Boutquin.Trading.DataAccess.Migrations
                             Name = "South Korean won",
                             NumericCode = 410,
                             Symbol = "₩"
+                        },
+                        new
+                        {
+                            Code = "HKD",
+                            Name = "Hong Kong dollar",
+                            NumericCode = 344,
+                            Symbol = "HK$"
                         });
                 });
 
@@ -428,6 +508,68 @@ namespace Boutquin.Trading.DataAccess.Migrations
                         .IsUnique();
 
                     b.ToTable("Exchanges");
+
+                    b.HasData(
+                        new
+                        {
+                            Code = "XNYS",
+                            CityId = 1,
+                            Name = "New York Stock Exchange"
+                        },
+                        new
+                        {
+                            Code = "XNAS",
+                            CityId = 1,
+                            Name = "NASDAQ Stock Market"
+                        },
+                        new
+                        {
+                            Code = "XTSE",
+                            CityId = 2,
+                            Name = "Tokyo Stock Exchange"
+                        },
+                        new
+                        {
+                            Code = "XSHG",
+                            CityId = 3,
+                            Name = "Shanghai Stock Exchange"
+                        },
+                        new
+                        {
+                            Code = "XHKG",
+                            CityId = 4,
+                            Name = "Hong Kong Stock Exchange"
+                        },
+                        new
+                        {
+                            Code = "XPAR",
+                            CityId = 5,
+                            Name = "Euronext Paris"
+                        },
+                        new
+                        {
+                            Code = "XLON",
+                            CityId = 6,
+                            Name = "London Stock Exchange"
+                        },
+                        new
+                        {
+                            Code = "XETR",
+                            CityId = 7,
+                            Name = "Deutsche Boerse XETRA"
+                        },
+                        new
+                        {
+                            Code = "XMOS",
+                            CityId = 8,
+                            Name = "Moscow Exchange"
+                        },
+                        new
+                        {
+                            Code = "XTOR",
+                            CityId = 9,
+                            Name = "Toronto Stock Exchange"
+                        });
                 });
 
             modelBuilder.Entity("Boutquin.Trading.Domain.Entities.ExchangeHoliday", b =>
@@ -492,6 +634,408 @@ namespace Boutquin.Trading.DataAccess.Migrations
                         .IsUnique();
 
                     b.ToTable("ExchangeSchedules");
+
+                    b.HasData(
+                        new
+                        {
+                            _id = 1,
+                            CloseTime = new TimeSpan(0, 16, 0, 0, 0),
+                            DayOfWeek = 1,
+                            ExchangeCode = "XNYS",
+                            OpenTime = new TimeSpan(0, 9, 30, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 2,
+                            CloseTime = new TimeSpan(0, 16, 0, 0, 0),
+                            DayOfWeek = 2,
+                            ExchangeCode = "XNYS",
+                            OpenTime = new TimeSpan(0, 9, 30, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 3,
+                            CloseTime = new TimeSpan(0, 16, 0, 0, 0),
+                            DayOfWeek = 3,
+                            ExchangeCode = "XNYS",
+                            OpenTime = new TimeSpan(0, 9, 30, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 4,
+                            CloseTime = new TimeSpan(0, 16, 0, 0, 0),
+                            DayOfWeek = 4,
+                            ExchangeCode = "XNYS",
+                            OpenTime = new TimeSpan(0, 9, 30, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 5,
+                            CloseTime = new TimeSpan(0, 16, 0, 0, 0),
+                            DayOfWeek = 5,
+                            ExchangeCode = "XNYS",
+                            OpenTime = new TimeSpan(0, 9, 30, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 6,
+                            CloseTime = new TimeSpan(0, 16, 0, 0, 0),
+                            DayOfWeek = 1,
+                            ExchangeCode = "XNAS",
+                            OpenTime = new TimeSpan(0, 9, 30, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 7,
+                            CloseTime = new TimeSpan(0, 16, 0, 0, 0),
+                            DayOfWeek = 2,
+                            ExchangeCode = "XNAS",
+                            OpenTime = new TimeSpan(0, 9, 30, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 8,
+                            CloseTime = new TimeSpan(0, 16, 0, 0, 0),
+                            DayOfWeek = 3,
+                            ExchangeCode = "XNAS",
+                            OpenTime = new TimeSpan(0, 9, 30, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 9,
+                            CloseTime = new TimeSpan(0, 16, 0, 0, 0),
+                            DayOfWeek = 4,
+                            ExchangeCode = "XNAS",
+                            OpenTime = new TimeSpan(0, 9, 30, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 10,
+                            CloseTime = new TimeSpan(0, 16, 0, 0, 0),
+                            DayOfWeek = 5,
+                            ExchangeCode = "XNAS",
+                            OpenTime = new TimeSpan(0, 9, 30, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 11,
+                            CloseTime = new TimeSpan(0, 15, 0, 0, 0),
+                            DayOfWeek = 1,
+                            ExchangeCode = "XTSE",
+                            OpenTime = new TimeSpan(0, 9, 0, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 12,
+                            CloseTime = new TimeSpan(0, 15, 0, 0, 0),
+                            DayOfWeek = 2,
+                            ExchangeCode = "XTSE",
+                            OpenTime = new TimeSpan(0, 9, 0, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 13,
+                            CloseTime = new TimeSpan(0, 15, 0, 0, 0),
+                            DayOfWeek = 3,
+                            ExchangeCode = "XTSE",
+                            OpenTime = new TimeSpan(0, 9, 0, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 14,
+                            CloseTime = new TimeSpan(0, 15, 0, 0, 0),
+                            DayOfWeek = 4,
+                            ExchangeCode = "XTSE",
+                            OpenTime = new TimeSpan(0, 9, 0, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 15,
+                            CloseTime = new TimeSpan(0, 15, 0, 0, 0),
+                            DayOfWeek = 5,
+                            ExchangeCode = "XTSE",
+                            OpenTime = new TimeSpan(0, 9, 0, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 16,
+                            CloseTime = new TimeSpan(0, 15, 0, 0, 0),
+                            DayOfWeek = 1,
+                            ExchangeCode = "XSHG",
+                            OpenTime = new TimeSpan(0, 9, 30, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 17,
+                            CloseTime = new TimeSpan(0, 15, 0, 0, 0),
+                            DayOfWeek = 2,
+                            ExchangeCode = "XSHG",
+                            OpenTime = new TimeSpan(0, 9, 30, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 18,
+                            CloseTime = new TimeSpan(0, 15, 0, 0, 0),
+                            DayOfWeek = 3,
+                            ExchangeCode = "XSHG",
+                            OpenTime = new TimeSpan(0, 9, 30, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 19,
+                            CloseTime = new TimeSpan(0, 15, 0, 0, 0),
+                            DayOfWeek = 4,
+                            ExchangeCode = "XSHG",
+                            OpenTime = new TimeSpan(0, 9, 30, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 20,
+                            CloseTime = new TimeSpan(0, 15, 0, 0, 0),
+                            DayOfWeek = 5,
+                            ExchangeCode = "XSHG",
+                            OpenTime = new TimeSpan(0, 9, 30, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 21,
+                            CloseTime = new TimeSpan(0, 16, 0, 0, 0),
+                            DayOfWeek = 1,
+                            ExchangeCode = "XHKG",
+                            OpenTime = new TimeSpan(0, 9, 30, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 22,
+                            CloseTime = new TimeSpan(0, 16, 0, 0, 0),
+                            DayOfWeek = 2,
+                            ExchangeCode = "XHKG",
+                            OpenTime = new TimeSpan(0, 9, 30, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 23,
+                            CloseTime = new TimeSpan(0, 16, 0, 0, 0),
+                            DayOfWeek = 3,
+                            ExchangeCode = "XHKG",
+                            OpenTime = new TimeSpan(0, 9, 30, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 24,
+                            CloseTime = new TimeSpan(0, 16, 0, 0, 0),
+                            DayOfWeek = 4,
+                            ExchangeCode = "XHKG",
+                            OpenTime = new TimeSpan(0, 9, 30, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 25,
+                            CloseTime = new TimeSpan(0, 16, 0, 0, 0),
+                            DayOfWeek = 5,
+                            ExchangeCode = "XHKG",
+                            OpenTime = new TimeSpan(0, 9, 30, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 26,
+                            CloseTime = new TimeSpan(0, 17, 30, 0, 0),
+                            DayOfWeek = 1,
+                            ExchangeCode = "XPAR",
+                            OpenTime = new TimeSpan(0, 9, 0, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 27,
+                            CloseTime = new TimeSpan(0, 17, 30, 0, 0),
+                            DayOfWeek = 2,
+                            ExchangeCode = "XPAR",
+                            OpenTime = new TimeSpan(0, 9, 0, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 28,
+                            CloseTime = new TimeSpan(0, 17, 30, 0, 0),
+                            DayOfWeek = 3,
+                            ExchangeCode = "XPAR",
+                            OpenTime = new TimeSpan(0, 9, 0, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 29,
+                            CloseTime = new TimeSpan(0, 17, 30, 0, 0),
+                            DayOfWeek = 4,
+                            ExchangeCode = "XPAR",
+                            OpenTime = new TimeSpan(0, 9, 0, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 30,
+                            CloseTime = new TimeSpan(0, 17, 30, 0, 0),
+                            DayOfWeek = 5,
+                            ExchangeCode = "XPAR",
+                            OpenTime = new TimeSpan(0, 9, 0, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 31,
+                            CloseTime = new TimeSpan(0, 16, 30, 0, 0),
+                            DayOfWeek = 1,
+                            ExchangeCode = "XLON",
+                            OpenTime = new TimeSpan(0, 8, 0, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 32,
+                            CloseTime = new TimeSpan(0, 16, 30, 0, 0),
+                            DayOfWeek = 2,
+                            ExchangeCode = "XLON",
+                            OpenTime = new TimeSpan(0, 8, 0, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 33,
+                            CloseTime = new TimeSpan(0, 16, 30, 0, 0),
+                            DayOfWeek = 3,
+                            ExchangeCode = "XLON",
+                            OpenTime = new TimeSpan(0, 8, 0, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 34,
+                            CloseTime = new TimeSpan(0, 16, 30, 0, 0),
+                            DayOfWeek = 4,
+                            ExchangeCode = "XLON",
+                            OpenTime = new TimeSpan(0, 8, 0, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 35,
+                            CloseTime = new TimeSpan(0, 16, 30, 0, 0),
+                            DayOfWeek = 5,
+                            ExchangeCode = "XLON",
+                            OpenTime = new TimeSpan(0, 8, 0, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 36,
+                            CloseTime = new TimeSpan(0, 17, 30, 0, 0),
+                            DayOfWeek = 1,
+                            ExchangeCode = "XETR",
+                            OpenTime = new TimeSpan(0, 9, 0, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 37,
+                            CloseTime = new TimeSpan(0, 17, 30, 0, 0),
+                            DayOfWeek = 2,
+                            ExchangeCode = "XETR",
+                            OpenTime = new TimeSpan(0, 9, 0, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 38,
+                            CloseTime = new TimeSpan(0, 17, 30, 0, 0),
+                            DayOfWeek = 3,
+                            ExchangeCode = "XETR",
+                            OpenTime = new TimeSpan(0, 9, 0, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 39,
+                            CloseTime = new TimeSpan(0, 17, 30, 0, 0),
+                            DayOfWeek = 4,
+                            ExchangeCode = "XETR",
+                            OpenTime = new TimeSpan(0, 9, 0, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 40,
+                            CloseTime = new TimeSpan(0, 17, 30, 0, 0),
+                            DayOfWeek = 5,
+                            ExchangeCode = "XETR",
+                            OpenTime = new TimeSpan(0, 9, 0, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 41,
+                            CloseTime = new TimeSpan(0, 18, 45, 0, 0),
+                            DayOfWeek = 1,
+                            ExchangeCode = "XMOS",
+                            OpenTime = new TimeSpan(0, 10, 0, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 42,
+                            CloseTime = new TimeSpan(0, 18, 45, 0, 0),
+                            DayOfWeek = 2,
+                            ExchangeCode = "XMOS",
+                            OpenTime = new TimeSpan(0, 10, 0, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 43,
+                            CloseTime = new TimeSpan(0, 18, 45, 0, 0),
+                            DayOfWeek = 3,
+                            ExchangeCode = "XMOS",
+                            OpenTime = new TimeSpan(0, 10, 0, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 44,
+                            CloseTime = new TimeSpan(0, 18, 45, 0, 0),
+                            DayOfWeek = 4,
+                            ExchangeCode = "XMOS",
+                            OpenTime = new TimeSpan(0, 10, 0, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 45,
+                            CloseTime = new TimeSpan(0, 18, 45, 0, 0),
+                            DayOfWeek = 5,
+                            ExchangeCode = "XMOS",
+                            OpenTime = new TimeSpan(0, 10, 0, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 46,
+                            CloseTime = new TimeSpan(0, 16, 0, 0, 0),
+                            DayOfWeek = 1,
+                            ExchangeCode = "XTOR",
+                            OpenTime = new TimeSpan(0, 9, 30, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 47,
+                            CloseTime = new TimeSpan(0, 16, 0, 0, 0),
+                            DayOfWeek = 2,
+                            ExchangeCode = "XTOR",
+                            OpenTime = new TimeSpan(0, 9, 30, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 48,
+                            CloseTime = new TimeSpan(0, 16, 0, 0, 0),
+                            DayOfWeek = 3,
+                            ExchangeCode = "XTOR",
+                            OpenTime = new TimeSpan(0, 9, 30, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 49,
+                            CloseTime = new TimeSpan(0, 16, 0, 0, 0),
+                            DayOfWeek = 4,
+                            ExchangeCode = "XTOR",
+                            OpenTime = new TimeSpan(0, 9, 30, 0, 0)
+                        },
+                        new
+                        {
+                            _id = 50,
+                            CloseTime = new TimeSpan(0, 16, 0, 0, 0),
+                            DayOfWeek = 5,
+                            ExchangeCode = "XTOR",
+                            OpenTime = new TimeSpan(0, 9, 30, 0, 0)
+                        });
                 });
 
             modelBuilder.Entity("Boutquin.Trading.Domain.Entities.FxRate", b =>
@@ -713,6 +1257,71 @@ namespace Boutquin.Trading.DataAccess.Migrations
                         .IsUnique();
 
                     b.ToTable("TimeZones");
+
+                    b.HasData(
+                        new
+                        {
+                            Code = "UTC",
+                            Name = "Coordinated Universal Time",
+                            TimeZoneOffset = "Z",
+                            UsesDaylightSaving = false
+                        },
+                        new
+                        {
+                            Code = "CET",
+                            Name = "Central European Time",
+                            TimeZoneOffset = "+01:00",
+                            UsesDaylightSaving = false
+                        },
+                        new
+                        {
+                            Code = "GMT",
+                            Name = "Greenwich Mean Time",
+                            TimeZoneOffset = "GMT",
+                            UsesDaylightSaving = false
+                        },
+                        new
+                        {
+                            Code = "EST",
+                            Name = "Eastern Standard Time",
+                            TimeZoneOffset = "-05:00",
+                            UsesDaylightSaving = false
+                        },
+                        new
+                        {
+                            Code = "CST",
+                            Name = "China Standard Time",
+                            TimeZoneOffset = "+08:00",
+                            UsesDaylightSaving = false
+                        },
+                        new
+                        {
+                            Code = "JST",
+                            Name = "Japan Standard Time",
+                            TimeZoneOffset = "+09:00",
+                            UsesDaylightSaving = false
+                        },
+                        new
+                        {
+                            Code = "HKT",
+                            Name = "Hong Kong Time",
+                            TimeZoneOffset = "+08:00",
+                            UsesDaylightSaving = false
+                        },
+                        new
+                        {
+                            Code = "MSK",
+                            Name = "Moscow Standard Time",
+                            TimeZoneOffset = "+04:00",
+                            UsesDaylightSaving = false
+                        },
+                        new
+                        {
+                            Code = "AEST",
+                            Name = "Australian Eastern Standard Time",
+                            TimeZoneOffset = "+10:00",
+                            UsesDaylightSaving = false
+                        });
                 });
 
             modelBuilder.Entity("Boutquin.Trading.Domain.Entities.City", b =>

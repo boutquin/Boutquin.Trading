@@ -48,6 +48,7 @@ public sealed class FxRate
         Guard.AgainstUndefinedEnumValue(() => quoteCurrencyCode);
         Guard.AgainstNegativeOrZero(() => rate);
 
+        _id = -1;
         RateDate = rateDate;
         BaseCurrencyCode = baseCurrencyCode;
         QuoteCurrencyCode = quoteCurrencyCode;

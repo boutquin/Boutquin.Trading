@@ -20,9 +20,6 @@ namespace Boutquin.Trading.Domain.Enums;
 /// <summary>
 /// Represents the ISO 3166-1:2020 alpha-2 country codes.
 /// </summary>
-/// <summary>
-/// Represents the ISO 3166-1:2020 alpha-2 country codes.
-/// </summary>
 public enum CountryCode
 {
     /// <summary>
@@ -48,6 +45,12 @@ public enum CountryCode
     /// </summary>
     [Description("Germany")]
     DE,
+
+    /// <summary>
+    /// Hong Kong.
+    /// </summary>
+    [Description("Hong Kong")]
+    HK,
 
     /// <summary>
     /// India.

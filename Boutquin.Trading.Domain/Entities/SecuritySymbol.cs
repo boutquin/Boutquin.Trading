@@ -40,6 +40,7 @@ public sealed class SecuritySymbol
         Guard.AgainstNullOrWhiteSpaceAndOverflow(() => symbol, ColumnConstants.SecuritySymbol_Symbol_Length);
         Guard.AgainstUndefinedEnumValue(() => standard);
 
+        _id = -1;
         SecurityId = securityId;
         Symbol = symbol;
         Standard = standard;

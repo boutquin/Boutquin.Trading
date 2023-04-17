@@ -49,6 +49,7 @@ public sealed class City
         Guard.AgainstUndefinedEnumValue(() => timeZoneCode);
         Guard.AgainstUndefinedEnumValue(() => countryCode);
 
+        _id = -1;
         Name = name;
         TimeZoneCode = timeZoneCode;
         CountryCode = countryCode;

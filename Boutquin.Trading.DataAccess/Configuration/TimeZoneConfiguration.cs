@@ -13,8 +13,10 @@
 //  limitations under the License.
 //
 
+using Boutquin.Domain.Extensions;
 using Boutquin.Domain.Helpers;
 using Boutquin.Trading.Domain.Entities;
+using Boutquin.Trading.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -64,5 +66,31 @@ public sealed class TimeZoneConfiguration : IEntityTypeConfiguration<TimeZone>
         // Configure Unique Index on Name
         builder.HasIndex(c => c.Name)
             .IsUnique();
+
+        // Seed the TimeZone table with the values from TimeZoneCode enum
+        builder.HasData(
+            CreateTimeZone(TimeZoneCode.UTC, "Coordinated Universal Time", false),
+            CreateTimeZone(TimeZoneCode.CET, "Central European Time", false),
+            CreateTimeZone(TimeZoneCode.GMT, "Greenwich Mean Time", false),
+            CreateTimeZone(TimeZoneCode.EST, "Eastern Standard Time", false),
+            CreateTimeZone(TimeZoneCode.CST, "China Standard Time", false),
+            CreateTimeZone(TimeZoneCode.JST, "Japan Standard Time", false),
+            CreateTimeZone(TimeZoneCode.HKT, "Hong Kong Time", false),
+            CreateTimeZone(TimeZoneCode.MSK, "Moscow Standard Time", false),
+            CreateTimeZone(TimeZoneCode.AEST, "Australian Eastern Standard Time", false)
+        );
+    }
+
+    /// <summary>
+    /// Creates a <see cref="TimeZone"/> instance based on the given <see cref="TimeZoneCode"/>, name, and usesDaylightSaving flag.
+    /// </summary>
+    /// <param name="code">The <see cref="TimeZoneCode"/> enumeration value.</param>
+    /// <param name="name">The name of the time zone.</param>
+    /// <param name="usesDaylightSaving">A boolean flag indicating if the time zone uses daylight saving.</param>
+    /// <returns>A <see cref="TimeZone"/> instance with the given values.</returns>
+    private static TimeZone CreateTimeZone(TimeZoneCode code, string name, bool usesDaylightSaving)
+    {
+        var timeZoneOffset = code.GetDescription();
+        return new TimeZone(code, name, timeZoneOffset, usesDaylightSaving);
     }
 }

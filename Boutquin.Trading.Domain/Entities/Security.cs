@@ -44,6 +44,7 @@ public sealed class Security
         Guard.AgainstUndefinedEnumValue(() => assetClassCode);
         Guard.AgainstNull(() => exchange);
 
+        _id = -1;
         Name = name;
         AssetClassCode = assetClassCode;
         Exchange = exchange;

@@ -190,6 +190,7 @@ VALUES (N'AUD', N'Australian dollar', 36, N'$'),
 (N'CNY', N'Chinese yuan', 156, N'¥'),
 (N'EUR', N'Euro', 978, N'€'),
 (N'GBP', N'British pound', 826, N'£'),
+(N'HKD', N'Hong Kong dollar', 344, N'HK$'),
 (N'INR', N'Indian rupee', 356, N'₹'),
 (N'JPY', N'Japanese yen', 392, N'¥'),
 (N'KRW', N'South Korean won', 410, N'₩'),
@@ -212,6 +213,22 @@ IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Id', N'Desc
     SET IDENTITY_INSERT [SymbolStandards] OFF;
 GO
 
+IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Code', N'Name', N'TimeZoneOffset', N'UsesDaylightSaving') AND [object_id] = OBJECT_ID(N'[TimeZones]'))
+    SET IDENTITY_INSERT [TimeZones] ON;
+INSERT INTO [TimeZones] ([Code], [Name], [TimeZoneOffset], [UsesDaylightSaving])
+VALUES (N'AEST', N'Australian Eastern Standard Time', N'+10:00', CAST(0 AS bit)),
+(N'CET', N'Central European Time', N'+01:00', CAST(0 AS bit)),
+(N'CST', N'China Standard Time', N'+08:00', CAST(0 AS bit)),
+(N'EST', N'Eastern Standard Time', N'-05:00', CAST(0 AS bit)),
+(N'GMT', N'Greenwich Mean Time', N'GMT', CAST(0 AS bit)),
+(N'HKT', N'Hong Kong Time', N'+08:00', CAST(0 AS bit)),
+(N'JST', N'Japan Standard Time', N'+09:00', CAST(0 AS bit)),
+(N'MSK', N'Moscow Standard Time', N'+04:00', CAST(0 AS bit)),
+(N'UTC', N'Coordinated Universal Time', N'Z', CAST(0 AS bit));
+IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Code', N'Name', N'TimeZoneOffset', N'UsesDaylightSaving') AND [object_id] = OBJECT_ID(N'[TimeZones]'))
+    SET IDENTITY_INSERT [TimeZones] OFF;
+GO
+
 IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Code', N'ContinentCode', N'CurrencyCode', N'Name', N'NumericCode') AND [object_id] = OBJECT_ID(N'[Countries]'))
     SET IDENTITY_INSERT [Countries] ON;
 INSERT INTO [Countries] ([Code], [ContinentCode], [CurrencyCode], [Name], [NumericCode])
@@ -220,6 +237,7 @@ VALUES (N'CA', N'NA', N'CAD', N'Canada', 124),
 (N'DE', N'EU', N'EUR', N'Germany', 276),
 (N'FR', N'EU', N'EUR', N'France', 250),
 (N'GB', N'EU', N'GBP', N'United Kingdom', 826),
+(N'HK', N'AS', N'HKD', N'Hong Kong', 344),
 (N'IN', N'AS', N'INR', N'India', 356),
 (N'JP', N'AS', N'JPY', N'Japan', 392),
 (N'KR', N'AS', N'KRW', N'South Korea', 410),
@@ -227,6 +245,97 @@ VALUES (N'CA', N'NA', N'CAD', N'Canada', 124),
 (N'US', N'NA', N'USD', N'United States', 840);
 IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Code', N'ContinentCode', N'CurrencyCode', N'Name', N'NumericCode') AND [object_id] = OBJECT_ID(N'[Countries]'))
     SET IDENTITY_INSERT [Countries] OFF;
+GO
+
+IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Id', N'CountryCode', N'Name', N'TimeZoneCode') AND [object_id] = OBJECT_ID(N'[Cities]'))
+    SET IDENTITY_INSERT [Cities] ON;
+INSERT INTO [Cities] ([Id], [CountryCode], [Name], [TimeZoneCode])
+VALUES (1, N'US', N'New York', N'UTC'),
+(2, N'JP', N'Tokyo', N'JST'),
+(3, N'CN', N'Shanghai', N'CST'),
+(4, N'HK', N'Hong Kong', N'HKT'),
+(5, N'FR', N'Paris', N'CET'),
+(6, N'GB', N'London', N'GMT'),
+(7, N'DE', N'Frankfurt', N'CET'),
+(8, N'RU', N'Moscow', N'MSK'),
+(9, N'CA', N'Toronto', N'EST');
+IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Id', N'CountryCode', N'Name', N'TimeZoneCode') AND [object_id] = OBJECT_ID(N'[Cities]'))
+    SET IDENTITY_INSERT [Cities] OFF;
+GO
+
+IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Code', N'CityId', N'Name') AND [object_id] = OBJECT_ID(N'[Exchanges]'))
+    SET IDENTITY_INSERT [Exchanges] ON;
+INSERT INTO [Exchanges] ([Code], [CityId], [Name])
+VALUES (N'XETR', 7, N'Deutsche Boerse XETRA'),
+(N'XHKG', 4, N'Hong Kong Stock Exchange'),
+(N'XLON', 6, N'London Stock Exchange'),
+(N'XMOS', 8, N'Moscow Exchange'),
+(N'XNAS', 1, N'NASDAQ Stock Market'),
+(N'XNYS', 1, N'New York Stock Exchange'),
+(N'XPAR', 5, N'Euronext Paris'),
+(N'XSHG', 3, N'Shanghai Stock Exchange'),
+(N'XTOR', 9, N'Toronto Stock Exchange'),
+(N'XTSE', 2, N'Tokyo Stock Exchange');
+IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Code', N'CityId', N'Name') AND [object_id] = OBJECT_ID(N'[Exchanges]'))
+    SET IDENTITY_INSERT [Exchanges] OFF;
+GO
+
+IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Id', N'CloseTime', N'DayOfWeek', N'ExchangeCode', N'OpenTime') AND [object_id] = OBJECT_ID(N'[ExchangeSchedules]'))
+    SET IDENTITY_INSERT [ExchangeSchedules] ON;
+INSERT INTO [ExchangeSchedules] ([Id], [CloseTime], [DayOfWeek], [ExchangeCode], [OpenTime])
+VALUES (1, '16:00:00', 1, N'XNYS', '09:30:00'),
+(2, '16:00:00', 2, N'XNYS', '09:30:00'),
+(3, '16:00:00', 3, N'XNYS', '09:30:00'),
+(4, '16:00:00', 4, N'XNYS', '09:30:00'),
+(5, '16:00:00', 5, N'XNYS', '09:30:00'),
+(6, '16:00:00', 1, N'XNAS', '09:30:00'),
+(7, '16:00:00', 2, N'XNAS', '09:30:00'),
+(8, '16:00:00', 3, N'XNAS', '09:30:00'),
+(9, '16:00:00', 4, N'XNAS', '09:30:00'),
+(10, '16:00:00', 5, N'XNAS', '09:30:00'),
+(11, '15:00:00', 1, N'XTSE', '09:00:00'),
+(12, '15:00:00', 2, N'XTSE', '09:00:00'),
+(13, '15:00:00', 3, N'XTSE', '09:00:00'),
+(14, '15:00:00', 4, N'XTSE', '09:00:00'),
+(15, '15:00:00', 5, N'XTSE', '09:00:00'),
+(16, '15:00:00', 1, N'XSHG', '09:30:00'),
+(17, '15:00:00', 2, N'XSHG', '09:30:00'),
+(18, '15:00:00', 3, N'XSHG', '09:30:00'),
+(19, '15:00:00', 4, N'XSHG', '09:30:00'),
+(20, '15:00:00', 5, N'XSHG', '09:30:00'),
+(21, '16:00:00', 1, N'XHKG', '09:30:00'),
+(22, '16:00:00', 2, N'XHKG', '09:30:00'),
+(23, '16:00:00', 3, N'XHKG', '09:30:00'),
+(24, '16:00:00', 4, N'XHKG', '09:30:00'),
+(25, '16:00:00', 5, N'XHKG', '09:30:00'),
+(26, '17:30:00', 1, N'XPAR', '09:00:00'),
+(27, '17:30:00', 2, N'XPAR', '09:00:00'),
+(28, '17:30:00', 3, N'XPAR', '09:00:00'),
+(29, '17:30:00', 4, N'XPAR', '09:00:00'),
+(30, '17:30:00', 5, N'XPAR', '09:00:00'),
+(31, '16:30:00', 1, N'XLON', '08:00:00'),
+(32, '16:30:00', 2, N'XLON', '08:00:00'),
+(33, '16:30:00', 3, N'XLON', '08:00:00'),
+(34, '16:30:00', 4, N'XLON', '08:00:00'),
+(35, '16:30:00', 5, N'XLON', '08:00:00'),
+(36, '17:30:00', 1, N'XETR', '09:00:00'),
+(37, '17:30:00', 2, N'XETR', '09:00:00'),
+(38, '17:30:00', 3, N'XETR', '09:00:00'),
+(39, '17:30:00', 4, N'XETR', '09:00:00'),
+(40, '17:30:00', 5, N'XETR', '09:00:00'),
+(41, '18:45:00', 1, N'XMOS', '10:00:00'),
+(42, '18:45:00', 2, N'XMOS', '10:00:00');
+INSERT INTO [ExchangeSchedules] ([Id], [CloseTime], [DayOfWeek], [ExchangeCode], [OpenTime])
+VALUES (43, '18:45:00', 3, N'XMOS', '10:00:00'),
+(44, '18:45:00', 4, N'XMOS', '10:00:00'),
+(45, '18:45:00', 5, N'XMOS', '10:00:00'),
+(46, '16:00:00', 1, N'XTOR', '09:30:00'),
+(47, '16:00:00', 2, N'XTOR', '09:30:00'),
+(48, '16:00:00', 3, N'XTOR', '09:30:00'),
+(49, '16:00:00', 4, N'XTOR', '09:30:00'),
+(50, '16:00:00', 5, N'XTOR', '09:30:00');
+IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Id', N'CloseTime', N'DayOfWeek', N'ExchangeCode', N'OpenTime') AND [object_id] = OBJECT_ID(N'[ExchangeSchedules]'))
+    SET IDENTITY_INSERT [ExchangeSchedules] OFF;
 GO
 
 CREATE UNIQUE INDEX [IX_AssetClasses_Description] ON [AssetClasses] ([Description]);
@@ -308,7 +417,7 @@ CREATE UNIQUE INDEX [IX_TimeZones_Name] ON [TimeZones] ([Name]);
 GO
 
 INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-VALUES (N'20230416214556_InitialCreate', N'7.0.5');
+VALUES (N'20230417025851_InitialCreate', N'7.0.5');
 GO
 
 COMMIT;

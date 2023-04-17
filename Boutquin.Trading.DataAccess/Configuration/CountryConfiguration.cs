@@ -88,6 +88,7 @@ public sealed class CountryConfiguration : IEntityTypeConfiguration<Country>
             new Country(CountryCode.CN, "China", 156, CurrencyCode.CNY, ContinentCode.AS),
             new Country(CountryCode.FR, "France", 250, CurrencyCode.EUR, ContinentCode.EU),
             new Country(CountryCode.DE, "Germany", 276, CurrencyCode.EUR, ContinentCode.EU),
+            new Country(CountryCode.HK, "Hong Kong", 344, CurrencyCode.HKD, ContinentCode.AS),
             new Country(CountryCode.IN, "India", 356, CurrencyCode.INR, ContinentCode.AS),
             new Country(CountryCode.JP, "Japan", 392, CurrencyCode.JPY, ContinentCode.AS),
             new Country(CountryCode.RU, "Russia", 643, CurrencyCode.RUB, ContinentCode.EU),
@@ -95,5 +96,6 @@ public sealed class CountryConfiguration : IEntityTypeConfiguration<Country>
             new Country(CountryCode.GB, "United Kingdom", 826, CurrencyCode.GBP, ContinentCode.EU),
             new Country(CountryCode.US, "United States", 840, CurrencyCode.USD, ContinentCode.NA)
         );
+
     }
 }

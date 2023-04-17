@@ -53,6 +53,7 @@ public sealed class SecurityPrice
         Guard.AgainstNegativeOrZero(() => volume);
         Guard.AgainstNegative(() => dividend);
 
+        _id = -1;
         TradeDate = tradeDate;
         SecurityId = securityId;
         OpenPrice = openPrice;

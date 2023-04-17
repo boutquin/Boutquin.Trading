@@ -80,6 +80,8 @@ public sealed class CurrencyConfiguration : IEntityTypeConfiguration<Currency>
             new Currency(CurrencyCode.AUD, 36, "Australian dollar", "$"),
             new Currency(CurrencyCode.BRL, 986, "Brazilian real", "R$"),
             new Currency(CurrencyCode.RUB, 643, "Russian ruble", "₽"),
-            new Currency(CurrencyCode.KRW, 410, "South Korean won", "₩"));
+            new Currency(CurrencyCode.KRW, 410, "South Korean won", "₩"),
+            new Currency(CurrencyCode.HKD, 344, "Hong Kong dollar", "HK$")
+        );
     }
 }
