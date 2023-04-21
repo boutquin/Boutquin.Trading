@@ -15,9 +15,8 @@
 
 using Boutquin.Domain.Exceptions;
 using Boutquin.Domain.Extensions;
+using Boutquin.Domain.Helpers;
 using Boutquin.Trading.Domain.Exceptions;
-
-using static Boutquin.Domain.Extensions.DecimalArrayExtensions;
 
 namespace Boutquin.Trading.Domain.Extensions;
 
@@ -41,16 +40,9 @@ public static class DecimalArrayExtensions
         int tradingDaysPerYear = DefaultTradingDaysInYear)
     {
         // Ensure that the input daily returns array is not null or empty.
-        if (dailyReturns == null || dailyReturns.Length == 0)
-        {
-            throw new EmptyOrNullArrayException();
-        }
-
+        Guard.AgainstNullOrEmptyArray(() => dailyReturns);
         // Ensure that the input trading days per year is positive.
-        if (tradingDaysPerYear <= 0)
-        {
-            throw new NegativeTradingDaysPerYearException();
-        }
+        Guard.AgainstNegativeOrZero(() => tradingDaysPerYear);
 
         // Calculate the cumulative return of the portfolio.
         var cumulativeReturn = dailyReturns.Aggregate(1m, (acc, r) => acc * (r + 1m)) - 1m;
@@ -60,6 +52,44 @@ public static class DecimalArrayExtensions
 
         // Return the annualized return.
         return annualizedReturn;
+    }
+
+    /// <summary>
+    /// Calculates the daily volatility of daily returns for a given array of decimal values.
+    /// </summary>
+    /// <param name="dailyReturns">An array of daily returns.</param>
+    /// <returns>The daily volatility.</returns>
+    /// <exception cref="EmptyOrNullArrayException">Thrown when the <paramref name="dailyReturns"/> array is null or empty.</exception>
+    /// <exception cref="InsufficientDataException">Thrown when the <paramref name="dailyReturns"/> array contains less than two elements for sample calculation.</exception>
+    public static decimal Volatility(this decimal[] dailyReturns)
+    {
+        // Ensure that the input daily returns array is not null or empty.
+        Guard.AgainstNullOrEmptyArray(() => dailyReturns);
+        // Check if there is enough data for sample calculation
+        Guard.Against(dailyReturns.Length == 1)
+            .With<InsufficientDataException>(Boutquin.Domain.Exceptions.ExceptionMessages.InsufficientDataForSampleCalculation);
+
+
+        return dailyReturns.StandardDeviation();
+    }
+
+    /// <summary>
+    /// Calculates the annualized volatility of daily returns for a given array of decimal values.
+    /// </summary>
+    /// <param name="dailyReturns">An array of daily returns.</param>
+    /// <param name="tradingDaysPerYear">The number of trading days per year, by default 252.</param>
+    /// <returns>The annualized volatility.</returns>
+    /// <exception cref="EmptyOrNullArrayException">Thrown when the <paramref name="dailyReturns"/> array is null or empty.</exception>
+    /// <exception cref="InsufficientDataException">Thrown when the <paramref name="dailyReturns"/> array contains less than two elements for sample calculation.</exception>
+    /// <exception cref="NegativeTradingDaysPerYearException">Thrown when the <paramref name="tradingDaysPerYear"/> is non-positive.</exception>
+    public static decimal AnnualizedVolatility(this decimal[] dailyReturns, int tradingDaysPerYear = DefaultTradingDaysInYear)
+    {
+        // Ensure that the input trading days per year is positive.
+        Guard.AgainstNegativeOrZero(() => tradingDaysPerYear);
+
+        // Relies on Volatility for remaining input validation.
+        var dailyVolatility = dailyReturns.Volatility();
+        return dailyVolatility * (decimal)Math.Sqrt(tradingDaysPerYear);
     }
 
     /// <summary>
@@ -75,15 +105,11 @@ public static class DecimalArrayExtensions
         decimal riskFreeRate = 0m)
     {
         // Ensure that the input daily returns array is not null or empty.
-        if (dailyReturns == null || dailyReturns.Length == 0)
-        {
-            throw new EmptyOrNullArrayException();
-        }
+        Guard.AgainstNullOrEmptyArray(() => dailyReturns);
+        // Check if there is enough data for sample calculation
+        Guard.Against(dailyReturns.Length == 1)
+            .With<InsufficientDataException>(Boutquin.Domain.Exceptions.ExceptionMessages.InsufficientDataForSampleCalculation);
 
-        if (dailyReturns.Length == 1)
-        {
-            throw new InsufficientDataException(Boutquin.Domain.Exceptions.ExceptionMessages.InsufficientDataForSampleCalculation);
-        }
 
         var averageReturn = dailyReturns.Average() - riskFreeRate;
         var standardDeviation = dailyReturns.StandardDeviation();
@@ -106,10 +132,7 @@ public static class DecimalArrayExtensions
         int tradingDaysPerYear = DefaultTradingDaysInYear)
     {
         // Ensure that the input trading days per year is positive.
-        if (tradingDaysPerYear <= 0)
-        {
-            throw new NegativeTradingDaysPerYearException();
-        }
+        Guard.AgainstNegativeOrZero(() => tradingDaysPerYear);
 
         // Relies on SharpeRatio for remaining input validation.
         var sharpeRatio = dailyReturns.SharpeRatio(riskFreeRate);
@@ -128,16 +151,11 @@ public static class DecimalArrayExtensions
         this decimal[] dailyReturns, 
         decimal riskFreeRate = 0m)
     {
-        // Ensure that the input daily returns array is not null or empty.
-        if (dailyReturns == null || dailyReturns.Length == 0)
-        {
-            throw new EmptyOrNullArrayException();
-        }
-
-        if (dailyReturns.Length == 1)
-        {
-            throw new InsufficientDataException(Boutquin.Domain.Exceptions.ExceptionMessages.InsufficientDataForSampleCalculation);
-        }
+        // Ensure the array of daily returns is not null or empty
+        Guard.AgainstNullOrEmptyArray(() => dailyReturns);
+        // Check if there is enough data for sample calculation
+        Guard.Against(dailyReturns.Length == 1)
+            .With<InsufficientDataException>(Boutquin.Domain.Exceptions.ExceptionMessages.InsufficientDataForSampleCalculation);
 
         var averageReturn = dailyReturns.Average() - riskFreeRate;
         var downsideDeviation = dailyReturns.DownsideDeviation(riskFreeRate);
@@ -160,10 +178,7 @@ public static class DecimalArrayExtensions
         int tradingDaysPerYear = DefaultTradingDaysInYear)
     {
         // Ensure that the input trading days per year is positive.
-        if (tradingDaysPerYear <= 0)
-        {
-            throw new NegativeTradingDaysPerYearException();
-        }
+        Guard.AgainstNegativeOrZero(() => tradingDaysPerYear);
 
         // Relies on SortinoRatio for remaining input validation.
         var sortinoRatio = dailyReturns.SortinoRatio(riskFreeRate);
@@ -183,16 +198,11 @@ public static class DecimalArrayExtensions
         this decimal[] dailyReturns, 
         decimal riskFreeRate = 0m)
     {
-        // Ensure that the input daily returns array is not null or empty.
-        if (dailyReturns == null || dailyReturns.Length == 0)
-        {
-            throw new EmptyOrNullArrayException();
-        }
-
-        if (dailyReturns.Length == 1)
-        {
-            throw new InsufficientDataException(Boutquin.Domain.Exceptions.ExceptionMessages.InsufficientDataForSampleCalculation);
-        }
+        // Ensure the array of daily returns is not null or empty
+        Guard.AgainstNullOrEmptyArray(() => dailyReturns);
+        // Check if there is enough data for sample calculation
+        Guard.Against(dailyReturns.Length == 1)
+            .With<InsufficientDataException>(Boutquin.Domain.Exceptions.ExceptionMessages.InsufficientDataForSampleCalculation);
 
         var downsideReturns = dailyReturns.Select(x => Math.Min(0, x - riskFreeRate)).ToArray();
         var squaredDownsideReturns = downsideReturns.Select(x => x * x).ToArray();
@@ -212,11 +222,9 @@ public static class DecimalArrayExtensions
         this decimal[] dailyReturns, 
         decimal initialInvestment = 10000m)
     {
-        if (dailyReturns == null || dailyReturns.Length == 0)
-        {
-            throw new EmptyOrNullArrayException();
-        }
-
+        // Ensure the array of daily returns is not null or empty
+        Guard.AgainstNullOrEmptyArray(() => dailyReturns);
+        
         var equityCurve = new decimal[dailyReturns.Length + 1];
         equityCurve[0] = initialInvestment;
 

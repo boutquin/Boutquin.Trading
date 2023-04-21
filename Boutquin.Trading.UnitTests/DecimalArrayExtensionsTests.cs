@@ -13,18 +13,54 @@
 //  limitations under the License.
 //
 
+using System.Reflection.Metadata;
 using Boutquin.Domain.Exceptions;
 using Boutquin.Trading.Domain.Exceptions;
 using Boutquin.Trading.Domain.Extensions;
-
-using static Boutquin.Trading.Domain.Extensions.DecimalArrayExtensions;
-
 using ExceptionMessages = Boutquin.Domain.Exceptions.ExceptionMessages;
 
 namespace Boutquin.Trading.UnitTests;
 public sealed class DecimalArrayExtensionsTests
 {
     private const decimal Precision = 1e-12m;
+
+    /// <summary>
+    /// Tests the <see cref="DecimalArrayExtensions.Volatility(decimal[])"/> method with various valid input data 
+    /// and verifies if the correct daily volatility is returned.
+    /// </summary>
+    /// <param name="dailyReturns">The input array of daily returns.</param>
+    /// <param name="expectedResult">The expected daily volatility value.</param>
+    [Theory]
+    [MemberData(nameof(DecimalArrayExtensionsTestData.VolatilityData), MemberType = typeof(DecimalArrayExtensionsTestData))]
+    public void Volatility_ShouldReturnCorrectResult(
+        decimal[] dailyReturns, 
+        decimal expectedResult)
+    {
+        // Act
+        var actualResult = dailyReturns.Volatility();
+
+        // Assert
+        actualResult.Should().BeApproximately(expectedResult, Precision);
+    }
+
+    /// <summary>
+    /// Tests the <see cref="DecimalArrayExtensions.AnnualizedVolatility(decimal[], int)"/> method with various valid input data 
+    /// and verifies if the correct annualized volatility is returned.
+    /// </summary>
+    /// <param name="dailyReturns">The input array of daily returns.</param>
+    /// <param name="expectedResult">The expected annualized volatility value.</param>
+    [Theory]
+    [MemberData(nameof(DecimalArrayExtensionsTestData.AnnualizedVolatilityData), MemberType = typeof(DecimalArrayExtensionsTestData))]
+    public void AnnualizedVolatility_ShouldReturnCorrectResult(
+        decimal[] dailyReturns, 
+        decimal expectedResult)
+    {
+        // Act
+        var actualResult = dailyReturns.AnnualizedVolatility();
+
+        // Assert
+        actualResult.Should().BeApproximately(expectedResult, Precision);
+    }
 
     /// <summary>
     /// Tests the <see cref="DecimalArrayExtensions.AnnualizedReturn(decimal[], int)"/> method with various valid input data 
@@ -176,7 +212,7 @@ public sealed class DecimalArrayExtensionsTests
     }
 
     /// <summary>
-    /// Tests the <see cref="NegativeTradingDaysPerYearException" /> for all extension methods 
+    /// Tests the <see cref="ArgumentOutOfRangeException" /> for all extension methods 
     /// with negative trading days per year.
     /// </summary>
     [Fact]
@@ -184,15 +220,16 @@ public sealed class DecimalArrayExtensionsTests
     {
         // Arrange
         var dailyReturns = new decimal[] { 0.01m, 0.02m };
-        var riskFreeRate = 0.0m;
-        var tradingDaysPerYear = -1;
-        var exceptionType = typeof(NegativeTradingDaysPerYearException);
-        var exceptionMessage = Domain.Exceptions.ExceptionMessages.NegativeTradingDaysPerYear;
+        const decimal RiskFreeRate = 0.0m;
+        const int TradingDaysPerYear = -1;
+        var exceptionType = typeof(ArgumentOutOfRangeException);
+        const string ExceptionMessage = "Parameter 'tradingDaysPerYear' cannot be negative or zero. (Parameter 'tradingDaysPerYear')";
 
         // Act & Assert
-        Assert.Throws(exceptionType, () => dailyReturns.AnnualizedReturn(tradingDaysPerYear)).Message.Should().Be(exceptionMessage);
-        Assert.Throws(exceptionType, () => dailyReturns.AnnualizedSharpeRatio(riskFreeRate, tradingDaysPerYear)).Message.Should().Be(exceptionMessage);
-        Assert.Throws(exceptionType, () => dailyReturns.AnnualizedSortinoRatio(riskFreeRate, tradingDaysPerYear)).Message.Should().Be(exceptionMessage);
+        Assert.Throws(exceptionType, () => dailyReturns.AnnualizedVolatility(TradingDaysPerYear)).Message.Should().Be(ExceptionMessage);
+        Assert.Throws(exceptionType, () => dailyReturns.AnnualizedReturn(TradingDaysPerYear)).Message.Should().Be(ExceptionMessage);
+        Assert.Throws(exceptionType, () => dailyReturns.AnnualizedSharpeRatio(RiskFreeRate, TradingDaysPerYear)).Message.Should().Be(ExceptionMessage);
+        Assert.Throws(exceptionType, () => dailyReturns.AnnualizedSortinoRatio(RiskFreeRate, TradingDaysPerYear)).Message.Should().Be(ExceptionMessage);
     }
 
     /// <summary>
@@ -206,14 +243,16 @@ public sealed class DecimalArrayExtensionsTests
         // Arrange
         var dailyReturns = new decimal[] { 0.01m };
         var exceptionType = typeof(InsufficientDataException);
-        var exceptionMessage = ExceptionMessages.InsufficientDataForSampleCalculation;
+        const string ExceptionMessage = ExceptionMessages.InsufficientDataForSampleCalculation;
 
         // Act & Assert
-        Assert.Throws(exceptionType, () => dailyReturns.SharpeRatio()).Message.Should().Be(exceptionMessage);
-        Assert.Throws(exceptionType, () => dailyReturns.AnnualizedSharpeRatio()).Message.Should().Be(exceptionMessage);
-        Assert.Throws(exceptionType, () => dailyReturns.SortinoRatio()).Message.Should().Be(exceptionMessage);
-        Assert.Throws(exceptionType, () => dailyReturns.AnnualizedSortinoRatio()).Message.Should().Be(exceptionMessage);
-        Assert.Throws(exceptionType, () => dailyReturns.DownsideDeviation()).Message.Should().Be(exceptionMessage);
+        Assert.Throws(exceptionType, () => dailyReturns.Volatility()).Message.Should().Be(ExceptionMessage);
+        Assert.Throws(exceptionType, () => dailyReturns.AnnualizedVolatility()).Message.Should().Be(ExceptionMessage);
+        Assert.Throws(exceptionType, () => dailyReturns.SharpeRatio()).Message.Should().Be(ExceptionMessage);
+        Assert.Throws(exceptionType, () => dailyReturns.AnnualizedSharpeRatio()).Message.Should().Be(ExceptionMessage);
+        Assert.Throws(exceptionType, () => dailyReturns.SortinoRatio()).Message.Should().Be(ExceptionMessage);
+        Assert.Throws(exceptionType, () => dailyReturns.AnnualizedSortinoRatio()).Message.Should().Be(ExceptionMessage);
+        Assert.Throws(exceptionType, () => dailyReturns.DownsideDeviation()).Message.Should().Be(ExceptionMessage);
     }
 
     /// <summary>
@@ -227,17 +266,19 @@ public sealed class DecimalArrayExtensionsTests
         decimal[] dailyReturns = null;
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
         var exceptionType = typeof(EmptyOrNullArrayException);
-        var exceptionMessage = ExceptionMessages.EmptyOrNullArray;
+        const string ExceptionMessage = $"Parameter '{nameof(dailyReturns)}' cannot be null or an empty array.";
 
         // Act & Assert
 #pragma warning disable CS8604 // Possible null reference argument.
-        Assert.Throws(exceptionType, () => dailyReturns.AnnualizedReturn()).Message.Should().Be(exceptionMessage);
-        Assert.Throws(exceptionType, () => dailyReturns.SharpeRatio()).Message.Should().Be(exceptionMessage);
-        Assert.Throws(exceptionType, () => dailyReturns.AnnualizedSharpeRatio()).Message.Should().Be(exceptionMessage);
-        Assert.Throws(exceptionType, () => dailyReturns.SortinoRatio()).Message.Should().Be(exceptionMessage);
-        Assert.Throws(exceptionType, () => dailyReturns.AnnualizedSortinoRatio()).Message.Should().Be(exceptionMessage);
-        Assert.Throws(exceptionType, () => dailyReturns.DownsideDeviation()).Message.Should().Be(exceptionMessage);
-        Assert.Throws(exceptionType, () => dailyReturns.EquityCurve()).Message.Should().Be(exceptionMessage);
+        Assert.Throws(exceptionType, () => dailyReturns.Volatility()).Message.Should().Be(ExceptionMessage);
+        Assert.Throws(exceptionType, () => dailyReturns.AnnualizedVolatility()).Message.Should().Be(ExceptionMessage);
+        Assert.Throws(exceptionType, () => dailyReturns.AnnualizedReturn()).Message.Should().Be(ExceptionMessage);
+        Assert.Throws(exceptionType, () => dailyReturns.SharpeRatio()).Message.Should().Be(ExceptionMessage);
+        Assert.Throws(exceptionType, () => dailyReturns.AnnualizedSharpeRatio()).Message.Should().Be(ExceptionMessage);
+        Assert.Throws(exceptionType, () => dailyReturns.SortinoRatio()).Message.Should().Be(ExceptionMessage);
+        Assert.Throws(exceptionType, () => dailyReturns.AnnualizedSortinoRatio()).Message.Should().Be(ExceptionMessage);
+        Assert.Throws(exceptionType, () => dailyReturns.DownsideDeviation()).Message.Should().Be(ExceptionMessage);
+        Assert.Throws(exceptionType, () => dailyReturns.EquityCurve()).Message.Should().Be(ExceptionMessage);
 #pragma warning restore CS8604 // Possible null reference argument.
     }
 
@@ -250,15 +291,17 @@ public sealed class DecimalArrayExtensionsTests
         // Arrange
         var dailyReturns = Array.Empty<decimal>();
         var exceptionType = typeof(EmptyOrNullArrayException);
-        var exceptionMessage = ExceptionMessages.EmptyOrNullArray;
+        const string ExceptionMessage = $"Parameter '{nameof(dailyReturns)}' cannot be null or an empty array.";
 
         // Act & Assert
-        Assert.Throws(exceptionType, () => dailyReturns.AnnualizedReturn()).Message.Should().Be(exceptionMessage);
-        Assert.Throws(exceptionType, () => dailyReturns.SharpeRatio()).Message.Should().Be(exceptionMessage);
-        Assert.Throws(exceptionType, () => dailyReturns.AnnualizedSharpeRatio()).Message.Should().Be(exceptionMessage);
-        Assert.Throws(exceptionType, () => dailyReturns.SortinoRatio()).Message.Should().Be(exceptionMessage);
-        Assert.Throws(exceptionType, () => dailyReturns.AnnualizedSortinoRatio()).Message.Should().Be(exceptionMessage);
-        Assert.Throws(exceptionType, () => dailyReturns.DownsideDeviation()).Message.Should().Be(exceptionMessage);
-        Assert.Throws(exceptionType, () => dailyReturns.EquityCurve()).Message.Should().Be(exceptionMessage);
+        Assert.Throws(exceptionType, () => dailyReturns.Volatility()).Message.Should().Be(ExceptionMessage);
+        Assert.Throws(exceptionType, () => dailyReturns.AnnualizedVolatility()).Message.Should().Be(ExceptionMessage);
+        Assert.Throws(exceptionType, () => dailyReturns.AnnualizedReturn()).Message.Should().Be(ExceptionMessage);
+        Assert.Throws(exceptionType, () => dailyReturns.SharpeRatio()).Message.Should().Be(ExceptionMessage);
+        Assert.Throws(exceptionType, () => dailyReturns.AnnualizedSharpeRatio()).Message.Should().Be(ExceptionMessage);
+        Assert.Throws(exceptionType, () => dailyReturns.SortinoRatio()).Message.Should().Be(ExceptionMessage);
+        Assert.Throws(exceptionType, () => dailyReturns.AnnualizedSortinoRatio()).Message.Should().Be(ExceptionMessage);
+        Assert.Throws(exceptionType, () => dailyReturns.DownsideDeviation()).Message.Should().Be(ExceptionMessage);
+        Assert.Throws(exceptionType, () => dailyReturns.EquityCurve()).Message.Should().Be(ExceptionMessage);
     }
 }

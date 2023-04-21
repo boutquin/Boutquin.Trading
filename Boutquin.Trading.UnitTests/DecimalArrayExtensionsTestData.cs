@@ -18,6 +18,26 @@ namespace Boutquin.Trading.UnitTests;
 public sealed class DecimalArrayExtensionsTestData
 {
     /// <summary>
+    /// Gets a collection of test cases containing varied decimal arrays and their corresponding daily volatility values.
+    /// </summary>
+    public static IEnumerable<object[]> VolatilityData => new List<object[]>
+    {
+        new object[] { new decimal[] { 0.01m, 0.02m, -0.01m, 0.03m, -0.02m }, 0.0207364413533277m },
+        new object[] { new decimal[] { 0.05m, -0.02m, 0.03m, -0.01m, 0.01m }, 0.0286356421265527m },
+        new object[] { new decimal[] { 0.1m, -0.05m, 0.2m, -0.1m, 0.15m }, 0.129421791055448m }
+    };
+
+    /// <summary>
+    /// Gets a collection of test cases containing varied decimal arrays and their corresponding annualized volatility values.
+    /// </summary>
+    public static IEnumerable<object[]> AnnualizedVolatilityData => new List<object[]>
+    {
+        new object[] { new decimal[] { 0.01m, 0.02m, -0.01m, 0.03m, -0.02m }, 0.3291808013842836299501026838m },
+        new object[] { new decimal[] { 0.05m, -0.02m, 0.03m, -0.01m, 0.01m }, 0.4545767261970181149375773712m },
+        new object[] { new decimal[] { 0.1m, -0.05m, 0.2m, -0.1m, 0.15m }, 2.0545072401916686621879541000m }
+    };
+
+    /// <summary>
     /// Gets an array of test data and their corresponding result for the <see cref="DecimalExtensions.AnnualizedReturn"/> method.
     /// </summary>
     public static IEnumerable<object[]> AnnualizedReturnData => new List<object[]>
