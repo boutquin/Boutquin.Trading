@@ -186,6 +186,55 @@ public static class DecimalArrayExtensions
     }
 
     /// <summary>
+    /// Calculates the Compound Annual Growth Rate (CAGR) of a strategy using an array of decimal values,
+    /// representing the geometric average annual return of the strategy over the entire backtesting period,
+    /// assuming the returns are reinvested.
+    /// </summary>
+    /// <param name="dailyReturns">An array of daily returns.</param>
+    /// <param name="tradingDaysPerYear">The number of trading days per year, by default 252.</param>
+    /// <returns>The CAGR expressed as a percentage.</returns>
+    /// <exception cref="EmptyOrNullArrayException">Thrown when the <paramref name="dailyReturns"/> array is null or empty.</exception>
+    /// <exception cref="InsufficientDataException">Thrown when the <paramref name="dailyReturns"/> array contains less than two elements for sample calculation.</exception>
+    /// <exception cref="CalculationException">Thrown when the calculated CAGR value is too large or too small for a decimal.</exception>
+    public static decimal CompoundAnnualGrowthRate(
+        this decimal[] dailyReturns,
+        double tradingDaysPerYear = DefaultTradingDaysInYear)
+    {
+        // Ensure that the input daily returns array is not null or empty.
+        Guard.AgainstNullOrEmptyArray(() => dailyReturns);
+        // Check if there is enough data for sample calculation
+        Guard.Against(dailyReturns.Length == 1)
+            .With<InsufficientDataException>(Boutquin.Domain.Exceptions.ExceptionMessages.InsufficientDataForSampleCalculation);
+        // Ensure that the input trading days per year is positive.
+        Guard.AgainstNegativeOrZero(() => tradingDaysPerYear);
+
+        // Calculate the cumulative return
+        var cumulativeReturn = dailyReturns
+            .Aggregate(1m, (current, dailyReturn) => current * (1 + dailyReturn));
+
+        var totalTradingDays = dailyReturns.Length;
+        var totalYears = (double)totalTradingDays / tradingDaysPerYear;
+
+        // Check if the totalYears is zero, and if so, throw an exception
+        if (totalYears == 0)
+        {
+            throw new CalculationException("The total number of years must be greater than zero for CAGR calculation.");
+        }
+
+        try
+        {
+            // CAGR = [(Cumulative Return) ^ (1 / Total Years)] - 1
+            var growthRate = (decimal)Math.Pow((double)cumulativeReturn, 1.0 / totalYears) - 1;
+            return growthRate * 100;
+        }
+        catch (OverflowException ex)
+        {
+            throw new CalculationException("The calculated CAGR value is too large or too small for a decimal.", ex);
+        }
+    }
+
+
+    /// <summary>
     /// Calculates the Downside Deviation of daily returns for a given array of decimal values.
     /// </summary>
     /// <param name="dailyReturns">An array of daily returns.</param>
@@ -208,6 +257,40 @@ public static class DecimalArrayExtensions
         var squaredDownsideReturns = downsideReturns.Select(x => x * x).ToArray();
         var averageSquaredDownsideReturn = squaredDownsideReturns.Average();
         return (decimal)Math.Sqrt((double)averageSquaredDownsideReturn);
+    }
+
+    /// <summary>
+    /// Calculates daily returns from an array of equity curve values.
+    /// </summary>
+    /// <param name="equityCurve">An array of equity curve values.</param>
+    /// <returns>An array of daily returns.</returns>
+    /// <exception cref="EmptyOrNullArrayException">Thrown when the <paramref name="equityCurve"/> array is null or empty.</exception>
+    /// <exception cref="InsufficientDataException">Thrown when the <paramref name="equityCurve"/> array contains less than two elements for sample calculation.</exception>
+    public static decimal[] DailyReturns(
+        this decimal[] equityCurve)
+    {
+        // Ensure that the input equity curve array is not null or empty.
+        Guard.AgainstNullOrEmptyArray(() => equityCurve);
+        // Check if there is enough data for sample calculation
+        Guard.Against(equityCurve.Length == 1)
+            .With<InsufficientDataException>(Boutquin.Domain.Exceptions.ExceptionMessages.InsufficientDataForSampleCalculation);
+
+        var dailyReturns = new decimal[equityCurve.Length - 1];
+
+        // Calculate daily returns by iterating through the equity curve array
+        for (var i = 1; i < equityCurve.Length; i++)
+        {
+            // Ensure that the previous equity value is not zero to prevent division by zero
+            if (equityCurve[i - 1] == 0)
+            {
+                throw new CalculationException($"The equity curve contains a zero value at position {i - 1}, which leads to a division by zero in daily returns calculation.");
+            }
+
+            // Daily Return = (Current Equity Value / Previous Equity Value) - 1
+            dailyReturns[i - 1] = (equityCurve[i] / equityCurve[i - 1]) - 1;
+        }
+
+        return dailyReturns;
     }
 
     /// <summary>
@@ -240,5 +323,120 @@ public static class DecimalArrayExtensions
         }
 
         return equityCurve;
+    }
+
+    /// <summary>
+    /// Calculates the Beta for a portfolio using daily returns, comparing the portfolio's performance to a benchmark index.
+    /// </summary>
+    /// <param name="portfolioDailyReturns">An array of daily returns for the portfolio.</param>
+    /// <param name="benchmarkDailyReturns">An array of daily returns for the benchmark index.</param>
+    /// <returns>The Beta value.</returns>
+    /// <exception cref="EmptyOrNullArrayException">Thrown when the <paramref name="portfolioDailyReturns"/> or <paramref name="benchmarkDailyReturns"/> array is null or empty.</exception>
+    /// <exception cref="InsufficientDataException">Thrown when the <paramref name="portfolioDailyReturns"/> or <paramref name="benchmarkDailyReturns"/> array contains less than two elements for sample calculation.</exception>
+    public static decimal Beta(
+        this decimal[] portfolioDailyReturns,
+        decimal[] benchmarkDailyReturns)
+    {
+        // Ensure that the input daily returns arrays are not null or empty.
+        Guard.AgainstNullOrEmptyArray(() => portfolioDailyReturns);
+        Guard.AgainstNullOrEmptyArray(() => benchmarkDailyReturns);
+        // Check if there is enough data for sample calculation
+        Guard.Against(portfolioDailyReturns.Length == 1)
+            .With<InsufficientDataException>(Boutquin.Domain.Exceptions.ExceptionMessages.InsufficientDataForSampleCalculation);
+        Guard.Against(benchmarkDailyReturns.Length == 1)
+            .With<InsufficientDataException>(Boutquin.Domain.Exceptions.ExceptionMessages.InsufficientDataForSampleCalculation);
+
+        var portfolioAverageReturn = portfolioDailyReturns.Average();
+        var benchmarkAverageReturn = benchmarkDailyReturns.Average();
+
+        // Calculate the covariance of the portfolio and benchmark returns
+        var covariance = portfolioDailyReturns
+            .Zip(benchmarkDailyReturns, (pReturn, bReturn) => (pReturn - portfolioAverageReturn) * (bReturn - benchmarkAverageReturn))
+            .Sum() / (portfolioDailyReturns.Length - 1);
+
+        // Calculate the variance of the benchmark returns
+        var benchmarkVariance = benchmarkDailyReturns
+            .Select(bReturn => (bReturn - benchmarkAverageReturn) * (bReturn - benchmarkAverageReturn))
+            .Sum() / (benchmarkDailyReturns.Length - 1);
+
+        // Beta = Covariance(Portfolio Returns, Benchmark Returns) / Variance(Benchmark Returns)
+        var beta = covariance / benchmarkVariance;
+        return beta;
+    }
+
+    /// <summary>
+    /// Calculates the Alpha for a portfolio using daily returns, comparing the portfolio's performance to a benchmark index.
+    /// </summary>
+    /// <param name="portfolioDailyReturns">An array of daily returns for the portfolio.</param>
+    /// <param name="benchmarkDailyReturns">An array of daily returns for the benchmark index.</param>
+    /// <param name="riskFreeRate">The risk-free rate, expressed as a daily value.</param>
+    /// <returns>The Alpha value.</returns>
+    /// <exception cref="EmptyOrNullArrayException">Thrown when the <paramref name="portfolioDailyReturns"/> or <paramref name="benchmarkDailyReturns"/> array is null or empty.</exception>
+    /// <exception cref="InsufficientDataException">Thrown when the <paramref name="portfolioDailyReturns"/> or <paramref name="benchmarkDailyReturns"/> array contains less than two elements for sample calculation.</exception>
+    public static decimal Alpha(
+        this decimal[] portfolioDailyReturns,
+        decimal[] benchmarkDailyReturns,
+        decimal riskFreeRate = 0m)
+    {
+        // Ensure that the input daily returns arrays are not null or empty.
+        Guard.AgainstNullOrEmptyArray(() => portfolioDailyReturns);
+        Guard.AgainstNullOrEmptyArray(() => benchmarkDailyReturns);
+        // Check if there is enough data for sample calculation
+        Guard.Against(portfolioDailyReturns.Length == 1)
+            .With<InsufficientDataException>(Boutquin.Domain.Exceptions.ExceptionMessages.InsufficientDataForSampleCalculation);
+        Guard.Against(benchmarkDailyReturns.Length == 1)
+            .With<InsufficientDataException>(Boutquin.Domain.Exceptions.ExceptionMessages.InsufficientDataForSampleCalculation);
+
+        var portfolioAverageReturn = portfolioDailyReturns.Average();
+        var benchmarkAverageReturn = benchmarkDailyReturns.Average();
+
+        // Calculate the Beta
+        var beta = Beta(portfolioDailyReturns, benchmarkDailyReturns);
+
+        // Alpha = Portfolio Average Return - Risk Free Rate - Beta * (Benchmark Average Return - Risk Free Rate)
+        var alpha = portfolioAverageReturn - riskFreeRate - beta * (benchmarkAverageReturn - riskFreeRate);
+        return alpha;
+    }
+
+    /// <summary>
+    /// Calculates the Information Ratio of daily returns for a given array of decimal values and their corresponding benchmark daily returns.
+    /// </summary>
+    /// <param name="dailyReturns">An array of daily returns for the portfolio.</param>
+    /// <param name="benchmarkDailyReturns">An array of daily returns for the benchmark index.</param>
+    /// <returns>The Information Ratio.</returns>
+    /// <exception cref="EmptyOrNullArrayException">Thrown when the <paramref name="dailyReturns"/> or <paramref name="benchmarkDailyReturns"/> array is null or empty.</exception>
+    /// <exception cref="InsufficientDataException">Thrown when the <paramref name="dailyReturns"/> or <paramref name="benchmarkDailyReturns"/> array contains less than two elements for sample calculation.</exception>
+    /// <exception cref="ArgumentException">Thrown when the <paramref name="dailyReturns"/> and <paramref name="benchmarkDailyReturns"/> arrays have different lengths.</exception>
+    public static decimal InformationRatio(
+        this decimal[] dailyReturns,
+        decimal[] benchmarkDailyReturns)
+    {
+        // Ensure that the input daily returns array and benchmark daily returns array are not null or empty.
+        Guard.AgainstNullOrEmptyArray(() => dailyReturns);
+        Guard.AgainstNullOrEmptyArray(() => benchmarkDailyReturns);
+
+        // Check if there is enough data for sample calculation
+        Guard.Against(dailyReturns.Length == 1)
+            .With<InsufficientDataException>(Boutquin.Domain.Exceptions.ExceptionMessages.InsufficientDataForSampleCalculation);
+        Guard.Against(benchmarkDailyReturns.Length == 1)
+            .With<InsufficientDataException>(Boutquin.Domain.Exceptions.ExceptionMessages.InsufficientDataForSampleCalculation);
+
+        // Ensure that the input daily returns array and benchmark daily returns array have the same length.
+        if (dailyReturns.Length != benchmarkDailyReturns.Length)
+        {
+            throw new ArgumentException("The daily returns and benchmark daily returns arrays must have the same length.");
+        }
+
+        // Calculate the active returns, which is the difference between daily returns and benchmark daily returns.
+        var activeReturns = dailyReturns.Zip(benchmarkDailyReturns, (portfolio, benchmark) => portfolio - benchmark).ToArray();
+
+        // Calculate the average active return.
+        var averageActiveReturn = activeReturns.Average();
+
+        // Calculate the standard deviation of the active returns.
+        var activeReturnStandardDeviation = activeReturns.StandardDeviation();
+
+        // Calculate the Information Ratio.
+        return averageActiveReturn / activeReturnStandardDeviation;
     }
 }

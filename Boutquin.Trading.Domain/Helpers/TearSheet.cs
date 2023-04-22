@@ -43,7 +43,8 @@ namespace Boutquin.Trading.Domain.Helpers;
 /// as a percentage. It represents the largest peak-to-trough decline in the
 /// value of the strategy during the backtesting period.
 /// </param>
-/// <param name="CAGR">The compound annual growth rate (CAGR) of the strategy,
+/// <param name="CAGR">The compound annual growth rate
+/// (CAGR) of the strategy,
 /// expressed as a percentage. It represents the geometric average annual
 /// return of the strategy over the entire backtesting period, assuming
 /// the returns are reinvested.

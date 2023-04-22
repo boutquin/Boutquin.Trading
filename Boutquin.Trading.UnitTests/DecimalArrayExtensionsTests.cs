@@ -13,9 +13,7 @@
 //  limitations under the License.
 //
 
-using System.Reflection.Metadata;
 using Boutquin.Domain.Exceptions;
-using Boutquin.Trading.Domain.Exceptions;
 using Boutquin.Trading.Domain.Extensions;
 using ExceptionMessages = Boutquin.Domain.Exceptions.ExceptionMessages;
 
@@ -170,6 +168,25 @@ public sealed class DecimalArrayExtensionsTests
     }
 
     /// <summary>
+    /// Tests the <see cref="DecimalArrayExtensions.CompoundAnnualGrowthRate(decimal[])"/> method with various valid input data 
+    /// and verifies if the correct CAGR is returned.
+    /// </summary>
+    /// <param name="dailyReturns">The input array of daily returns.</param>
+    /// <param name="expectedResult">The expected CAGR value.</param>
+    [Theory]
+    [MemberData(nameof(DecimalArrayExtensionsTestData.CompoundAnnualGrowthRateData), MemberType = typeof(DecimalArrayExtensionsTestData))]
+    public void CompoundAnnualGrowthRate_ShouldReturnCorrectResult(
+        decimal[] dailyReturns,
+        decimal expectedResult)
+    {
+        // Act
+        var actualResult = dailyReturns.CompoundAnnualGrowthRate();
+
+        // Assert
+        actualResult.Should().BeApproximately(expectedResult, Precision);
+    }
+
+    /// <summary>
     /// Tests the <see cref="DecimalArrayExtensions.DownsideDeviation(decimal[], decimal)"/> method with various valid input data 
     /// and verifies if the correct Downside Deviation is returned.
     /// </summary>
@@ -188,6 +205,29 @@ public sealed class DecimalArrayExtensionsTests
 
         // Assert
         actualResult.Should().BeApproximately(expectedResult, Precision);
+    }
+
+    /// <summary>
+    /// Tests the <see cref="DecimalArrayExtensions.DailyReturns(decimal[])"/> method with various valid input data
+    /// and verifies if the correct daily returns array is returned.
+    /// </summary>
+    /// <param name="equityCurve">The input array of equity curve values.</param>
+    /// <param name="expectedResult">The expected daily returns array.</param>
+    [Theory]
+    [MemberData(nameof(DecimalArrayExtensionsTestData.DailyReturnsData), MemberType = typeof(DecimalArrayExtensionsTestData))]
+    public void DailyReturns_ShouldReturnCorrectResult(
+        decimal[] equityCurve,
+        decimal[] expectedResult)
+    {
+        // Act
+        var actualResult = equityCurve.DailyReturns();
+
+        // Assert
+        actualResult.Should().HaveSameCount(expectedResult);
+        for (var i = 0; i < actualResult.Length; i++)
+        {
+            actualResult[i].Should().BeApproximately(expectedResult[i], Precision);
+        }
     }
 
     /// <summary>
@@ -211,6 +251,72 @@ public sealed class DecimalArrayExtensionsTests
         actualEquityCurve.Should().BeEquivalentTo(expectedEquityCurve, options => options.WithStrictOrdering());
     }
 
+
+    /// <summary>
+    /// Tests the <see cref="DecimalArrayExtensions.Beta(decimal[], decimal[])"/> method with various valid input data
+    /// and verifies if the correct Beta value is returned.
+    /// </summary>
+    /// <param name="portfolioDailyReturns">The input array of daily returns for the portfolio.</param>
+    /// <param name="benchmarkDailyReturns">The input array of daily returns for the benchmark index.</param>
+    /// <param name="expectedResult">The expected Beta value.</param>
+    [Theory]
+    [MemberData(nameof(DecimalArrayExtensionsTestData.BetaData), MemberType = typeof(DecimalArrayExtensionsTestData))]
+    public void Beta_ShouldReturnCorrectResult(
+        decimal[] portfolioDailyReturns,
+        decimal[] benchmarkDailyReturns,
+        decimal expectedResult)
+    {
+        // Act
+        var actualResult = portfolioDailyReturns.Beta(benchmarkDailyReturns);
+
+        // Assert
+        actualResult.Should().BeApproximately(expectedResult, Precision);
+    }
+
+
+    /// <summary>
+    /// Tests the <see cref="DecimalArrayExtensions.Alpha(decimal[], decimal[], decimal, decimal)"/> method with various valid input data
+    /// and verifies if the correct Alpha value is returned.
+    /// </summary>
+    /// <param name="portfolioDailyReturns">The input array of daily returns for the portfolio.</param>
+    /// <param name="benchmarkDailyReturns">The input array of daily returns for the benchmark index.</param>
+    /// <param name="riskFreeRate">The daily risk-free rate.</param>
+    /// <param name="expectedResult">The expected Alpha value.</param>
+    [Theory]
+    [MemberData(nameof(DecimalArrayExtensionsTestData.AlphaData), MemberType = typeof(DecimalArrayExtensionsTestData))]
+    public void Alpha_ShouldReturnCorrectResult(
+        decimal[] portfolioDailyReturns,
+        decimal[] benchmarkDailyReturns,
+        decimal riskFreeRate,
+        decimal expectedResult)
+    {
+        // Act
+        var actualResult = portfolioDailyReturns.Alpha(benchmarkDailyReturns, riskFreeRate);
+
+        // Assert
+        actualResult.Should().BeApproximately(expectedResult, Precision);
+    }
+
+    /// <summary>
+    /// Tests the <see cref="DecimalArrayExtensions.InformationRatio(decimal[], decimal[])"/> method with various valid input data and verifies if the correct Information Ratio is returned.
+    /// </summary>
+    /// <param name="dailyReturns">The input array of daily returns for the portfolio.</param>
+    /// <param name="benchmarkDailyReturns">The input array of daily returns for the benchmark index.</param>
+    /// <param name="expectedResult">The expected Information Ratio value.</param>
+    [Theory]
+    [MemberData(nameof(DecimalArrayExtensionsTestData.InformationRatioData), MemberType = typeof(DecimalArrayExtensionsTestData))]
+    public void InformationRatio_ShouldReturnCorrectResult(
+        decimal[] dailyReturns,
+        decimal[] benchmarkDailyReturns,
+        decimal expectedResult)
+    {
+        // Act
+        var actualResult = dailyReturns.InformationRatio(benchmarkDailyReturns);
+
+        // Assert
+        actualResult.Should().BeApproximately(expectedResult, Precision);
+    }
+
     /// <summary>
     /// Tests the <see cref="ArgumentOutOfRangeException" /> for all extension methods 
     /// with negative trading days per year.
@@ -219,7 +325,7 @@ public sealed class DecimalArrayExtensionsTests
     public void AllMethods_ShouldThrowNegativeTradingDaysPerYearException_WhenTradingDaysPerYearIsNegative()
     {
         // Arrange
-        var dailyReturns = new decimal[] { 0.01m, 0.02m };
+        var dailyReturns = new[] { 0.01m, 0.02m };
         const decimal RiskFreeRate = 0.0m;
         const int TradingDaysPerYear = -1;
         var exceptionType = typeof(ArgumentOutOfRangeException);
@@ -241,7 +347,7 @@ public sealed class DecimalArrayExtensionsTests
     public void AllMethods_ShouldThrowInsufficientDataForSampleCalculation_WhenArrayHasOneElement()
     {
         // Arrange
-        var dailyReturns = new decimal[] { 0.01m };
+        var dailyReturns = new[] { 0.01m };
         var exceptionType = typeof(InsufficientDataException);
         const string ExceptionMessage = ExceptionMessages.InsufficientDataForSampleCalculation;
 
@@ -252,7 +358,9 @@ public sealed class DecimalArrayExtensionsTests
         Assert.Throws(exceptionType, () => dailyReturns.AnnualizedSharpeRatio()).Message.Should().Be(ExceptionMessage);
         Assert.Throws(exceptionType, () => dailyReturns.SortinoRatio()).Message.Should().Be(ExceptionMessage);
         Assert.Throws(exceptionType, () => dailyReturns.AnnualizedSortinoRatio()).Message.Should().Be(ExceptionMessage);
+        Assert.Throws(exceptionType, () => dailyReturns.CompoundAnnualGrowthRate()).Message.Should().Be(ExceptionMessage);
         Assert.Throws(exceptionType, () => dailyReturns.DownsideDeviation()).Message.Should().Be(ExceptionMessage);
+        Assert.Throws(exceptionType, () => dailyReturns.DailyReturns()).Message.Should().Be(ExceptionMessage);
     }
 
     /// <summary>
@@ -277,7 +385,9 @@ public sealed class DecimalArrayExtensionsTests
         Assert.Throws(exceptionType, () => dailyReturns.AnnualizedSharpeRatio()).Message.Should().Be(ExceptionMessage);
         Assert.Throws(exceptionType, () => dailyReturns.SortinoRatio()).Message.Should().Be(ExceptionMessage);
         Assert.Throws(exceptionType, () => dailyReturns.AnnualizedSortinoRatio()).Message.Should().Be(ExceptionMessage);
+        Assert.Throws(exceptionType, () => dailyReturns.CompoundAnnualGrowthRate()).Message.Should().Be(ExceptionMessage);
         Assert.Throws(exceptionType, () => dailyReturns.DownsideDeviation()).Message.Should().Be(ExceptionMessage);
+        //Assert.Throws(exceptionType, () => dailyReturns.DailyReturns()).Message.Should().Be(ExceptionMessage);
         Assert.Throws(exceptionType, () => dailyReturns.EquityCurve()).Message.Should().Be(ExceptionMessage);
 #pragma warning restore CS8604 // Possible null reference argument.
     }
@@ -301,7 +411,9 @@ public sealed class DecimalArrayExtensionsTests
         Assert.Throws(exceptionType, () => dailyReturns.AnnualizedSharpeRatio()).Message.Should().Be(ExceptionMessage);
         Assert.Throws(exceptionType, () => dailyReturns.SortinoRatio()).Message.Should().Be(ExceptionMessage);
         Assert.Throws(exceptionType, () => dailyReturns.AnnualizedSortinoRatio()).Message.Should().Be(ExceptionMessage);
+        Assert.Throws(exceptionType, () => dailyReturns.CompoundAnnualGrowthRate()).Message.Should().Be(ExceptionMessage);
         Assert.Throws(exceptionType, () => dailyReturns.DownsideDeviation()).Message.Should().Be(ExceptionMessage);
+        //Assert.Throws(exceptionType, () => dailyReturns.DailyReturns()).Message.Should().Be(ExceptionMessage);
         Assert.Throws(exceptionType, () => dailyReturns.EquityCurve()).Message.Should().Be(ExceptionMessage);
     }
 }

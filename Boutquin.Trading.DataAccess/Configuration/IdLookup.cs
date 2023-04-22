@@ -63,7 +63,7 @@ public static class IdLookup
     /// <exception cref="ArgumentException">Thrown when the given exchange code is not found in the dictionary.</exception>
     public static int GetExchangeId(ExchangeCode exchangeCode)
     {
-        if (_exchangeLookup.TryGetValue(exchangeCode, out int exchangeId))
+        if (_exchangeLookup.TryGetValue(exchangeCode, out var exchangeId))
         {
             return exchangeId;
         }
@@ -81,7 +81,7 @@ public static class IdLookup
     /// <exception cref="ArgumentException">Thrown when the given city name is not found in the dictionary.</exception>
     public static int GetCityId(string cityName)
     {
-        if (_cityLookup.TryGetValue(cityName, out int cityId))
+        if (_cityLookup.TryGetValue(cityName, out var cityId))
         {
             return cityId;
         }
