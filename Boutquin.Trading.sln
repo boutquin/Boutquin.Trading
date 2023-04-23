@@ -17,7 +17,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Boutquin.Trading.DataAccess", "Boutquin.Trading.DataAccess\Boutquin.Trading.DataAccess.csproj", "{F0AEA70D-64CF-4916-A95C-2C027360AAA4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boutquin.Trading.DataAccess", "Boutquin.Trading.DataAccess\Boutquin.Trading.DataAccess.csproj", "{F0AEA70D-64CF-4916-A95C-2C027360AAA4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Boutquin.Trading.Application", "Boutquin.Trading.Application\Boutquin.Trading.Application.csproj", "{03337BB5-E5C1-4E5F-8CB3-6AD3FECAB5C0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +43,10 @@ Global
 		{F0AEA70D-64CF-4916-A95C-2C027360AAA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F0AEA70D-64CF-4916-A95C-2C027360AAA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F0AEA70D-64CF-4916-A95C-2C027360AAA4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{03337BB5-E5C1-4E5F-8CB3-6AD3FECAB5C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03337BB5-E5C1-4E5F-8CB3-6AD3FECAB5C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03337BB5-E5C1-4E5F-8CB3-6AD3FECAB5C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03337BB5-E5C1-4E5F-8CB3-6AD3FECAB5C0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

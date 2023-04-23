@@ -88,18 +88,18 @@ namespace Boutquin.Trading.Domain.Helpers;
 /// in the strategy's value during the backtesting period.
 /// </param>
 public record Tearsheet(
-    double AnnualizedReturn,
-    double SharpeRatio,
-    double SortinoRatio,
-    double MaxDrawdown,
+    decimal AnnualizedReturn,
+    decimal SharpeRatio,
+    decimal SortinoRatio,
+    decimal MaxDrawdown,
     // ReSharper disable once InconsistentNaming
-    double CAGR,
-    double Volatility,
-    double Alpha,
-    double Beta,
-    double InformationRatio,
-    Dictionary<DateTime, double> EquityCurve,
-    Dictionary<DateTime, double> Drawdowns,
+    decimal CAGR,
+    decimal Volatility,
+    decimal Alpha,
+    decimal Beta,
+    decimal InformationRatio,
+    SortedDictionary<DateTime, decimal> EquityCurve,
+    SortedDictionary<DateTime, decimal> Drawdowns,
     int MaxDrawdownDuration)
 {
     /// <summary>
