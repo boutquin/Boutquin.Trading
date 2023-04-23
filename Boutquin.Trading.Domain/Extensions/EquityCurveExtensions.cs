@@ -27,9 +27,9 @@ public static class EquityCurveExtensions
     /// <summary>
     /// Calculates the drawdowns, maximum drawdown, and its duration from the given equity curve.
     /// </summary>
-    /// <param name="equityCurve">A SortedDictionary<DateTime, decimal> representing the equity curve of a trading strategy.</param>
-    /// <returns>A tuple with the drawdowns as SortedDictionary<DateTime, decimal>, the maximum drawdown as decimal, and its duration as int.</returns>
-    /// <exception cref="EmptyOrNullArrayException">Thrown when the <paramref name="equityCurve"/> is null or empty.</exception>
+    /// <param name="equityCurve">A SortedDictionary&lt;DateTime, decimal&gt; representing the equity curve of a trading strategy.</param>
+    /// <returns>A tuple with the drawdowns as SortedDictionary&lt;DateTime, decimal&gt;, the maximum drawdown as decimal, and its duration as int.</returns>
+    /// <exception cref="EmptyOrNullDictionaryException">Thrown when the <paramref name="equityCurve"/> is null or empty.</exception>
     /// <exception cref="InsufficientDataException">Thrown when the <paramref name="equityCurve"/> contains less than two elements for sample calculation.</exception>
     /// <example>
     /// <code>
@@ -43,8 +43,11 @@ public static class EquityCurveExtensions
     /// var (drawdowns, maxDrawdown, maxDrawdownDuration) = equityCurve.DrawdownAnalysis();
     /// </code>
     /// </example>
-    public static (SortedDictionary<DateTime, decimal> Drawdowns, decimal MaxDrawdown, int MaxDrawdownDuration) CalculateDrawdownsAndMaxDrawdownInfo(this SortedDictionary<DateTime, decimal> equityCurve)
+    public static (SortedDictionary<DateTime, decimal> Drawdowns, decimal MaxDrawdown, int MaxDrawdownDuration) CalculateDrawdownsAndMaxDrawdownInfo(
+        this SortedDictionary<DateTime, decimal> equityCurve)
     {
+        // Ensure the equity curve dictionary is not null or empty
+        Guard.AgainstEmptyOrNullDictionary(() => equityCurve);
         // Check if there is enough data for sample calculation
         Guard.Against(equityCurve.Count == 1)
             .With<InsufficientDataException>(Boutquin.Domain.Exceptions.ExceptionMessages.InsufficientDataForSampleCalculation);
@@ -55,20 +58,18 @@ public static class EquityCurveExtensions
         // Initialize variables for peak equity, maximum drawdown, drawdown duration, and maximum drawdown duration.
         decimal peakEquity = 0;
         decimal maxDrawdown = 0;
-        var drawdownDuration = 0;
         var maxDrawdownDuration = 0;
 
         // Initialize a variable to store the start date of the current drawdown.
         var startDrawdownDate = DateTime.MinValue;
 
         // Iterate through the given equity curve.
-        foreach (var kvp in equityCurve)
+        foreach (var (date, equity) in equityCurve)
         {
             // Get the date and equity value at each data point.
-            var date = kvp.Key;
-            var equity = kvp.Value;
 
             // If a new highest equity value is encountered, update the peak equity and reset the drawdown duration.
+            var drawdownDuration = 0;
             if (equity > peakEquity)
             {
                 peakEquity = equity;
