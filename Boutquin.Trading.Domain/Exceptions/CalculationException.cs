@@ -62,5 +62,4 @@ public sealed class CalculationException : Exception
         : base(info, context)
     {
     }
-
 }
