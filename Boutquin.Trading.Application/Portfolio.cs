@@ -13,6 +13,10 @@
 //  limitations under the License.
 //
 
+using Boutquin.Domain.Helpers;
+using Boutquin.Trading.Domain.Enums;
+using Boutquin.Trading.Domain.Events;
+using Boutquin.Trading.Domain.Helpers;
 using Boutquin.Trading.Domain.Interfaces;
 
 namespace Boutquin.Trading.Application;
@@ -27,6 +31,35 @@ namespace Boutquin.Trading.Application;
 /// </summary>
 public sealed class Portfolio
 {
+    /// <summary>
+    /// Stores the cash balance for each strategy in the portfolio.
+    /// </summary>
+    /// <remarks>
+    /// The key is the strategy name, and the value is the cash balance.
+    /// </remarks>
+    private readonly Dictionary<string, decimal> _cash;
+
+    /// <summary>
+    /// Stores the positions for each asset and strategy in the portfolio.
+    /// </summary>
+    /// <remarks>
+    /// The outer dictionary key represents the asset, and the inner dictionary key represents the strategy name.
+    /// The inner dictionary value is the position (number of units held) for that asset and strategy.
+    /// </remarks>
+    private readonly Dictionary<string, Dictionary<string, int>> _positions; // Asset -> Strategy -> Position
+
+    /// <summary>
+    /// Stores the latest market data for each asset in the portfolio.
+    /// </summary>
+    /// <remarks>
+    /// The key represents the asset, and the value represents the latest market data for that asset.
+    /// </remarks>
+    private readonly Dictionary<string, MarketData> _latestMarketData;
+
+    /// <summary>
+    /// Stores the current executing strategy for the portfolio.
+    /// </summary>
+    private IStrategy _currentExecutingStrategy;
     /// <summary>
     /// Retrieves the portfolio's equity curve, represented as a SortedDictionary with DateTime keys and decimal values.
     /// The equity curve represents the value of the portfolio over time, where the keys are the timestamps of events
@@ -52,6 +85,8 @@ public sealed class Portfolio
         {
             throw new ArgumentException("The provided strategies list cannot be empty.", nameof(strategies));
         }
+
+        _positions = new Dictionary<string, Dictionary<string, int>>();
     }
 
     /// <summary>
@@ -72,18 +107,6 @@ public sealed class Portfolio
     }
 
     /// <summary>
-    /// Processes an event and forwards it to the appropriate strategies.
-    /// </summary>
-    /// <param name="e">The event to be processed.</param>
-    public void HandleEvent(IEvent e)
-    {
-        foreach (var strategy in Strategies)
-        {
-            strategy.OnEvent(e);
-        }
-    }
-
-    /// <summary>
     /// Calculates the total equity of the portfolio by summing the equities of all the strategies in the portfolio.
     /// </summary>
     /// <returns>A decimal value representing the total equity of the portfolio.</returns>
@@ -96,5 +119,262 @@ public sealed class Portfolio
 
         var totalEquity = Strategies.Sum(strategy => strategy.CalculateEquity());
         return totalEquity;
+    }
+
+    /// <summary>
+    /// Adds a strategy to the portfolio.
+    /// </summary>
+    /// <param name="strategy">The strategy to be added to the portfolio.</param>
+    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="strategy"/> is null.</exception>
+    public void AddStrategy(IStrategy strategy)
+    {
+        // Ensure that the strategy is not null.
+        Guard.AgainstNull(() => strategy);
+
+        Strategies.Add(strategy);
+        
+        var strategyPositions = new Dictionary<string, int>();
+        foreach (var asset in strategy.Assets)
+        {
+            strategyPositions[asset] = 0;
+        }
+        _positions[strategy.Name] = strategyPositions;
+    }
+
+
+    /// <summary>
+    /// Handles events based on the type of the event object.
+    /// </summary>
+    /// <param name="eventObj">The event object to be processed.</param>
+    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="eventObj"/> is null.</exception>
+    /// <remarks>
+    /// The method processes different types of events by calling appropriate handling methods.
+    /// It supports MarketEvent, SignalEvent, OrderEvent, FillEvent, and DividendEvent.
+    /// </remarks>
+    public void HandleEvent(IEvent eventObj)
+    {
+        // Ensure that the event object is not null.
+        if (eventObj == null) throw new ArgumentNullException(nameof(eventObj));
+
+        switch (eventObj)
+        {
+            case MarketEvent marketEvent:
+                HandleMarketEvent(marketEvent);
+                break;
+            case SignalEvent signalEvent:
+                HandleSignalEvent(signalEvent);
+                break;
+            case OrderEvent orderEvent:
+                HandleOrderEvent(orderEvent);
+                break;
+            case FillEvent fillEvent:
+                HandleFillEvent(fillEvent);
+                break;
+            case DividendEvent dividendEvent: // Add this case
+                HandleDividendEvent(dividendEvent);
+                break;
+        }
+    }
+    
+    /// <summary>
+    /// Handles a <see cref="MarketEvent"/> by updating the latest market data for the asset
+    /// in the <see cref="_latestMarketData"/> dictionary.
+    /// </summary>
+    /// <param name="marketEvent">The market event containing the asset and its updated market data.</param>
+    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="marketEvent"/> is null.</exception>
+    private void HandleMarketEvent(MarketEvent marketEvent)
+    {
+        // Ensure that the market event is not null.
+        if (marketEvent == null)
+        {
+            throw new ArgumentNullException(nameof(marketEvent));
+        }
+
+        // Update the latest market data for the asset.
+        var marketData = new MarketData(
+            marketEvent.Timestamp,
+            marketEvent.Asset,
+            marketEvent.Open,
+            marketEvent.High,
+            marketEvent.Low,
+            marketEvent.Close,
+            marketEvent.Volume
+        );
+
+        _latestMarketData[marketEvent.Asset] = marketData;
+    }
+
+    /// <summary>
+    /// Handles the SignalEvent by creating an OrderEvent based on the signal type.
+    /// </summary>
+    /// <param name="signalEvent">The SignalEvent to be processed.</param>
+    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="signalEvent"/> is null.</exception>
+    private void HandleSignalEvent(SignalEvent signalEvent)
+    {
+        // Ensure that the signal event is not null.
+        if (signalEvent == null) throw new ArgumentNullException(nameof(signalEvent));
+
+        // Get the position for the current strategy and asset
+        var currentPosition = _positions[signalEvent.Asset][_currentExecutingStrategy.Name];
+
+        // Determine the order type and quantity based on the signal type
+        OrderType orderType;
+        int quantity;
+
+        // Calculate the total value of the portfolio
+        var portfolioTotalValue = EquityCurve[signalEvent.Timestamp];
+
+        switch (signalEvent.SignalType)
+        {
+            case SignalType.Long:
+                orderType = OrderType.Buy;
+                quantity = _currentExecutingStrategy.PositionSizer.GetPositionSize(signalEvent.Asset, portfolioTotalValue);
+                break;
+            case SignalType.Short:
+                orderType = OrderType.Sell;
+                quantity = _currentExecutingStrategy.PositionSizer.GetPositionSize(signalEvent.Asset, portfolioTotalValue);
+                break;
+            case SignalType.Exit:
+                orderType = currentPosition > 0 ? OrderType.Sell : OrderType.Buy;
+                quantity = Math.Abs(currentPosition);
+                break;
+            default:
+                throw new InvalidOperationException("Unknown signal type.");
+        }
+
+        // Create an OrderEvent
+        var orderEvent = new OrderEvent(
+            signalEvent.Timestamp,
+            signalEvent.Asset,
+            orderType,
+            quantity,
+            _currentExecutingStrategy.Slippage,
+            _currentExecutingStrategy.Commission
+        );
+
+        // Handle the OrderEvent
+        HandleOrderEvent(orderEvent);
+    }
+
+    /// <summary>
+    /// Handles an order event by processing the order, calculating the fill price, and creating a fill event.
+    /// </summary>
+    /// <param name="orderEvent">The order event to be processed.</param>
+    /// <remarks>
+    /// This method retrieves the latest market data for the asset associated with the order event,
+    /// calculates the fill price based on the slippage, creates a fill event, and then handles the fill event.
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="orderEvent"/> is null.</exception>
+    private void HandleOrderEvent(OrderEvent orderEvent)
+    {
+        // Ensure that the OrderEvent is not null.
+        Guard.AgainstNull(() => orderEvent);
+
+        // Get the latest market data for the asset
+        var marketData = _latestMarketData[orderEvent.Asset];
+
+        // Calculate the fill price based on the slippage
+        var fillPrice = (orderEvent.OrderType == OrderType.Buy) ?
+            marketData.Close * (1 + orderEvent.Slippage) :
+            marketData.Close * (1 - orderEvent.Slippage);
+
+        // Create a fill event
+        var fillEvent = new FillEvent(
+            orderEvent.Timestamp,
+            orderEvent.Asset,
+            orderEvent.Quantity,
+            fillPrice,
+            orderEvent.Commission,
+            _currentExecutingStrategy.Name
+        );
+
+        // Handle the fill event
+        HandleFillEvent(fillEvent);
+    }
+
+    /// <summary>
+    /// Handles a fill event by updating the position, calculating the transaction cost, and updating the cash balance.
+    /// </summary>
+    /// <param name="fillEvent">The fill event to be processed.</param>
+    /// <remarks>
+    /// This method is used to update the portfolio's positions and cash balance based on the fill event received.
+    /// A positive fill event quantity represents a buy, while a negative quantity represents a sell.
+    /// The transaction cost is calculated as the product of fill price and fill quantity, plus the commission.
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="fillEvent"/> is null.</exception>
+    private void HandleFillEvent(FillEvent fillEvent)
+    {
+        // Ensure that the FillEvent is not null.
+        Guard.AgainstNull(() => fillEvent);
+
+        // Update the position
+        _positions[fillEvent.Asset][fillEvent.StrategyName] += fillEvent.Quantity;
+
+        // Calculate the transaction cost (including commission)
+        var transactionCost = fillEvent.FillPrice * fillEvent.Quantity + fillEvent.Commission;
+
+        // Update the cash balance
+        if (fillEvent.Quantity > 0)
+        {
+            _cash[fillEvent.StrategyName] -= transactionCost;
+        }
+        else
+        {
+            _cash[fillEvent.StrategyName] += transactionCost;
+        }
+    }
+
+    /// <summary>
+    /// Sets the currently executing strategy for the portfolio.
+    /// </summary>
+    /// <param name="strategy">The strategy to be set as the current executing strategy.</param>
+    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="strategy"/> is null.</exception>
+    private void SetCurrentExecutingStrategy(IStrategy strategy)
+    {
+        // Ensure that the strategy is not null.
+        Guard.AgainstNull(() => strategy);
+
+        _currentExecutingStrategy = strategy;
+    }
+
+    /// <summary>
+    /// Updates the latest market data for a given asset in the portfolio.
+    /// </summary>
+    /// <param name="asset">The asset for which the market data should be updated.</param>
+    /// <param name="marketData">The new market data for the asset.</param>
+    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="asset"/> or <paramref name="marketData"/> is null.</exception>
+    private void UpdateMarketData(string asset, MarketData marketData)
+    {
+        // Ensure that the asset and marketData are not null.
+        Guard.AgainstNull(() => asset);
+        Guard.AgainstNull(() => marketData);
+
+        _latestMarketData[asset] = marketData;
+    }
+
+    /// <summary>
+    /// Processes the dividend event for all strategies in the portfolio.
+    /// </summary>
+    /// <param name="dividendEvent">The dividend event to be processed.</param>
+    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="dividendEvent"/> is null.</exception>
+    /// <remarks>
+    /// The method iterates through all strategies and updates the cash balance
+    /// based on the dividend amount for each strategy holding the asset.
+    /// </remarks>
+    private void HandleDividendEvent(DividendEvent dividendEvent)
+    {
+        // Ensure that the dividendEvent is not null.
+        Guard.AgainstNull(() => dividendEvent);
+
+        // Iterate through strategies to process the dividend event
+        foreach (var strategy in Strategies)
+        {
+            var position = _positions[dividendEvent.Asset][strategy.Name];
+            if (position > 0)
+            {
+                var dividendAmount = position * dividendEvent.DividendPerShare;
+                _cash[strategy.Name] += dividendAmount;
+            }
+        }
     }
 }

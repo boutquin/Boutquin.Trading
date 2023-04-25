@@ -32,9 +32,19 @@ public interface IStrategy
     string Name { get; }
 
     /// <summary>
+    /// A dictionary containing the financial assets associated with the strategy
+    /// and their respective positions.
+    /// </summary>
+    /// <remarks>
+    /// The key is the asset symbol (e.g., "AAPL") and the value is the quantity
+    /// of the asset in the strategy's position.
+    /// </remarks>
+    Dictionary<string, int> Positions { get; }
+
+    /// <summary>
     /// The list of financial assets associated with the strategy.
     /// </summary>
-    List<string> Assets { get; }
+    List<string> Assets { get => Positions.Keys.ToList(); } 
 
     /// <summary>
     /// This method is called by the trading engine whenever a new market
@@ -123,5 +133,26 @@ public interface IStrategy
     /// </summary>
     RebalancingFrequency RebalancingFrequency { get; }
 
-    void OnEvent(IEvent iEvent);
+    /// <summary>
+    /// The position sizer used to determine the position size.
+    /// </summary>
+    IPositionSizer PositionSizer { get; }
+
+    /// <summary>
+    /// The slippage percentage used when placing orders.
+    /// </summary>
+    /// <remarks>
+    /// Slippage is a measure of the difference between the expected price of a trade
+    /// and the price at which the trade is executed. It is expressed as a percentage.
+    /// </remarks>
+    decimal Slippage { get; }
+
+    /// <summary>
+    /// The commission fee applied to each transaction.
+    /// </summary>
+    /// <remarks>
+    /// The commission is a fixed amount charged for each transaction, regardless of
+    /// the size of the order.
+    /// </remarks>
+    decimal Commission { get; }
 }
