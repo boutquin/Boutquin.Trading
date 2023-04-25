@@ -149,7 +149,8 @@ public sealed class Portfolio
     /// <exception cref="ArgumentNullException">Thrown when the <paramref name="eventObj"/> is null.</exception>
     /// <remarks>
     /// The method processes different types of events by calling appropriate handling methods.
-    /// It supports MarketEvent, SignalEvent, OrderEvent, FillEvent, and DividendEvent.
+    /// It supports MarketEvent, SignalEvent, OrderEvent, FillEvent, RebalancingEvent,
+    /// and DividendEvent.
     /// </remarks>
     public void HandleEvent(IEvent eventObj)
     {
@@ -170,8 +171,11 @@ public sealed class Portfolio
             case FillEvent fillEvent:
                 HandleFillEvent(fillEvent);
                 break;
-            case DividendEvent dividendEvent: // Add this case
+            case DividendEvent dividendEvent:
                 HandleDividendEvent(dividendEvent);
+                break;
+            case RebalancingEvent rebalancingEvent:
+                HandleRebalancingEvent(rebalancingEvent);
                 break;
         }
     }
@@ -375,6 +379,59 @@ public sealed class Portfolio
                 var dividendAmount = position * dividendEvent.DividendPerShare;
                 _cash[strategy.Name] += dividendAmount;
             }
+        }
+    }
+
+    /// <summary>
+    /// Rebalances the portfolio for each asset in the strategy based on the given rebalancing event.
+    /// </summary>
+    /// <param name="rebalancingEvent">The event that triggers the portfolio rebalancing.</param>
+    /// <exception cref="ArgumentNullException">Thrown when the rebalancingEvent parameter is null.</exception>
+    /// <remarks>
+    /// This method is responsible for calculating the required quantity adjustments for each asset in the
+    /// strategy and executing order events to rebalance the portfolio accordingly. It first calculates
+    /// the total value of the portfolio and the equity for the current executing strategy. Then, for each asset
+    /// in the rebalancing event, it calculates the target weight, target value, current position value,
+    /// and required quantity adjustment. If the quantity adjustment is zero, it continues to the next asset.
+    /// Otherwise, it creates and executes an order event for the quantity adjustment using the current
+    /// executing strategy's slippage and commission models.
+    /// </remarks>
+    private void HandleRebalancingEvent(RebalancingEvent rebalancingEvent)
+    {
+        // Ensure that the rebalancingEvent is not null.
+        Guard.AgainstNull(() => rebalancingEvent);
+
+        // Calculate the total value of the portfolio
+        var portfolioTotalValue = EquityCurve[rebalancingEvent.Timestamp];
+
+        // Calculate the equity for the strategy
+        var equity = _currentExecutingStrategy.CalculateEquity();
+
+        // Rebalance the portfolio for each asset in the strategy
+        foreach (var asset in rebalancingEvent.Assets)
+        {
+            decimal targetWeight = _currentExecutingStrategy.PositionSizer.GetPositionSize(asset, portfolioTotalValue);
+            var targetValue = equity * targetWeight;
+            var currentPositionValue = _positions[_currentExecutingStrategy.Name][asset] * _latestMarketData[asset].Close;
+
+            // Calculate the required quantity adjustment
+            var quantityAdjustment = (int)((targetValue - currentPositionValue) / _latestMarketData[asset].Close);
+
+            // Create and execute an order event for the quantity adjustment
+            if (quantityAdjustment == 0)
+            {
+                continue;
+            }
+
+            var orderEvent = new OrderEvent(
+                rebalancingEvent.Timestamp, 
+                asset,
+                quantityAdjustment > 0 ? OrderType.Buy : OrderType.Sell,
+                quantityAdjustment,
+                _currentExecutingStrategy.Slippage,
+                _currentExecutingStrategy.Commission
+            );
+            HandleOrderEvent(orderEvent);
         }
     }
 }
