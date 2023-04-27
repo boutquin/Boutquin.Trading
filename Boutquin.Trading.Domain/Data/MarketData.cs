@@ -13,7 +13,9 @@
 //  limitations under the License.
 //
 
-namespace Boutquin.Trading.Domain.Helpers;
+using Boutquin.Trading.Domain.Interfaces;
+
+namespace Boutquin.Trading.Domain.Data;
 
 /// <summary>
 /// The MarketData record encapsulates the data points for a financial
@@ -42,10 +44,10 @@ namespace Boutquin.Trading.Domain.Helpers;
 /// the market data point's time interval, represented as a long integer.
 /// </param>
 public record MarketData(
-    DateTime Timestamp,
+    DateOnly Timestamp,
     string Asset,
     decimal Open,
     decimal High,
     decimal Low,
     decimal Close,
-    long Volume);
+    long Volume) : IAssetData;

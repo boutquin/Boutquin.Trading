@@ -42,7 +42,7 @@ namespace Boutquin.Trading.Domain.Events;
 /// the fill event, represented as a string.
 /// </param>
 public record FillEvent(
-    DateTime Timestamp, 
+    DateOnly Timestamp, 
     string Asset, 
     int Quantity, 
     decimal FillPrice, 

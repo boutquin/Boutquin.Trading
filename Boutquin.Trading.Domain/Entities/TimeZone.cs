@@ -17,7 +17,7 @@ namespace Boutquin.Trading.Domain.Entities;
 
 using System;
 using Boutquin.Domain.Helpers;
-using Boutquin.Trading.Domain.Enums;
+using Enums;
 
 /// <summary>
 /// Represents an ISO 8601 Time Zone.

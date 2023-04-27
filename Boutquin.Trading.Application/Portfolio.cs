@@ -14,9 +14,9 @@
 //
 
 using Boutquin.Domain.Helpers;
+using Boutquin.Trading.Domain.Data;
 using Boutquin.Trading.Domain.Enums;
 using Boutquin.Trading.Domain.Events;
-using Boutquin.Trading.Domain.Helpers;
 using Boutquin.Trading.Domain.Interfaces;
 
 namespace Boutquin.Trading.Application;
@@ -65,7 +65,7 @@ public sealed class Portfolio
     /// The equity curve represents the value of the portfolio over time, where the keys are the timestamps of events
     /// and the values are the total equity at each timestamp.
     /// </summary>
-    public SortedDictionary<DateTime, decimal> EquityCurve { get; } = new();
+    public SortedDictionary<DateOnly, decimal> EquityCurve { get; } = new();
 
     /// <summary>
     /// Retrieves the list of trading strategies in the portfolio.
@@ -95,7 +95,7 @@ public sealed class Portfolio
     /// </summary>
     /// <param name="timestamp">The DateTime representing the timestamp at which the equity curve should be updated.</param>
     /// <exception cref="ArgumentException">Thrown when the provided timestamp is earlier than the last entry in the equity curve.</exception>
-    public void UpdateEquityCurve(DateTime timestamp)
+    public void UpdateEquityCurve(DateOnly timestamp)
     {
         if (EquityCurve.Count > 0 && timestamp < EquityCurve.Keys.Last())
         {

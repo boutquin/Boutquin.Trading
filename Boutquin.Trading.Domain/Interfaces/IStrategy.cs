@@ -13,9 +13,9 @@
 //  limitations under the License.
 //
 
+using Boutquin.Trading.Domain.Data;
 using Boutquin.Trading.Domain.Enums;
 using Boutquin.Trading.Domain.Events;
-using Boutquin.Trading.Domain.Helpers;
 
 namespace Boutquin.Trading.Domain.Interfaces;
 

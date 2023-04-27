@@ -43,7 +43,7 @@ namespace Boutquin.Trading.Domain.Events;
 /// as a decimal value.
 /// </param>
 public record OrderEvent(
-    DateTime Timestamp, 
+    DateOnly Timestamp, 
     string Asset, 
     OrderType OrderType, 
     int Quantity, 

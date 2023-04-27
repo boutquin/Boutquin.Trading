@@ -29,7 +29,7 @@ namespace Boutquin.Trading.Domain.Events;
 /// <param name="Close">The closing price of the asset at the given timestamp.</param>
 /// <param name="Volume">The trading volume of the asset during the market event period.</param>
 public record MarketEvent(
-    DateTime Timestamp,
+    DateOnly Timestamp,
     string Asset,
     decimal Open,
     decimal High,

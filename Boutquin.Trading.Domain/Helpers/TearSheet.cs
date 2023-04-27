@@ -98,8 +98,8 @@ public record Tearsheet(
     decimal Alpha,
     decimal Beta,
     decimal InformationRatio,
-    SortedDictionary<DateTime, decimal> EquityCurve,
-    SortedDictionary<DateTime, decimal> Drawdowns,
+    SortedDictionary<DateOnly, decimal> EquityCurve,
+    SortedDictionary<DateOnly, decimal> Drawdowns,
     int MaxDrawdownDuration)
 {
     /// <summary>

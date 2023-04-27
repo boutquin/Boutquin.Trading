@@ -31,6 +31,6 @@ namespace Boutquin.Trading.Domain.Events;
 /// associated with the rebalancing event, represented as a list of decimals.
 /// </param>
 public record RebalancingEvent(
-    DateTime Timestamp,
+    DateOnly Timestamp,
     List<string> Assets,
     List<decimal> TargetWeights) : IEvent;

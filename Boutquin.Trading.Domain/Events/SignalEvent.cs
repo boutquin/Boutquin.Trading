@@ -33,6 +33,6 @@ namespace Boutquin.Trading.Domain.Events;
 /// as a SignalType enum value.
 /// </param>
 public record SignalEvent(
-    DateTime Timestamp, 
+    DateOnly Timestamp, 
     string Asset, 
     SignalType SignalType) : IEvent;

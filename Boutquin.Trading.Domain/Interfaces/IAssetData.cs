@@ -16,14 +16,24 @@
 namespace Boutquin.Trading.Domain.Interfaces;
 
 /// <summary>
-/// The IEvent interface defines the properties of a financial event,
-/// including its timestamp and associated asset.
+/// IAssetData is an interface that represents the common characteristics of asset-related data classes.
 /// </summary>
-public interface IEvent
+/// <remarks>
+/// Implementations of this interface should contain asset-specific data, such as market data or dividend data.
+/// </remarks>
+public interface IAssetData
 {
     /// <summary>
-    /// Gets the timestamp of the financial event, represented as a
-    /// DateOnly object.
+    /// Gets the asset identifier (e.g., ticker symbol) associated with the asset data.
     /// </summary>
-    DateOnly Timestamp { get; }
+    /// <value>
+    /// A string representing the asset identifier.
+    /// </value>
+    /// <example>
+    /// <code>
+    /// var marketData = new MarketData { Asset = "AAPL" };
+    /// Console.WriteLine(marketData.Asset); // Outputs: AAPL
+    /// </code>
+    /// </example>
+    string Asset { get; }
 }

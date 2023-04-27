@@ -15,10 +15,10 @@
 
 using Boutquin.Trading.Domain.Interfaces;
 
-namespace Boutquin.Trading.Domain.Events;
+namespace Boutquin.Trading.Domain.Data;
 
 /// <summary>
-/// The DividendEvent record encapsulates the data points for a dividend
+/// The DividendData record encapsulates the data points for a dividend
 /// event for a specific financial asset at a specific point in time,
 /// providing information about the dividend per share, asset name, and
 /// timestamp.
@@ -33,7 +33,7 @@ namespace Boutquin.Trading.Domain.Events;
 /// financial asset during the dividend event, represented as a decimal
 /// value.
 /// </param>
-public record DividendEvent(
+public record DividendData(
     DateOnly Timestamp,
     string Asset,
-    decimal DividendPerShare) : IEvent;
+    decimal DividendPerShare) : IAssetData;

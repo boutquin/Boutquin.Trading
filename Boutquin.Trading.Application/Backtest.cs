@@ -42,22 +42,22 @@ public sealed class BackTest
 
     /// <summary>
     /// The market data source to use for loading historical market data
-    /// and dividend data, represented as an IMarketDataSource object.
+    /// and dividend data, represented as an IMarketDataReader object.
     /// </summary>
-    private readonly IMarketDataSource _marketDataSource;
+    private readonly IMarketDataReader _marketDataReader;
 
     /// <summary>
     /// Initializes a new instance of the BackTest class with a trading portfolio, benchmark portfolio, and market data source.
     /// </summary>
     /// <param name="portfolio">A Portfolio object representing the trading portfolio.</param>
     /// <param name="benchmarkPortfolio">A Portfolio object representing the benchmark portfolio.</param>
-    /// <param name="marketDataSource">An object implementing the IMarketDataSource interface, responsible for providing market data for the backtest.</param>
+    /// <param name="marketDataReader">An object implementing the IMarketDataReader interface, responsible for providing market data for the backtest.</param>
     /// <exception cref="ArgumentNullException">Thrown when any of the provided arguments are null.</exception>
-    public BackTest(Portfolio portfolio, Portfolio benchmarkPortfolio, IMarketDataSource marketDataSource)
+    public BackTest(Portfolio portfolio, Portfolio benchmarkPortfolio, IMarketDataReader marketDataReader)
     {
         _portfolio = portfolio ?? throw new ArgumentNullException(nameof(portfolio), "The provided portfolio cannot be null.");
         _benchmarkPortfolio = benchmarkPortfolio ?? throw new ArgumentNullException(nameof(benchmarkPortfolio), "The provided benchmark portfolio cannot be null.");
-        _marketDataSource = marketDataSource ?? throw new ArgumentNullException(nameof(marketDataSource), "The provided market data source cannot be null.");
+        _marketDataReader = marketDataReader ?? throw new ArgumentNullException(nameof(marketDataReader), "The provided market reader source cannot be null.");
     }
 
     /// <summary>
@@ -67,7 +67,7 @@ public sealed class BackTest
     /// <param name="endDate">A DateTime object representing the end date of the backtest simulation.</param>
     /// <returns>A Tearsheet object containing various performance metrics for the backtested portfolio and benchmark portfolio.</returns>
     /// <exception cref="ArgumentException">Thrown when the provided start date is greater than or equal to the end date.</exception>
-    public Tearsheet Run(DateTime startDate, DateTime endDate)
+    public async Task<Tearsheet> RunAsync(DateOnly startDate, DateOnly endDate)
     {
         // Retrieve the list of assets from the strategies
         var assets = new HashSet<string>();
@@ -80,11 +80,14 @@ public sealed class BackTest
         assets.UnionWith(_benchmarkPortfolio.Strategies.First().Assets);
 
         // Load historical market data and dividend data
-        var historicalMarketData = _marketDataSource.LoadHistoricalMarketData(assets, startDate, endDate);
-        var historicalDividendData = _marketDataSource.LoadHistoricalDividendData(assets, startDate, endDate);
+        var historicalMarketData = await _marketDataReader.LoadHistoricalMarketDataAsync(assets, startDate, endDate);
+        var historicalDividendData = await _marketDataReader.LoadHistoricalDividendDataAsync(assets, startDate, endDate);
 
         // Combine market and dividend data
-        var events = new List<IEvent>(historicalMarketData.Values.Cast<IEvent>().Concat(historicalDividendData.Values));
+        // TODO: Rework as Data <> Event
+        var events = historicalMarketData.Values.OfType<IEvent>()
+            .Concat(historicalDividendData.Values.OfType<IEvent>())
+            .ToList();
 
         // Iterate through the combined list of events and handle them for both the main and benchmark portfolios
         foreach (var eventObj in events)

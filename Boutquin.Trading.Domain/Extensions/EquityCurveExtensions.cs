@@ -43,17 +43,17 @@ public static class EquityCurveExtensions
     /// var (drawdowns, maxDrawdown, maxDrawdownDuration) = equityCurve.DrawdownAnalysis();
     /// </code>
     /// </example>
-    public static (SortedDictionary<DateTime, decimal> Drawdowns, decimal MaxDrawdown, int MaxDrawdownDuration) CalculateDrawdownsAndMaxDrawdownInfo(
-        this SortedDictionary<DateTime, decimal> equityCurve)
+    public static (SortedDictionary<DateOnly, decimal> Drawdowns, decimal MaxDrawdown, int MaxDrawdownDuration) CalculateDrawdownsAndMaxDrawdownInfo(
+        this SortedDictionary<DateOnly, decimal> equityCurve)
     {
         // Ensure the equity curve dictionary is not null or empty
         Guard.AgainstEmptyOrNullDictionary(() => equityCurve);
         // Check if there is enough data for sample calculation
         Guard.Against(equityCurve.Count == 1)
-            .With<InsufficientDataException>(Boutquin.Domain.Exceptions.ExceptionMessages.InsufficientDataForSampleCalculation);
+            .With<InsufficientDataException>(ExceptionMessages.InsufficientDataForSampleCalculation);
 
         // Initialize a SortedDictionary to store the drawdowns.
-        var drawdowns = new SortedDictionary<DateTime, decimal>();
+        var drawdowns = new SortedDictionary<DateOnly, decimal>();
 
         // Initialize variables for peak equity, maximum drawdown, drawdown duration, and maximum drawdown duration.
         decimal peakEquity = 0;
@@ -61,8 +61,10 @@ public static class EquityCurveExtensions
         var maxDrawdownDuration = 0;
 
         // Initialize a variable to store the start date of the current drawdown.
-        var startDrawdownDate = DateTime.MinValue;
+        var startDrawdownDate = DateOnly.MinValue;
 
+        // Create a TimeSpan for the desired time of day, 00:00:00 (midnight)
+        var timeOfDay = new TimeOnly(0, 0, 0);
         // Iterate through the given equity curve.
         foreach (var (date, equity) in equityCurve)
         {
@@ -79,7 +81,7 @@ public static class EquityCurveExtensions
             else
             {
                 // Otherwise, update the drawdown duration and check if it's the longest drawdown duration encountered so far.
-                drawdownDuration = (date - startDrawdownDate).Days + 1;
+                drawdownDuration = (date.ToDateTime(timeOfDay) - startDrawdownDate.ToDateTime(timeOfDay)).Days + 1;
                 if (drawdownDuration > maxDrawdownDuration)
                 {
                     maxDrawdownDuration = drawdownDuration;

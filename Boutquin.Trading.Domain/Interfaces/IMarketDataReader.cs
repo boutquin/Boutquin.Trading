@@ -13,16 +13,16 @@
 //  limitations under the License.
 //
 
+using Boutquin.Trading.Domain.Data;
 using Boutquin.Trading.Domain.Events;
-using Boutquin.Trading.Domain.Helpers;
 
 namespace Boutquin.Trading.Domain.Interfaces;
 
 /// <summary>
-/// The IMarketDataSource interface defines the methods for loading
+/// The IMarketDataReader interface defines the methods for loading
 /// historical market data and dividend data from a data source.
 /// </summary>
-public interface IMarketDataSource
+public interface IMarketDataReader
 {
     /// <summary>
     /// Loads historical market data for the specified assets within
@@ -42,15 +42,15 @@ public interface IMarketDataSource
     /// objects as values, representing the historical market data for
     /// the specified assets within the specified date range.
     /// </returns>
-    SortedDictionary<DateTime, MarketData> LoadHistoricalMarketData(
-        IEnumerable<string> assets, 
-        DateTime startDate, 
-        DateTime endDate);
+    Task<SortedDictionary<DateOnly, MarketData>> LoadHistoricalMarketDataAsync(
+        IEnumerable<string> assets,
+        DateOnly startDate,
+        DateOnly endDate);
 
     /// <summary>
     /// Loads historical dividend data for the specified assets within
     /// the specified date range, returning a SortedDictionary with
-    /// timestamps as keys and DividendEvent objects as values.
+    /// timestamps as keys and DividendData objects as values.
     /// </summary>
     /// <param name="assets">The assets for which to load dividend data,
     /// represented as an IEnumerable of strings.
@@ -65,8 +65,8 @@ public interface IMarketDataSource
     /// objects as values, representing the historical dividend data for
     /// the specified assets within the specified date range.
     /// </returns>
-    SortedDictionary<DateTime, DividendEvent> LoadHistoricalDividendData(
-        IEnumerable<string> assets, 
-        DateTime startDate, 
-        DateTime endDate);
+    Task<SortedDictionary<DateOnly, DividendData>> LoadHistoricalDividendDataAsync(
+        IEnumerable<string> assets,
+        DateOnly startDate,
+        DateOnly endDate);
 }
