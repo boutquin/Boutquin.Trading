@@ -13,6 +13,7 @@
 //  limitations under the License.
 //
 
+using Boutquin.Trading.Domain.Data;
 using Boutquin.Trading.Domain.Interfaces;
 
 namespace Boutquin.Trading.Domain.Events;
@@ -31,8 +32,4 @@ namespace Boutquin.Trading.Domain.Events;
 public record MarketEvent(
     DateOnly Timestamp,
     string Asset,
-    decimal Open,
-    decimal High,
-    decimal Low,
-    decimal Close,
-    long Volume) : IEvent;
+    MarketData MarketData) : IEvent;

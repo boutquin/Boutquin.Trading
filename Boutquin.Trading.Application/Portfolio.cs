@@ -195,17 +195,7 @@ public sealed class Portfolio
         }
 
         // Update the latest market data for the asset.
-        var marketData = new MarketData(
-            marketEvent.Timestamp,
-            marketEvent.Asset,
-            marketEvent.Open,
-            marketEvent.High,
-            marketEvent.Low,
-            marketEvent.Close,
-            marketEvent.Volume
-        );
-
-        _latestMarketData[marketEvent.Asset] = marketData;
+        _latestMarketData[marketEvent.Asset] = marketEvent.MarketData;
     }
 
     /// <summary>

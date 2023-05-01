@@ -14,6 +14,7 @@
 //
 
 using Boutquin.Domain.Helpers;
+using Boutquin.Trading.Domain.Events;
 using Boutquin.Trading.Domain.Extensions;
 using Boutquin.Trading.Domain.Helpers;
 using Boutquin.Trading.Domain.Interfaces;
@@ -42,22 +43,22 @@ public sealed class BackTest
 
     /// <summary>
     /// The market data source to use for loading historical market data
-    /// and dividend data, represented as an IMarketDataReader object.
+    /// and dividend data, represented as an IMarketDataFetcher object.
     /// </summary>
-    private readonly IMarketDataReader _marketDataReader;
+    private readonly IMarketDataFetcher _marketDataFetcher;
 
     /// <summary>
     /// Initializes a new instance of the BackTest class with a trading portfolio, benchmark portfolio, and market data source.
     /// </summary>
     /// <param name="portfolio">A Portfolio object representing the trading portfolio.</param>
     /// <param name="benchmarkPortfolio">A Portfolio object representing the benchmark portfolio.</param>
-    /// <param name="marketDataReader">An object implementing the IMarketDataReader interface, responsible for providing market data for the backtest.</param>
+    /// <param name="marketDataFetcher">An object implementing the IMarketDataFetcher interface, responsible for providing market data for the backtest.</param>
     /// <exception cref="ArgumentNullException">Thrown when any of the provided arguments are null.</exception>
-    public BackTest(Portfolio portfolio, Portfolio benchmarkPortfolio, IMarketDataReader marketDataReader)
+    public BackTest(Portfolio portfolio, Portfolio benchmarkPortfolio, IMarketDataFetcher marketDataFetcher)
     {
         _portfolio = portfolio ?? throw new ArgumentNullException(nameof(portfolio), "The provided portfolio cannot be null.");
         _benchmarkPortfolio = benchmarkPortfolio ?? throw new ArgumentNullException(nameof(benchmarkPortfolio), "The provided benchmark portfolio cannot be null.");
-        _marketDataReader = marketDataReader ?? throw new ArgumentNullException(nameof(marketDataReader), "The provided market reader source cannot be null.");
+        _marketDataFetcher = marketDataFetcher ?? throw new ArgumentNullException(nameof(marketDataFetcher), "The provided market reader source cannot be null.");
     }
 
     /// <summary>
@@ -79,25 +80,30 @@ public sealed class BackTest
         // Add the benchmark asset to the list
         assets.UnionWith(_benchmarkPortfolio.Strategies.First().Assets);
 
-        // Load historical market data and dividend data
-        var historicalMarketData = await _marketDataReader.LoadHistoricalMarketDataAsync(assets, startDate, endDate);
-        //var historicalDividendData = await _marketDataReader.LoadHistoricalDividendDataAsync(assets, startDate, endDate);
-
-        // Combine market and dividend data
-        // TODO: Rework as Data <> Event
-        //var events = historicalMarketData.Values.OfType<IEvent>()
-        //    .Concat(historicalDividendData.Values.OfType<IEvent>())
-        //    .ToList();
-
-        IList<IEvent> events = new List<IEvent>();
         // Iterate through the combined list of events and handle them for both the main and benchmark portfolios
-        foreach (var eventObj in events)
+        try
         {
-            _portfolio.HandleEvent(eventObj);
-            _portfolio.UpdateEquityCurve(eventObj.Timestamp);
+            // Load historical market data 
+            await foreach (var dataPoint in _marketDataFetcher.FetchMarketDataAsync(assets))
+            {
+                var date = dataPoint.Key;
+                var assetMarketData = dataPoint.Value;
 
-            _benchmarkPortfolio.HandleEvent(eventObj);
-            _benchmarkPortfolio.UpdateEquityCurve(eventObj.Timestamp);
+                foreach (var asset in assets)
+                {
+                    var marketEvent = new MarketEvent(date, asset, assetMarketData[asset]);
+                    _portfolio.HandleEvent(marketEvent);
+
+                    _benchmarkPortfolio.HandleEvent(marketEvent);
+                }
+
+                _portfolio.UpdateEquityCurve(date);
+                _benchmarkPortfolio.UpdateEquityCurve(date);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"An error occurred: {ex.Message}");
         }
 
         // Calculate and analyze performance metrics
