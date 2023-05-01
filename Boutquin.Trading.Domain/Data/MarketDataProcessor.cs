@@ -19,10 +19,10 @@ namespace Boutquin.Trading.Domain.Data;
 
 public sealed class MarketDataProcessor
 {
-    private readonly IMarketDataReader _marketDataReader;
+    private readonly IMarketDataFetcher _marketDataReader;
     private readonly IMarketDataWriter _marketDataWriter;
 
-    public MarketDataProcessor(IMarketDataReader marketDataReader, IMarketDataWriter marketDataWriter)
+    public MarketDataProcessor(IMarketDataFetcher marketDataReader, IMarketDataWriter marketDataWriter)
     {
         _marketDataReader = marketDataReader;
         _marketDataWriter = marketDataWriter;
@@ -30,10 +30,10 @@ public sealed class MarketDataProcessor
 
     public async Task Process(IEnumerable<string> assets, DateOnly startDate, DateOnly endDate)
     {
-        var marketData = await _marketDataReader.LoadHistoricalMarketDataAsync(assets, startDate, endDate);
-        await _marketDataWriter.SaveHistoricalMarketDataAsync(marketData);
+        //var marketData = await _marketDataReader.FetchMarketDataAsync(assets, startDate, endDate);
+        //await _marketDataWriter.SaveHistoricalMarketDataAsync(marketData);
 
-        var dividendData = await _marketDataReader.LoadHistoricalDividendDataAsync(assets, startDate, endDate);
-        await _marketDataWriter.SaveHistoricalDividendDataAsync(dividendData);
+        //var dividendData = await _marketDataReader.LoadHistoricalDividendDataAsync(assets, startDate, endDate);
+        //await _marketDataWriter.SaveHistoricalDividendDataAsync(dividendData);
     }
 }

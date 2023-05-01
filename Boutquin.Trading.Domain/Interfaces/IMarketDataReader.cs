@@ -13,60 +13,24 @@
 //  limitations under the License.
 //
 
-using Boutquin.Trading.Domain.Data;
-using Boutquin.Trading.Domain.Events;
-
 namespace Boutquin.Trading.Domain.Interfaces;
 
+using Data;
+
 /// <summary>
-/// The IMarketDataReader interface defines the methods for loading
-/// historical market data and dividend data from a data source.
+/// The IMarketDataFetcher interface defines the contract for fetching historical
+/// market data for specified financial assets.
 /// </summary>
-public interface IMarketDataReader
+public interface IMarketDataFetcher
 {
     /// <summary>
-    /// Loads historical market data for the specified assets within
-    /// the specified date range, returning a SortedDictionary with
-    /// timestamps as keys and MarketData objects as values.
+    /// Fetches historical market data for the specified financial assets and
+    /// returns an asynchronous stream of key-value pairs, where the key is a DateOnly object
+    /// representing the date and the value is a sorted dictionary of asset symbols and their
+    /// corresponding MarketData objects.
     /// </summary>
-    /// <param name="assets">The assets for which to load market data,
-    /// represented as an IEnumerable of strings.
-    /// </param>
-    /// <param name="startDate">The start date of the date range for which
-    /// to load market data, represented as a DateTime object.
-    /// </param>
-    /// <param name="endDate">The end date of the date range for which
-    /// to load market data, represented as a DateTime object.
-    /// </param>
-    /// <returns>A SortedDictionary with timestamps as keys and MarketData
-    /// objects as values, representing the historical market data for
-    /// the specified assets within the specified date range.
-    /// </returns>
-    Task<SortedDictionary<DateOnly, MarketData>> LoadHistoricalMarketDataAsync(
-        IEnumerable<string> assets,
-        DateOnly startDate,
-        DateOnly endDate);
-
-    /// <summary>
-    /// Loads historical dividend data for the specified assets within
-    /// the specified date range, returning a SortedDictionary with
-    /// timestamps as keys and DividendData objects as values.
-    /// </summary>
-    /// <param name="assets">The assets for which to load dividend data,
-    /// represented as an IEnumerable of strings.
-    /// </param>
-    /// <param name="startDate">The start date of the date range for which
-    /// to load dividend data, represented as a DateTime object.
-    /// </param>
-    /// <param name="endDate">The end date of the date range for which
-    /// to load dividend data, represented as a DateTime object.
-    /// </param>
-    /// <returns>A SortedDictionary with timestamps as keys and DividendEvent
-    /// objects as values, representing the historical dividend data for
-    /// the specified assets within the specified date range.
-    /// </returns>
-    Task<SortedDictionary<DateOnly, DividendData>> LoadHistoricalDividendDataAsync(
-        IEnumerable<string> assets,
-        DateOnly startDate,
-        DateOnly endDate);
+    /// <param name="symbols">A list of financial asset symbols for which to fetch historical market data.</param>
+    /// <returns>An IAsyncEnumerable of key-value pairs, where the key is a DateOnly object and the value is a SortedDictionary of string asset symbols and MarketData values.</returns>
+    /// <exception cref="MarketDataRetrievalException">Thrown when there is an error in fetching or parsing the market data.</exception>
+    IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<string, MarketData>>> FetchMarketDataAsync(List<string> symbols);
 }

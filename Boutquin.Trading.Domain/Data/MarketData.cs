@@ -13,41 +13,52 @@
 //  limitations under the License.
 //
 
-using Boutquin.Trading.Domain.Interfaces;
-
 namespace Boutquin.Trading.Domain.Data;
 
 /// <summary>
-/// The MarketData record encapsulates the data points for a financial
-/// asset at a specific point in time, providing information about its
-/// open, high, low, close prices, volume, and timestamp.
+/// The MarketData record encapsulates the data points for various market-related
+/// events for a specific financial asset at a specific point in time,
+/// providing information about the opening price, highest price, lowest price,
+/// closing price, adjusted closing price, trading volume, dividend per share,
+/// and split coefficient.
 /// </summary>
-/// <param name="Timestamp">The timestamp of the market data point,
-/// represented as a DateTime object.
+/// <param name="Timestamp">The timestamp of the market data event,
+/// represented as a DateOnly object.
 /// </param>
-/// <param name="Asset">The name of the financial asset, represented
-/// as a string.
+/// <param name="Open">The opening price of the financial asset at the
+/// beginning of the trading session, represented as a decimal value.
 /// </param>
-/// <param name="Open">The opening price of the financial asset, represented
-/// as a decimal value.
+/// <param name="High">The highest price at which the financial asset traded
+/// during the trading session, represented as a decimal value.
 /// </param>
-/// <param name="High">The highest price of the financial asset during the
-/// market data point's time interval, represented as a decimal value.
+/// <param name="Low">The lowest price at which the financial asset traded
+/// during the trading session, represented as a decimal value.
 /// </param>
-/// <param name="Low">The lowest price of the financial asset during the
-/// market data point's time interval, represented as a decimal value.
+/// <param name="Close">The closing price of the financial asset at the
+/// end of the trading session, represented as a decimal value.
 /// </param>
-/// <param name="Close">The closing price of the financial asset, represented
-/// as a decimal value.
+/// <param name="AdjustedClose">The adjusted closing price of the financial
+/// asset, accounting for corporate actions such as dividends, stock splits,
+/// and new stock offerings, represented as a decimal value.
 /// </param>
-/// <param name="Volume">The volume of the financial asset traded during
-/// the market data point's time interval, represented as a long integer.
+/// <param name="Volume">The total number of shares of the financial asset
+/// traded during the trading session, represented as a long value.
+/// </param>
+/// <param name="DividendPerShare">The dividend per share paid by the
+/// financial asset during the dividend event, if any, represented as a decimal
+/// value.
+/// </param>
+/// <param name="SplitCoefficient">The split coefficient of the financial
+/// asset, which indicates the proportion of shares after a stock split event,
+/// represented as a decimal value. A value of 1 indicates no stock split.
 /// </param>
 public record MarketData(
     DateOnly Timestamp,
-    string Asset,
     decimal Open,
     decimal High,
     decimal Low,
     decimal Close,
-    long Volume) : IAssetData;
+    decimal AdjustedClose,
+    long Volume,
+    decimal DividendPerShare,
+    decimal SplitCoefficient);

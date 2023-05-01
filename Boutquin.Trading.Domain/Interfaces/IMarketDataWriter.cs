@@ -31,13 +31,4 @@ public interface IMarketDataWriter
     /// data for specified assets within a specified date range.
     /// </param>
     Task SaveHistoricalMarketDataAsync(SortedDictionary<DateOnly, MarketData> marketData);
-
-    /// <summary>
-    /// Persists the historical dividend data to a data store.
-    /// </summary>
-    /// <param name="dividendData">A SortedDictionary with timestamps as keys
-    /// and DividendData objects as values, representing the historical dividend
-    /// data for specified assets within a specified date range.
-    /// </param>
-    Task SaveHistoricalDividendDataAsync(SortedDictionary<DateOnly, DividendData> dividendData);
 }

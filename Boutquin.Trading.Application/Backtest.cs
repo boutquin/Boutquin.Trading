@@ -81,14 +81,15 @@ public sealed class BackTest
 
         // Load historical market data and dividend data
         var historicalMarketData = await _marketDataReader.LoadHistoricalMarketDataAsync(assets, startDate, endDate);
-        var historicalDividendData = await _marketDataReader.LoadHistoricalDividendDataAsync(assets, startDate, endDate);
+        //var historicalDividendData = await _marketDataReader.LoadHistoricalDividendDataAsync(assets, startDate, endDate);
 
         // Combine market and dividend data
         // TODO: Rework as Data <> Event
-        var events = historicalMarketData.Values.OfType<IEvent>()
-            .Concat(historicalDividendData.Values.OfType<IEvent>())
-            .ToList();
+        //var events = historicalMarketData.Values.OfType<IEvent>()
+        //    .Concat(historicalDividendData.Values.OfType<IEvent>())
+        //    .ToList();
 
+        IList<IEvent> events = new List<IEvent>();
         // Iterate through the combined list of events and handle them for both the main and benchmark portfolios
         foreach (var eventObj in events)
         {
