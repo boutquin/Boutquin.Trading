@@ -24,38 +24,38 @@ public sealed class EquityCurveExtensionsTestData
     {
         new object[]
         {
-            new SortedDictionary<DateTime, decimal>
+            new SortedDictionary<DateOnly, decimal>
             {
-                { new DateTime(2021, 1, 1), 1000m },
-                { new DateTime(2021, 1, 2), 1020m },
-                { new DateTime(2021, 1, 3), 1010m },
-                { new DateTime(2021, 1, 4), 1030m },
+                { DateOnly.Parse("2021-01-01"), 1000m },
+                { DateOnly.Parse("2021-01-02"), 1020m },
+                { DateOnly.Parse("2021-01-03"), 1010m },
+                { DateOnly.Parse("2021-01-04"), 1030m },
             },
-            new SortedDictionary<DateTime, decimal>
+            new SortedDictionary<DateOnly, decimal>
             {
-                { new DateTime(2021, 1, 1), 0m },
-                { new DateTime(2021, 1, 2), 0m },
-                { new DateTime(2021, 1, 3), -0.0098039215686274509803921569m },
-                { new DateTime(2021, 1, 4), 0m },
+                { DateOnly.Parse("2021-01-01"), 0m },
+                { DateOnly.Parse("2021-01-02"), 0m },
+                { DateOnly.Parse("2021-01-03"), -0.0098039215686274509803921569m },
+                { DateOnly.Parse("2021-01-04"), 0m },
             },
             -0.0098039215686274509803921569M,
             2
         },
         new object[]
         {
-            new SortedDictionary<DateTime, decimal>
+            new SortedDictionary<DateOnly, decimal>
             {
-                { new DateTime(2021, 1, 1), 1000m },
-                { new DateTime(2021, 1, 2), 980m },
-                { new DateTime(2021, 1, 3), 960m },
-                { new DateTime(2021, 1, 4), 1020m },
+                { DateOnly.Parse("2021-01-01"), 1000m },
+                { DateOnly.Parse("2021-01-02"), 980m },
+                { DateOnly.Parse("2021-01-03"), 960m },
+                { DateOnly.Parse("2021-01-04"), 1020m },
             },
-            new SortedDictionary<DateTime, decimal>
+            new SortedDictionary<DateOnly, decimal>
             {
-                { new DateTime(2021, 1, 1), 0m },
-                { new DateTime(2021, 1, 2), -0.0200000000000000000000000000m },
-                { new DateTime(2021, 1, 3), -0.0400000000000000000000000000m },
-                { new DateTime(2021, 1, 4), 0m },
+                { DateOnly.Parse("2021-01-01"), 0m },
+                { DateOnly.Parse("2021-01-02"), -0.0200000000000000000000000000m },
+                { DateOnly.Parse("2021-01-03"), -0.0400000000000000000000000000m },
+                { DateOnly.Parse("2021-01-04"), 0m },
             },
             -0.0400000000000000000000000000m,
             3
