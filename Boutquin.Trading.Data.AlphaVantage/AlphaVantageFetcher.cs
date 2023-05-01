@@ -24,15 +24,20 @@ using Microsoft.Extensions.Caching.Distributed;
 using Boutquin.Domain.Converters;
 using Domain.Data;
 using Domain.Exceptions;
+using System.Net;
 
+/// <summary>
+/// A class for fetching market data from the Alpha Vantage API, with caching and rate limiting support.
+/// </summary>
 public sealed class AlphaVantageFetcher
 {
     private readonly HttpClient _httpClient;
     private readonly IDistributedCache _cache;
     private readonly string _apiKey;
     private readonly string _apiEndpoint;
-    private readonly SemaphoreSlim _rateLimiter;
+    private readonly SemaphoreSlim _rateLimitSemaphore;
     private readonly TimeSpan _cacheExpiration;
+    private readonly int _rateLimitDelay;
 
     /// <summary>
     /// Initializes a new instance of the AlphaVantageFetcher class with the specified API key, IDistributedCache, and optional HttpClient, API endpoint, rate limiter, and cache expiration.
@@ -46,10 +51,11 @@ public sealed class AlphaVantageFetcher
     /// <exception cref="ArgumentNullException">Thrown when the provided API key or IDistributedCache is null or empty.</exception>
     public AlphaVantageFetcher(
         string apiKey,
-        IDistributedCache cache,
+        IDistributedCache cache, 
         HttpClient httpClient = null,
         string apiEndpoint = "https://www.alphavantage.co/query",
         SemaphoreSlim rateLimiter = null,
+        int rateLimitDelay = 5,
         TimeSpan? cacheExpiration = null)
     {
         if (string.IsNullOrEmpty(apiKey))
@@ -59,9 +65,10 @@ public sealed class AlphaVantageFetcher
 
         _apiKey = apiKey;
         _cache = cache ?? throw new ArgumentNullException(nameof(cache), "IDistributedCache cannot be null.");
+        _rateLimitDelay = rateLimitDelay;
         _httpClient = httpClient ?? new HttpClient();
         _apiEndpoint = !string.IsNullOrEmpty(apiEndpoint) ? apiEndpoint : throw new ArgumentNullException(nameof(apiEndpoint), "API endpoint cannot be null or empty.");
-        _rateLimiter = rateLimiter ?? new SemaphoreSlim(5); // Adjust the number according to the allowed rate limit
+        _rateLimitSemaphore = rateLimiter ?? new SemaphoreSlim(5); // Adjust the number according to the allowed rate limit
         _cacheExpiration = cacheExpiration ?? TimeSpan.FromHours(6);
     }
 
@@ -95,36 +102,35 @@ public sealed class AlphaVantageFetcher
     public async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<string, MarketData>>> FetchMarketDataAsync(IEnumerable<string> assets)
     {
         // Validate the input assets list
-        if (assets == null || !assets.Any())
-        {
-            throw new ArgumentException("At least one asset symbol must be provided.", nameof(assets));
-        }
+        ValidateAssets(assets);
 
+        // Configure the JsonSerializerOptions with custom converter for DateOnly and DateOnlyDictionary
         var options = new JsonSerializerOptions();
         options.Converters.Add(new DateOnlyConverter());
+        options.Converters.Add(new DateOnlyDictionaryConverterFactory());
+
+        // Retrieve the market data from the cache for all assets in parallel
+        var cacheKeys = assets.Select(asset => $"MarketData_{asset}").ToList();
+        var cachedDataList = await Task.WhenAll(cacheKeys.Select(key => _cache.GetStringAsync(key)));
 
         // Iterate through each asset in the list
-        foreach (var asset in assets)
+        for (int i = 0; i < assets.Count(); i++)
         {
-            // Create a cache key for the current asset
-            var cacheKey = $"MarketData_{asset}";
+            var asset = assets.ElementAt(i);
+            var cachedData = cachedDataList[i];
 
-            // Try to retrieve the market data from the cache
-            var cachedData = await _cache.GetStringAsync(cacheKey);
-
-            // If the data is present in the cache, deserialize and return it
+            // If the data is present in the cache, deserialize and yield it
             if (cachedData != null)
             {
-                var cachedMarketData = JsonSerializer.Deserialize<SortedDictionary<DateOnly, MarketData>>(cachedData, options);
-                foreach (var dataPoint in cachedMarketData)
+                await foreach (var dataPoint in DeserializeAndYieldCachedMarketData(cachedData, asset, options))
                 {
-                    yield return new KeyValuePair<DateOnly, SortedDictionary<string, MarketData>>(dataPoint.Key, new SortedDictionary<string, MarketData> { { asset, dataPoint.Value } });
+                    yield return dataPoint;
                 }
             }
             else
             {
                 // If the data is not in the cache, prepare the API request URL
-                var requestUri = $"{_apiEndpoint}?function=TIME_SERIES_DAILY_ADJUSTED&symbol={asset}&apikey={_apiKey}&outputsize=full&datatype=json";
+                var requestUri = BuildRequestUri(asset);
 
                 // Make the API request with rate limiting
                 var response = await GetAsyncWithRateLimiting(requestUri);
@@ -145,32 +151,148 @@ public sealed class AlphaVantageFetcher
                     throw new MarketDataRetrievalException("Failed to parse market data from the Alpha Vantage API response.");
                 }
 
-                // Deserialize the JSON time series data to a SortedDictionary<DateOnly, MarketData>
-                var marketData = new SortedDictionary<DateOnly, MarketData>();
-                foreach (var entry in timeSeries.EnumerateObject())
-                {
-                    var date = DateOnly.Parse(entry.Name);
-                    var marketDataJson = entry.Value;
+                // Deserialize, yield, and cache the JSON time series data
+                var marketData = new SortedDictionary<DateOnly, SortedDictionary<string, MarketData>>();
 
-                    var dataPoint = new MarketData(
-                        date,
-                        decimal.Parse(marketDataJson.GetProperty("1. open").GetString()),
-                        decimal.Parse(marketDataJson.GetProperty("2. high").GetString()),
-                        decimal.Parse(marketDataJson.GetProperty("3. low").GetString()),
-                        decimal.Parse(marketDataJson.GetProperty("4. close").GetString()),
-                        decimal.Parse(marketDataJson.GetProperty("5. adjusted close").GetString()),
-                        long.Parse(marketDataJson.GetProperty("6. volume").GetString()),
-                        decimal.Parse(marketDataJson.GetProperty("7. dividend amount").GetString()),
-                        decimal.Parse(marketDataJson.GetProperty("8. split coefficient").GetString()));
-                        
-                    marketData.Add(date, dataPoint);
-                    yield return new KeyValuePair<DateOnly, SortedDictionary<string, MarketData>>(date, new SortedDictionary<string, MarketData> { { asset, dataPoint } });
+                // Deserialize, accumulate, and cache the JSON time series data
+                var accumulatedMarketData = DeserializeAndYieldMarketDataFromApi(timeSeries, asset, options);
+
+                foreach (var dataPoint in accumulatedMarketData)
+                {
+                    marketData[dataPoint.Key] = dataPoint.Value;
+                    yield return dataPoint;
                 }
 
                 // Serialize and store the market data in the cache with the specified expiration time
                 var serializedMarketData = JsonSerializer.Serialize(marketData, options);
-                await _cache.SetStringAsync(cacheKey, serializedMarketData, new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = _cacheExpiration });
+                await _cache.SetStringAsync(cacheKeys[i], serializedMarketData, new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = _cacheExpiration });
             }
+        }
+    }
+
+    /// <summary>
+    /// Validates the provided assets list, ensuring it is not null and contains at least one asset symbol.
+    /// </summary>
+    /// <param name="assets">The list of asset symbols to validate.</param>
+    /// <exception cref="ArgumentException">Thrown when the assets list is null or empty.</exception>
+    private static void ValidateAssets(IEnumerable<string> assets)
+    {
+        if (assets == null || !assets.Any())
+        {
+            throw new ArgumentException("At least one asset symbol must be provided.", nameof(assets));
+        }
+    }
+
+    /// <summary>
+    /// Builds the request URI for the Alpha Vantage API based on the provided asset symbol.
+    /// </summary>
+    /// <param name="asset">The asset symbol for which the request URI is being built.</param>
+    /// <returns>A string representing the request URI.</returns>
+    private string BuildRequestUri(string asset)
+    {
+        return $"{_apiEndpoint}?function=TIME_SERIES_DAILY_ADJUSTED&symbol={asset}&apikey={_apiKey}&outputsize=full&datatype=json";
+    }
+
+    /// <summary>
+    /// Deserializes and asynchronously yields cached market data for a specific asset.
+    /// </summary>
+    /// <param name="cachedData">The cached market data in JSON format.</param>
+    /// <param name="asset">The asset symbol for which the market data is being deserialized.</param>
+    /// <param name="options">The JsonSerializerOptions used to deserialize the market data.</param>
+    /// <returns>
+    /// An IAsyncEnumerable&lt;KeyValuePair&lt;DateOnly, SortedDictionary&lt;string, MarketData&gt;&gt;&gt; for each data point in the cached market data.
+    /// The key is the date of the data point, and the value is a sorted dictionary containing the asset symbol and
+    /// its corresponding market data.
+    /// </returns>
+    private async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<string, MarketData>>> DeserializeAndYieldCachedMarketData(
+        string cachedData, string asset, JsonSerializerOptions options)
+    {
+        var cachedMarketData = JsonSerializer.Deserialize<SortedDictionary<DateOnly, MarketData>>(cachedData, options);
+        foreach (var dataPoint in cachedMarketData)
+        {
+            yield return new KeyValuePair<DateOnly, SortedDictionary<string, MarketData>>(dataPoint.Key, new SortedDictionary<string, MarketData> { { asset, dataPoint.Value } });
+        }
+    }
+
+    /// <summary>
+    /// Deserializes and yields market data from the provided JSON time series element for a specific asset.
+    /// </summary>
+    /// <param name="timeSeries">The JSON time series element containing the market data.</param>
+    /// <param name="asset">The asset symbol for which the market data is being deserialized.</param>
+    /// <param name="options">The JsonSerializerOptions used to deserialize the market data.</param>
+    /// <returns>
+    /// An IAsyncEnumerable that asynchronously yields KeyValuePair&lt;DateOnly, SortedDictionary&lt;string, MarketData&gt;&gt; for each
+    /// data point in the time series. The key is the date of the data point, and the value is a sorted dictionary containing
+    /// the asset symbol and its corresponding market data.
+    /// </returns>
+    /// <remarks>
+    /// This method catches any FormatException or MarketDataRetrievalException and logs the error (if a logger is available)
+    /// while continuing to process the remaining data points.
+    /// </remarks>
+    private IEnumerable<KeyValuePair<DateOnly, SortedDictionary<string, MarketData>>> DeserializeAndYieldMarketDataFromApi(
+        JsonElement timeSeries, string asset, JsonSerializerOptions options)
+    {
+        var marketData = new SortedDictionary<DateOnly, MarketData>();
+        foreach (var entry in timeSeries.EnumerateObject())
+        {
+            var date = DateOnly.Parse(entry.Name);
+            var marketDataJson = entry.Value;
+
+            var dataPoint = CreateMarketDataFromJson(date, marketDataJson);
+            if (dataPoint != null)
+            {
+                marketData.Add(date, dataPoint);
+                yield return new KeyValuePair<DateOnly, SortedDictionary<string, MarketData>>(date, new SortedDictionary<string, MarketData> { { asset, dataPoint } });
+            }
+        }
+    }
+
+    /// <summary>
+    /// Creates a MarketData instance from the provided JSON element.
+    /// </summary>
+    /// <param name="marketDataJson">The JSON element containing market data.</param>
+    /// <returns>A MarketData instance with the data extracted from the JSON element.</returns>
+    /// <exception cref="MarketDataRetrievalException">
+    /// Thrown when a required property is missing, a property value is null, or a property value has an invalid format.
+    /// </exception>
+    private static MarketData CreateMarketDataFromJson(DateOnly date, JsonElement marketDataJson)
+    {
+        try
+        {
+            var openString = marketDataJson.GetProperty("1. open").GetString();
+            var highString = marketDataJson.GetProperty("2. high").GetString();
+            var lowString = marketDataJson.GetProperty("3. low").GetString();
+            var closeString = marketDataJson.GetProperty("4. close").GetString();
+            var adjustedCloseString = marketDataJson.GetProperty("5. adjusted close").GetString();
+            var volumeString = marketDataJson.GetProperty("6. volume").GetString();
+            var dividendAmountString = marketDataJson.GetProperty("7. dividend amount").GetString();
+            var splitCoefficientString = marketDataJson.GetProperty("8. split coefficient").GetString();
+
+            if (openString == null || highString == null || lowString == null ||
+                closeString == null || adjustedCloseString == null || volumeString == null ||
+                dividendAmountString == null || splitCoefficientString == null)
+            {
+                throw new MarketDataRetrievalException("Failed to parse market data from the JSON element: a property value is null.");
+            }
+
+            var open = decimal.Parse(openString);
+            var high = decimal.Parse(highString);
+            var low = decimal.Parse(lowString);
+            var close = decimal.Parse(closeString);
+            var adjustedClose = decimal.Parse(adjustedCloseString);
+            var volume = long.Parse(volumeString);
+            var dividendAmount = decimal.Parse(dividendAmountString);
+            var splitCoefficient = decimal.Parse(splitCoefficientString);
+
+            return new MarketData(date, open, high, low, close, adjustedClose, volume, dividendAmount, splitCoefficient);
+        }
+        catch (KeyNotFoundException)
+        {
+            throw new MarketDataRetrievalException("Failed to parse market data from the JSON element: a required property is missing.");
+        }
+        catch (FormatException)
+        {
+            throw new MarketDataRetrievalException("Failed to parse market data from the JSON element: a property value has an invalid format.");
         }
     }
 
@@ -182,14 +304,68 @@ public sealed class AlphaVantageFetcher
     /// <exception cref="MarketDataRetrievalException">Thrown when an error occurs during the rate-limited GET request.</exception>
     private async Task<HttpResponseMessage> GetAsyncWithRateLimiting(string requestUri)
     {
-        await _rateLimiter.WaitAsync();
-        try
+        HttpResponseMessage response = null;
+        int retryCount = 0;
+        const int maxRetryCount = 3;
+
+        while (retryCount < maxRetryCount)
         {
-            return await _httpClient.GetAsync(requestUri);
+            try
+            {
+                // Wait until the semaphore is available
+                await _rateLimitSemaphore.WaitAsync();
+
+                // Make the HTTP GET request
+                response = await _httpClient.GetAsync(requestUri);
+
+                // Check if the response status indicates rate limiting
+                if (!IsRateLimited(response.StatusCode))
+                {
+                    // If not rate limited, break the loop and return the response
+                    break;
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                // Log the exception, for example: _logger.LogError(ex, "An error occurred during the HTTP request.");
+            }
+            finally
+            {
+                // Release the semaphore and enforce the rate limit delay
+                _rateLimitSemaphore.Release();
+                await Task.Delay(_rateLimitDelay);
+                retryCount++;
+            }
         }
-        finally
+
+        // If the response is still null after retrying, throw an exception
+        if (response == null)
         {
-            _rateLimiter.Release();
+            throw new MarketDataRetrievalException("Failed to fetch data after multiple retries.");
         }
+
+        return response;
+    }
+
+    private static bool IsRateLimited(HttpStatusCode statusCode)
+    {
+        // Adjust this method depending on the API's rate limiting response status codes
+        return statusCode == HttpStatusCode.TooManyRequests;
+    }
+
+    /// <summary>
+    /// Converts an IAsyncEnumerable<T> to a List<T> asynchronously.
+    /// </summary>
+    /// <typeparam name="T">The type of the elements in the IAsyncEnumerable.</typeparam>
+    /// <param name="items">The IAsyncEnumerable<T> instance to be converted to a List<T>.</param>
+    /// <returns>A Task representing the asynchronous operation, with a result of type List<T> containing the elements from the input IAsyncEnumerable.</returns>
+    private static async Task<List<T>> ToListAsync<T>(IAsyncEnumerable<T> items)
+    {
+        var list = new List<T>();
+        await foreach (var item in items)
+        {
+            list.Add(item);
+        }
+        return list;
     }
 }

@@ -22,7 +22,7 @@ public sealed class EquityCurveExtensionsTests
     private const decimal Precision = 1e-12m;
 
     /// <summary>
-    /// Tests the <see cref="EquityCurveExtensions.CalculateDrawdownsAndMaxDrawdownInfo(SortedDictionary{DateTime, decimal})"/> method with various valid input data
+    /// Tests the <see cref="EquityCurveExtensions.CalculateDrawdownsAndMaxDrawdownInfo(System.Collections.Generic.SortedDictionary{System.DateOnly,decimal})"/> method with various valid input data
     /// and verifies if the correct drawdown analysis results are returned.
     /// </summary>
     /// <param name="equityCurve">The input SortedDictionary representing the equity curve.</param>
@@ -32,8 +32,8 @@ public sealed class EquityCurveExtensionsTests
     [Theory]
     [MemberData(nameof(EquityCurveExtensionsTestData.DrawdownAnalysisData), MemberType = typeof(EquityCurveExtensionsTestData))]
     public void CalculateDrawdownsAndMaxDrawdownInfo_ShouldReturnCorrectResults(
-        SortedDictionary<DateTime, decimal> equityCurve,
-        SortedDictionary<DateTime, decimal> expectedDrawdowns,
+        SortedDictionary<DateOnly, decimal> equityCurve,
+        SortedDictionary<DateOnly, decimal> expectedDrawdowns,
         decimal expectedMaxDrawdown,
         int expectedMaxDrawdownDuration)
     {
