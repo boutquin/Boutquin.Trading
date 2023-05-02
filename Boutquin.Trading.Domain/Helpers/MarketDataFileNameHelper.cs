@@ -13,7 +13,7 @@
 //  limitations under the License.
 //
 
-namespace Boutquin.Trading.Data.CSV;
+namespace Boutquin.Trading.Domain.Helpers;
 
 public static class MarketDataFileNameHelper
 {

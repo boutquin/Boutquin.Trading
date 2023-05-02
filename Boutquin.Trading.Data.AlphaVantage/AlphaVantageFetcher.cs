@@ -114,7 +114,7 @@ public sealed class AlphaVantageFetcher
         var cachedDataList = await Task.WhenAll(cacheKeys.Select(key => _cache.GetStringAsync(key)));
 
         // Iterate through each asset in the list
-        for (int i = 0; i < assets.Count(); i++)
+        for (var i = 0; i < assets.Count(); i++)
         {
             var asset = assets.ElementAt(i);
             var cachedData = cachedDataList[i];
@@ -305,7 +305,7 @@ public sealed class AlphaVantageFetcher
     private async Task<HttpResponseMessage> GetAsyncWithRateLimiting(string requestUri)
     {
         HttpResponseMessage response = null;
-        int retryCount = 0;
+        var retryCount = 0;
         const int maxRetryCount = 3;
 
         while (retryCount < maxRetryCount)

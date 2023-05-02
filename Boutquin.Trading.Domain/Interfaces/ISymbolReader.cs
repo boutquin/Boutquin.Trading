@@ -13,22 +13,24 @@
 //  limitations under the License.
 //
 
-using Boutquin.Trading.Domain.Data;
-
 namespace Boutquin.Trading.Domain.Interfaces;
 
+using Exceptions;
+
 /// <summary>
-/// The IMarketDataWriter interface defines the methods for saving
-/// historical market data and dividend data to a data store.
+/// Represents an interface for reading symbols from a data source.
 /// </summary>
-public interface IMarketDataWriter
+public interface ISymbolReader
 {
     /// <summary>
-    /// Persists the historical market data to a data store.
+    /// Reads the symbols asynchronously from the data source.
     /// </summary>
-    /// <param name="marketData">A SortedDictionary with timestamps as keys
-    /// and MarketData objects as values, representing the historical market
-    /// data for specified assets within a specified date range.
-    /// </param>
-    Task SaveHistoricalMarketDataAsync(SortedDictionary<DateOnly, MarketData> marketData);
+    /// <returns>
+    /// A task representing the asynchronous operation, containing an IEnumerable of symbols
+    /// as strings when completed.
+    /// </returns>
+    /// <exception cref="SymbolReaderException">
+    /// Thrown when an error occurs while reading symbols from the data source.
+    /// </exception>
+    Task<IEnumerable<string>> ReadSymbolsAsync();
 }

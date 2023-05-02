@@ -14,26 +14,55 @@
 //
 
 using Boutquin.Trading.Domain.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace Boutquin.Trading.Domain.Data;
 
-public sealed class MarketDataProcessor
+public sealed class MarketDataProcessor : IMarketDataProcessor
 {
-    private readonly IMarketDataFetcher _marketDataReader;
-    private readonly IMarketDataWriter _marketDataWriter;
+    private readonly IMarketDataFetcher _fetcher;
+    private readonly IMarketDataStorage _storage;
+    private readonly ILogger _logger;
 
-    public MarketDataProcessor(IMarketDataFetcher marketDataReader, IMarketDataWriter marketDataWriter)
+    public MarketDataProcessor(IMarketDataFetcher fetcher, IMarketDataStorage storage, ILoggerFactory loggerFactory)
     {
-        _marketDataReader = marketDataReader;
-        _marketDataWriter = marketDataWriter;
+        _fetcher = fetcher ?? throw new ArgumentNullException(nameof(fetcher));
+        _storage = storage ?? throw new ArgumentNullException(nameof(storage));
+        _logger = loggerFactory?.CreateLogger<MarketDataProcessor>() ?? throw new ArgumentNullException(nameof(loggerFactory));
     }
 
-    public async Task Process(IEnumerable<string> assets, DateOnly startDate, DateOnly endDate)
+    public async Task ProcessAndStoreMarketDataAsync(IEnumerable<string> symbols)
     {
-        //var marketData = await _marketDataReader.FetchMarketDataAsync(assets, startDate, endDate);
-        //await _marketDataWriter.SaveHistoricalMarketDataAsync(marketData);
+        if (symbols == null || !symbols.Any())
+        {
+            throw new ArgumentException("At least one symbol must be provided.", nameof(symbols));
+        }
 
-        //var dividendData = await _marketDataReader.LoadHistoricalDividendDataAsync(assets, startDate, endDate);
-        //await _marketDataWriter.SaveHistoricalDividendDataAsync(dividendData);
+        try
+        {
+            // Fetch the market data using the provided fetcher.
+            var marketData = _fetcher.FetchMarketDataAsync(symbols);
+
+            // Iterate through the fetched market data.
+            await foreach (var dataPoint in marketData)
+            {
+                try
+                {
+                    // Save the market data using the provided storage.
+                    await _storage.SaveMarketDataAsync(dataPoint);
+                }
+                catch (Exception ex)
+                {
+                    // Log the error and continue with the next data point.
+                    _logger.LogError(ex, $"Error saving market data for {dataPoint.Key}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log the error and rethrow the exception.
+            _logger.LogError(ex, "Error processing market data");
+            throw;
+        }
     }
 }
