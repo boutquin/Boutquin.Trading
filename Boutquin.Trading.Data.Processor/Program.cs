@@ -14,6 +14,7 @@
 //
 
 using Boutquin.Trading.Data.AlphaVantage;
+using Boutquin.Trading.Domain.Helpers;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
@@ -24,7 +25,10 @@ internal class Program
 {
     private static async Task Main(string[] args)
     {
-        var assets = new List<string> { "AAPL", "GOOG" };
+        // Retrieve the list of symbols from the Symbols file
+        var filename = Path.Combine(new DirectoryInfo("./../../../.").FullName, "Data", "Symbols.csv");
+        var symbolReader = new CsvSymbolReader(filename);
+        var assets = await symbolReader.ReadSymbolsAsync();
 
         // Retrieve the API key from the environment
         var apiKey = Environment.GetEnvironmentVariable("ALPHA_VANTAGE_API_KEY");
