@@ -25,11 +25,12 @@ using Boutquin.Domain.Converters;
 using Domain.Data;
 using Domain.Exceptions;
 using System.Net;
+using Boutquin.Trading.Domain.Interfaces;
 
 /// <summary>
 /// A class for fetching market data from the Alpha Vantage API, with caching and rate limiting support.
 /// </summary>
-public sealed class AlphaVantageFetcher
+public sealed class AlphaVantageFetcher : IMarketDataFetcher
 {
     private readonly HttpClient _httpClient;
     private readonly IDistributedCache _cache;

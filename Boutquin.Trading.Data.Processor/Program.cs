@@ -14,6 +14,7 @@
 //
 
 using Boutquin.Trading.Data.AlphaVantage;
+using Boutquin.Trading.Domain.Data;
 using Boutquin.Trading.Domain.Helpers;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
@@ -26,7 +27,8 @@ internal class Program
     private static async Task Main(string[] args)
     {
         // Retrieve the list of symbols from the Symbols file
-        var filename = Path.Combine(new DirectoryInfo("./../../../.").FullName, "Data", "Symbols.csv");
+        var dataDir = Path.Combine(new DirectoryInfo("./../../../.").FullName, "Data");
+        var filename = Path.Combine(dataDir, "Symbols.csv");
         var symbolReader = new CsvSymbolReader(filename);
         var assets = await symbolReader.ReadSymbolsAsync();
 
@@ -37,7 +39,13 @@ internal class Program
         var cache = new MemoryDistributedCache(new OptionsWrapper<MemoryDistributedCacheOptions>(new MemoryDistributedCacheOptions()));
 
         // Instantiate AlphaVantageFetcher with the required parameters
-        var fetcher = new AlphaVantageFetcher(apiKey, cache);
+        var apiFetcher = new AlphaVantageFetcher(apiKey, cache);
+        var writer = new CsvMarketDataStorage(dataDir);
+        var marketDataProcessor = new MarketDataProcessor(apiFetcher, writer);
+
+        //await marketDataProcessor.ProcessAndStoreMarketDataAsync(assets);
+
+        var fetcher = new CsvMarketDataFetcher(dataDir);
 
         try
         {

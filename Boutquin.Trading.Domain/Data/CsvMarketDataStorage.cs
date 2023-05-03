@@ -49,7 +49,7 @@ public sealed class CsvMarketDataStorage : IMarketDataStorage
         {
             var symbol = symbolData.Key;
             var marketData = symbolData.Value;
-            var fileName = MarketDataFileNameHelper.GetCsvFileNameForMarketData(symbol);
+            var fileName = MarketDataFileNameHelper.GetCsvFileNameForMarketData(_dataDirectory, symbol);
             var filePath = Path.Combine(_dataDirectory, fileName);
 
             try
@@ -102,7 +102,7 @@ public sealed class CsvMarketDataStorage : IMarketDataStorage
         foreach (var symbolDataPoints in groupedDataPoints)
         {
             var symbol = symbolDataPoints.Key;
-            var fileName = MarketDataFileNameHelper.GetCsvFileNameForMarketData(symbol);
+            var fileName = MarketDataFileNameHelper.GetCsvFileNameForMarketData(_dataDirectory, symbol);
             var filePath = Path.Combine(_dataDirectory, fileName);
 
             try
@@ -118,7 +118,7 @@ public sealed class CsvMarketDataStorage : IMarketDataStorage
 
                 // Append the data points to the file
                 await using var appendFileStream = File.Open(filePath, FileMode.Append, FileAccess.Write);
-                using var appendStreamWriter = new StreamWriter(appendFileStream);
+                await using var appendStreamWriter = new StreamWriter(appendFileStream);
 
                 foreach (var dataPoint in symbolDataPoints.Value)
                 {

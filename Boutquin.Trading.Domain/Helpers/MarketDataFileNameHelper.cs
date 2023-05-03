@@ -17,9 +17,9 @@ namespace Boutquin.Trading.Domain.Helpers;
 
 public static class MarketDataFileNameHelper
 {
-    public static string GetCsvFileNameForMarketData(string ticker)
+    public static string GetCsvFileNameForMarketData(string directory, string ticker)
     {
-        return "daily_adjusted_" + SanitizeTickerForFileName(ticker) + ".csv";
+        return Path.Combine(directory, "daily_adjusted_" + SanitizeTickerForFileName(ticker) + ".csv");
     }
 
     private static string SanitizeTickerForFileName(string ticker)

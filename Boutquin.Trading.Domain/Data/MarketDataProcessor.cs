@@ -15,6 +15,7 @@
 
 using Boutquin.Trading.Domain.Interfaces;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Boutquin.Trading.Domain.Data;
 
@@ -24,11 +25,11 @@ public sealed class MarketDataProcessor : IMarketDataProcessor
     private readonly IMarketDataStorage _storage;
     private readonly ILogger _logger;
 
-    public MarketDataProcessor(IMarketDataFetcher fetcher, IMarketDataStorage storage, ILoggerFactory loggerFactory)
+    public MarketDataProcessor(IMarketDataFetcher fetcher, IMarketDataStorage storage, ILoggerFactory loggerFactory = null)
     {
         _fetcher = fetcher ?? throw new ArgumentNullException(nameof(fetcher));
         _storage = storage ?? throw new ArgumentNullException(nameof(storage));
-        _logger = loggerFactory?.CreateLogger<MarketDataProcessor>() ?? throw new ArgumentNullException(nameof(loggerFactory));
+        _logger = loggerFactory?.CreateLogger<MarketDataProcessor>() ?? new NullLogger<MarketDataProcessor>();
     }
 
     public async Task ProcessAndStoreMarketDataAsync(IEnumerable<string> symbols)

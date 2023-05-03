@@ -21,6 +21,19 @@ namespace Boutquin.Trading.Domain.Data;
 
 public sealed class CsvMarketDataFetcher : IMarketDataFetcher
 {
+    // The directory where the CSV files will be stored
+    private readonly string _dataDirectory;
+
+    public CsvMarketDataFetcher(string directory)
+    {
+        _dataDirectory = directory ?? throw new ArgumentNullException(nameof(directory));
+
+        if (!Directory.Exists(_dataDirectory))
+        {
+            Directory.CreateDirectory(_dataDirectory);
+        }
+    }
+
     /// <inheritdoc/>
     public async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<string, MarketData>>> FetchMarketDataAsync(IEnumerable<string> symbols)
     {
@@ -31,7 +44,7 @@ public sealed class CsvMarketDataFetcher : IMarketDataFetcher
 
         foreach (var symbol in symbols)
         {
-            var fileName = MarketDataFileNameHelper.GetCsvFileNameForMarketData(symbol);
+            var fileName = MarketDataFileNameHelper.GetCsvFileNameForMarketData(_dataDirectory, symbol);
 
             if (!File.Exists(fileName))
             {
