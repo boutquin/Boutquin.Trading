@@ -70,42 +70,6 @@ public sealed class BackTest
     /// <exception cref="ArgumentException">Thrown when the provided start date is greater than or equal to the end date.</exception>
     public async Task<Tearsheet> RunAsync(DateOnly startDate, DateOnly endDate)
     {
-        // Retrieve the list of assets from the strategies
-        var assets = new HashSet<string>();
-        foreach (var strategy in _portfolio.Strategies)
-        {
-            assets.UnionWith(strategy.Assets);
-        }
-
-        // Add the benchmark asset to the list
-        assets.UnionWith(_benchmarkPortfolio.Strategies.First().Assets);
-
-        // Iterate through the combined list of events and handle them for both the main and benchmark portfolios
-        try
-        {
-            // Load historical market data 
-            await foreach (var dataPoint in _marketDataFetcher.FetchMarketDataAsync(assets))
-            {
-                var date = dataPoint.Key;
-                var assetMarketData = dataPoint.Value;
-
-                foreach (var asset in assets)
-                {
-                    var marketEvent = new MarketEvent(date, asset, assetMarketData[asset]);
-                    _portfolio.HandleEvent(marketEvent);
-
-                    _benchmarkPortfolio.HandleEvent(marketEvent);
-                }
-
-                _portfolio.UpdateEquityCurve(date);
-                _benchmarkPortfolio.UpdateEquityCurve(date);
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"An error occurred: {ex.Message}");
-        }
-
         // Calculate and analyze performance metrics
         return AnalyzePerformanceMetrics();
     }

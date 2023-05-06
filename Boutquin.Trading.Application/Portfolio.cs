@@ -13,13 +13,14 @@
 //  limitations under the License.
 //
 
-using Boutquin.Domain.Helpers;
-using Boutquin.Trading.Domain.Data;
-using Boutquin.Trading.Domain.Enums;
-using Boutquin.Trading.Domain.Events;
-using Boutquin.Trading.Domain.Interfaces;
-
 namespace Boutquin.Trading.Application;
+
+using Boutquin.Domain.Exceptions;
+using Boutquin.Domain.Helpers;
+using Domain.Data;
+using Domain.Enums;
+using Domain.Events;
+using Boutquin.Trading.Domain.Interfaces;
 
 /// <summary>
 /// Represents a trading portfolio that consists of multiple strategies and assets.
@@ -31,6 +32,8 @@ namespace Boutquin.Trading.Application;
 /// </summary>
 public sealed class Portfolio
 {
+    private readonly IBrokerage _broker;
+
     /// <summary>
     /// Stores the cash balance for each strategy in the portfolio.
     /// </summary>
@@ -88,48 +91,6 @@ public sealed class Portfolio
         }
 
         _positions = new Dictionary<string, Dictionary<string, int>>();
-    }
-
-    /// <summary>
-    /// Processes the provided market data by generating trading signals and handling
-    /// these signals using the associated strategies in the portfolio.
-    /// </summary>
-    /// <param name="marketData">A sorted dictionary containing historical market data for multiple assets.</param>
-    /// <exception cref="EmptyOrNullDictionaryException">Thrown when the <paramref name="marketData"/> is null or empty.</exception>
-    /// <remarks>
-    /// The ProcessMarketData method iterates through each strategy in the portfolio,
-    /// generates trading signals using the provided market data, and handles these
-    /// signals by invoking the HandleEvent method for each generated signal.
-    /// </remarks>
-    /// <example>
-    /// This is an example of how the ProcessMarketData method can be used:
-    /// <code>
-    /// Portfolio myPortfolio = new Portfolio();
-    /// myPortfolio.Strategies.Add(new MyCustomStrategy());
-    /// SortedDictionary&lt;string, MarketData&gt; historicalData = GetHistoricalMarketData();
-    /// myPortfolio.ProcessMarketData(historicalData);
-    /// </code>
-    /// </example>
-    public void ProcessMarketData(SortedDictionary<string, MarketData> marketData)
-    {
-        // Ensure that the market data is not null or empty.
-        Guard.AgainstEmptyOrNullDictionary(() => marketData);
-
-        // Iterate through each strategy in the portfolio.
-        foreach (var strategy in Strategies)
-        {
-            // Set the current executing strategy.
-            SetCurrentExecutingStrategy(strategy);
-
-            // Generate trading signals using the provided market data.
-            var signals = strategy.GenerateSignals(marketData);
-
-            // Handle each generated signal by invoking the HandleEvent method.
-            foreach (var signal in signals)
-            {
-                HandleEvent(signal);
-            }
-        }
     }
 
     /// <summary>
@@ -195,33 +156,33 @@ public sealed class Portfolio
     /// It supports MarketEvent, SignalEvent, OrderEvent, FillEvent, RebalancingEvent,
     /// and DividendEvent.
     /// </remarks>
-    public void HandleEvent(IEvent eventObj)
+    public async Task HandleEventAsync(IEvent eventObj)
     {
-        // Ensure that the event object is not null.
-        if (eventObj == null) throw new ArgumentNullException(nameof(eventObj));
+        // Ensure that the rebalancingEvent is not null.
+        Guard.AgainstNull(() => eventObj); // Throws ArgumentNullException when the eventObj parameter is null
 
         switch (eventObj)
         {
             case MarketEvent marketEvent:
-                HandleMarketEvent(marketEvent);
+                await HandleMarketEventAsync(marketEvent);
                 break;
             case SignalEvent signalEvent:
-                HandleSignalEvent(signalEvent);
+                await HandleSignalEventAsync(signalEvent);
                 break;
             case OrderEvent orderEvent:
-                HandleOrderEvent(orderEvent);
+                await HandleOrderEventAsync(orderEvent);
                 break;
             case FillEvent fillEvent:
-                HandleFillEvent(fillEvent);
+                await HandleFillEventAsync(fillEvent);
                 break;
             case RebalancingEvent rebalancingEvent:
-                HandleRebalancingEvent(rebalancingEvent);
+                await HandleRebalancingEventAsync(rebalancingEvent);
                 break;
             case SplitEvent splitEvent:
-                HandleSplitEvent(splitEvent);
+                await HandleSplitEventAsync(splitEvent);
                 break;
             case DividendEvent dividendEvent:
-                HandleDividendEvent(dividendEvent);
+                await HandleDividendEventAsync(dividendEvent);
                 break;
             default:
                 throw new NotSupportedException($"Unsupported event type: {eventObj.GetType()}");
@@ -234,13 +195,15 @@ public sealed class Portfolio
     /// </summary>
     /// <param name="marketEvent">The market event containing the asset and its updated market data.</param>
     /// <exception cref="ArgumentNullException">Thrown when the <paramref name="marketEvent"/> is null.</exception>
-    private void HandleMarketEvent(MarketEvent marketEvent)
+    private Task HandleMarketEventAsync(MarketEvent marketEvent)
     {
         // Ensure that the market event is not null.
         Guard.AgainstNull(() => marketEvent);
 
         // Update the latest market data for the asset.
         _latestMarketData[marketEvent.Asset] = marketEvent.MarketData;
+
+        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -248,7 +211,7 @@ public sealed class Portfolio
     /// </summary>
     /// <param name="signalEvent">The SignalEvent to be processed.</param>
     /// <exception cref="ArgumentNullException">Thrown when the <paramref name="signalEvent"/> is null.</exception>
-    private void HandleSignalEvent(SignalEvent signalEvent)
+    private async Task HandleSignalEventAsync (SignalEvent signalEvent)
     {
         // Ensure that the signal event is not null.
         if (signalEvent == null) throw new ArgumentNullException(nameof(signalEvent));
@@ -257,7 +220,7 @@ public sealed class Portfolio
         var currentPosition = _positions[signalEvent.Asset][_currentExecutingStrategy.Name];
 
         // Determine the order type and quantity based on the signal type
-        TradeAction orderType;
+        TradeAction tradeAction;
         int quantity;
 
         // Calculate the total value of the portfolio
@@ -266,15 +229,15 @@ public sealed class Portfolio
         switch (signalEvent.SignalType)
         {
             case SignalType.Long:
-                orderType = TradeAction.Buy;
+                tradeAction = TradeAction.Buy;
                 quantity = _currentExecutingStrategy.PositionSizer.GetPositionSize(signalEvent.Asset, portfolioTotalValue);
                 break;
             case SignalType.Short:
-                orderType = TradeAction.Sell;
+                tradeAction = TradeAction.Sell;
                 quantity = _currentExecutingStrategy.PositionSizer.GetPositionSize(signalEvent.Asset, portfolioTotalValue);
                 break;
             case SignalType.Exit:
-                orderType = currentPosition > 0 ? TradeAction.Sell : TradeAction.Buy;
+                tradeAction = currentPosition > 0 ? TradeAction.Sell : TradeAction.Buy;
                 quantity = Math.Abs(currentPosition);
                 break;
             default:
@@ -284,51 +247,59 @@ public sealed class Portfolio
         // Create an OrderEvent
         var orderEvent = new OrderEvent(
             signalEvent.Timestamp,
+            signalEvent.StrategyName,
             signalEvent.Asset,
-            orderType,
-            quantity,
-            _currentExecutingStrategy.Slippage,
-            _currentExecutingStrategy.Commission
+            tradeAction,
+            OrderType.Market,
+            quantity
         );
 
         // Handle the OrderEvent
-        HandleOrderEvent(orderEvent);
+        await HandleOrderEventAsync(orderEvent);
     }
 
     /// <summary>
-    /// Handles an order event by processing the order, calculating the fill price, and creating a fill event.
+    /// Handles an OrderEvent by submitting an order to the brokerage for execution.
+    /// Ensures that the OrderEvent is not null, retrieves the latest market data for the asset,
+    /// and creates an Order object that is submitted to the brokerage.
     /// </summary>
-    /// <param name="orderEvent">The order event to be processed.</param>
-    /// <remarks>
-    /// This method retrieves the latest market data for the asset associated with the order event,
-    /// calculates the fill price based on the slippage, creates a fill event, and then handles the fill event.
-    /// </remarks>
-    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="orderEvent"/> is null.</exception>
-    private void HandleOrderEvent(OrderEvent orderEvent)
+    /// <param name="orderEvent">The OrderEvent to handle, represented as an OrderEvent object.</param>
+    private async Task HandleOrderEventAsync(OrderEvent orderEvent)
     {
         // Ensure that the OrderEvent is not null.
-        Guard.AgainstNull(() => orderEvent);
+        if (orderEvent is null)
+        {
+            throw new ArgumentNullException(nameof(orderEvent), "OrderEvent cannot be null.");
+        }
 
         // Get the latest market data for the asset
-        var marketData = _latestMarketData[orderEvent.Asset];
+        if (!_latestMarketData.TryGetValue(orderEvent.Asset, out var marketData))
+        {
+            // Market data for the asset not found, handle the error as appropriate for your application.
+            // For example, log the error or throw an exception.
+            throw new InvalidOperationException($"Market data for asset {orderEvent.Asset} not found.");
+        }
 
-        // Calculate the fill price based on the slippage
-        var fillPrice = (orderEvent.OrderType == TradeAction.Buy) ?
-            marketData.Close * (1 + orderEvent.Slippage) :
-            marketData.Close * (1 - orderEvent.Slippage);
-
-        // Create a fill event
-        var fillEvent = new FillEvent(
+        // Create an Order object using the information from the OrderEvent and the latest market data.
+        // Price is only set for Limit and StopLimit orders.
+        var order = new Order(
             orderEvent.Timestamp,
+            orderEvent.StrategyName,
             orderEvent.Asset,
+            orderEvent.TradeAction,
+            orderEvent.OrderType,
             orderEvent.Quantity,
-            fillPrice,
-            orderEvent.Commission,
-            _currentExecutingStrategy.Name
-        );
+            orderEvent.Price);
 
-        // Handle the fill event
-        HandleFillEvent(fillEvent);
+        // Submit the order to the brokerage for execution.
+        var orderSubmitted = await _broker.SubmitOrderAsync(order);
+
+        // Check if the order submission was successful and handle the result as appropriate for your application.
+        // For example, log the result or throw an exception if the submission failed.
+        if (!orderSubmitted)
+        {
+            throw new InvalidOperationException($"Order submission for asset {orderEvent.Asset} failed.");
+        }
     }
 
     /// <summary>
@@ -341,7 +312,7 @@ public sealed class Portfolio
     /// The transaction cost is calculated as the product of fill price and fill quantity, plus the commission.
     /// </remarks>
     /// <exception cref="ArgumentNullException">Thrown when the <paramref name="fillEvent"/> is null.</exception>
-    private void HandleFillEvent(FillEvent fillEvent)
+    private async Task HandleFillEventAsync(FillEvent fillEvent)
     {
         // Ensure that the FillEvent is not null.
         Guard.AgainstNull(() => fillEvent);
@@ -377,21 +348,6 @@ public sealed class Portfolio
     }
 
     /// <summary>
-    /// Updates the latest market data for a given asset in the portfolio.
-    /// </summary>
-    /// <param name="asset">The asset for which the market data should be updated.</param>
-    /// <param name="marketData">The new market data for the asset.</param>
-    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="asset"/> or <paramref name="marketData"/> is null.</exception>
-    private void UpdateMarketData(string asset, MarketData marketData)
-    {
-        // Ensure that the asset and marketData are not null.
-        Guard.AgainstNull(() => asset);
-        Guard.AgainstNull(() => marketData);
-
-        _latestMarketData[asset] = marketData;
-    }
-
-    /// <summary>
     /// Processes the dividend event for all strategies in the portfolio.
     /// </summary>
     /// <param name="dividendEvent">The dividend event to be processed.</param>
@@ -400,7 +356,7 @@ public sealed class Portfolio
     /// The method iterates through all strategies and updates the cash balance
     /// based on the dividend amount for each strategy holding the asset.
     /// </remarks>
-    private void HandleDividendEvent(DividendEvent dividendEvent)
+    private async Task HandleDividendEventAsync(DividendEvent dividendEvent)
     {
         // Ensure that the dividendEvent is not null.
         Guard.AgainstNull(() => dividendEvent);
@@ -431,46 +387,18 @@ public sealed class Portfolio
     /// Otherwise, it creates and executes an order event for the quantity adjustment using the current
     /// executing strategy's slippage and commission models.
     /// </remarks>
-    private void HandleRebalancingEvent(RebalancingEvent rebalancingEvent)
+    private async Task HandleRebalancingEventAsync(RebalancingEvent rebalancingEvent)
     {
         // Ensure that the rebalancingEvent is not null.
-        Guard.AgainstNull(() => rebalancingEvent);
+        Guard.AgainstNull(() => rebalancingEvent); // Throws ArgumentNullException when the rebalancingEvent parameter is null
 
-        // Calculate the total value of the portfolio
-        var portfolioTotalValue = EquityCurve[rebalancingEvent.Timestamp];
-
-        // Calculate the equity for the strategy
-        var equity = _currentExecutingStrategy.CalculateEquity();
-
-        // Rebalance the portfolio for each asset in the strategy
-        foreach (var asset in rebalancingEvent.Assets)
-        {
-            decimal targetWeight = _currentExecutingStrategy.PositionSizer.GetPositionSize(asset, portfolioTotalValue);
-            var targetValue = equity * targetWeight;
-            var currentPositionValue = _positions[_currentExecutingStrategy.Name][asset] * _latestMarketData[asset].Close;
-
-            // Calculate the required quantity adjustment
-            var quantityAdjustment = (int)((targetValue - currentPositionValue) / _latestMarketData[asset].Close);
-
-            // Create and execute an order event for the quantity adjustment
-            if (quantityAdjustment == 0)
-            {
-                continue;
-            }
-
-            var orderEvent = new OrderEvent(
-                rebalancingEvent.Timestamp, 
-                asset,
-                quantityAdjustment > 0 ? TradeAction.Buy : TradeAction.Sell,
-                quantityAdjustment,
-                _currentExecutingStrategy.Slippage,
-                _currentExecutingStrategy.Commission
-            );
-            HandleOrderEvent(orderEvent);
-        }
+        //...
     }
-    private void HandleSplitEvent(SplitEvent splitEvent)
+    private async Task HandleSplitEventAsync(SplitEvent splitEvent)
     {
+        // Ensure that the rebalancingEvent is not null.
+        Guard.AgainstNull(() => splitEvent); // Throws ArgumentNullException when the splitEvent parameter is null
+
         //...
     }
 }

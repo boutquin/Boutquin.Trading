@@ -13,40 +13,43 @@
 //  limitations under the License.
 //
 
-using Boutquin.Trading.Domain.Enums;
-using Boutquin.Trading.Domain.Interfaces;
-
 namespace Boutquin.Trading.Domain.Events;
 
+using Enums;
+
 /// <summary>
-/// The OrderEvent record encapsulates the data points for an order
-/// created by a specific strategy for a specific financial asset at a specific point in time,
-/// providing information about the order type, trade action, quantity, asset name, timestamp, and strategy name.
+/// The Order record represents a request to execute a trade for a specified
+/// asset, with information about the trade action, order type, quantity,
+/// and other relevant details.
 /// </summary>
-/// <param name="Timestamp">The timestamp of the order event,
+/// <param name="Timestamp">The timestamp when the order is created,
 /// represented as a DateOnly object.
 /// </param>
-/// <param name="StrategyName">The name of the strategy that created the order,
-/// represented as a string.
+/// <param name="StrategyName">The name of the strategy that associated
+/// with the order, represented as a string.
 /// </param>
 /// <param name="Asset">The name of the financial asset associated
-/// with the order event, represented as a string.
+/// with the order, represented as a string.
 /// </param>
-/// <param name="TradeAction">The trade action of the order, represented as a TradeAction enum value.
+/// <param name="TradeAction">The action to be performed in the trade,
+/// either as a Buy or Sell action, represented as a TradeAction enum value.
 /// </param>
-/// <param name="OrderType">The type of the order, represented as an OrderType enum value.
+/// <param name="OrderType">The type of the order for executing the trade,
+/// either as a Market order, Limit order, Stop order, or StopLimit order,
+/// represented as an OrderType enum value.
 /// </param>
-/// <param name="Quantity">The quantity of the financial asset in the order, represented as an integer.
+/// <param name="Quantity">The quantity of the financial asset to be traded,
+/// represented as an integer value.
 /// </param>
 /// <param name="Price">The price at which the order should be executed,
 /// represented as a decimal value. This parameter is only relevant for
 /// Limit, Stop, and StopLimit orders.
 /// </param>
-public record OrderEvent(
+public record Order(
     DateOnly Timestamp,
     string StrategyName,
     string Asset,
     TradeAction TradeAction,
     OrderType OrderType,
     int Quantity,
-    decimal? Price = null) : IEvent;
+    decimal? Price = null);

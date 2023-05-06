@@ -18,33 +18,29 @@ using Boutquin.Trading.Domain.Interfaces;
 namespace Boutquin.Trading.Domain.Events;
 
 /// <summary>
-/// The FillEvent record encapsulates the data points for a fill event
-/// for a specific financial asset at a specific point in time, providing
-/// information about the fill price, asset name, quantity, commission,
-/// strategy name, and timestamp.
+/// The FillEvent record encapsulates the data points for a fill
+/// event resulting from the execution of an order for a specific financial asset at a specific point in time,
+/// providing information about the fill price, quantity, commission, asset name, timestamp, and strategy name.
 /// </summary>
-/// <param name="Timestamp">The timestamp of the fill event, represented
-/// as a DateTime object.
+/// <param name="Timestamp">The timestamp of the fill event,
+/// represented as a DateOnly object.
 /// </param>
-/// <param name="Asset">The name of the financial asset associated with
-/// the fill event, represented as a string.
+/// <param name="Asset">The name of the financial asset associated
+/// with the fill event, represented as a string.
 /// </param>
-/// <param name="Quantity">The quantity of the asset associated with the
-/// fill event, represented as an integer value.
+/// <param name="StrategyName">The name of the strategy associated with the fill event,
+/// represented as a string.
 /// </param>
-/// <param name="FillPrice">The fill price of the fill event, represented
-/// as a decimal value.
+/// <param name="FillPrice">The price at which the financial asset was filled, represented as a decimal value.
 /// </param>
-/// <param name="Commission">The commission of the fill event, represented
-/// as a decimal value.
+/// <param name="Quantity">The quantity of the financial asset filled, represented as an integer.
 /// </param>
-/// <param name="StrategyName">The name of the strategy associated with
-/// the fill event, represented as a string.
+/// <param name="Commission">The commission associated with the fill event, represented as a decimal value.
 /// </param>
 public record FillEvent(
-    DateOnly Timestamp, 
-    string Asset, 
-    int Quantity, 
-    decimal FillPrice, 
-    decimal Commission, 
-    string StrategyName) : IEvent;
+    DateOnly Timestamp,
+    string Asset,
+    string StrategyName,
+    decimal FillPrice,
+    int Quantity,
+    decimal Commission) : IEvent;

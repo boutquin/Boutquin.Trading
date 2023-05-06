@@ -16,18 +16,24 @@
 namespace Boutquin.Trading.Domain.Interfaces;
 
 /// <summary>
-/// IPositionSizer represents a position sizing strategy for a trading system. It calculates
-/// the position size for an asset based on the chosen sizing method (e.g., fixed percentage,
-/// volatility-based, etc.).
+/// The IPositionSizer interface defines a method for calculating the position size of an asset within a strategy.
+/// This interface is used by the IStrategy implementations to determine the number of units to trade for a given asset,
+/// based on the target capital allocated to the strategy.
 /// </summary>
 public interface IPositionSizer
 {
     /// <summary>
-    /// Calculates and returns the position size for the given asset based on the implemented
-    /// position sizing strategy.
+    /// Calculates the position size for a given asset within a strategy, based on the target capital allocated to the strategy.
     /// </summary>
-    /// <param name="asset">The asset for which the position size is calculated.</param>
-    /// <param name="portfolioTotalValue">The current total value of the portfolio.</param>
-    /// <returns>The position size for the given asset based on the implemented position sizing strategy.</returns>
-    int GetPositionSize(string asset, decimal portfolioTotalValue);
+    /// <param name="asset">A string representing the asset symbol to calculate the position size for.</param>
+    /// <param name="targetCapital">A decimal representing the target capital allocated to the strategy.</param>
+    /// <returns>An integer representing the position size for the given asset.</returns>
+    /// <remarks>
+    /// The GetPositionSize method should be implemented by the position sizing strategy to determine the number of units to trade
+    /// for a given asset, based on the target capital allocated to the strategy. This method should take into account various factors,
+    /// such as the asset's historical performance, volatility, and correlation with other assets, as well as any portfolio-level
+    /// constraints or objectives.
+    /// </remarks>
+    int GetPositionSize(string asset, decimal targetCapital);
 }
+
