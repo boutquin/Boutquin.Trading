@@ -13,13 +13,11 @@
 //  limitations under the License.
 //
 
-using Boutquin.Domain.Helpers;
-using Boutquin.Trading.Domain.Events;
-using Boutquin.Trading.Domain.Extensions;
-using Boutquin.Trading.Domain.Helpers;
-using Boutquin.Trading.Domain.Interfaces;
-
 namespace Boutquin.Trading.Application;
+
+using Domain.Extensions;
+using Domain.Helpers;
+using Boutquin.Trading.Domain.Interfaces;
 
 /// <summary>
 /// Represents a BackTest of a trading portfolio with multiple assets, strategies, and events.

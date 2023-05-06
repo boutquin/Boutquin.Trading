@@ -15,7 +15,6 @@
 
 namespace Boutquin.Trading.Application;
 
-using Boutquin.Domain.Exceptions;
 using Boutquin.Domain.Helpers;
 using Domain.Data;
 using Domain.Enums;
