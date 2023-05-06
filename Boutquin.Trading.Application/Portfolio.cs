@@ -214,12 +214,17 @@ public sealed class Portfolio
             case FillEvent fillEvent:
                 HandleFillEvent(fillEvent);
                 break;
-            case DividendEvent dividendEvent:
-                HandleDividendEvent(dividendEvent);
-                break;
             case RebalancingEvent rebalancingEvent:
                 HandleRebalancingEvent(rebalancingEvent);
                 break;
+            case SplitEvent splitEvent:
+                HandleSplitEvent(splitEvent);
+                break;
+            case DividendEvent dividendEvent:
+                HandleDividendEvent(dividendEvent);
+                break;
+            default:
+                throw new NotSupportedException($"Unsupported event type: {eventObj.GetType()}");
         }
     }
     
@@ -463,5 +468,9 @@ public sealed class Portfolio
             );
             HandleOrderEvent(orderEvent);
         }
+    }
+    private void HandleSplitEvent(SplitEvent splitEvent)
+    {
+        //...
     }
 }
