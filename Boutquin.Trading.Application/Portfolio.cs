@@ -37,7 +37,7 @@ public sealed class Portfolio
     /// <remarks>
     /// The key is the strategy name, and the value is the cash balance.
     /// </remarks>
-    private readonly Dictionary<string, decimal> _cash;
+    private readonly Dictionary<string, decimal> _cash; // Strategy -> Cash
 
     /// <summary>
     /// Stores the positions for each asset and strategy in the portfolio.
@@ -54,12 +54,13 @@ public sealed class Portfolio
     /// <remarks>
     /// The key represents the asset, and the value represents the latest market data for that asset.
     /// </remarks>
-    private readonly Dictionary<string, MarketData> _latestMarketData;
+    private readonly SortedDictionary<string, MarketData> _latestMarketData; // Asset -> MarketData
 
     /// <summary>
     /// Stores the current executing strategy for the portfolio.
     /// </summary>
     private IStrategy _currentExecutingStrategy;
+
     /// <summary>
     /// Retrieves the portfolio's equity curve, represented as a SortedDictionary with DateTime keys and decimal values.
     /// The equity curve represents the value of the portfolio over time, where the keys are the timestamps of events
@@ -87,6 +88,48 @@ public sealed class Portfolio
         }
 
         _positions = new Dictionary<string, Dictionary<string, int>>();
+    }
+
+    /// <summary>
+    /// Processes the provided market data by generating trading signals and handling
+    /// these signals using the associated strategies in the portfolio.
+    /// </summary>
+    /// <param name="marketData">A sorted dictionary containing historical market data for multiple assets.</param>
+    /// <exception cref="EmptyOrNullDictionaryException">Thrown when the <paramref name="marketData"/> is null or empty.</exception>
+    /// <remarks>
+    /// The ProcessMarketData method iterates through each strategy in the portfolio,
+    /// generates trading signals using the provided market data, and handles these
+    /// signals by invoking the HandleEvent method for each generated signal.
+    /// </remarks>
+    /// <example>
+    /// This is an example of how the ProcessMarketData method can be used:
+    /// <code>
+    /// Portfolio myPortfolio = new Portfolio();
+    /// myPortfolio.Strategies.Add(new MyCustomStrategy());
+    /// SortedDictionary&lt;string, MarketData&gt; historicalData = GetHistoricalMarketData();
+    /// myPortfolio.ProcessMarketData(historicalData);
+    /// </code>
+    /// </example>
+    public void ProcessMarketData(SortedDictionary<string, MarketData> marketData)
+    {
+        // Ensure that the market data is not null or empty.
+        Guard.AgainstEmptyOrNullDictionary(() => marketData);
+
+        // Iterate through each strategy in the portfolio.
+        foreach (var strategy in Strategies)
+        {
+            // Set the current executing strategy.
+            SetCurrentExecutingStrategy(strategy);
+
+            // Generate trading signals using the provided market data.
+            var signals = strategy.GenerateSignals(marketData);
+
+            // Handle each generated signal by invoking the HandleEvent method.
+            foreach (var signal in signals)
+            {
+                HandleEvent(signal);
+            }
+        }
     }
 
     /// <summary>
@@ -189,10 +232,7 @@ public sealed class Portfolio
     private void HandleMarketEvent(MarketEvent marketEvent)
     {
         // Ensure that the market event is not null.
-        if (marketEvent == null)
-        {
-            throw new ArgumentNullException(nameof(marketEvent));
-        }
+        Guard.AgainstNull(() => marketEvent);
 
         // Update the latest market data for the asset.
         _latestMarketData[marketEvent.Asset] = marketEvent.MarketData;
@@ -212,7 +252,7 @@ public sealed class Portfolio
         var currentPosition = _positions[signalEvent.Asset][_currentExecutingStrategy.Name];
 
         // Determine the order type and quantity based on the signal type
-        OrderType orderType;
+        TradeAction orderType;
         int quantity;
 
         // Calculate the total value of the portfolio
@@ -221,15 +261,15 @@ public sealed class Portfolio
         switch (signalEvent.SignalType)
         {
             case SignalType.Long:
-                orderType = OrderType.Buy;
+                orderType = TradeAction.Buy;
                 quantity = _currentExecutingStrategy.PositionSizer.GetPositionSize(signalEvent.Asset, portfolioTotalValue);
                 break;
             case SignalType.Short:
-                orderType = OrderType.Sell;
+                orderType = TradeAction.Sell;
                 quantity = _currentExecutingStrategy.PositionSizer.GetPositionSize(signalEvent.Asset, portfolioTotalValue);
                 break;
             case SignalType.Exit:
-                orderType = currentPosition > 0 ? OrderType.Sell : OrderType.Buy;
+                orderType = currentPosition > 0 ? TradeAction.Sell : TradeAction.Buy;
                 quantity = Math.Abs(currentPosition);
                 break;
             default:
@@ -268,7 +308,7 @@ public sealed class Portfolio
         var marketData = _latestMarketData[orderEvent.Asset];
 
         // Calculate the fill price based on the slippage
-        var fillPrice = (orderEvent.OrderType == OrderType.Buy) ?
+        var fillPrice = (orderEvent.OrderType == TradeAction.Buy) ?
             marketData.Close * (1 + orderEvent.Slippage) :
             marketData.Close * (1 - orderEvent.Slippage);
 
@@ -416,7 +456,7 @@ public sealed class Portfolio
             var orderEvent = new OrderEvent(
                 rebalancingEvent.Timestamp, 
                 asset,
-                quantityAdjustment > 0 ? OrderType.Buy : OrderType.Sell,
+                quantityAdjustment > 0 ? TradeAction.Buy : TradeAction.Sell,
                 quantityAdjustment,
                 _currentExecutingStrategy.Slippage,
                 _currentExecutingStrategy.Commission

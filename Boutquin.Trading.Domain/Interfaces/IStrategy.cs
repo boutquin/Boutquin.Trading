@@ -44,7 +44,44 @@ public interface IStrategy
     /// <summary>
     /// The list of financial assets associated with the strategy.
     /// </summary>
-    List<string> Assets { get => Positions.Keys.ToList(); } 
+    List<string> Assets { get => Positions.Keys.ToList(); }
+
+    /// <summary>
+    /// Gets or sets the capital associated with the trading strategy.
+    /// </summary>
+    /// <value>
+    /// The capital value in decimal format.
+    /// </value>
+    /// <remarks>
+    /// Capital represents the amount of money available to the strategy for
+    /// trading purposes. It is important to keep track of the capital as it
+    /// affects the position sizing and risk management of the strategy.
+    /// </remarks>
+    decimal Capital { get; set; }
+
+    /// <summary>
+    /// Generates trading signals based on the provided market data.
+    /// </summary>
+    /// <param name="marketData">A sorted dictionary containing historical market data for multiple assets.</param>
+    /// <returns>An enumerable of SignalEvent objects representing the generated trading signals.</returns>
+    /// <remarks>
+    /// The GenerateSignals method should be implemented by the trading strategy to analyze
+    /// the market data and generate appropriate trading signals (e.g., buy or sell signals)
+    /// based on the strategy's specific rules and conditions.
+    /// </remarks>
+    /// <example>
+    /// This is an example of how the GenerateSignals method can be used:
+    /// <code>
+    /// IStrategy myStrategy = new MyCustomStrategy();
+    /// SortedDictionary&lt;string, MarketData&gt; historicalData = GetHistoricalMarketData();
+    /// IEnumerable&lt;SignalEvent&gt; signals = myStrategy.GenerateSignals(historicalData);
+    /// foreach (SignalEvent signal in signals)
+    /// {
+    ///     Console.WriteLine($"{signal.Symbol} - {signal.Direction}");
+    /// }
+    /// </code>
+    /// </example>
+    IEnumerable<SignalEvent> GenerateSignals(SortedDictionary<string, MarketData> marketData);
 
     /// <summary>
     /// This method is called by the trading engine whenever a new market

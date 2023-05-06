@@ -45,7 +45,7 @@ namespace Boutquin.Trading.Domain.Events;
 public record OrderEvent(
     DateOnly Timestamp, 
     string Asset, 
-    OrderType OrderType, 
+    TradeAction OrderType, 
     int Quantity, 
     decimal Slippage, 
     decimal Commission) : IEvent;
