@@ -113,17 +113,4 @@ public sealed class BackTest
             maxDrawdownDuration
         );
     }
-
-    /// <summary>
-    /// Adds a strategy to the backtested <see cref="Portfolio"/>.
-    /// </summary>
-    /// <param name="strategy">The strategy to be added to the <see cref="Portfolio"/>.</param>
-    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="strategy"/> is null.</exception>
-    public void AddStrategy(IStrategy strategy)
-    {
-        // Ensure that the strategy is not null.
-        Guard.AgainstNull(() => strategy);
-
-        _portfolio.AddStrategy(strategy);
-    }
 }

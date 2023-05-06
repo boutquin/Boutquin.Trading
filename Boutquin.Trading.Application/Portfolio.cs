@@ -50,6 +50,8 @@ public sealed class Portfolio
         _historicalFxConversionRates = historicalFxConversionRates;
     }
 
+    public SortedDictionary<DateOnly, decimal> EquityCurve { get; } = new();
+
     public async Task HandleEventAsync(IEvent eventObj)
     {
         // Ensure that the rebalancingEvent is not null.
