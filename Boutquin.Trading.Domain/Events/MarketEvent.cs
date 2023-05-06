@@ -14,22 +14,20 @@
 //
 
 using Boutquin.Trading.Domain.Data;
+using Boutquin.Trading.Domain.Enums;
 using Boutquin.Trading.Domain.Interfaces;
 
 namespace Boutquin.Trading.Domain.Events;
 
 /// <summary>
-/// Represents a market event that contains market data such as opening price, high price,
-/// low price, closing price, and trading volume for a specific asset at a given timestamp.
+/// The MarketEvent record encapsulates the historical market data for multiple assets and historical foreign exchange (FX) conversion rates
+/// at a specific point in time, represented by the Timestamp property.
 /// </summary>
-/// <param name="Timestamp">The timestamp at which the market event occurs.</param>
-/// <param name="Asset">The identifier of the asset associated with the market event.</param>
-/// <param name="Open">The opening price of the asset at the given timestamp.</param>
-/// <param name="High">The highest price of the asset during the market event period.</param>
-/// <param name="Low">The lowest price of the asset during the market event period.</param>
-/// <param name="Close">The closing price of the asset at the given timestamp.</param>
-/// <param name="Volume">The trading volume of the asset during the market event period.</param>
+/// <param name="Timestamp">The timestamp of the market event, represented as a DateOnly object.</param>
+/// <param name="HistoricalMarketData">A sorted dictionary containing the historical market data for multiple assets, with asset symbols as keys and MarketData objects as values.</param>
+/// <param name="HistoricalFxConversionRates">A sorted dictionary containing the historical foreign exchange (FX) conversion rates for multiple currency pairs, with DateOnly as keys and a SortedDictionary of CurrencyCode and decimal pairs as values.</param>
 public record MarketEvent(
     DateOnly Timestamp,
-    string Asset,
-    MarketData MarketData) : IEvent;
+    SortedDictionary<string, MarketData> HistoricalMarketData,
+    SortedDictionary<CurrencyCode, decimal> HistoricalFxConversionRates) : IEvent;
+
