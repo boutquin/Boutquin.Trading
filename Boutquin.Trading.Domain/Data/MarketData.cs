@@ -61,4 +61,29 @@ public record MarketData(
     decimal AdjustedClose,
     long Volume,
     decimal DividendPerShare,
-    decimal SplitCoefficient);
+    decimal SplitCoefficient)
+{
+    /// <summary>
+    /// Adjusts the market data for a split event by applying the given split ratio and returns
+    /// a new instance of MarketData with the adjusted values.
+    /// </summary>
+    /// <param name="splitEventSplitRatio">The split ratio to apply.</param>
+    /// <returns>A new instance of MarketData with the adjusted values.</returns>
+    /// <remarks>
+    /// The method creates a new instance of MarketData with adjusted Open, High, Low, Close,
+    /// AdjustedClose, Volume, and SplitCoefficient properties to account for the split event.
+    /// </remarks>
+    public MarketData AdjustForSplit(decimal splitEventSplitRatio)
+    {
+        return new MarketData(
+            Timestamp,
+            Open / splitEventSplitRatio,
+            High / splitEventSplitRatio,
+            Low / splitEventSplitRatio,
+            Close / splitEventSplitRatio,
+            AdjustedClose / splitEventSplitRatio,
+            (long)(Volume * splitEventSplitRatio),
+            DividendPerShare,
+            SplitCoefficient * splitEventSplitRatio);
+    }
+}

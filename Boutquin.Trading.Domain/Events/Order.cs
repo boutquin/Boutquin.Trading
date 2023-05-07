@@ -15,6 +15,7 @@
 
 namespace Boutquin.Trading.Domain.Events;
 
+using Boutquin.Trading.Domain.Interfaces;
 using Enums;
 
 /// <summary>
@@ -52,4 +53,5 @@ public record Order(
     TradeAction TradeAction,
     OrderType OrderType,
     int Quantity,
-    decimal? Price = null);
+    decimal? PrimaryPrice = null,
+    decimal? SecondaryPrice = null) : IEvent;

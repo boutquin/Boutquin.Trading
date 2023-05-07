@@ -45,30 +45,53 @@ public interface IStrategy
     SortedDictionary<string, int> Positions { get; }
 
     /// <summary>
-    /// Gets the currency code associated with each asset in the strategy,
-    /// represented as a sorted dictionary where the key is the asset symbol
-    /// and the value is the CurrencyCode.
-    /// </summary>
-    SortedDictionary<string, CurrencyCode> AssetCurrencies { get; }
-
-    /// <summary>
     /// Gets an immutable list of asset symbols held by the strategy.
     /// </summary>
     ImmutableList<string> Assets { get; }
 
     /// <summary>
-    /// Gets or sets the capital held in each currency by the strategy,
-    /// represented as a sorted dictionary where the key is the CurrencyCode
-    /// and the value is the amount of capital in that currency.
+    /// Gets or sets the target capital allocated to this strategy as a sorted dictionary, where the key
+    /// is the currency code, and the value is the amount of capital allocated in that currency.
     /// </summary>
-    SortedDictionary<CurrencyCode, decimal> Capital { get; set; }
+    /// <remarks>
+    /// The TargetCapital property is used to store the capital allocated to this strategy, which
+    /// is calculated by an ICapitalAllocationStrategy implementation. It is used by the position sizer
+    /// to determine the appropriate position size for assets in the strategy's portfolio.
+    /// </remarks>
+    SortedDictionary<CurrencyCode, decimal> TargetCapital { get; set; }
 
     /// <summary>
-    /// Gets the price calculation strategy associated with the trading strategy,
-    /// which is responsible for determining the price used for trade execution
-    /// based on the available market data.
+    /// Gets or sets the available cash for this strategy as a sorted dictionary, where the key
+    /// is the currency code, and the value is the amount of cash available in that currency.
     /// </summary>
-    IPriceCalculationStrategy PriceCalculationStrategy { get; }
+    /// <remarks>
+    /// The Cash property is used to store the available cash for this strategy in different currencies.
+    /// It is updated when the strategy executes trades, and it affects the position sizing decisions
+    /// made by the IPositionSizer implementation used by the strategy.
+    /// </remarks>
+    SortedDictionary<CurrencyCode, decimal> Cash { get; }
+
+    /// <summary>
+    /// Gets a sorted dictionary containing the daily native returns for each asset managed by the strategy.
+    /// The outer dictionary has asset symbols as keys, and the inner dictionary has DateOnly objects as keys
+    /// and the corresponding daily native returns as decimal values.
+    /// </summary>
+    /// <remarks>
+    /// The daily native returns represent the daily percentage return of an asset in its native currency.
+    /// This can be useful for various calculations, such as risk assessment and performance evaluation.
+    /// </remarks>
+    SortedDictionary<string, SortedDictionary<DateOnly, decimal>> DailyNativeReturns { get; }
+
+    /// <summary>
+    /// Gets the instance of the IOrderPriceCalculationStrategy associated with the strategy.
+    /// </summary>
+    /// <remarks>
+    /// The IOrderPriceCalculationStrategy is responsible for determining the appropriate order prices
+    /// and type (e.g., market, limit, stop, stop-limit) based on the historical market data and other
+    /// relevant factors. It helps the strategy to decide how to execute orders when generating signals.
+    /// </remarks>
+    IOrderPriceCalculationStrategy OrderPriceCalculationStrategy { get; }
+
 
     /// <summary>
     /// Generates trading signals based on the provided market data, target capital, and historical foreign exchange conversion rates.

@@ -49,4 +49,5 @@ public record OrderEvent(
     TradeAction TradeAction,
     OrderType OrderType,
     int Quantity,
-    decimal? Price = null) : IEvent;
+    decimal? PrimaryPrice = null, 
+    decimal? SecondaryPrice = null) : IEvent;
