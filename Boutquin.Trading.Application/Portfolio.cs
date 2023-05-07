@@ -23,7 +23,6 @@ using Domain.Enums;
 using Domain.Events;
 using Boutquin.Trading.Domain.Interfaces;
 using System.Collections.Immutable;
-using Boutquin.Trading.Domain.Helpers;
 
 public sealed class Portfolio
 {
@@ -100,9 +99,6 @@ public sealed class Portfolio
                 break;
             case FillEvent fillEvent:
                 await HandleFillEventAsync(fillEvent);
-                break;
-            case RebalancingEvent rebalancingEvent:
-                await HandleRebalancingEventAsync(rebalancingEvent);
                 break;
             case SplitEvent splitEvent:
                 await HandleSplitEventAsync(splitEvent);
@@ -338,16 +334,6 @@ public sealed class Portfolio
         return Task.CompletedTask;
     }
 
-
-    private Task HandleRebalancingEventAsync(RebalancingEvent rebalancingEvent)
-    {
-        // Ensure that the rebalancingEvent is not null.
-        Guard.AgainstNull(() => rebalancingEvent); // Throws ArgumentNullException when the rebalancingEvent parameter is null
-
-        //...
-        return Task.CompletedTask;
-    }
-
     /// <summary>
     /// Handles a SplitEvent by updating the positions and historical market data.
     /// </summary>
@@ -365,9 +351,9 @@ public sealed class Portfolio
         Guard.AgainstNull(() => splitEvent); // Throws ArgumentNullException when the splitEvent parameter is null
 
         // Adjust the positions for all strategies in the portfolio.
-        foreach (IStrategy strategy in _strategies.Values)
+        foreach (var strategy in _strategies.Values)
         {
-            if (strategy.Positions.TryGetValue(splitEvent.Asset, out int position))
+            if (strategy.Positions.TryGetValue(splitEvent.Asset, out var position))
             {
                 strategy.Positions[splitEvent.Asset] = (int)(position * splitEvent.SplitRatio);
             }
@@ -376,7 +362,7 @@ public sealed class Portfolio
         // Adjust the historical market data for the affected asset.
         foreach (var historicalData in _historicalMarketData.Values)
         {
-            if (historicalData.TryGetValue(splitEvent.Asset, out MarketData marketData))
+            if (historicalData.TryGetValue(splitEvent.Asset, out var marketData))
             {
                 marketData.AdjustForSplit(splitEvent.SplitRatio);
             }

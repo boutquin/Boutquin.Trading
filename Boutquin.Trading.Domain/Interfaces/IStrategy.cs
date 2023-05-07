@@ -15,8 +15,6 @@
 
 namespace Boutquin.Trading.Domain.Interfaces;
 
-using System.Collections.Immutable;
-
 using Data;
 using Enums;
 using Events;
@@ -45,9 +43,10 @@ public interface IStrategy
     SortedDictionary<string, int> Positions { get; }
 
     /// <summary>
-    /// Gets an immutable list of asset symbols held by the strategy.
+    /// Gets a sorted dictionary of assets and their associated currency codes.
+    /// The key is the asset symbol and the value is the asset's currency code.
     /// </summary>
-    ImmutableList<string> Assets { get; }
+    SortedDictionary<string, CurrencyCode> Assets { get; }
 
     /// <summary>
     /// Gets or sets the target capital allocated to this strategy as a sorted dictionary, where the key
@@ -109,19 +108,6 @@ public interface IStrategy
         SortedDictionary<CurrencyCode, decimal> targetCapital,
         SortedDictionary<DateOnly, SortedDictionary<string, MarketData>> historicalMarketData,
         SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates);
-
-    /// <summary>
-    /// Calculates the total equity of the strategy, considering the capital
-    /// held in each currency and the value of the assets held.
-    /// </summary>
-    /// <returns>The total equity of the strategy, represented as a decimal value.</returns>
-    decimal CalculateEquity();
-
-    /// <summary>
-    /// Gets the rebalancing frequency of the strategy, which determines how
-    /// often the strategy should adjust its asset allocations.
-    /// </summary>
-    RebalancingFrequency RebalancingFrequency { get; }
 
     /// <summary>
     /// Gets the position sizer associated with the strategy, which is
