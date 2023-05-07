@@ -38,6 +38,7 @@ public sealed class RebalancingBuyAndHoldStrategy : IStrategy
 
     private readonly RebalancingFrequency _rebalancingFrequency;
     private readonly decimal _rebalancingThreshold;
+    private DateOnly? _lastRebalancingDate = null;
 
     /// <summary>
     /// Initializes a new instance of the RebalancingBuyAndHoldStrategy class.
@@ -74,14 +75,17 @@ public sealed class RebalancingBuyAndHoldStrategy : IStrategy
     }
 
     /// <summary>
-    /// Generates signals for the rebalancing buy and hold strategy.
+    /// Generates signals for the rebalancing buy and hold strategy based on the given timestamp.
     /// </summary>
+    /// <param name="timestamp">The date for which the signals need to be generated.</param>
     /// <param name="targetCapital">The target capital allocated to the asset.</param>
     /// <param name="historicalMarketData">The historical market data for the assets.</param>
     /// <param name="historicalFxConversionRates">The historical foreign exchange conversion rates.</param>
     /// <returns>An IEnumerable of SignalEvent instances.</returns>
     /// <exception cref="EmptyOrNullDictionaryException">Thrown when targetCapital, historicalMarketData, or historicalFxConversionRates is empty or null.</exception>
+    /// <exception cref="ArgumentException">Thrown when the provided timestamp is not found in historicalMarketData.</exception>
     public IEnumerable<SignalEvent> GenerateSignals(
+        DateOnly timestamp,
         SortedDictionary<CurrencyCode, decimal> targetCapital,
         SortedDictionary<DateOnly, SortedDictionary<string, MarketData>> historicalMarketData,
         SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
@@ -91,23 +95,45 @@ public sealed class RebalancingBuyAndHoldStrategy : IStrategy
         Guard.AgainstEmptyOrNullDictionary(() => historicalMarketData);
         Guard.AgainstEmptyOrNullDictionary(() => historicalFxConversionRates);
 
-        var currentRebalancingDate = historicalMarketData.First().Key;
+        // Initialize the last rebalancing date if it's not set
+        if (_lastRebalancingDate == null)
+        {
+            _lastRebalancingDate = historicalMarketData.First().Key;
+        }
 
-        while (currentRebalancingDate <= historicalMarketData.Last().Key)
+        // Check if the provided timestamp is a rebalancing date
+        if (IsRebalancingDate(timestamp))
         {
             // Check if it's time to rebalance
-            if (IsRebalanceRequired(currentRebalancingDate, historicalMarketData, targetCapital))
+            if (IsRebalanceRequired(timestamp, historicalMarketData, targetCapital))
             {
                 foreach (var asset in Assets.Keys)
                 {
                     // Generate rebalance signals
-                    yield return new SignalEvent(currentRebalancingDate, Name, asset, SignalType.Long);
+                    yield return new SignalEvent(timestamp, Name, asset, SignalType.Long);
                 }
             }
 
-            // Move to the next rebalancing date
-            currentRebalancingDate = GetNextRebalancingDate(currentRebalancingDate);
+            // Update the last rebalancing date
+            _lastRebalancingDate = timestamp;
         }
+    }
+
+    /// <summary>
+    /// Determines if the provided timestamp is a rebalancing date based on the last rebalancing date and the rebalancing frequency.
+    /// </summary>
+    /// <param name="timestamp">The date to check if it's a rebalancing date.</param>
+    /// <returns>True if the provided timestamp is a rebalancing date, otherwise false.</returns>
+    private bool IsRebalancingDate(DateOnly timestamp)
+    {
+        if (_lastRebalancingDate == null)
+        {
+            return false;
+        }
+
+        var nextRebalancingDate = GetNextRebalancingDate(_lastRebalancingDate.Value);
+
+        return timestamp >= nextRebalancingDate;
     }
 
     private bool IsRebalanceRequired(

@@ -174,6 +174,7 @@ public sealed class Portfolio
 
             // Generate signals for the current strategy
             var signals = strategy.GenerateSignals(
+                marketEvent.Timestamp,
                 strategy.TargetCapital,
                 _historicalMarketData,
                 _historicalFxConversionRates);

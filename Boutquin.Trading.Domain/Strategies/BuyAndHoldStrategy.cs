@@ -65,14 +65,17 @@ public sealed class BuyAndHoldStrategy : IStrategy
     }
 
     /// <summary>
-    /// Generates signals for the buy and hold strategy.
+    /// Generates signals for the buy and hold strategy based on the given timestamp.
     /// </summary>
+    /// <param name="timestamp">The date for which the signals need to be generated.</param>
     /// <param name="targetCapital">The target capital allocated to the asset.</param>
     /// <param name="historicalMarketData">The historical market data for the assets.</param>
     /// <param name="historicalFxConversionRates">The historical foreign exchange conversion rates.</param>
     /// <returns>An IEnumerable of SignalEvent instances.</returns>
     /// <exception cref="EmptyOrNullDictionaryException">Thrown when targetCapital, historicalMarketData, or historicalFxConversionRates is empty or null.</exception>
+    /// <exception cref="ArgumentException">Thrown when the provided timestamp is not found in historicalMarketData.</exception>
     public IEnumerable<SignalEvent> GenerateSignals(
+        DateOnly timestamp,
         SortedDictionary<CurrencyCode, decimal> targetCapital,
         SortedDictionary<DateOnly, SortedDictionary<string, MarketData>> historicalMarketData,
         SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
@@ -82,17 +85,22 @@ public sealed class BuyAndHoldStrategy : IStrategy
         Guard.AgainstEmptyOrNullDictionary(() => historicalMarketData);
         Guard.AgainstEmptyOrNullDictionary(() => historicalFxConversionRates);
 
+        // Check if the timestamp exists in historicalMarketData
+        if (!historicalMarketData.ContainsKey(timestamp))
+        {
+            throw new ArgumentException($"The provided timestamp {timestamp} is not found in historicalMarketData.");
+        }
+
         // Buy and hold strategy only generates buy signals at the beginning of the investment period
         if (Positions.Count != 0)
         {
             yield break;
         }
 
-        var firstDate = historicalMarketData.First().Key;
-
+        // Generate buy signals for the given timestamp
         foreach (var asset in Assets.Keys)
         {
-            yield return new SignalEvent(firstDate, Name, asset, SignalType.Long);
+            yield return new SignalEvent(timestamp, Name, asset, SignalType.Long);
         }
     }
 }
