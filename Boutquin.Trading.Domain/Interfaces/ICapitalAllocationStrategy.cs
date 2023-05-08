@@ -31,16 +31,16 @@ public interface ICapitalAllocationStrategy
     /// foreign exchange conversion rates.
     /// </summary>
     /// <param name="strategies">An ImmutableList of IStrategy objects representing the trading strategies to allocate capital to.</param>
-    /// <param name="historicalMarketData">A sorted dictionary containing historical market data for multiple assets.</param>
-    /// <param name="historicalFxConversionRates">A sorted dictionary containing historical foreign exchange conversion rates for each currency.</param>
+    /// <param name="historicalMarketData">A read-only dictionary containing historical market data for multiple assets.</param>
+    /// <param name="historicalFxConversionRates">A read-only dictionary containing historical foreign exchange conversion rates for each currency.</param>
     /// <returns>A sorted dictionary containing the allocated capital for each strategy, with the strategy's name as the key and a SortedDictionary&lt;CurrencyCode, decimal&gt; representing the allocated capital in each currency as the value.</returns>
     /// <remarks>
     /// The AllocateCapital method should be implemented by the capital allocation strategy to distribute capital among the strategies
     /// based on their performance or other criteria. The method should take into account historical market data and foreign exchange
     /// conversion rates to ensure that the allocated capital is appropriate for each strategy.
     /// </remarks>
-    SortedDictionary<string, SortedDictionary<CurrencyCode, decimal>> AllocateCapital(
+    IReadOnlyDictionary<string, SortedDictionary<CurrencyCode, decimal>> AllocateCapital(
         ImmutableList<IStrategy> strategies,
-        SortedDictionary<DateOnly, SortedDictionary<string, MarketData>> historicalMarketData,
-        SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates);
+        IReadOnlyDictionary<DateOnly, SortedDictionary<string, MarketData>> historicalMarketData,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates);
 }

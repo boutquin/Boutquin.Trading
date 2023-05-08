@@ -23,84 +23,93 @@ using Events;
 using Interfaces;
 
 /// <summary>
-/// A buy and hold strategy implementation that buys the specified assets at the
-/// beginning of the investment period and holds them indefinitely.
+/// Represents a simple buy and hold strategy that generates buy signals on the initial timestamp and holds the positions throughout.
 /// </summary>
 public sealed class BuyAndHoldStrategy : IStrategy
 {
-    public string Name { get; }
-    public SortedDictionary<string, int> Positions { get; } = new SortedDictionary<string, int>();
-    public SortedDictionary<string, CurrencyCode> Assets { get; }
-    public SortedDictionary<CurrencyCode, decimal> TargetCapital { get; set; }
-    public SortedDictionary<CurrencyCode, decimal> Cash { get; } = new SortedDictionary<CurrencyCode, decimal>();
-    public SortedDictionary<string, SortedDictionary<DateOnly, decimal>> DailyNativeReturns { get; } = new SortedDictionary<string, SortedDictionary<DateOnly, decimal>>();
-    public IOrderPriceCalculationStrategy OrderPriceCalculationStrategy { get; }
-    public IPositionSizer PositionSizer { get; }
-
     /// <summary>
-    /// Initializes a new instance of the BuyAndHoldStrategy class.
+    /// Initializes a new instance of the <see cref="BuyAndHoldStrategy"/> class with the provided parameters.
     /// </summary>
     /// <param name="name">The name of the strategy.</param>
-    /// <param name="assets">A list of assets to buy and hold.</param>
-    /// <param name="orderPriceCalculationStrategy">The order price calculation strategy to use.</param>
-    /// <param name="positionSizer">The position sizer to use for calculating position sizes.</param>
-    /// <exception cref="ArgumentNullException">Thrown when the name, assets, orderPriceCalculationStrategy, or positionSizer is null.</exception>
-    /// <exception cref="EmptyOrNullDictionaryException">Thrown when the assets dictionary is empty or null.</exception>
+    /// <param name="assets">A dictionary of assets and their corresponding currency codes.</param>
+    /// <param name="cash">A sorted dictionary of cash amounts per currency code.</param>
+    /// <param name="initialTimestamp">The initial timestamp when the strategy starts.</param>
+    /// <param name="orderPriceCalculationStrategy">An instance of IOrderPriceCalculationStrategy to calculate order prices.</param>
+    /// <param name="positionSizer">An instance of IPositionSizer to compute position sizes.</param>
+    /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the baseCurrency is not defined.</exception>
+    /// <exception cref="EmptyOrNullDictionaryException">Thrown when assets or cash dictionaries are empty or null.</exception>
     public BuyAndHoldStrategy(
         string name,
-        SortedDictionary<string, CurrencyCode> assets,
+        IReadOnlyDictionary<string, CurrencyCode> assets,
+        SortedDictionary<CurrencyCode, decimal> cash,
+        DateOnly initialTimestamp,
         IOrderPriceCalculationStrategy orderPriceCalculationStrategy,
         IPositionSizer positionSizer)
     {
         // Validate parameters
         Guard.AgainstNull(() => name);
-        Guard.AgainstEmptyOrNullCollection(() => assets);
+        Guard.AgainstEmptyOrNullReadOnlyDictionary(() => assets);
+        Guard.AgainstEmptyOrNullDictionary(() => cash);
         Guard.AgainstNull(() => orderPriceCalculationStrategy);
         Guard.AgainstNull(() => positionSizer);
 
         Name = name;
         Assets = assets;
+        Cash = cash;
+        InitialTimestamp = initialTimestamp;
         OrderPriceCalculationStrategy = orderPriceCalculationStrategy;
         PositionSizer = positionSizer;
+        Positions = new SortedDictionary<string, int>();
+        DailyNativeReturns = new SortedDictionary<string, SortedDictionary<DateOnly, decimal>>();
     }
 
+    public string Name { get; }
+    public SortedDictionary<string, int> Positions { get; }
+    public IReadOnlyDictionary<string, CurrencyCode> Assets { get; }
+    public SortedDictionary<CurrencyCode, decimal> Cash { get; }
+    public SortedDictionary<string, SortedDictionary<DateOnly, decimal>> DailyNativeReturns { get; }
+    public IOrderPriceCalculationStrategy OrderPriceCalculationStrategy { get; }
+    public IPositionSizer PositionSizer { get; }
+
+    private DateOnly InitialTimestamp { get; }
+
     /// <summary>
-    /// Generates signals for the buy and hold strategy based on the given timestamp.
+    /// Generates buy signals for all assets on the initial timestamp, and no-op signals afterwards.
     /// </summary>
-    /// <param name="timestamp">The date for which the signals need to be generated.</param>
-    /// <param name="targetCapital">The target capital allocated to the asset.</param>
-    /// <param name="historicalMarketData">The historical market data for the assets.</param>
+    /// <param name="timestamp">The timestamp for which to generate signals.</param>
+    /// <param name="historicalMarketData">The historical market data.</param>
+    /// <param name="baseCurrency">The base currency used for converting asset values.</param>
     /// <param name="historicalFxConversionRates">The historical foreign exchange conversion rates.</param>
-    /// <returns>An IEnumerable of SignalEvent instances.</returns>
-    /// <exception cref="EmptyOrNullDictionaryException">Thrown when targetCapital, historicalMarketData, or historicalFxConversionRates is empty or null.</exception>
-    /// <exception cref="ArgumentException">Thrown when the provided timestamp is not found in historicalMarketData.</exception>
-    public IEnumerable<SignalEvent> GenerateSignals(
+    /// <returns>A SignalEvent containing the generated signals.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the baseCurrency is not defined.</exception>
+    /// <exception cref="EmptyOrNullDictionaryException">Thrown when historicalMarketData or historicalFxConversionRates dictionaries are empty or null.</exception>
+    public SignalEvent GenerateSignals(
         DateOnly timestamp,
-        SortedDictionary<CurrencyCode, decimal> targetCapital,
-        SortedDictionary<DateOnly, SortedDictionary<string, MarketData>> historicalMarketData,
-        SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
+        IReadOnlyDictionary<DateOnly, SortedDictionary<string, MarketData>> historicalMarketData,
+        CurrencyCode baseCurrency,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
     {
         // Validate parameters
-        Guard.AgainstEmptyOrNullDictionary(() => targetCapital);
-        Guard.AgainstEmptyOrNullDictionary(() => historicalMarketData);
-        Guard.AgainstEmptyOrNullDictionary(() => historicalFxConversionRates);
+        Guard.AgainstUndefinedEnumValue(() => baseCurrency);
+        Guard.AgainstEmptyOrNullReadOnlyDictionary(() => historicalMarketData);
+        Guard.AgainstEmptyOrNullReadOnlyDictionary(() => historicalFxConversionRates);
 
-        // Check if the timestamp exists in historicalMarketData
-        if (!historicalMarketData.ContainsKey(timestamp))
+        // Create a new SignalEvent instance for the given timestamp
+        var signalEvents = new SortedDictionary<string, SignalType>();
+
+        // Check if it's the initial timestamp
+        if (timestamp != InitialTimestamp)
         {
-            throw new ArgumentException($"The provided timestamp {timestamp} is not found in historicalMarketData.");
+            return new SignalEvent(timestamp, Name, signalEvents);
         }
 
-        // Buy and hold strategy only generates buy signals at the beginning of the investment period
-        if (Positions.Count != 0)
-        {
-            yield break;
-        }
-
-        // Generate buy signals for the given timestamp
+        // If it's the initial timestamp, generate buy signals for all assets
         foreach (var asset in Assets.Keys)
         {
-            yield return new SignalEvent(timestamp, Name, asset, SignalType.Long);
+            signalEvents.Add(asset, SignalType.Long);
         }
+
+        return new SignalEvent(timestamp, Name, signalEvents);
     }
 }

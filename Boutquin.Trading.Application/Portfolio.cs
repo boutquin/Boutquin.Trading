@@ -26,11 +26,11 @@ using System.Collections.Immutable;
 
 public sealed class Portfolio
 {
-    private readonly SortedDictionary<string, IStrategy> _strategies; // StrategyName-> Strategy
+    private readonly IReadOnlyDictionary<string, IStrategy> _strategies; // StrategyName-> Strategy
     private readonly ICapitalAllocationStrategy _capitalAllocationStrategy;
     private readonly IBrokerage _broker;
     private readonly CurrencyCode _baseCurrency;
-    private readonly SortedDictionary<string, CurrencyCode> _assetCurrencies;
+    private readonly IReadOnlyDictionary<string, CurrencyCode> _assetCurrencies;
     private readonly SortedDictionary<DateOnly, SortedDictionary<string, MarketData>> _historicalMarketData;
     private readonly SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> _historicalFxConversionRates;
     private string _currentExecutingStrategyName;
@@ -53,20 +53,20 @@ public sealed class Portfolio
     /// base currency, asset currencies, historical market data, and historical foreign exchange conversion rates.
     /// </remarks>
     public Portfolio(
-        SortedDictionary<string, IStrategy> strategies,
+        IReadOnlyDictionary<string, IStrategy> strategies,
         ICapitalAllocationStrategy capitalAllocationStrategy,
         IBrokerage broker,
         CurrencyCode baseCurrency,
-        SortedDictionary<string, CurrencyCode> assetCurrencies,
+        IReadOnlyDictionary<string, CurrencyCode> assetCurrencies,
         SortedDictionary<DateOnly, SortedDictionary<string, MarketData>> historicalMarketData,
         SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
     {
         // Validate parameters
-        Guard.AgainstEmptyOrNullDictionary(() => strategies); // Throws EmptyOrNullDictionaryException
+        Guard.AgainstEmptyOrNullReadOnlyDictionary(() => strategies); // Throws EmptyOrNullDictionaryException
         Guard.AgainstNull(() => capitalAllocationStrategy); // Throws ArgumentNullException
         Guard.AgainstNull(() => broker); // Throws ArgumentNullException
         Guard.AgainstUndefinedEnumValue(() => baseCurrency); // Throws ArgumentOutOfRangeException
-        Guard.AgainstEmptyOrNullDictionary(() => assetCurrencies); // Throws EmptyOrNullDictionaryException
+        Guard.AgainstEmptyOrNullReadOnlyDictionary(() => assetCurrencies); // Throws EmptyOrNullDictionaryException
         Guard.AgainstEmptyOrNullDictionary(() => historicalMarketData); // Throws EmptyOrNullDictionaryException
         Guard.AgainstEmptyOrNullDictionary(() => historicalFxConversionRates); // Throws EmptyOrNullDictionaryException
 
@@ -143,10 +143,8 @@ public sealed class Portfolio
         }
 
         // Detect and handle split events
-        foreach (var assetMarketData in marketEvent.HistoricalMarketData)
+        foreach (var (asset, marketData) in marketEvent.HistoricalMarketData)
         {
-            var asset = assetMarketData.Key;
-            var marketData = assetMarketData.Value;
             if (marketData.SplitCoefficient != 1)
             {
                 var splitEvent = new SplitEvent(marketEvent.Timestamp, asset, marketData.SplitCoefficient);
@@ -166,24 +164,15 @@ public sealed class Portfolio
             _currentExecutingStrategyName = strategyPair.Key;
             var strategy = strategyPair.Value;
 
-            // Update parameters for the position sizer with the current strategy
-            strategy.PositionSizer.UpdateParameters(strategy);
-
-            // Store the target capital for the current strategy
-            strategy.TargetCapital = targetCapital[_currentExecutingStrategyName];
-
             // Generate signals for the current strategy
             var signals = strategy.GenerateSignals(
                 marketEvent.Timestamp,
-                strategy.TargetCapital,
                 _historicalMarketData,
+                _baseCurrency,
                 _historicalFxConversionRates);
 
-            // Process each signal
-            foreach (var signal in signals)
-            {
-                await HandleSignalEventAsync(signal);
-            }
+            // Process the signal
+            await HandleSignalEventAsync(signals);
         }
 
         // Reset the current executing strategy name to null
@@ -191,59 +180,77 @@ public sealed class Portfolio
     }
 
     /// <summary>
-    /// Handles the SignalEvent by generating an OrderEvent based on the signal type, position size, and order prices.
+    /// Handles the processing of a SignalEvent asynchronously, which includes computing position sizes based on
+    /// the signal event, generating order events, and passing them to the HandleEventAsync method for further
+    /// processing.
     /// </summary>
-    /// <param name="signalEvent">The SignalEvent to handle.</param>
+    /// <param name="signalEvent">The signal event to process.</param>
     /// <returns>A Task representing the asynchronous operation.</returns>
-    /// <remarks>
-    /// This method uses the IPositionSizer and IOrderPriceCalculationStrategy instances associated with the strategy
-    /// to determine the position size and order prices for the given signal. It then generates an OrderEvent and
-    /// passes it to the HandleEventAsync method for further processing.
-    /// </remarks>
+    /// <exception cref="ArgumentNullException">Thrown when the signalEvent parameter is null.</exception>
     private async Task HandleSignalEventAsync(SignalEvent signalEvent)
     {
         // Ensure that the signalEvent is not null.
-        Guard.AgainstNull(() => signalEvent); // Throws ArgumentNullException when the signalEvent parameter is null
-
-        // Get the corresponding strategy.
-        var strategy = _strategies[signalEvent.StrategyName];
-
-        // Calculate the position size based on the signal type.
-        var positionSize = strategy.PositionSizer.GetPositionSize(
-            signalEvent.Timestamp, 
-            signalEvent.Asset, 
-            signalEvent.SignalType,
-            strategy.TargetCapital[_assetCurrencies[signalEvent.Asset]]);
-
-        // Calculate order prices using the strategy's order price calculation strategy.
-        var (orderType, primaryPrice, secondaryPrice) = strategy.OrderPriceCalculationStrategy.CalculateOrderPrices(
-            signalEvent.Asset, 
-            signalEvent.Timestamp, 
-            _historicalMarketData);
-
-        // Determine the trade action based on the signal type.
-        var tradeAction = signalEvent.SignalType switch
+        if (signalEvent == null)
         {
-            SignalType.Long => TradeAction.Buy,
-            SignalType.Short => TradeAction.Sell,
-            SignalType.Exit => TradeAction.Sell,
-            _ => throw new NotSupportedException($"Unsupported signal type: {signalEvent.SignalType}")
-        };
+            throw new ArgumentNullException(nameof(signalEvent));
+        }
 
-        // Create an OrderEvent based on the SignalEvent.
-        var orderEvent = new OrderEvent(
+        // Get the strategy associated with the SignalEvent.
+        if (!_strategies.TryGetValue(signalEvent.StrategyName, out var strategy))
+        {
+            throw new ArgumentException($"Strategy '{signalEvent.StrategyName}' not found in the portfolio.");
+        }
+
+        // Compute the position sizes for the assets based on the signals.
+        var positionSizes = strategy.PositionSizer.ComputePositionSizes(
             signalEvent.Timestamp,
-            signalEvent.StrategyName,
-            signalEvent.Asset,
-            tradeAction,
-            orderType,
-            positionSize,
-            primaryPrice,
-            secondaryPrice
-        );
+            signalEvent.Signals,
+            strategy,
+            _historicalMarketData,
+            _historicalFxConversionRates);
 
-        // Pass the OrderEvent to the HandleEventAsync method for further processing.
-        await HandleEventAsync(orderEvent);
+        // Iterate through the assets and generate OrderEvents for each asset.
+        foreach (var asset in signalEvent.Signals.Keys)
+        {
+            // Get the desired position size for the current asset.
+            var desiredPositionSize = positionSizes[asset];
+
+            // Get the current position size for the current asset.
+            var currentPositionSize = strategy.Positions.ContainsKey(asset) ? strategy.Positions[asset] : 0;
+
+            // Calculate the order size based on the difference between the desired position size and the current position size.
+            var orderSize = desiredPositionSize - currentPositionSize;
+
+            // If the order size is zero, no order needs to be placed.
+            if (orderSize == 0)
+            {
+                continue;
+            }
+
+            // Determine the trade action based on the order size.
+            var tradeAction = orderSize > 0 ? TradeAction.Buy : TradeAction.Sell;
+
+            // Calculate the order prices for the current asset.
+            var (orderType, primaryPrice, secondaryPrice) = strategy.OrderPriceCalculationStrategy.CalculateOrderPrices(
+                signalEvent.Timestamp,
+                asset,
+                tradeAction,
+                _historicalMarketData);
+
+            // Create an OrderEvent for the current asset.
+            var orderEvent = new OrderEvent(
+                signalEvent.Timestamp,
+                signalEvent.StrategyName,
+                asset,
+                tradeAction,
+                orderType,
+                Math.Abs(orderSize),
+                primaryPrice,
+                secondaryPrice);
+
+            // Pass the OrderEvent to the HandleEventAsync method for further processing.
+            await HandleEventAsync(orderEvent);
+        }
     }
 
     /// <summary>

@@ -43,11 +43,11 @@ public static class EquityCurveExtensions
     /// var (drawdowns, maxDrawdown, maxDrawdownDuration) = equityCurve.DrawdownAnalysis();
     /// </code>
     /// </example>
-    public static (SortedDictionary<DateOnly, decimal> Drawdowns, decimal MaxDrawdown, int MaxDrawdownDuration) CalculateDrawdownsAndMaxDrawdownInfo(
-        this SortedDictionary<DateOnly, decimal> equityCurve)
+    public static (SortedDictionary<DateOnly, decimal> Drawdowns, decimal MaxDrawdown, int MaxDrawdownDuration) 
+        CalculateDrawdownsAndMaxDrawdownInfo(this IReadOnlyDictionary<DateOnly, decimal> equityCurve)
     {
         // Ensure the equity curve dictionary is not null or empty
-        Guard.AgainstEmptyOrNullDictionary(() => equityCurve);
+        Guard.AgainstEmptyOrNullReadOnlyDictionary(() => equityCurve);
         // Check if there is enough data for sample calculation
         Guard.Against(equityCurve.Count == 1)
             .With<InsufficientDataException>(ExceptionMessages.InsufficientDataForSampleCalculation);

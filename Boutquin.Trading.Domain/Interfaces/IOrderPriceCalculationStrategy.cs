@@ -19,8 +19,7 @@ using Data;
 using Enums;
 
 /// <summary>
-/// IOrderPriceCalculationStrategy is an interface used to define a strategy for calculating
-/// order prices and types for placing orders with the brokerage.
+/// Defines an interface for calculating order prices based on historical market data, given an asset and a trade action.
 /// </summary>
 /// <remarks>
 /// The purpose of this interface is to allow different implementations of order price
@@ -32,22 +31,16 @@ using Enums;
 public interface IOrderPriceCalculationStrategy
 {
     /// <summary>
-    /// Calculates the order type, primary price, and secondary price (if applicable) for placing an order
-    /// based on the asset, timestamp, and full historical market data.
+    /// Calculates the order prices (primary and secondary) and the order type for a given asset, trade action, and historical market data.
     /// </summary>
-    /// <param name="asset">The asset for which the order prices and type are to be calculated.</param>
-    /// <param name="timestamp">The timestamp at which the order prices and type are to be calculated.</param>
-    /// <param name="historicalData">The full historical market data for the asset, used to determine the order prices and type.</param>
-    /// <returns>A tuple containing the OrderType, primary price, and secondary price (if applicable).</returns>
-    /// <remarks>
-    /// The primary price can be used for limit and stop orders, while the secondary price
-    /// is used for stop-limit orders. For market orders, the primary and secondary prices
-    /// can be null. The full historical market data can be used for calculations such as
-    /// moving averages or other price-based indicators.
-    /// </remarks>
+    /// <param name="timestamp">The timestamp at which the order prices are to be calculated.</param>
+    /// <param name="asset">The asset for which the order prices are to be calculated, represented as a string.</param>
+    /// <param name="tradeAction">The trade action (buy or sell) for which the order prices are to be calculated.</param>
+    /// <param name="historicalData">The historical market data, organized as a dictionary with timestamps as keys and dictionaries of asset market data as values.</param>
+    /// <returns>A tuple containing the order type, primary price, and secondary price for the calculated order.</returns>
     (OrderType OrderType, decimal PrimaryPrice, decimal SecondaryPrice) CalculateOrderPrices(
-        string asset,
         DateOnly timestamp,
-        SortedDictionary<DateOnly, SortedDictionary<string, MarketData>> historicalData);
+        string asset,
+        TradeAction tradeAction,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<string, MarketData>> historicalData);
 }
-
