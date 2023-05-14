@@ -12,7 +12,6 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-
 namespace Boutquin.Trading.Domain.Helpers;
 
 public static class MarketDataFileNameHelper
@@ -29,5 +28,16 @@ public static class MarketDataFileNameHelper
 
         // Or remove the caret symbol
         return ticker.Replace("^", "");
+    }
+
+    public static string GetCsvFileNameForFxRateData(string directory, string currencyPair)
+    {
+        return Path.Combine(directory, "daily_fx_" + SanitizeCurrencyPairForFileName(currencyPair) + ".csv");
+    }
+
+    private static string SanitizeCurrencyPairForFileName(string currencyPair)
+    {
+        // Replace the slash symbol with an underscore
+        return currencyPair.Replace("/", "_");
     }
 }

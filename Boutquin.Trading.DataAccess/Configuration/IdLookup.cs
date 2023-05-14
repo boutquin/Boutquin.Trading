@@ -67,10 +67,8 @@ public static class IdLookup
         {
             return exchangeId;
         }
-        else
-        {
-            throw new ArgumentException($"The given exchange code ({exchangeCode}) is not found in the lookup dictionary.");
-        }
+
+        throw new ArgumentException($"The given exchange code ({exchangeCode}) is not found in the lookup dictionary.");
     }
 
     /// <summary>
@@ -85,9 +83,7 @@ public static class IdLookup
         {
             return cityId;
         }
-        else
-        {
-            throw new ArgumentException($"The given city name ({cityName}) is not found in the lookup dictionary.");
-        }
+
+        throw new ArgumentException($"The given city name ({cityName}) is not found in the lookup dictionary.");
     }
 }

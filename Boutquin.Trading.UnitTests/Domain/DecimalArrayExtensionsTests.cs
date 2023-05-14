@@ -16,7 +16,7 @@
 using Boutquin.Domain.Exceptions;
 using Boutquin.Trading.Domain.Extensions;
 
-namespace Boutquin.Trading.UnitTests;
+namespace Boutquin.Trading.UnitTests.Domain;
 public sealed class DecimalArrayExtensionsTests
 {
     private const decimal Precision = 1e-12m;
@@ -30,7 +30,7 @@ public sealed class DecimalArrayExtensionsTests
     [Theory]
     [MemberData(nameof(DecimalArrayExtensionsTestData.VolatilityData), MemberType = typeof(DecimalArrayExtensionsTestData))]
     public void Volatility_ShouldReturnCorrectResult(
-        decimal[] dailyReturns, 
+        decimal[] dailyReturns,
         decimal expectedResult)
     {
         // Act
@@ -49,7 +49,7 @@ public sealed class DecimalArrayExtensionsTests
     [Theory]
     [MemberData(nameof(DecimalArrayExtensionsTestData.AnnualizedVolatilityData), MemberType = typeof(DecimalArrayExtensionsTestData))]
     public void AnnualizedVolatility_ShouldReturnCorrectResult(
-        decimal[] dailyReturns, 
+        decimal[] dailyReturns,
         decimal expectedResult)
     {
         // Act
@@ -90,8 +90,8 @@ public sealed class DecimalArrayExtensionsTests
     [Theory]
     [MemberData(nameof(DecimalArrayExtensionsTestData.SharpeRatioData), MemberType = typeof(DecimalArrayExtensionsTestData))]
     public void SharpeRatio_ShouldReturnCorrectResult(
-        decimal[] dailyReturns, 
-        decimal riskFreeRate, 
+        decimal[] dailyReturns,
+        decimal riskFreeRate,
         decimal expectedResult)
     {
         // Act
@@ -111,8 +111,8 @@ public sealed class DecimalArrayExtensionsTests
     [Theory]
     [MemberData(nameof(DecimalArrayExtensionsTestData.AnnualizedSharpeRatioData), MemberType = typeof(DecimalArrayExtensionsTestData))]
     public void AnnualizedSharpeRatio_ShouldReturnCorrectResult(
-        decimal[] dailyReturns, 
-        decimal riskFreeRate, 
+        decimal[] dailyReturns,
+        decimal riskFreeRate,
         decimal expectedResult)
     {
         // Act
@@ -132,8 +132,8 @@ public sealed class DecimalArrayExtensionsTests
     [Theory]
     [MemberData(nameof(DecimalArrayExtensionsTestData.SortinoRatioData), MemberType = typeof(DecimalArrayExtensionsTestData))]
     public void SortinoRatio_ShouldReturnCorrectResult(
-        decimal[] dailyReturns, 
-        decimal riskFreeRate, 
+        decimal[] dailyReturns,
+        decimal riskFreeRate,
         decimal expectedResult)
     {
         // Act
@@ -154,9 +154,9 @@ public sealed class DecimalArrayExtensionsTests
     [Theory]
     [MemberData(nameof(DecimalArrayExtensionsTestData.AnnualizedSortinoRatioData), MemberType = typeof(DecimalArrayExtensionsTestData))]
     public void AnnualizedSortinoRatio_ShouldReturnCorrectResult(
-        decimal[] dailyReturns, 
-        decimal riskFreeRate, 
-        int tradingDaysPerYear, 
+        decimal[] dailyReturns,
+        decimal riskFreeRate,
+        int tradingDaysPerYear,
         decimal expectedResult)
     {
         // Act
@@ -195,8 +195,8 @@ public sealed class DecimalArrayExtensionsTests
     [Theory]
     [MemberData(nameof(DecimalArrayExtensionsTestData.DownsideDeviationData), MemberType = typeof(DecimalArrayExtensionsTestData))]
     public void DownsideDeviation_ShouldReturnCorrectResult(
-        decimal[] dailyReturns, 
-        decimal riskFreeRate, 
+        decimal[] dailyReturns,
+        decimal riskFreeRate,
         decimal expectedResult)
     {
         // Act
@@ -239,8 +239,8 @@ public sealed class DecimalArrayExtensionsTests
     [Theory]
     [MemberData(nameof(DecimalArrayExtensionsTestData.EquityCurveData), MemberType = typeof(DecimalArrayExtensionsTestData))]
     public void EquityCurve_ShouldReturnCorrectResult(
-        decimal[] dailyReturns, 
-        decimal initialInvestment, 
+        decimal[] dailyReturns,
+        decimal initialInvestment,
         decimal[] expectedEquityCurve)
     {
         // Act

@@ -13,9 +13,9 @@
 //  limitations under the License.
 //
 
-namespace Boutquin.Trading.Domain.Interfaces;
+using Boutquin.Trading.Domain.Exceptions;
 
-using Exceptions;
+namespace Boutquin.Trading.Domain.Interfaces;
 
 /// <summary>
 /// Represents an interface for reading symbols from a data source.

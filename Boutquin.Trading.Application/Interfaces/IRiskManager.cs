@@ -13,8 +13,6 @@
 //  limitations under the License.
 //
 
-using Boutquin.Trading.Domain.Interfaces;
-
 namespace Boutquin.Trading.Application.Interfaces;
 
 /// <summary>
@@ -71,4 +69,3 @@ public interface IRiskManager
     /// </example>
     void AdjustCapitalAllocation(Portfolio portfolio, IStrategy strategy);
 }
-

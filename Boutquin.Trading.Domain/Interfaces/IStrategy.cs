@@ -12,12 +12,13 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-namespace Boutquin.Trading.Domain.Interfaces;
 
 using Boutquin.Domain.Helpers;
-using Data;
-using Enums;
-using Events;
+using Boutquin.Trading.Domain.Data;
+using Boutquin.Trading.Domain.Enums;
+using Boutquin.Trading.Domain.Events;
+
+namespace Boutquin.Trading.Domain.Interfaces;
 
 /// <summary>
 /// The IStrategy interface defines the structure and behavior of a trading

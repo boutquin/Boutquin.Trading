@@ -13,16 +13,12 @@
 //  limitations under the License.
 //
 
+using System.Collections.Immutable;
 using Boutquin.Domain.Exceptions;
+using Boutquin.Domain.Helpers;
+using Boutquin.Trading.Domain.Data;
 
 namespace Boutquin.Trading.Application;
-
-using Boutquin.Domain.Helpers;
-using Domain.Data;
-using Domain.Enums;
-using Domain.Events;
-using Boutquin.Trading.Domain.Interfaces;
-using System.Collections.Immutable;
 
 public sealed class Portfolio
 {
@@ -80,6 +76,11 @@ public sealed class Portfolio
     }
 
     public SortedDictionary<DateOnly, decimal> EquityCurve { get; } = new();
+
+    /// <summary>
+    /// Retrieves the list of trading strategies in the portfolio.
+    /// </summary>
+    public IReadOnlyList<IStrategy> Strategies => _strategies.Values.ToImmutableList();
 
     public async Task HandleEventAsync(IEvent eventObj)
     {
@@ -290,13 +291,9 @@ public sealed class Portfolio
             // The order was successfully submitted.
             // Additional actions can be performed here, such as logging the order submission.
         }
-        else
-        {
-            // The order submission failed.
-            // Handle the failure as appropriate, such as logging the failure or raising an event.
-        }
 
-        return;
+        // The order submission failed.
+        // Handle the failure as appropriate, such as logging the failure or raising an event.
     }
 
     /// <summary>

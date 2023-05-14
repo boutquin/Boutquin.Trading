@@ -12,20 +12,21 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-
 namespace Boutquin.Trading.Data.AlphaVantage;
 
-using System.Net.Http;
-using System;
+using System.Net;
 using System.Text.Json;
 
 using Microsoft.Extensions.Caching.Distributed;
 
 using Boutquin.Domain.Converters;
-using Domain.Data;
+using Boutquin.Domain.Helpers;
+
+using Boutquin.Trading.Domain.Data;
+
 using Domain.Exceptions;
-using System.Net;
 using Domain.Interfaces;
+using Boutquin.Trading.Domain.Enums;
 
 /// <summary>
 /// A class for fetching market data from the Alpha Vantage API, with caching and rate limiting support.
@@ -103,7 +104,7 @@ public sealed class AlphaVantageFetcher : IMarketDataFetcher
     public async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<string, MarketData>>> FetchMarketDataAsync(IEnumerable<string> assets)
     {
         // Validate the input assets list
-        ValidateAssets(assets);
+        Guard.AgainstEmptyOrNullEnumerable(() => assets);
 
         // Configure the JsonSerializerOptions with custom converter for DateOnly and DateOnlyDictionary
         var options = new JsonSerializerOptions();
@@ -172,15 +173,107 @@ public sealed class AlphaVantageFetcher : IMarketDataFetcher
     }
 
     /// <summary>
-    /// Validates the provided assets list, ensuring it is not null and contains at least one asset symbol.
+    /// Fetches historical foreign exchange rates for the specified currency pairs from the Alpha Vantage API, returning an IAsyncEnumerable of data points as a KeyValuePair with DateOnly as keys and SortedDictionary with currency pair symbols as keys and decimal exchange rates as values.
     /// </summary>
-    /// <param name="assets">The list of asset symbols to validate.</param>
-    /// <exception cref="ArgumentException">Thrown when the assets list is null or empty.</exception>
-    private static void ValidateAssets(IEnumerable<string> assets)
+    /// <param name="currencyPairs">A list of currency pair symbols to fetch historical foreign exchange rates for.</param>
+    /// <returns>An IAsyncEnumerable of KeyValuePair with DateOnly as keys and SortedDictionary with currency pair symbols as keys and decimal exchange rates as values.</returns>
+    /// <exception cref="FxDataRetrievalException">Thrown when an error occurs during the foreign exchange data retrieval process.</exception>
+    /// <example>
+    /// <code>
+    /// var currencyPairs = new List&lt;string&gt; { "USD/EUR", "USD/GBP" };
+    /// var fetcher = new AlphaVantageFetcher(apiKey, cache);
+    /// 
+    /// await foreach (var dataPoint in fetcher.FetchFxRatesAsync(currencyPairs))
+    /// {
+    ///     DateOnly date = dataPoint.Key;
+    ///     SortedDictionary&lt;string, decimal&gt; fxRates = dataPoint.Value;
+    /// 
+    ///     Console.WriteLine($"Date: {date}");
+    ///     foreach (var pairRate in fxRates)
+    ///     {
+    ///         string pair = pairRate.Key;
+    ///         decimal rate = pairRate.Value;
+    /// 
+    ///         Console.WriteLine($"{pair} - Rate: {rate}");
+    ///     }
+    /// }
+    /// </code>
+    /// </example>
+    public async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<CurrencyCode, decimal>>> FetchFxRatesAsync(IEnumerable<string> currencyPairs)
     {
-        if (assets == null || !assets.Any())
+        // Validate the input currency pairs list
+        Guard.AgainstEmptyOrNullEnumerable(() => currencyPairs);
+
+        // Configure the JsonSerializerOptions with custom converter for DateOnly and DateOnlyDictionary
+        var options = new JsonSerializerOptions();
+        options.Converters.Add(new DateOnlyConverter());
+        options.Converters.Add(new DateOnlyDictionaryConverterFactory());
+
+        // Retrieve the fx data from the cache for all currency pairs in parallel
+        var cacheKeys = currencyPairs.Select(pair => $"FxRates_{pair}").ToList();
+        var cachedDataList = await Task.WhenAll(cacheKeys.Select(key => _cache.GetStringAsync(key)));
+
+        // Iterate through each currency pair in the list
+        for (var i = 0; i < currencyPairs.Count(); i++)
         {
-            throw new ArgumentException("At least one asset symbol must be provided.", nameof(assets));
+            var pair = currencyPairs.ElementAt(i);
+            // Split the pair into base and quote currency codes
+            var splitPair = pair.Split('_');
+            if (splitPair.Length != 2 || !Enum.TryParse<CurrencyCode>(splitPair[1], out var quoteCurrencyCode))
+            {
+                throw new ArgumentException($"Invalid currency pair: {pair}", nameof(currencyPairs));
+            }
+
+            var cachedData = cachedDataList[i];
+
+            // If the data is present in the cache, deserialize and yield it
+            if (cachedData != null)
+            {
+                await foreach (var dataPoint in DeserializeAndYieldCachedFxRates(cachedData, pair, options))
+                {
+                    yield return new KeyValuePair<DateOnly, SortedDictionary<CurrencyCode, decimal>>(dataPoint.Key, new SortedDictionary<CurrencyCode, decimal> { { quoteCurrencyCode, dataPoint.Value.Values.First() } });
+                }
+            }
+            else
+            {
+                // If the data is not in the cache, prepare the API request URL
+                var requestUri = BuildFxRequestUri(pair);
+
+                // Make the API request with rate limiting
+                var response = await GetAsyncWithRateLimiting(requestUri);
+
+                // Ensure the request was successful
+                response.EnsureSuccessStatusCode();
+
+                // Read the response content as a string
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                // Parse the JSON response
+                using var jsonDocument = JsonDocument.Parse(responseContent);
+                var root = jsonDocument.RootElement;
+
+                // Check if the JSON response contains the required time series data
+                if (!root.TryGetProperty("Time Series FX (Daily)", out var timeSeries))
+                {
+                    throw new MarketDataRetrievalException("The Alpha Vantage API response did not contain the expected 'Time Series FX (Daily)' property.");
+                }
+
+                // Deserialize the time series data into a SortedDictionary with DateOnly keys and decimal values
+                var fxRates = JsonSerializer.Deserialize<SortedDictionary<DateOnly, decimal>>(timeSeries.GetRawText(), options);
+
+                // Convert SortedDictionary<DateOnly, decimal> to SortedDictionary<CurrencyCode, decimal>
+                var currencyCodeFxRates = new SortedDictionary<CurrencyCode, decimal>();
+                foreach (var rate in fxRates)
+                {
+                    currencyCodeFxRates.Add(quoteCurrencyCode, rate.Value);
+                }
+
+                // Store the fx data in the cache for future use
+                await _cache.SetStringAsync($"FxRates_{pair}", JsonSerializer.Serialize(currencyCodeFxRates, options));
+
+                // Yield the data
+                yield return new KeyValuePair<DateOnly, SortedDictionary<CurrencyCode, decimal>>(DateOnly.FromDateTime(DateTime.Today), currencyCodeFxRates);
+            }
         }
     }
 
@@ -192,6 +285,22 @@ public sealed class AlphaVantageFetcher : IMarketDataFetcher
     private string BuildRequestUri(string asset)
     {
         return $"{_apiEndpoint}?function=TIME_SERIES_DAILY_ADJUSTED&symbol={asset}&apikey={_apiKey}&outputsize=full&datatype=json";
+    }
+
+    /// <summary>
+    /// Constructs the request URL for fetching foreign exchange (FX) rates for a specific currency pair.
+    /// </summary>
+    /// <param name="pair">The currency pair.</param>
+    /// <returns>The request URL as a Uri object.</returns>
+    private string BuildFxRequestUri(string pair)
+    {
+        // Split the currency pair into base currency and quote currency
+        var currencies = pair.Split('/');
+        var baseCurrency = currencies[0];
+        var quoteCurrency = currencies[1];
+
+        // Construct the API endpoint
+        return $"{_apiEndpoint}?function=FX_DAILY&from_symbol={baseCurrency}&to_symbol={quoteCurrency}&apikey={_apiKey}";
     }
 
     /// <summary>
@@ -294,6 +403,26 @@ public sealed class AlphaVantageFetcher : IMarketDataFetcher
         catch (FormatException)
         {
             throw new MarketDataRetrievalException("Failed to parse market data from the JSON element: a property value has an invalid format.");
+        }
+    }
+
+    /// <summary>
+    /// Deserializes cached foreign exchange (FX) rates and yields them one by one.
+    /// </summary>
+    /// <param name="cachedData">The cached data as a string.</param>
+    /// <param name="pair">The currency pair.</param>
+    /// <param name="options">The JSON serializer options.</param>
+    /// <returns>An asynchronous stream of date-FX rates pairs.</returns>
+    private async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<string, decimal>>> DeserializeAndYieldCachedFxRates(string cachedData, string pair, JsonSerializerOptions options)
+    {
+        // Deserialize the cached data
+        var fxRates = JsonSerializer.Deserialize<SortedDictionary<DateOnly, decimal>>(cachedData, options);
+
+        // Yield the FX rates one by one
+        foreach (var rate in fxRates)
+        {
+            yield return new KeyValuePair<DateOnly, SortedDictionary<string, decimal>>(rate.Key, new SortedDictionary<string, decimal> { { pair, rate.Value } });
+            await Task.Yield(); // This will ensure the method behaves asynchronously
         }
     }
 

@@ -13,11 +13,10 @@
 //  limitations under the License.
 //
 
-namespace Boutquin.Trading.Domain.Entities;
-
-using System;
 using Boutquin.Domain.Helpers;
-using Enums;
+using Boutquin.Trading.Domain.Enums;
+
+namespace Boutquin.Trading.Domain.Entities;
 
 /// <summary>
 /// Represents an ISO 8601 Time Zone.

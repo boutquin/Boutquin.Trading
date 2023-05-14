@@ -12,12 +12,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-
 namespace Boutquin.Trading.Application;
-
-using Domain.Extensions;
-using Domain.Helpers;
-using Boutquin.Trading.Domain.Interfaces;
 
 /// <summary>
 /// Represents a BackTest of a trading portfolio with multiple assets, strategies, and events.
@@ -46,29 +41,89 @@ public sealed class BackTest
     private readonly IMarketDataFetcher _marketDataFetcher;
 
     /// <summary>
+    /// The base currency for the backtesting simulation.
+    /// </summary>
+    private readonly CurrencyCode _baseCurrency;
+
+    /// <summary>
     /// Initializes a new instance of the BackTest class with a trading portfolio, benchmark portfolio, and market data source.
     /// </summary>
     /// <param name="portfolio">A Portfolio object representing the trading portfolio.</param>
     /// <param name="benchmarkPortfolio">A Portfolio object representing the benchmark portfolio.</param>
     /// <param name="marketDataFetcher">An object implementing the IMarketDataFetcher interface, responsible for providing market data for the backtest.</param>
+    /// <param name="baseCurrency">A CurrencyCode enum value representing the base currency for the backtest.</param>
     /// <exception cref="ArgumentNullException">Thrown when any of the provided arguments are null.</exception>
-    public BackTest(Portfolio portfolio, Portfolio benchmarkPortfolio, IMarketDataFetcher marketDataFetcher)
+    public BackTest(Portfolio portfolio, Portfolio benchmarkPortfolio, IMarketDataFetcher marketDataFetcher, CurrencyCode baseCurrency)
     {
         _portfolio = portfolio ?? throw new ArgumentNullException(nameof(portfolio), "The provided portfolio cannot be null.");
         _benchmarkPortfolio = benchmarkPortfolio ?? throw new ArgumentNullException(nameof(benchmarkPortfolio), "The provided benchmark portfolio cannot be null.");
         _marketDataFetcher = marketDataFetcher ?? throw new ArgumentNullException(nameof(marketDataFetcher), "The provided market reader source cannot be null.");
+        _baseCurrency = baseCurrency;
     }
 
     /// <summary>
-    /// Runs the backtest simulation for the specified start and end dates.
+    /// Runs the backtest simulation asynchronously for the specified start and end dates.
     /// </summary>
-    /// <param name="startDate">A DateTime object representing the start date of the backtest simulation.</param>
-    /// <param name="endDate">A DateTime object representing the end date of the backtest simulation.</param>
-    /// <returns>A Tearsheet object containing various performance metrics for the backtested portfolio and benchmark portfolio.</returns>
+    /// <param name="startDate">A DateOnly object representing the start date of the backtest simulation.</param>
+    /// <param name="endDate">A DateOnly object representing the end date of the backtest simulation.</param>
+    /// <returns>A Task that represents the asynchronous operation. The task result contains a Tearsheet object containing various performance metrics for the backtested portfolio and benchmark portfolio.</returns>
     /// <exception cref="ArgumentException">Thrown when the provided start date is greater than or equal to the end date.</exception>
     public async Task<Tearsheet> RunAsync(DateOnly startDate, DateOnly endDate)
     {
-        // Calculate and analyze performance metrics
+        // Validate the start and end dates.
+        if (startDate >= endDate)
+        {
+            throw new ArgumentException("The start date must be earlier than the end date.");
+        }
+
+        // Fetch the historical market data for the backtest period for both the portfolio and the benchmark portfolio.
+        var symbols = _portfolio.Strategies.SelectMany(s => s.Assets.Keys)
+                      .Union(_benchmarkPortfolio.Strategies.SelectMany(s => s.Assets.Keys))
+                      .Distinct();
+
+        var marketDataTimeline = _marketDataFetcher.FetchMarketDataAsync(symbols);
+
+        // Get currency pairs by combining the base currency with the currencies of the assets in the portfolio strategies.
+        var currencyPairs = _portfolio.Strategies
+                                      .SelectMany(s => s.Assets.Values)
+                                      .Select(currencyCode => $"{_baseCurrency}_{currencyCode}")
+                                      .Distinct();
+
+        // Fetch the historical FX rates for the currency pairs.
+        var fxRatesTimeline = _marketDataFetcher.FetchFxRatesAsync(currencyPairs);
+
+        // Create a dictionary to hold the FX rates for each date.
+        var fxRatesForDate = new SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>();
+
+        // Fill the dictionary with FX rates for each date.
+        await foreach (var fxRatesOnDate in fxRatesTimeline)
+        {
+            fxRatesForDate[fxRatesOnDate.Key] = fxRatesOnDate.Value;
+        }
+
+        // Iterate through the market data timeline and handle each event.
+        await foreach (var marketData in marketDataTimeline)
+        {
+            // Get the FX rates for the current date.
+            var fxRates = fxRatesForDate.TryGetValue(marketData.Key, out var ratesForDate)
+                          ? ratesForDate
+                          : new SortedDictionary<CurrencyCode, decimal>(); // Use an empty dictionary if there are no rates for this date.
+
+            // Generate a MarketEvent for the current day's market data.
+            var marketEvent = new MarketEvent(
+                marketData.Key,
+                marketData.Value,
+                fxRates
+            );
+
+            // Handle the MarketEvent for each strategy in the portfolio.
+            foreach (var portfolio in new[] { _portfolio, _benchmarkPortfolio })
+            {
+                await portfolio.HandleEventAsync(marketEvent);
+            }
+        }
+
+        // Calculate and analyze performance metrics for both the portfolio and the benchmark portfolio.
         return AnalyzePerformanceMetrics();
     }
 

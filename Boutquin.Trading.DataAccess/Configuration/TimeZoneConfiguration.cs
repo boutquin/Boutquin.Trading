@@ -19,13 +19,12 @@ using Boutquin.Trading.Domain.Entities;
 using Boutquin.Trading.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
 using TimeZone = Boutquin.Trading.Domain.Entities.TimeZone;
 
 namespace Boutquin.Trading.DataAccess.Configuration;
 
 /// <summary>
-/// This class is responsible for defining the structure and constraints for the <see cref="TimeZone"/> entity in the database.
+/// This class is responsible for defining the structure and constraints for the <see cref="Domain.Entities.TimeZone"/> entity in the database.
 /// </summary>
 public sealed class TimeZoneConfiguration : IEntityTypeConfiguration<TimeZone>
 {

@@ -17,6 +17,7 @@ using Boutquin.Domain.Exceptions;
 using Boutquin.Domain.Extensions;
 using Boutquin.Domain.Helpers;
 using Boutquin.Trading.Domain.Exceptions;
+using ExceptionMessages = Boutquin.Domain.Exceptions.ExceptionMessages;
 
 namespace Boutquin.Trading.Domain.Extensions;
 
@@ -67,7 +68,7 @@ public static class DecimalArrayExtensions
         Guard.AgainstNullOrEmptyArray(() => dailyReturns);
         // Check if there is enough data for sample calculation
         Guard.Against(dailyReturns.Length == 1)
-            .With<InsufficientDataException>(Boutquin.Domain.Exceptions.ExceptionMessages.InsufficientDataForSampleCalculation);
+            .With<InsufficientDataException>(ExceptionMessages.InsufficientDataForSampleCalculation);
 
 
         return dailyReturns.StandardDeviation();
@@ -108,7 +109,7 @@ public static class DecimalArrayExtensions
         Guard.AgainstNullOrEmptyArray(() => dailyReturns);
         // Check if there is enough data for sample calculation
         Guard.Against(dailyReturns.Length == 1)
-            .With<InsufficientDataException>(Boutquin.Domain.Exceptions.ExceptionMessages.InsufficientDataForSampleCalculation);
+            .With<InsufficientDataException>(ExceptionMessages.InsufficientDataForSampleCalculation);
 
 
         var averageReturn = dailyReturns.Average() - riskFreeRate;
@@ -155,7 +156,7 @@ public static class DecimalArrayExtensions
         Guard.AgainstNullOrEmptyArray(() => dailyReturns);
         // Check if there is enough data for sample calculation
         Guard.Against(dailyReturns.Length == 1)
-            .With<InsufficientDataException>(Boutquin.Domain.Exceptions.ExceptionMessages.InsufficientDataForSampleCalculation);
+            .With<InsufficientDataException>(ExceptionMessages.InsufficientDataForSampleCalculation);
 
         var averageReturn = dailyReturns.Average() - riskFreeRate;
         var downsideDeviation = dailyReturns.DownsideDeviation(riskFreeRate);
@@ -204,7 +205,7 @@ public static class DecimalArrayExtensions
         Guard.AgainstNullOrEmptyArray(() => dailyReturns);
         // Check if there is enough data for sample calculation
         Guard.Against(dailyReturns.Length == 1)
-            .With<InsufficientDataException>(Boutquin.Domain.Exceptions.ExceptionMessages.InsufficientDataForSampleCalculation);
+            .With<InsufficientDataException>(ExceptionMessages.InsufficientDataForSampleCalculation);
         // Ensure that the input trading days per year is positive.
         Guard.AgainstNegativeOrZero(() => tradingDaysPerYear);
 
@@ -213,7 +214,7 @@ public static class DecimalArrayExtensions
             .Aggregate(1m, (current, dailyReturn) => current * (1 + dailyReturn));
 
         var totalTradingDays = dailyReturns.Length;
-        var totalYears = (double)totalTradingDays / tradingDaysPerYear;
+        var totalYears = totalTradingDays / tradingDaysPerYear;
 
         // Check if the totalYears is zero, and if so, throw an exception
         if (totalYears == 0)
@@ -251,7 +252,7 @@ public static class DecimalArrayExtensions
         Guard.AgainstNullOrEmptyArray(() => dailyReturns);
         // Check if there is enough data for sample calculation
         Guard.Against(dailyReturns.Length == 1)
-            .With<InsufficientDataException>(Boutquin.Domain.Exceptions.ExceptionMessages.InsufficientDataForSampleCalculation);
+            .With<InsufficientDataException>(ExceptionMessages.InsufficientDataForSampleCalculation);
 
         var downsideReturns = dailyReturns.Select(x => Math.Min(0, x - riskFreeRate)).ToArray();
         var squaredDownsideReturns = downsideReturns.Select(x => x * x).ToArray();
@@ -273,7 +274,7 @@ public static class DecimalArrayExtensions
         Guard.AgainstNullOrEmptyArray(() => equityCurve);
         // Check if there is enough data for sample calculation
         Guard.Against(equityCurve.Length == 1)
-            .With<InsufficientDataException>(Boutquin.Domain.Exceptions.ExceptionMessages.InsufficientDataForSampleCalculation);
+            .With<InsufficientDataException>(ExceptionMessages.InsufficientDataForSampleCalculation);
 
         var dailyReturns = new decimal[equityCurve.Length - 1];
 
@@ -342,9 +343,9 @@ public static class DecimalArrayExtensions
         Guard.AgainstNullOrEmptyArray(() => benchmarkDailyReturns);
         // Check if there is enough data for sample calculation
         Guard.Against(portfolioDailyReturns.Length == 1)
-            .With<InsufficientDataException>(Boutquin.Domain.Exceptions.ExceptionMessages.InsufficientDataForSampleCalculation);
+            .With<InsufficientDataException>(ExceptionMessages.InsufficientDataForSampleCalculation);
         Guard.Against(benchmarkDailyReturns.Length == 1)
-            .With<InsufficientDataException>(Boutquin.Domain.Exceptions.ExceptionMessages.InsufficientDataForSampleCalculation);
+            .With<InsufficientDataException>(ExceptionMessages.InsufficientDataForSampleCalculation);
 
         var portfolioAverageReturn = portfolioDailyReturns.Average();
         var benchmarkAverageReturn = benchmarkDailyReturns.Average();
@@ -383,9 +384,9 @@ public static class DecimalArrayExtensions
         Guard.AgainstNullOrEmptyArray(() => benchmarkDailyReturns);
         // Check if there is enough data for sample calculation
         Guard.Against(portfolioDailyReturns.Length == 1)
-            .With<InsufficientDataException>(Boutquin.Domain.Exceptions.ExceptionMessages.InsufficientDataForSampleCalculation);
+            .With<InsufficientDataException>(ExceptionMessages.InsufficientDataForSampleCalculation);
         Guard.Against(benchmarkDailyReturns.Length == 1)
-            .With<InsufficientDataException>(Boutquin.Domain.Exceptions.ExceptionMessages.InsufficientDataForSampleCalculation);
+            .With<InsufficientDataException>(ExceptionMessages.InsufficientDataForSampleCalculation);
 
         var portfolioAverageReturn = portfolioDailyReturns.Average();
         var benchmarkAverageReturn = benchmarkDailyReturns.Average();
@@ -417,9 +418,9 @@ public static class DecimalArrayExtensions
 
         // Check if there is enough data for sample calculation
         Guard.Against(dailyReturns.Length == 1)
-            .With<InsufficientDataException>(Boutquin.Domain.Exceptions.ExceptionMessages.InsufficientDataForSampleCalculation);
+            .With<InsufficientDataException>(ExceptionMessages.InsufficientDataForSampleCalculation);
         Guard.Against(benchmarkDailyReturns.Length == 1)
-            .With<InsufficientDataException>(Boutquin.Domain.Exceptions.ExceptionMessages.InsufficientDataForSampleCalculation);
+            .With<InsufficientDataException>(ExceptionMessages.InsufficientDataForSampleCalculation);
 
         // Ensure that the input daily returns array and benchmark daily returns array have the same length.
         if (dailyReturns.Length != benchmarkDailyReturns.Length)

@@ -13,10 +13,10 @@
 //  limitations under the License.
 //
 
-namespace Boutquin.Trading.Domain.Events;
+using Boutquin.Trading.Domain.Enums;
+using Boutquin.Trading.Domain.Interfaces;
 
-using Interfaces;
-using Enums;
+namespace Boutquin.Trading.Domain.Events;
 
 /// <summary>
 /// The Order record represents a request to execute a trade for a specified

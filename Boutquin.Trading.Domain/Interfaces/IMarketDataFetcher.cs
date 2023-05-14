@@ -13,9 +13,10 @@
 //  limitations under the License.
 //
 
-namespace Boutquin.Trading.Domain.Interfaces;
+using Boutquin.Trading.Domain.Data;
+using Boutquin.Trading.Domain.Enums;
 
-using Data;
+namespace Boutquin.Trading.Domain.Interfaces;
 
 /// <summary>
 /// The IMarketDataFetcher interface defines the contract for fetching historical
@@ -33,4 +34,15 @@ public interface IMarketDataFetcher
     /// <returns>An IAsyncEnumerable of key-value pairs, where the key is a DateOnly object and the value is a SortedDictionary of string asset symbols and MarketData values.</returns>
     /// <exception cref="MarketDataRetrievalException">Thrown when there is an error in fetching or parsing the market data.</exception>
     IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<string, MarketData>>> FetchMarketDataAsync(IEnumerable<string> symbols);
+
+    /// <summary>
+    /// Fetches historical foreign exchange rates for the specified currency pairs and
+    /// returns an asynchronous stream of key-value pairs, where the key is a DateOnly object
+    /// representing the date and the value is a sorted dictionary of currency pair symbols and their
+    /// corresponding exchange rates.
+    /// </summary>
+    /// <param name="currencyPairs">A list of currency pair symbols for which to fetch historical exchange rates.</param>
+    /// <returns>An IAsyncEnumerable of key-value pairs, where the key is a DateOnly object and the value is a SortedDictionary of string currency pair symbols and decimal exchange rates.</returns>
+    /// <exception cref="FxDataRetrievalException">Thrown when there is an error in fetching or parsing the foreign exchange data.</exception>
+    IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<CurrencyCode, decimal>>> FetchFxRatesAsync(IEnumerable<string> currencyPairs);
 }

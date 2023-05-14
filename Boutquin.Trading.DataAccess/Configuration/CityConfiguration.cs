@@ -15,10 +15,10 @@
 
 using Boutquin.Domain.Helpers;
 using Boutquin.Trading.Domain.Entities;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Microsoft.EntityFrameworkCore;
-using TimeZone = Boutquin.Trading.Domain.Entities.TimeZone;
 using Boutquin.Trading.Domain.Enums;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using TimeZone = Boutquin.Trading.Domain.Entities.TimeZone;
 
 namespace Boutquin.Trading.DataAccess.Configuration;
 

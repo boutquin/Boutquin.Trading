@@ -13,10 +13,10 @@
 //  limitations under the License.
 //
 
-namespace Boutquin.Trading.Domain.Events;
+using Boutquin.Trading.Domain.Enums;
+using Boutquin.Trading.Domain.Interfaces;
 
-using Enums;
-using Interfaces;
+namespace Boutquin.Trading.Domain.Events;
 
 /// <summary>
 /// The SignalEvent record encapsulates the data points for a set of trading

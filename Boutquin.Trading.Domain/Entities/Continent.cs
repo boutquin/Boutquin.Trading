@@ -13,13 +13,11 @@
 //  limitations under the License.
 //
 
+using Boutquin.Domain.Extensions;
+using Boutquin.Domain.Helpers;
 using Boutquin.Trading.Domain.Enums;
 
 namespace Boutquin.Trading.Domain.Entities;
-
-using System;
-using Boutquin.Domain.Extensions;
-using Boutquin.Domain.Helpers;
 
 /// <summary>
 /// Represents a continent.

@@ -24,7 +24,7 @@ namespace Boutquin.Trading.BenchMark;
 public sealed class CalculationBenchmark
 {
     private decimal[] _dailyReturns = Array.Empty<decimal>();
-    private decimal _riskFreeRate = 0m;
+    private decimal _riskFreeRate;
 
     /// <summary>
     /// Sets up the benchmark by initializing the daily returns, and risk-free rate.

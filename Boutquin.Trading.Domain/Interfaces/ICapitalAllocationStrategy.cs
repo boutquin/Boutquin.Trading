@@ -13,9 +13,9 @@
 //  limitations under the License.
 //
 
+using System.Collections.Immutable;
 using Boutquin.Trading.Domain.Data;
 using Boutquin.Trading.Domain.Enums;
-using System.Collections.Immutable;
 
 namespace Boutquin.Trading.Domain.Interfaces;
 

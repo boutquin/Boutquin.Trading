@@ -13,8 +13,6 @@
 //  limitations under the License.
 //
 
-using Boutquin.Trading.Domain.Interfaces;
-
 namespace Boutquin.Trading.Application.Interfaces;
 
 /// <summary>

@@ -13,19 +13,16 @@
 //  limitations under the License.
 //
 
-namespace Boutquin.Trading.Domain.Strategies;
-
 using Boutquin.Domain.Exceptions;
 using Boutquin.Domain.Helpers;
-using Data;
-using Enums;
-using Events;
-using Interfaces;
+using Boutquin.Trading.Domain.Data;
+
+namespace Boutquin.Trading.Application.Strategies;
 
 /// <summary>
-/// Rebalancing buy and hold strategy that periodically rebalances the portfolio to the initial weights.
+/// Represents a simple buy and hold strategy that generates buy signals on the initial timestamp and holds the positions throughout.
 /// </summary>
-public sealed class RebalancingBuyAndHoldStrategy : IStrategy
+public sealed class BuyAndHoldStrategy : IStrategy
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="BuyAndHoldStrategy"/> class with the provided parameters.
@@ -33,19 +30,19 @@ public sealed class RebalancingBuyAndHoldStrategy : IStrategy
     /// <param name="name">The name of the strategy.</param>
     /// <param name="assets">A dictionary of assets and their corresponding currency codes.</param>
     /// <param name="cash">A sorted dictionary of cash amounts per currency code.</param>
+    /// <param name="initialTimestamp">The initial timestamp when the strategy starts.</param>
     /// <param name="orderPriceCalculationStrategy">An instance of IOrderPriceCalculationStrategy to calculate order prices.</param>
     /// <param name="positionSizer">An instance of IPositionSizer to compute position sizes.</param>
-    /// <param name="rebalancingFrequency">The frequency at which the strategy should rebalance its assets.</param>
     /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the baseCurrency is not defined.</exception>
     /// <exception cref="EmptyOrNullDictionaryException">Thrown when assets or cash dictionaries are empty or null.</exception>
-    public RebalancingBuyAndHoldStrategy(
+    public BuyAndHoldStrategy(
         string name,
         IReadOnlyDictionary<string, CurrencyCode> assets,
         SortedDictionary<CurrencyCode, decimal> cash,
+        DateOnly initialTimestamp,
         IOrderPriceCalculationStrategy orderPriceCalculationStrategy,
-        IPositionSizer positionSizer,
-        RebalancingFrequency rebalancingFrequency)
+        IPositionSizer positionSizer)
     {
         // Validate parameters
         Guard.AgainstNull(() => name);
@@ -57,11 +54,11 @@ public sealed class RebalancingBuyAndHoldStrategy : IStrategy
         Name = name;
         Assets = assets;
         Cash = cash;
+        InitialTimestamp = initialTimestamp;
         OrderPriceCalculationStrategy = orderPriceCalculationStrategy;
         PositionSizer = positionSizer;
         Positions = new SortedDictionary<string, int>();
         DailyNativeReturns = new SortedDictionary<string, SortedDictionary<DateOnly, decimal>>();
-        _rebalancingFrequency = rebalancingFrequency;
     }
 
     public string Name { get; }
@@ -72,8 +69,7 @@ public sealed class RebalancingBuyAndHoldStrategy : IStrategy
     public IOrderPriceCalculationStrategy OrderPriceCalculationStrategy { get; }
     public IPositionSizer PositionSizer { get; }
 
-    private readonly RebalancingFrequency _rebalancingFrequency;
-    private DateOnly? _lastRebalancingDate = null;
+    private DateOnly InitialTimestamp { get; }
 
     /// <summary>
     /// Generates buy signals for all assets on the initial timestamp, and no-op signals afterwards.
@@ -99,50 +95,18 @@ public sealed class RebalancingBuyAndHoldStrategy : IStrategy
         // Create a new SignalEvent instance for the given timestamp
         var signalEvents = new SortedDictionary<string, SignalType>();
 
-        // Initialize the last rebalancing date if it's not set
-        _lastRebalancingDate ??= historicalMarketData.First().Key;
-
-        // Check if the provided timestamp is a rebalancing date
-        if (!IsRebalancingDate(timestamp))
+        // Check if it's the initial timestamp
+        if (timestamp != InitialTimestamp)
         {
             return new SignalEvent(timestamp, Name, signalEvents);
         }
 
-        // If it's a rebalancing date, generate buy signals for all assets
+        // If it's the initial timestamp, generate buy signals for all assets
         foreach (var asset in Assets.Keys)
         {
-            signalEvents.Add(asset, SignalType.Rebalance);
+            signalEvents.Add(asset, SignalType.Underweight);
         }
 
         return new SignalEvent(timestamp, Name, signalEvents);
     }
-
-    /// <summary>
-    /// Determines if the provided timestamp is a rebalancing date based on the last rebalancing date and the rebalancing frequency.
-    /// </summary>
-    /// <param name="timestamp">The date to check if it's a rebalancing date.</param>
-    /// <returns>True if the provided timestamp is a rebalancing date, otherwise false.</returns>
-    private bool IsRebalancingDate(DateOnly timestamp)
-    {
-        if (_lastRebalancingDate == null)
-        {
-            return false;
-        }
-
-        var nextRebalancingDate = GetNextRebalancingDate(_lastRebalancingDate.Value);
-
-        return timestamp >= nextRebalancingDate;
-    }
-
-    private DateOnly GetNextRebalancingDate(DateOnly currentDate) =>
-        // Calculate the next rebalancing date based on the rebalancing frequency
-        _rebalancingFrequency switch
-        {
-            RebalancingFrequency.Daily => currentDate.AddDays(1),
-            RebalancingFrequency.Weekly => currentDate.AddDays(7),
-            RebalancingFrequency.Monthly => currentDate.AddMonths(1),
-            RebalancingFrequency.Quarterly => currentDate.AddMonths(3),
-            RebalancingFrequency.Annually => currentDate.AddYears(1),
-            _ => throw new InvalidOperationException($"Unsupported rebalancing frequency: {_rebalancingFrequency}")
-        };
 }

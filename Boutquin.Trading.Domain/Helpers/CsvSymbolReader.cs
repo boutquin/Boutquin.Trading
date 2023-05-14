@@ -13,12 +13,11 @@
 //  limitations under the License.
 //
 
-namespace Boutquin.Trading.Domain.Helpers;
-
 using System.Security;
+using Boutquin.Trading.Domain.Exceptions;
+using Boutquin.Trading.Domain.Interfaces;
 
-using Exceptions;
-using Interfaces;
+namespace Boutquin.Trading.Domain.Helpers;
 
 public sealed class CsvSymbolReader : ISymbolReader
 {
