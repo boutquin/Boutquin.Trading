@@ -12,13 +12,14 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
+namespace Boutquin.Trading.Application;
 
 using System.Collections.Immutable;
+
 using Boutquin.Domain.Exceptions;
 using Boutquin.Domain.Helpers;
-using Boutquin.Trading.Domain.Data;
 
-namespace Boutquin.Trading.Application;
+using Domain.Data;
 
 public sealed class Portfolio
 {
@@ -335,6 +336,9 @@ public sealed class Portfolio
         strategy.DailyNativeReturns[fillEvent.Asset][fillEvent.Timestamp] = tradeValue;
 
         // Additional actions can be performed here, such as logging the fill or updating the portfolio's metrics.
+        // Update the equity curve
+        var totalPortfolioValue = CalculateTotalPortfolioValue(fillEvent.Timestamp);
+        EquityCurve[fillEvent.Timestamp] = totalPortfolioValue;
 
         return Task.CompletedTask;
     }
@@ -374,6 +378,9 @@ public sealed class Portfolio
         }
 
         // Additional actions can be performed here, such as logging the split event or updating the portfolio's metrics.
+        // Update the equity curve
+        var totalPortfolioValue = CalculateTotalPortfolioValue(splitEvent.Timestamp);
+        EquityCurve[splitEvent.Timestamp] = totalPortfolioValue;
 
         return Task.CompletedTask;
     }
@@ -420,5 +427,30 @@ public sealed class Portfolio
                 }
             }
         }
+
+        // Update the equity curve
+        var totalPortfolioValue = CalculateTotalPortfolioValue(dividendEvent.Timestamp);
+        EquityCurve[dividendEvent.Timestamp] = totalPortfolioValue;
     }
+
+    private decimal CalculateTotalPortfolioValue(DateOnly timestamp)
+    {
+        var totalPortfolioValue = 0m;
+
+        foreach (var strategyPair in _strategies)
+        {
+            var strategy = strategyPair.Value;
+
+            var strategyTotalValue = strategy.ComputeTotalValue(
+                timestamp,
+                _historicalMarketData,
+                _baseCurrency,
+                _historicalFxConversionRates);
+
+            totalPortfolioValue += strategyTotalValue;
+        }
+
+        return totalPortfolioValue;
+    }
+
 }

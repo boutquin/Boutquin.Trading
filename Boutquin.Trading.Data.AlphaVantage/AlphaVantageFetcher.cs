@@ -26,7 +26,7 @@ using Boutquin.Trading.Domain.Data;
 
 using Domain.Exceptions;
 using Domain.Interfaces;
-using Boutquin.Trading.Domain.Enums;
+using Domain.Enums;
 
 /// <summary>
 /// A class for fetching market data from the Alpha Vantage API, with caching and rate limiting support.
