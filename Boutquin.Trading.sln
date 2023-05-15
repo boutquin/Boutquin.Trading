@@ -12,6 +12,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B050C811-A865-4C21-8B79-878EEFE02FD8}"
 	ProjectSection(SolutionItems) = preProject
 		.editorConfig = .editorConfig
+		ARCHITECTURE.MD = ARCHITECTURE.MD
 		CommonAssemblyInfo.props = CommonAssemblyInfo.props
 		LICENSE.txt = LICENSE.txt
 		README.md = README.md
@@ -26,6 +27,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{AEF50EFC-AA6B-4AF9-8C42-24193BE48BD5}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boutquin.Trading.Data.AlphaVantage", "Boutquin.Trading.Data.AlphaVantage\Boutquin.Trading.Data.AlphaVantage.csproj", "{F8E7E7E9-0B79-412D-89F8-B45EC66772EC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Boutquin.Trading.BackTest", "Boutquin.Trading.BackTest\Boutquin.Trading.BackTest.csproj", "{97A9B6ED-6B49-4FC2-B7AC-549FEF2E4F1A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -61,6 +64,10 @@ Global
 		{F8E7E7E9-0B79-412D-89F8-B45EC66772EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F8E7E7E9-0B79-412D-89F8-B45EC66772EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F8E7E7E9-0B79-412D-89F8-B45EC66772EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{97A9B6ED-6B49-4FC2-B7AC-549FEF2E4F1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97A9B6ED-6B49-4FC2-B7AC-549FEF2E4F1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97A9B6ED-6B49-4FC2-B7AC-549FEF2E4F1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97A9B6ED-6B49-4FC2-B7AC-549FEF2E4F1A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

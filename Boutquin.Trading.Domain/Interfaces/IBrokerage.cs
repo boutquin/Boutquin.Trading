@@ -24,7 +24,7 @@ namespace Boutquin.Trading.Domain.Interfaces;
 /// This interface can be implemented by different classes for both
 /// simulation and live trading scenarios.
 /// </summary>
-public interface IBrokerage : IMarketDataFetcher
+public interface IBrokerage
 {
     /// <summary>
     /// Submits an order for execution by the brokerage. The method should
@@ -33,25 +33,6 @@ public interface IBrokerage : IMarketDataFetcher
     /// <param name="order">The order to be executed, represented as an Order object.</param>
     /// <returns>A boolean indicating whether the order submission was successful.</returns>
     Task<bool> SubmitOrderAsync(Order order);
-
-    /// <summary>
-    /// Cancels an open order.
-    /// </summary>
-    /// <param name="order">The order to be canceled, represented as an Order object.</param>
-    /// <returns>A boolean indicating whether the order cancellation was successful.</returns>
-    Task<bool> CancelOrderAsync(Order order);
-
-    /// <summary>
-    /// Fetches the current positions held in the account.
-    /// </summary>
-    /// <returns>A dictionary containing the current positions, where the key is the asset symbol and the value is the position quantity.</returns>
-    Task<Dictionary<string, int>> GetPositionsAsync();
-
-    /// <summary>
-    /// Fetches the account cash balance.
-    /// </summary>
-    /// <returns>The cash balance as a decimal value.</returns>
-    Task<decimal> GetCashBalanceAsync();
 
     /// <summary>
     /// An event that is raised when an order is filled, providing the

@@ -95,20 +95,20 @@ public sealed class RebalancingBuyAndHoldStrategy : IStrategy
         // Create a new SignalEvent instance for the given timestamp
         var signalEvents = new SortedDictionary<string, SignalType>();
 
-        // Initialize the last rebalancing date if it's not set
-        _lastRebalancingDate ??= historicalMarketData.First().Key;
-
-        // Check if the provided timestamp is a rebalancing date
-        if (!IsRebalancingDate(timestamp))
+        // If it's not a rebalancing date, return an empty SignalEvent
+        if (_lastRebalancingDate != null && !IsRebalancingDate(timestamp))
         {
             return new SignalEvent(timestamp, Name, signalEvents);
         }
 
-        // If it's a rebalancing date, generate buy signals for all assets
+        // If it's a rebalancing date, generate rebalance signals for all assets
         foreach (var asset in Assets.Keys)
         {
             signalEvents.Add(asset, SignalType.Rebalance);
         }
+
+        // Update the last rebalancing date
+        _lastRebalancingDate = timestamp;
 
         return new SignalEvent(timestamp, Name, signalEvents);
     }
@@ -139,6 +139,18 @@ public sealed class RebalancingBuyAndHoldStrategy : IStrategy
             RebalancingFrequency.Monthly => currentDate.AddMonths(1),
             RebalancingFrequency.Quarterly => currentDate.AddMonths(3),
             RebalancingFrequency.Annually => currentDate.AddYears(1),
+            _ => throw new InvalidOperationException($"Unsupported rebalancing frequency: {_rebalancingFrequency}")
+        };
+
+    private DateOnly GetPreviousRebalancingDate(DateOnly currentDate) =>
+        // Calculate the previous rebalancing date based on the rebalancing frequency
+        _rebalancingFrequency switch
+        {
+            RebalancingFrequency.Daily => currentDate.AddDays(-1),
+            RebalancingFrequency.Weekly => currentDate.AddDays(-7),
+            RebalancingFrequency.Monthly => currentDate.AddMonths(-1),
+            RebalancingFrequency.Quarterly => currentDate.AddMonths(-3),
+            RebalancingFrequency.Annually => currentDate.AddYears(-1),
             _ => throw new InvalidOperationException($"Unsupported rebalancing frequency: {_rebalancingFrequency}")
         };
 }

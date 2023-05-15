@@ -25,7 +25,7 @@ public static class IdLookup
     /// <summary>
     /// The dictionary containing the exchange IDs as values and exchange codes as keys.
     /// </summary>
-    private static readonly Dictionary<ExchangeCode, int> _exchangeLookup = new Dictionary<ExchangeCode, int>
+    private static readonly Dictionary<ExchangeCode, int> _exchangeLookup = new()
     {
         { ExchangeCode.XNYS, 1 },
         { ExchangeCode.XNAS, 2 },
@@ -42,7 +42,7 @@ public static class IdLookup
     /// <summary>
     /// The dictionary containing the city IDs as values and city names as keys.
     /// </summary>
-    private static readonly Dictionary<string, int> _cityLookup = new Dictionary<string, int>
+    private static readonly Dictionary<string, int> _cityLookup = new()
     {
         { "New York", 1 },
         { "Tokyo", 2 },
