@@ -12,10 +12,9 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-
-using Boutquin.Trading.Domain.Events;
-
 namespace Boutquin.Trading.Domain.Interfaces;
+
+using Events;
 
 /// <summary>
 /// The IBrokerage interface represents the brokerage component in the

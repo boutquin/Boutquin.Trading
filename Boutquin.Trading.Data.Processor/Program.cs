@@ -12,15 +12,16 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
+namespace Boutquin.Trading.Data.Processor;
 
-using Boutquin.Trading.Data.AlphaVantage;
-using Boutquin.Trading.Domain.Data;
-using Boutquin.Trading.Domain.Helpers;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 
-namespace Boutquin.Trading.Data.Processor;
+using AlphaVantage;
+
+using Boutquin.Trading.Domain.Data;
+using Domain.Helpers;
 
 internal class Program
 {

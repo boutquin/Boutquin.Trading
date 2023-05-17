@@ -13,9 +13,8 @@
 //  limitations under the License.
 //
 
-using Boutquin.Trading.Domain.Extensions;
-
 namespace Boutquin.Trading.UnitTests;
+using Boutquin.Trading.Domain.Extensions;
 
 public sealed class EquityCurveExtensionsTests
 {

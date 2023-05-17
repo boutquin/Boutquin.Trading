@@ -12,11 +12,9 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-
-using Boutquin.Domain.Helpers;
-using Boutquin.Trading.Domain.Entities;
-
 namespace Boutquin.Trading.Domain.Extensions;
+
+using Entities;
 
 /// <summary>
 /// Provides a set of extension methods for the <see cref="Exchange"/> class.

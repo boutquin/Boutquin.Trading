@@ -13,9 +13,8 @@
 //  limitations under the License.
 //
 
-using System.ComponentModel;
-
 namespace Boutquin.Trading.Domain.Enums;
+using System.ComponentModel;
 
 /// <summary>
 /// Represents the different standards for security symbols depending on the market and the type of security.

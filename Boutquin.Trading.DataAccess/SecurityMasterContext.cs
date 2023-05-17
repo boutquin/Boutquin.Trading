@@ -12,13 +12,11 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
+namespace Boutquin.Trading.DataAccess;
 
 using System.Reflection;
-using Boutquin.Trading.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
-using TimeZone = Boutquin.Trading.Domain.Entities.TimeZone;
 
-namespace Boutquin.Trading.DataAccess;
+using TimeZone = Domain.Entities.TimeZone;
 
 /// <summary>
 /// The <see cref="SecurityMasterContext"/> class represents the database context for the security master database. It provides a

@@ -13,9 +13,8 @@
 //  limitations under the License.
 //
 
-using System.ComponentModel;
-
 namespace Boutquin.Trading.Domain.Enums;
+using System.ComponentModel;
 
 /// <summary>
 /// Represents the ISO 4217 currency codes.

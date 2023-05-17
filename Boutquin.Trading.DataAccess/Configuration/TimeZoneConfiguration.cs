@@ -12,16 +12,11 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
+namespace Boutquin.Trading.DataAccess.Configuration;
 
 using Boutquin.Domain.Extensions;
-using Boutquin.Domain.Helpers;
-using Boutquin.Trading.Domain.Entities;
-using Boutquin.Trading.Domain.Enums;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using TimeZone = Boutquin.Trading.Domain.Entities.TimeZone;
 
-namespace Boutquin.Trading.DataAccess.Configuration;
+using TimeZone = Domain.Entities.TimeZone;
 
 /// <summary>
 /// This class is responsible for defining the structure and constraints for the <see cref="Domain.Entities.TimeZone"/> entity in the database.

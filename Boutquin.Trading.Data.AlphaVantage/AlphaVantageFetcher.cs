@@ -21,12 +21,11 @@ using Microsoft.Extensions.Caching.Distributed;
 
 using Boutquin.Domain.Converters;
 using Boutquin.Domain.Helpers;
-
 using Boutquin.Trading.Domain.Data;
 
+using Domain.Enums;
 using Domain.Exceptions;
 using Domain.Interfaces;
-using Domain.Enums;
 
 /// <summary>
 /// A class for fetching market data from the Alpha Vantage API, with caching and rate limiting support.

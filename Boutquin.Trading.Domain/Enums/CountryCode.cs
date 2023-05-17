@@ -13,9 +13,8 @@
 //  limitations under the License.
 //
 
-using System.ComponentModel;
-
 namespace Boutquin.Trading.Domain.Enums;
+using System.ComponentModel;
 
 /// <summary>
 /// Represents the ISO 3166-1:2020 alpha-2 country codes.

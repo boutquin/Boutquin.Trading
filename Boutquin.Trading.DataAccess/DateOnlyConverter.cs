@@ -13,9 +13,8 @@
 //  limitations under the License.
 //
 
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-
 namespace Boutquin.Trading.DataAccess;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 /// <summary>
 /// A sealed class that provides a value converter between <see cref="DateOnly"/> and <see cref="DateTime"/> types.

@@ -17,8 +17,7 @@ namespace Boutquin.Trading.Application;
 using System.Collections.Immutable;
 
 using Boutquin.Domain.Exceptions;
-using Boutquin.Domain.Helpers;
-
+using Interfaces;
 using Domain.Data;
 
 public sealed class Portfolio
@@ -30,7 +29,7 @@ public sealed class Portfolio
     private readonly IReadOnlyDictionary<string, CurrencyCode> _assetCurrencies;
     private readonly SortedDictionary<DateOnly, SortedDictionary<string, MarketData>> _historicalMarketData;
     private readonly SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> _historicalFxConversionRates;
-    private string _currentExecutingStrategyName;
+    private readonly IEventProcessor _eventProcessor;
 
     /// <summary>
     /// Initializes a new instance of the Portfolio class.
@@ -56,7 +55,8 @@ public sealed class Portfolio
         CurrencyCode baseCurrency,
         IReadOnlyDictionary<string, CurrencyCode> assetCurrencies,
         SortedDictionary<DateOnly, SortedDictionary<string, MarketData>> historicalMarketData,
-        SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
+        SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates, 
+        IEventProcessor eventProcessor)
     {
         // Validate parameters
         Guard.AgainstEmptyOrNullReadOnlyDictionary(() => strategies); // Throws EmptyOrNullDictionaryException
@@ -66,6 +66,7 @@ public sealed class Portfolio
         Guard.AgainstEmptyOrNullReadOnlyDictionary(() => assetCurrencies); // Throws EmptyOrNullDictionaryException
         Guard.AgainstEmptyOrNullDictionary(() => historicalMarketData); // Throws EmptyOrNullDictionaryException
         Guard.AgainstEmptyOrNullDictionary(() => historicalFxConversionRates); // Throws EmptyOrNullDictionaryException
+        Guard.AgainstNull(() => eventProcessor); // Throws ArgumentNullException
 
         _strategies = strategies;
         _capitalAllocationStrategy = capitalAllocationStrategy;        
@@ -74,6 +75,7 @@ public sealed class Portfolio
         _assetCurrencies = assetCurrencies;
         _historicalMarketData = historicalMarketData;
         _historicalFxConversionRates = historicalFxConversionRates;
+        _eventProcessor = eventProcessor;
     }
 
     public SortedDictionary<DateOnly, decimal> EquityCurve { get; } = new();
@@ -163,7 +165,6 @@ public sealed class Portfolio
         // Iterate through each strategy and generate signals based on the updated market data
         foreach (var strategyPair in _strategies)
         {
-            _currentExecutingStrategyName = strategyPair.Key;
             var strategy = strategyPair.Value;
 
             // Generate signals for the current strategy
@@ -176,9 +177,6 @@ public sealed class Portfolio
             // Process the signal
             await HandleSignalEventAsync(signals);
         }
-
-        // Reset the current executing strategy name to null
-        _currentExecutingStrategyName = null;
     }
 
     /// <summary>

@@ -12,9 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using BenchmarkDotNet.Running;
-
 namespace Boutquin.Trading.BenchMark;
+using BenchmarkDotNet.Running;
 
 /// <summary>
 /// Main program class to run the benchmark.

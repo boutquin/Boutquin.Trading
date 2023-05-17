@@ -13,9 +13,8 @@
 //  limitations under the License.
 //
 
-using System.Runtime.Serialization;
-
 namespace Boutquin.Trading.Domain.Exceptions;
+using System.Runtime.Serialization;
 
 
 /// <summary>

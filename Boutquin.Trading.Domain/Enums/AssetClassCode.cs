@@ -13,9 +13,8 @@
 //  limitations under the License.
 //
 
-using System.ComponentModel;
-
 namespace Boutquin.Trading.Domain.Enums;
+using System.ComponentModel;
 
 /// <summary>
 /// Enumerates the asset classes used in the schema.

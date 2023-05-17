@@ -14,8 +14,6 @@
 //
 namespace Boutquin.Trading.Application.Brokers;
 
-using System.Linq;
-
 using Domain.Data;
 
 /// <summary>

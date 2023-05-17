@@ -12,12 +12,6 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-
-using Boutquin.Domain.Helpers;
-using Boutquin.Trading.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
 namespace Boutquin.Trading.DataAccess.Configuration;
 
 /// <summary>

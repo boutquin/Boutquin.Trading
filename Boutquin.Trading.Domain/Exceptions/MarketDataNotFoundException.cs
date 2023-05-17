@@ -12,9 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Runtime.Serialization;
-
 namespace Boutquin.Trading.Domain.Exceptions;
+using System.Runtime.Serialization;
 
 /// <summary>
 /// The MarketDataNotFoundException class represents an exception that is thrown when the requested

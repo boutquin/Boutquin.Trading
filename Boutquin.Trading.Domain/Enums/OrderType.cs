@@ -13,9 +13,8 @@
 //  limitations under the License.
 //
 
-using System.ComponentModel;
-
 namespace Boutquin.Trading.Domain.Enums;
+using System.ComponentModel;
 
 /// <summary>
 /// The OrderType enum represents the type of an order for executing a trade,

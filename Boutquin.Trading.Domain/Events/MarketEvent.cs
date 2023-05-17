@@ -12,12 +12,11 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-
-using Boutquin.Trading.Domain.Data;
-using Boutquin.Trading.Domain.Enums;
-using Boutquin.Trading.Domain.Interfaces;
-
 namespace Boutquin.Trading.Domain.Events;
+
+using Data;
+using Enums;
+using Interfaces;
 
 /// <summary>
 /// The MarketEvent record encapsulates the historical market data for multiple assets and historical foreign exchange (FX) conversion rates

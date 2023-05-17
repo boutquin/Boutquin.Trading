@@ -13,10 +13,9 @@
 //  limitations under the License.
 //
 
+namespace Boutquin.Trading.UnitTests.Domain;
 using Boutquin.Trading.Domain.Entities;
 using Boutquin.Trading.Domain.Enums;
-
-namespace Boutquin.Trading.UnitTests.Domain;
 
 /// <summary>
 /// Provides test data for the <see cref="ExchangeExtensions"/> class.

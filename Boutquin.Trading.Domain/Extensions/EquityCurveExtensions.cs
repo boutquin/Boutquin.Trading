@@ -13,10 +13,8 @@
 //  limitations under the License.
 //
 
-using Boutquin.Domain.Exceptions;
-using Boutquin.Domain.Helpers;
-
 namespace Boutquin.Trading.Domain.Extensions;
+using Boutquin.Domain.Exceptions;
 
 /// <summary>
 /// Provides extension methods for calculating drawdowns from an

@@ -12,9 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Runtime.Serialization;
-
 namespace Boutquin.Trading.Domain.Exceptions;
+using System.Runtime.Serialization;
 
 /// <summary>
 /// Custom exception for when the number of trading days per year is negative.

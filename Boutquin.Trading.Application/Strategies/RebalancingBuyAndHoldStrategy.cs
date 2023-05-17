@@ -15,7 +15,7 @@
 namespace Boutquin.Trading.Application.Strategies;
 
 using Boutquin.Domain.Exceptions;
-using Boutquin.Domain.Helpers;
+
 using Domain.Data;
 
 /// <summary>

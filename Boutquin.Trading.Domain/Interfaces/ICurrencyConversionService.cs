@@ -12,10 +12,10 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-
-using Boutquin.Trading.Domain.Enums;
-
+//
 namespace Boutquin.Trading.Domain.Interfaces;
+
+using Enums;
 
 /// <summary>
 /// The ICurrencyConversionService interface defines the contract for a currency conversion

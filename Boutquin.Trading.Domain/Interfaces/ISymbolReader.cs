@@ -12,10 +12,9 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-
-using Boutquin.Trading.Domain.Exceptions;
-
 namespace Boutquin.Trading.Domain.Interfaces;
+
+using Exceptions;
 
 /// <summary>
 /// Represents an interface for reading symbols from a data source.

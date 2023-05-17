@@ -13,11 +13,10 @@
 //  limitations under the License.
 //
 
-using Microsoft.EntityFrameworkCore;
+namespace Boutquin.Trading.DataAccess;
+
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
-
-namespace Boutquin.Trading.DataAccess;
 
 /// <summary>
 /// A factory for creating instances of SecurityMasterContext at design-time.

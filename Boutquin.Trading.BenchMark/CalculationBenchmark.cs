@@ -11,11 +11,12 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+namespace Boutquin.Trading.BenchMark;
 
 using BenchmarkDotNet.Attributes;
-using Boutquin.Trading.Domain.Extensions;
 
-namespace Boutquin.Trading.BenchMark;
+using Domain.Extensions;
 
 /// <summary>
 /// Benchmark class to measure the performance of the DecimalArrayExtensions's AnnualizedSharpeRatio method.

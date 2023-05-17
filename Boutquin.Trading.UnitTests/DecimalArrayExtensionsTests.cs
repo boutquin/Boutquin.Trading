@@ -13,10 +13,10 @@
 //  limitations under the License.
 //
 
+namespace Boutquin.Trading.UnitTests;
 using Boutquin.Domain.Exceptions;
 using Boutquin.Trading.Domain.Extensions;
 
-namespace Boutquin.Trading.UnitTests;
 public sealed class DecimalArrayExtensionsTests
 {
     private const decimal Precision = 1e-12m;

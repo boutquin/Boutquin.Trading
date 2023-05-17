@@ -12,13 +12,13 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
+namespace Boutquin.Trading.Domain.Data;
 
 using System.Security;
-using Boutquin.Trading.Domain.Exceptions;
-using Boutquin.Trading.Domain.Helpers;
-using Boutquin.Trading.Domain.Interfaces;
 
-namespace Boutquin.Trading.Domain.Data;
+using Exceptions;
+using Helpers;
+using Interfaces;
 
 public sealed class CsvMarketDataStorage : IMarketDataStorage
 {

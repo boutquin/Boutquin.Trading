@@ -12,10 +12,9 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-
-using Boutquin.Trading.Domain.Data;
-
 namespace Boutquin.Trading.Domain.Interfaces;
+
+using Data;
 
 /// <summary>
 /// The IMarketDataStorage interface provides a contract for storing market data.

@@ -12,14 +12,14 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
+namespace Boutquin.Trading.Domain.Extensions;
 
 using Boutquin.Domain.Exceptions;
 using Boutquin.Domain.Extensions;
-using Boutquin.Domain.Helpers;
-using Boutquin.Trading.Domain.Exceptions;
-using ExceptionMessages = Boutquin.Domain.Exceptions.ExceptionMessages;
 
-namespace Boutquin.Trading.Domain.Extensions;
+using Exceptions;
+
+using ExceptionMessages = Boutquin.Domain.Exceptions.ExceptionMessages;
 
 /// <summary>
 /// Provides extension methods for calculating trading performance metrics on an array of decimal values.

@@ -12,12 +12,12 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
+namespace Boutquin.Trading.Domain.Data;
 
-using Boutquin.Trading.Domain.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Boutquin.Trading.Domain.Data;
+using Interfaces;
 
 public sealed class MarketDataProcessor : IMarketDataProcessor
 {

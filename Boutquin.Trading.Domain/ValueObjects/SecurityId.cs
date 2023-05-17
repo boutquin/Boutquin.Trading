@@ -13,8 +13,6 @@
 //  limitations under the License.
 //
 
-using Boutquin.Domain.Helpers;
-
 namespace Boutquin.Trading.Domain.ValueObjects;
 
 /// <summary>

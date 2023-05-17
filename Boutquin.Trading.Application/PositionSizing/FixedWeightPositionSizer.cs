@@ -12,11 +12,9 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-
-using Boutquin.Domain.Helpers;
-using Boutquin.Trading.Domain.Data;
-
 namespace Boutquin.Trading.Application.PositionSizing;
+
+using Domain.Data;
 
 /// <summary>
 /// The FixedWeightPositionSizer class implements the IPositionSizer interface, using fixed asset weights to determine

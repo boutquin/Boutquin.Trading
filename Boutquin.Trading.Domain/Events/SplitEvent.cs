@@ -12,10 +12,9 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-
-using Boutquin.Trading.Domain.Interfaces;
-
 namespace Boutquin.Trading.Domain.Events;
+
+using Interfaces;
 
 /// <summary>
 /// The SplitEvent record encapsulates the data points for a stock split

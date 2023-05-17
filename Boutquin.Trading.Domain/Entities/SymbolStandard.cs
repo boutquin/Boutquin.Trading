@@ -12,12 +12,11 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
+namespace Boutquin.Trading.Domain.Entities;
 
 using Boutquin.Domain.Extensions;
-using Boutquin.Domain.Helpers;
-using Boutquin.Trading.Domain.Enums;
 
-namespace Boutquin.Trading.Domain.Entities;
+using Enums;
 
 /// <summary>
 /// Represents a security symbol standard.

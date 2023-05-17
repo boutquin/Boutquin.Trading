@@ -14,11 +14,15 @@
 //
 namespace Boutquin.Trading.Domain.Interfaces;
 
+using System.Collections.Generic;
+
 using Enums;
 using Events;
 
 public interface IPortfolio
 {
+    IReadOnlyDictionary<string, IStrategy> Strategies { get; }
+
     Task UpdateHistoricalDataAsync(MarketEvent marketEvent);
 
     Task AllocateCapitalAsync();
@@ -27,7 +31,10 @@ public interface IPortfolio
 
     Task UpdatePositionAsync(string strategyName, string asset, decimal quantity);
 
-    Task UpdateCashAsync(string strategyName, string assetCurrency, decimal amount);
+    Task UpdateCashAsync(string strategyName, CurrencyCode currency, decimal amount)
+    {
+        var strategy = GetStrategy(strategyName);
+    }
 
     Task UpdateDailyReturnAsync(string strategyName, string asset, DateOnly timestamp, decimal returnAmount);
 
@@ -39,7 +46,15 @@ public interface IPortfolio
 
     Task UpdateCashForDividendAsync(string asset, decimal dividendAmount);
 
-    IStrategy GetStrategy(string strategyName);
+    IStrategy GetStrategy(string strategyName)
+    {
+        if (!Strategies.TryGetValue(strategyName, out var strategy))
+        {
+            throw new ArgumentException($"Strategy '{strategyName}' not found in the portfolio.");
+        }
+
+        return strategy;
+    }
 
     CurrencyCode GetAssetCurrency(string asset);
 

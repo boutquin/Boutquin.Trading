@@ -12,15 +12,15 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
+namespace Boutquin.Trading.UnitTests.Application;
 
 using Boutquin.Domain.Exceptions;
 using Boutquin.Trading.Application.Strategies;
 using Boutquin.Trading.Domain.Data;
 using Boutquin.Trading.Domain.Enums;
 using Boutquin.Trading.Domain.Interfaces;
-using Moq;
 
-namespace Boutquin.Trading.UnitTests.Application;
+using Moq;
 
 public sealed class BuyAndHoldStrategyTests
 {

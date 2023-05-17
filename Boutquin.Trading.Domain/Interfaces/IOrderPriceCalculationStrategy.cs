@@ -12,11 +12,10 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-
-using Boutquin.Trading.Domain.Data;
-using Boutquin.Trading.Domain.Enums;
-
 namespace Boutquin.Trading.Domain.Interfaces;
+
+using Data;
+using Enums;
 
 /// <summary>
 /// Defines an interface for calculating order prices based on historical market data, given an asset and a trade action.

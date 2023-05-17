@@ -1,11 +1,14 @@
+root = true
 # EditorConfig is awesome: https://EditorConfig.org
 
 # top-most EditorConfig file
-root = true
 
 # Don't use tabs for indentation.
 [*]
 indent_style = space
+
+# Microsoft .NET properties
+csharp_using_directive_placement = inside_namespace:suggestion
 # (Please don't specify an indent_size here; that has too many unintended consequences.)
 
 # Code files
@@ -40,7 +43,7 @@ indent_size = 2
 
 # Sort using and Import directives with System.* appearing first
 dotnet_sort_system_directives_first = true
-dotnet_separate_import_directive_groups = false
+dotnet_separate_import_directive_groups = true
 # Avoid "this." and "Me." if not necessary
 dotnet_style_qualification_for_field = false:refactoring
 dotnet_style_qualification_for_property = false:refactoring
@@ -141,7 +144,7 @@ dotnet_naming_symbols.all_members.applicable_kinds = *
 
 dotnet_naming_style.pascal_case_style.capitalization = pascal_case
 
-file_header_template =  Copyright (c) 2023 Pierre G. Boutquin. All rights reserved.\n\n Licensed under the Apache License, Version 2.0 (the "License").\n You may not use this file except in compliance with the License.\n You may obtain a copy of the License at\n\n     http://www.apache.org/licenses/LICENSE-2.0\n\n Unless required by applicable law or agreed to in writing, software\n distributed under the License is distributed on an "AS IS" BASIS,\n WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n See the License for the specific language governing permissions and\n limitations under the License.\n
+file_header_template = Copyright (c) 2023 Pierre G. Boutquin. All rights reserved.\n\n Licensed under the Apache License, Version 2.0 (the "License").\n You may not use this file except in compliance with the License.\n You may obtain a copy of the License at\n\n     http://www.apache.org/licenses/LICENSE-2.0\n\n Unless required by applicable law or agreed to in writing, software\n distributed under the License is distributed on an "AS IS" BASIS,\n WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n See the License for the specific language governing permissions and\n limitations under the License.\n
 
 # RS0016: Only enable if API files are present
 dotnet_public_api_analyzer.require_api_files = true
@@ -225,57 +228,57 @@ csharp_preserve_single_line_blocks = true
 csharp_preserve_single_line_statements = true
 
 # IDE0060: Remove unused parameter
-dotnet_diagnostic.IDE0060.severity = warning
+dotnet_diagnostic.ide0060.severity = warning
 
 [src/{Compilers,ExpressionEvaluator,Scripting}/**Test**/*.{cs,vb}]
 
 # IDE0060: Remove unused parameter
-dotnet_diagnostic.IDE0060.severity = none
+dotnet_diagnostic.ide0060.severity = none
 
 [src/{Analyzers,CodeStyle,Features,Workspaces,EditorFeatures,VisualStudio}/**/*.{cs,vb}]
 
 # IDE0011: Add braces
 csharp_prefer_braces = when_multiline:warning
 # NOTE: We need the below severity entry for Add Braces due to https://github.com/dotnet/roslyn/issues/44201
-dotnet_diagnostic.IDE0011.severity = warning
+dotnet_diagnostic.ide0011.severity = warning
 
 # IDE0040: Add accessibility modifiers
-dotnet_diagnostic.IDE0040.severity = warning
+dotnet_diagnostic.ide0040.severity = warning
 
 # IDE0052: Remove unread private member
-dotnet_diagnostic.IDE0052.severity = warning
+dotnet_diagnostic.ide0052.severity = warning
 
 # IDE0059: Unnecessary assignment to a value
-dotnet_diagnostic.IDE0059.severity = warning
+dotnet_diagnostic.ide0059.severity = warning
 
 # CA1012: Abstract types should not have public constructors
-dotnet_diagnostic.CA1012.severity = warning
+dotnet_diagnostic.ca1012.severity = warning
 
 # CA1822: Make member static
-dotnet_diagnostic.CA1822.severity = warning
+dotnet_diagnostic.ca1822.severity = warning
 
 # Prefer "var" everywhere
-dotnet_diagnostic.IDE0007.severity = warning
+dotnet_diagnostic.ide0007.severity = warning
 csharp_style_var_for_built_in_types = true:warning
 csharp_style_var_when_type_is_apparent = true:warning
 csharp_style_var_elsewhere = true:warning
 
 # csharp_style_allow_embedded_statements_on_same_line_experimental
-dotnet_diagnostic.IDE2001.severity = warning
+dotnet_diagnostic.ide2001.severity = warning
 
 # csharp_style_allow_blank_lines_between_consecutive_braces_experimental
-dotnet_diagnostic.IDE2002.severity = warning
+dotnet_diagnostic.ide2002.severity = warning
 
 # csharp_style_allow_blank_line_after_colon_in_constructor_initializer_experimental
-dotnet_diagnostic.IDE2004.severity = warning
+dotnet_diagnostic.ide2004.severity = warning
 
 # csharp_style_allow_blank_line_after_token_in_conditional_expression_experimental
-dotnet_diagnostic.IDE2005.severity = warning
+dotnet_diagnostic.ide2005.severity = warning
 
 # csharp_style_allow_blank_line_after_token_in_arrow_expression_clause_experimental
-dotnet_diagnostic.IDE2006.severity = warning
+dotnet_diagnostic.ide2006.severity = warning
 
 [src/{VisualStudio}/**/*.{cs,vb}]
 # CA1822: Make member static
 # There is a risk of accidentally breaking an internal API that partners rely on though IVT.
-dotnet_code_quality.CA1822.api_surface = private
+dotnet_code_quality.ca1822.api_surface = private

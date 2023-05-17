@@ -12,9 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Runtime.Serialization;
-
 namespace Boutquin.Trading.Domain.Exceptions;
+using System.Runtime.Serialization;
 
 /// <summary>
 /// Custom exception for when the risk-free rate is negative.

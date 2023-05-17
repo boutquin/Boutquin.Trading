@@ -12,10 +12,9 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-
-using Boutquin.Trading.Domain.Enums;
-
 namespace Boutquin.Trading.Domain.Helpers;
+
+using Enums;
 
 /// <summary>
 /// The Asset record encapsulates the information about a financial asset, including its symbol and currency.

@@ -12,12 +12,12 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
+namespace Boutquin.Trading.Domain.Interfaces;
 
 using System.Collections.Immutable;
-using Boutquin.Trading.Domain.Data;
-using Boutquin.Trading.Domain.Enums;
 
-namespace Boutquin.Trading.Domain.Interfaces;
+using Data;
+using Enums;
 
 /// <summary>
 /// The ICapitalAllocationStrategy interface defines a method for allocating capital across multiple strategies.

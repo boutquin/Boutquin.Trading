@@ -13,10 +13,9 @@
 //  limitations under the License.
 //
 
+namespace Boutquin.Trading.UnitTests.Domain;
 using Boutquin.Trading.Domain.Entities;
 using Boutquin.Trading.Domain.Extensions;
-
-namespace Boutquin.Trading.UnitTests.Domain;
 
 /// <summary>
 /// Contains unit tests for the <see cref="ExchangeExtensions"/> methods.

@@ -12,13 +12,12 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-
-using Boutquin.Trading.Domain.Enums;
-using Boutquin.Trading.Domain.Exceptions;
-using Boutquin.Trading.Domain.Helpers;
-using Boutquin.Trading.Domain.Interfaces;
-
 namespace Boutquin.Trading.Domain.Data;
+
+using Enums;
+using Exceptions;
+using Helpers;
+using Interfaces;
 
 public sealed class CsvMarketDataFetcher : IMarketDataFetcher
 {

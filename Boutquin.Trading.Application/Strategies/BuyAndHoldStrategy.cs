@@ -12,12 +12,11 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
+namespace Boutquin.Trading.Application.Strategies;
 
 using Boutquin.Domain.Exceptions;
-using Boutquin.Domain.Helpers;
-using Boutquin.Trading.Domain.Data;
 
-namespace Boutquin.Trading.Application.Strategies;
+using Domain.Data;
 
 /// <summary>
 /// Represents a simple buy and hold strategy that generates buy signals on the initial timestamp and holds the positions throughout.
