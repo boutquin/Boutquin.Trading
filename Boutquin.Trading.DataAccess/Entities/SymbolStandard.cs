@@ -12,37 +12,36 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-namespace Boutquin.Trading.Domain.Entities;
+namespace Boutquin.Trading.DataAccess.Entities;
 
 using Boutquin.Domain.Extensions;
 
-using Enums;
-
 /// <summary>
-/// Represents an asset class.
+/// Represents a security symbol standard.
 /// </summary>
-public sealed class AssetClass
+public sealed class SymbolStandard
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="AssetClass"/> class.
+    /// Initializes a new instance of the <see cref="SymbolStandard"/> class.
     /// </summary>
-    /// <param name="id">The Code of the asset class.</param>
-    /// <param name="description">The description of the asset class.</param>
+    /// <param name="id">The Code of the symbol standard.</param>
+    /// <param name="description">The description of the security symbol standard.</param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="description"/> is null.
+    /// </exception>
     /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown when <paramref name="id"/> is not defined in the <see cref="AssetClassCode"/> enumeration.
+    /// Thrown when <paramref name="description"/> length is not within the valid range, or 
+    /// when <paramref name="id"/> is not defined in the <see cref="SecuritySymbolStandard"/> enumeration.
     /// </exception>
-    /// <exception cref="ArgumentException">
-    /// Thrown when the <paramref name="description"/> is longer than the allowed length.
-    /// </exception>
-    public AssetClass(
-        AssetClassCode id,
+    public SymbolStandard(
+        SecuritySymbolStandard id,
         string? description = null)
     {
         // Validate parameters
         Guard.AgainstUndefinedEnumValue(() => id);
         if (!description.IsNullOrWhiteSpace())
         {
-            Guard.AgainstOverflow(() => description, ColumnConstants.AssetClass_Description_Length);
+            Guard.AgainstOverflow(() => description, ColumnConstants.SymbolStandard_Description_Length);
         }
 
         Id = id;
@@ -50,12 +49,12 @@ public sealed class AssetClass
     }
 
     /// <summary>
-    /// Gets the Code of the asset class.
+    /// Gets the Id of the security symbol standard.
     /// </summary>
-    public AssetClassCode Id { get; private set; } // Setter is for EF
+    public SecuritySymbolStandard Id { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the description of the asset class.
+    /// Gets the description of the security symbol standard.
     /// </summary>
     public string Description { get; private set; } // Setter is for EF
 }

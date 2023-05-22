@@ -12,10 +12,10 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-
 namespace Boutquin.Trading.UnitTests;
-using Boutquin.Trading.Domain.Entities;
-using Boutquin.Trading.Domain.Extensions;
+
+using DataAccess.Entities;
+using DataAccess.Extensions;
 
 /// <summary>
 /// Contains unit tests for the <see cref="ExchangeExtensions"/> methods.

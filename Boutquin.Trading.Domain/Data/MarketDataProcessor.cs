@@ -14,10 +14,10 @@
 //
 namespace Boutquin.Trading.Domain.Data;
 
+using Interfaces;
+
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-
-using Interfaces;
 
 public sealed class MarketDataProcessor : IMarketDataProcessor
 {

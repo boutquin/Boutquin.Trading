@@ -12,10 +12,9 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-namespace Boutquin.Trading.Domain.Entities;
+namespace Boutquin.Trading.DataAccess.Entities;
 
-using Enums;
-using ValueObjects;
+using Domain.ValueObjects;
 
 /// <summary>
 /// Represents a security.

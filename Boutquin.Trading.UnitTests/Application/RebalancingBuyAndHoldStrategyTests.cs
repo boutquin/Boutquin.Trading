@@ -12,14 +12,14 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-
 namespace Boutquin.Trading.UnitTests.Application;
-using Boutquin.Trading.Application.Strategies;
-using Boutquin.Trading.Domain.Data;
-using Boutquin.Trading.Domain.Enums;
-using Boutquin.Trading.Domain.Interfaces;
 
 using Moq;
+
+using Trading.Application.Strategies;
+using Trading.Domain.Data;
+using Trading.Domain.Enums;
+using Trading.Domain.Interfaces;
 
 public sealed class RebalancingBuyAndHoldStrategyTests
 {
@@ -70,7 +70,11 @@ public sealed class RebalancingBuyAndHoldStrategyTests
         };
 
         // Act
-        var signalEvent = strategy.GenerateSignals(_initialTimestamp, historicalMarketData, CurrencyCode.USD, historicalFxConversionRates);
+        var signalEvent = strategy.GenerateSignals(
+            _initialTimestamp,
+            CurrencyCode.USD,
+            historicalMarketData, 
+            historicalFxConversionRates);
 
         // Assert
         signalEvent.Should().NotBeNull();
@@ -95,8 +99,16 @@ public sealed class RebalancingBuyAndHoldStrategyTests
         };
 
         // Act
-        _ = strategy.GenerateSignals(_initialTimestamp, historicalMarketData, CurrencyCode.USD, historicalFxConversionRates);
-        var signalEvent = strategy.GenerateSignals(_initialTimestamp.AddDays(15), historicalMarketData, CurrencyCode.USD, historicalFxConversionRates);
+        _ = strategy.GenerateSignals(
+            _initialTimestamp,
+            CurrencyCode.USD,
+            historicalMarketData, 
+            historicalFxConversionRates);
+        var signalEvent = strategy.GenerateSignals(
+            _initialTimestamp.AddDays(15),
+            CurrencyCode.USD,
+            historicalMarketData, 
+            historicalFxConversionRates);
 
         // Assert
         signalEvent.Should().NotBeNull();
@@ -122,8 +134,16 @@ public sealed class RebalancingBuyAndHoldStrategyTests
         };
 
         // Act
-        var firstSignalEvent = strategy.GenerateSignals(_initialTimestamp, historicalMarketData, CurrencyCode.USD, historicalFxConversionRates);
-        var secondSignalEvent = strategy.GenerateSignals(_initialTimestamp.AddMonths(1), historicalMarketData, CurrencyCode.USD, historicalFxConversionRates);
+        var firstSignalEvent = strategy.GenerateSignals(
+            _initialTimestamp,
+            CurrencyCode.USD,
+            historicalMarketData, 
+            historicalFxConversionRates);
+        var secondSignalEvent = strategy.GenerateSignals(
+            _initialTimestamp.AddMonths(1),
+            CurrencyCode.USD,
+            historicalMarketData, 
+            historicalFxConversionRates);
 
         // Assert
         firstSignalEvent.Should().NotBeNull();

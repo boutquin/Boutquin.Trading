@@ -14,14 +14,14 @@
 //
 namespace Boutquin.Trading.Data.Processor;
 
+using AlphaVantage;
+
+using Domain.Data;
+using Domain.Helpers;
+
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
-
-using AlphaVantage;
-
-using Boutquin.Trading.Domain.Data;
-using Domain.Helpers;
 
 internal class Program
 {

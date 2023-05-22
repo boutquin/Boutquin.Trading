@@ -14,6 +14,8 @@
 //
 namespace Boutquin.Trading.DataAccess.Configuration;
 
+using Entities;
+
 /// <summary>
 /// This class is responsible for defining the structure and constraints for the <see cref="Country"/> entity in the database.
 /// </summary>

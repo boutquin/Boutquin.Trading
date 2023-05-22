@@ -15,12 +15,13 @@
 namespace Boutquin.Trading.UnitTests.Application;
 
 using Boutquin.Domain.Exceptions;
-using Boutquin.Trading.Application.Strategies;
-using Boutquin.Trading.Domain.Data;
-using Boutquin.Trading.Domain.Enums;
-using Boutquin.Trading.Domain.Interfaces;
 
 using Moq;
+
+using Trading.Application.Strategies;
+using Trading.Domain.Data;
+using Trading.Domain.Enums;
+using Trading.Domain.Interfaces;
 
 public sealed class BuyAndHoldStrategyTests
 {
@@ -89,7 +90,11 @@ public sealed class BuyAndHoldStrategyTests
         };
 
         // Act
-        var signalEvent = strategy.GenerateSignals(_initialTimestamp, historicalMarketData, CurrencyCode.USD, historicalFxConversionRates);
+        var signalEvent = strategy.GenerateSignals(
+            _initialTimestamp,
+            CurrencyCode.USD,
+            historicalMarketData, 
+            historicalFxConversionRates);
 
         // Assert
         signalEvent.Should().NotBeNull();
@@ -125,7 +130,11 @@ public sealed class BuyAndHoldStrategyTests
         };
 
         // Act
-        var signalEvent = strategy.GenerateSignals(_initialTimestamp.AddDays(1), historicalMarketData, CurrencyCode.USD, historicalFxConversionRates);
+        var signalEvent = strategy.GenerateSignals(
+            _initialTimestamp.AddDays(1),
+            CurrencyCode.USD,
+            historicalMarketData, 
+            historicalFxConversionRates);
 
         // Assert
         signalEvent.Should().NotBeNull();

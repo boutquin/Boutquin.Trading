@@ -3,7 +3,6 @@
 namespace Boutquin.Trading.DataAccess.Migrations
 {
 #nullable disable
-
     using Microsoft.EntityFrameworkCore.Migrations;
 
     /// <inheritdoc />

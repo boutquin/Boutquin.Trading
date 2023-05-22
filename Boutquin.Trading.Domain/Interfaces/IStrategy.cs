@@ -15,7 +15,9 @@
 namespace Boutquin.Trading.Domain.Interfaces;
 
 using Data;
+
 using Enums;
+
 using Events;
 
 /// <summary>

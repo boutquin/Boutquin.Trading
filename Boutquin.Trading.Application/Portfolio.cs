@@ -17,8 +17,10 @@ namespace Boutquin.Trading.Application;
 using System.Collections.Immutable;
 
 using Boutquin.Domain.Exceptions;
-using Interfaces;
+
 using Domain.Data;
+
+using Interfaces;
 
 public sealed class Portfolio
 {

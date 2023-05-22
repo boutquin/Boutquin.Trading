@@ -12,8 +12,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-
-namespace Boutquin.Trading.Domain.Entities;
+namespace Boutquin.Trading.DataAccess.Entities;
 
 /// <summary>
 /// Contains the string lengths, precision, and scale of all columns from the database schema.

@@ -12,15 +12,15 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-
 namespace Boutquin.Trading.UnitTests.Application;
-using Boutquin.Trading.Application.Brokers;
-using Boutquin.Trading.Domain.Data;
-using Boutquin.Trading.Domain.Enums;
-using Boutquin.Trading.Domain.Events;
-using Boutquin.Trading.Domain.Interfaces;
 
 using Moq;
+
+using Trading.Application.Brokers;
+using Trading.Domain.Data;
+using Trading.Domain.Enums;
+using Trading.Domain.Events;
+using Trading.Domain.Interfaces;
 
 public sealed class SimulatedBrokerageTests
 {

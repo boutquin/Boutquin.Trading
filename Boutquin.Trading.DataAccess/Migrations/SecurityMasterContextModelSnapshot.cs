@@ -2,11 +2,10 @@
 
 #nullable disable
 
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-
 namespace Boutquin.Trading.DataAccess.Migrations
 {
+    using Microsoft.EntityFrameworkCore.Infrastructure;
+
     [DbContext(typeof(SecurityMasterContext))]
     partial class SecurityMasterContextModelSnapshot : ModelSnapshot
     {

@@ -17,6 +17,7 @@ namespace Boutquin.Trading.Domain.Interfaces;
 using System.Collections.Immutable;
 
 using Data;
+
 using Enums;
 
 /// <summary>

@@ -66,9 +66,9 @@ public class FixedWeightPositionSizer : IPositionSizer
 
         // Compute the total value of the strategy in the base currency
         var totalStrategyValue = strategy.ComputeTotalValue(
-            timestamp, 
+            timestamp,
+            _baseCurrency,
             historicalMarketData, 
-            _baseCurrency, 
             historicalFxConversionRates);
 
         // Calculate the desired position size for each asset based on the fixed asset weights

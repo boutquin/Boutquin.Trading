@@ -2,12 +2,11 @@
 
 #nullable disable
 
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
-
 namespace Boutquin.Trading.DataAccess.Migrations
 {
+    using Microsoft.EntityFrameworkCore.Infrastructure;
+    using Microsoft.EntityFrameworkCore.Migrations;
+
     [DbContext(typeof(SecurityMasterContext))]
     [Migration("20230417025851_InitialCreate")]
     partial class InitialCreate

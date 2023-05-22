@@ -16,7 +16,7 @@ namespace Boutquin.Trading.DataAccess;
 
 using System.Reflection;
 
-using TimeZone = Domain.Entities.TimeZone;
+using Entities;
 
 /// <summary>
 /// The <see cref="SecurityMasterContext"/> class represents the database context for the security master database. It provides a

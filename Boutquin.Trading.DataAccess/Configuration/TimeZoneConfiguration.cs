@@ -16,10 +16,10 @@ namespace Boutquin.Trading.DataAccess.Configuration;
 
 using Boutquin.Domain.Extensions;
 
-using TimeZone = Domain.Entities.TimeZone;
+using Entities;
 
 /// <summary>
-/// This class is responsible for defining the structure and constraints for the <see cref="Domain.Entities.TimeZone"/> entity in the database.
+/// This class is responsible for defining the structure and constraints for the <see cref="TimeZone"/> entity in the database.
 /// </summary>
 public sealed class TimeZoneConfiguration : IEntityTypeConfiguration<TimeZone>
 {

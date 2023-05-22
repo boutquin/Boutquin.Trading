@@ -12,11 +12,9 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-namespace Boutquin.Trading.Domain.Entities;
+namespace Boutquin.Trading.DataAccess.Entities;
 
 using Boutquin.Domain.Extensions;
-
-using Enums;
 
 /// <summary>
 /// Represents a continent.

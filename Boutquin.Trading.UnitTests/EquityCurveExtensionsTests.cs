@@ -12,9 +12,9 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-
 namespace Boutquin.Trading.UnitTests;
-using Boutquin.Trading.Domain.Extensions;
+
+using Trading.Domain.Extensions;
 
 public sealed class EquityCurveExtensionsTests
 {

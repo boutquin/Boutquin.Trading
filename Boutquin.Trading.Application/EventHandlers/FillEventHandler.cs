@@ -14,8 +14,6 @@
 //
 namespace Boutquin.Trading.Application.EventHandlers;
 
-using Domain.Events;
-
 public sealed class FillEventHandler : IEventHandler
 {
     private readonly IPortfolio _portfolio;

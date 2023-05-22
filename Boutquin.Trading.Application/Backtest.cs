@@ -14,8 +14,6 @@
 //
 namespace Boutquin.Trading.Application;
 
-using Domain.Data;
-
 /// <summary>
 /// Represents a BackTest of a trading portfolio with multiple assets, strategies, and events.
 /// The BackTest class is responsible for running the BackTest by iterating through a series of events,

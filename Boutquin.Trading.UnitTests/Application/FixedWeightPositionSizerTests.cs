@@ -12,14 +12,14 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-
 namespace Boutquin.Trading.UnitTests.Application;
-using Boutquin.Trading.Application.PositionSizing;
-using Boutquin.Trading.Domain.Data;
-using Boutquin.Trading.Domain.Enums;
-using Boutquin.Trading.Domain.Interfaces;
 
 using Moq;
+
+using Trading.Application.PositionSizing;
+using Trading.Domain.Data;
+using Trading.Domain.Enums;
+using Trading.Domain.Interfaces;
 
 public sealed class FixedWeightPositionSizerTests
 {
@@ -55,7 +55,11 @@ public sealed class FixedWeightPositionSizerTests
         };
         var strategyMock = new Mock<IStrategy>();
         strategyMock.Setup(s => s.Assets).Returns(assetCurrencies);
-        strategyMock.Setup(s => s.ComputeTotalValue(It.IsAny<DateOnly>(), It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<string, MarketData>>>(), It.IsAny<CurrencyCode>(), It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>>())).Returns(1000m);
+        strategyMock.Setup(s => s.ComputeTotalValue(
+            It.IsAny<DateOnly>(),
+            It.IsAny<CurrencyCode>(),
+            It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<string, MarketData>>>(), 
+            It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>>())).Returns(1000m);
 
         // Act
         var positionSizes = positionSizer.ComputePositionSizes(_initialTimestamp, signalType, strategyMock.Object, historicalMarketData, historicalFxConversionRates);
@@ -144,7 +148,11 @@ public sealed class FixedWeightPositionSizerTests
 
         var strategyMock = new Mock<IStrategy>();
         strategyMock.Setup(s => s.Assets).Returns(assetCurrencies);
-        strategyMock.Setup(s => s.ComputeTotalValue(It.IsAny<DateOnly>(), It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<string, MarketData>>>(), It.IsAny<CurrencyCode>(), It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>>())).Returns(1000m);
+        strategyMock.Setup(s => s.ComputeTotalValue(
+            It.IsAny<DateOnly>(),
+            It.IsAny<CurrencyCode>(),
+            It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<string, MarketData>>>(),  
+            It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>>())).Returns(1000m);
 
         // Act
         var positionSizes = positionSizer.ComputePositionSizes(_initialTimestamp, signalType, strategyMock.Object, historicalMarketData, historicalFxConversionRates);

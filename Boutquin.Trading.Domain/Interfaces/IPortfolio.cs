@@ -14,10 +14,10 @@
 //
 namespace Boutquin.Trading.Domain.Interfaces;
 
-using System.Collections.Generic;
-
 using Data;
+
 using Enums;
+
 using Events;
 
 /// <summary>

@@ -17,7 +17,9 @@ namespace Boutquin.Trading.Domain.Data;
 using System.Security;
 
 using Exceptions;
+
 using Helpers;
+
 using Interfaces;
 
 public sealed class CsvMarketDataStorage : IMarketDataStorage

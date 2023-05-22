@@ -17,6 +17,7 @@ namespace Boutquin.Trading.Domain.Helpers;
 using System.Security;
 
 using Exceptions;
+
 using Interfaces;
 
 public sealed class CsvSymbolReader : ISymbolReader

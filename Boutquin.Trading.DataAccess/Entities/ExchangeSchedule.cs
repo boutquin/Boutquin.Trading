@@ -12,9 +12,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-namespace Boutquin.Trading.Domain.Entities;
-
-using Enums;
+namespace Boutquin.Trading.DataAccess.Entities;
 
 /// <summary>
 /// Represents an exchange schedule.

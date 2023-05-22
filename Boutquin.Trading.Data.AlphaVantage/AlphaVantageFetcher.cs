@@ -17,15 +17,15 @@ namespace Boutquin.Trading.Data.AlphaVantage;
 using System.Net;
 using System.Text.Json;
 
-using Microsoft.Extensions.Caching.Distributed;
-
 using Boutquin.Domain.Converters;
 using Boutquin.Domain.Helpers;
-using Boutquin.Trading.Domain.Data;
 
+using Domain.Data;
 using Domain.Enums;
 using Domain.Exceptions;
 using Domain.Interfaces;
+
+using Microsoft.Extensions.Caching.Distributed;
 
 /// <summary>
 /// A class for fetching market data from the Alpha Vantage API, with caching and rate limiting support.

@@ -35,9 +35,6 @@ public sealed class OrderEventHandler : IEventHandler
         {
             // Log success
         }
-        else
-        {
-            // Log failure
-        }
+        // Log failure
     }
 }

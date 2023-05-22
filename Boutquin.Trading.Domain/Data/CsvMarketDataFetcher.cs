@@ -15,8 +15,11 @@
 namespace Boutquin.Trading.Domain.Data;
 
 using Enums;
+
 using Exceptions;
+
 using Helpers;
+
 using Interfaces;
 
 public sealed class CsvMarketDataFetcher : IMarketDataFetcher

@@ -14,7 +14,7 @@
 //
 namespace Boutquin.Trading.DataAccess.Configuration;
 
-using TimeZone = Domain.Entities.TimeZone;
+using Entities;
 
 /// <summary>
 /// This class is responsible for defining the structure and constraints for the <see cref="City"/> entity in the database.
