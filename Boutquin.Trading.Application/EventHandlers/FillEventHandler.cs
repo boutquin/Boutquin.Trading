@@ -14,6 +14,8 @@
 //
 namespace Boutquin.Trading.Application.EventHandlers;
 
+using Domain.Events;
+
 public sealed class FillEventHandler : IEventHandler
 {
     private readonly IPortfolio _portfolio;
@@ -27,12 +29,15 @@ public sealed class FillEventHandler : IEventHandler
 
     public async Task HandleEventAsync(IEvent eventObj)
     {
-        var fillEvent = eventObj as FillEvent;
-        if (fillEvent == null)
-        {
-            throw new ArgumentException("Event must be of type FillEvent.", nameof(eventObj));
-        }
+        var fillEvent = eventObj as FillEvent 
+            ?? throw new ArgumentException("Event must be of type FillEvent.", nameof(eventObj));
 
         // Call methods on the Portfolio class to perform the necessary actions
+        var strategy = _portfolio.GetStrategy(fillEvent.StrategyName);
+        strategy.UpdatePositions(fillEvent.Asset, fillEvent.Quantity);
+
+        var tradeValue = fillEvent.FillPrice * fillEvent.Quantity;
+        var tradeCost = tradeValue + fillEvent.Commission;
+        strategy.UpdateCash(_portfolio.GetAssetCurrency(fillEvent.Asset), -tradeCost);
     }
 }

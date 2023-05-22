@@ -99,10 +99,12 @@ public interface IStrategy
     /// The implementation should consider various factors like price trends, market indicators, and other technical or fundamental analysis techniques.
     /// The generated signals are then used to drive trading decisions, such as entering or exiting positions.
     /// </remarks>
+    /// <exception cref="System.ArgumentNullException">Thrown when the historicalMarketData or historicalFxConversionRates are null.</exception>
+    /// <exception cref="System.ArgumentOutOfRangeException">Thrown when an undefined CurrencyCode is provided as the baseCurrency.</exception>
     SignalEvent GenerateSignals(
         DateOnly timestamp,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<string, MarketData>> historicalMarketData,
         CurrencyCode baseCurrency,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<string, MarketData>?> historicalMarketData,
         IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates);
 
     /// <summary>
@@ -119,10 +121,12 @@ public interface IStrategy
     /// The total value is calculated as the sum of the values of all assets and cash holdings in the strategy, considering historical market data and foreign exchange conversion rates.
     /// The computed total value can be used for various purposes, such as risk management, portfolio rebalancing, or performance evaluation.
     /// </remarks>
+    /// <exception cref="System.ArgumentNullException">Thrown when the historicalMarketData or historicalFxConversionRates are null.</exception>
+    /// <exception cref="System.ArgumentOutOfRangeException">Thrown when an undefined CurrencyCode is provided as the baseCurrency.</exception>
     decimal ComputeTotalValue(
         DateOnly timestamp,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<string, MarketData>> historicalMarketData,
         CurrencyCode baseCurrency,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<string, MarketData>?> historicalMarketData,
         IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
     {
         // Validate parameters
@@ -133,17 +137,14 @@ public interface IStrategy
         var totalValue = 0m;
 
         // Iterate through each asset in the strategy
-        foreach (var asset in Assets)
+        foreach (var (asset, assetCurrency) in Assets)
         {
-            // Get the asset's currency
-            var assetCurrency = asset.Value;
-
             // Get the asset's position size
-            Positions.TryGetValue(asset.Key, out var positionSize);
+            Positions.TryGetValue(asset, out var positionSize);
 
             // Get the historical market data for the asset
-            if (historicalMarketData.TryGetValue(timestamp, out SortedDictionary<string, MarketData> assetMarketData) &&
-                assetMarketData.TryGetValue(asset.Key, out var marketData))
+            if (historicalMarketData.TryGetValue(timestamp, out var assetMarketData) &&
+                assetMarketData.TryGetValue(asset, out var marketData))
             {
                 // Calculate the asset's value in its native currency
                 var assetValue = positionSize * marketData.AdjustedClose;
@@ -167,7 +168,7 @@ public interface IStrategy
             }
             else
             {
-                throw new InvalidOperationException($"Market data not found for asset {asset.Key} at timestamp {timestamp}");
+                throw new InvalidOperationException($"Market data not found for asset {asset} at timestamp {timestamp}");
             }
         }
 
@@ -194,5 +195,79 @@ public interface IStrategy
         }
 
         return totalValue;
+    }
+
+    /// <summary>
+    /// Updates the cash holdings in a particular currency for this strategy.
+    /// If the strategy already has a cash balance in the specified currency, it adds the amount to the existing balance.
+    /// If the strategy does not have a cash balance in the specified currency, it creates a new balance with the specified amount.
+    /// </summary>
+    /// <param name="currency">The currency of the cash holdings to be updated. Must be a valid member of the CurrencyCode enumeration.</param>
+    /// <param name="amount">The amount by which the cash holdings in the specified currency should be updated.</param>
+    /// <remarks>
+    /// This method should be used whenever the strategy executes a trade and needs to update its cash balance accordingly.
+    /// The currency parameter must be a valid CurrencyCode, and the amount should reflect the net change in the strategy's cash balance in the specified currency as a result of the trade.
+    /// </remarks>
+    /// <exception cref="System.ArgumentOutOfRangeException">Thrown when an undefined CurrencyCode is provided.</exception>
+    void UpdateCash(CurrencyCode currency, decimal amount)
+    {
+        // Validate parameters
+        Guard.AgainstUndefinedEnumValue(() => currency); // Throws ArgumentOutOfRangeException
+
+        if (Cash.ContainsKey(currency))
+        {
+            Cash[currency] += amount;
+        }
+        else
+        {
+            Cash[currency] = amount;
+        }
+    }
+
+    /// <summary>
+    /// Updates the position quantity for a particular asset in this strategy.
+    /// If the strategy already has a position in the specified asset, it adds the quantity to the existing position.
+    /// If the strategy does not have a position in the specified asset, it creates a new position with the specified quantity.
+    /// </summary>
+    /// <param name="asset">The asset whose position quantity needs to be updated. Must be a non-null, non-empty, non-whitespace string.</param>
+    /// <param name="quantity">The quantity by which the position in the specified asset should be updated.</param>
+    /// <remarks>
+    /// This method should be used whenever the strategy executes a trade and needs to update its position quantity accordingly.
+    /// The asset parameter must be a valid asset symbol, and the quantity should reflect the net change in the strategy's position quantity as a result of the trade.
+    /// </remarks>
+    /// <exception cref="System.ArgumentException">Thrown when a null, empty, or whitespace string is provided for the asset.</exception>
+    void UpdatePositions(string asset, int quantity)
+    {
+        // Validate parameters
+        Guard.AgainstNullOrWhiteSpace(() => asset); // Throws ArgumentException
+
+        if (Positions.ContainsKey(asset))
+        {
+            Positions[asset] += quantity;
+        }
+        else
+        {
+            Positions[asset] = quantity;
+        }
+    }
+
+    /// <summary>
+    /// Updates the position quantity for a particular asset in this strategy.
+    /// If the strategy already has a position in the specified asset, it adds the quantity to the existing position.
+    /// If the strategy does not have a position in the specified asset, it creates a new position with the specified quantity.
+    /// </summary>
+    /// <param name="asset">The asset whose position quantity needs to be updated. Must be a non-null, non-empty, non-whitespace string.</param>
+    /// <param name="quantity">The quantity by which the position in the specified asset should be updated.</param>
+    /// <remarks>
+    /// This method should be used whenever the strategy executes a trade and needs to update its position quantity accordingly.
+    /// The asset parameter must be a valid asset symbol, and the quantity should reflect the net change in the strategy's position quantity as a result of the trade.
+    /// </remarks>
+    /// <exception cref="System.ArgumentException">Thrown when a null, empty, or whitespace string is provided for the asset.</exception>
+    int GetPositionQuantity(string asset)
+    {
+        // Validate parameters
+        Guard.AgainstNullOrWhiteSpace(() => asset); // Throws ArgumentException
+
+        return Positions.ContainsKey(asset) ? Positions[asset] : 0;
     }
 }

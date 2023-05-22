@@ -41,6 +41,6 @@ public interface IPositionSizer
         DateOnly timestamp,
         IReadOnlyDictionary<string, SignalType> signalType,
         IStrategy strategy,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<string, MarketData>> historicalMarketData,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<string, MarketData>?> historicalMarketData,
         IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates);
 }

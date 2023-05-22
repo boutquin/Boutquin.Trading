@@ -27,12 +27,30 @@ public sealed class DividendEventHandler : IEventHandler
 
     public async Task HandleEventAsync(IEvent eventObj)
     {
-        var dividendEvent = eventObj as DividendEvent;
-        if (dividendEvent == null)
-        {
-            throw new ArgumentException("Event must be of type DividendEvent.", nameof(eventObj));
-        }
+        var dividendEvent = eventObj as DividendEvent 
+            ?? throw new ArgumentException("Event must be of type DividendEvent.", nameof(eventObj));
 
         // Call methods on the Portfolio class to perform the necessary actions
+
+        // Determine the currency of the asset
+        var assetCurrency = _portfolio.GetAssetCurrency(dividendEvent.Asset);
+
+        // Iterate through all the strategies
+        foreach (var strategyEntry in _portfolio.Strategies)
+        {
+            var strategy = strategyEntry.Value;
+
+            // Check if the strategy holds the asset in the dividend event
+            if (!strategy.Positions.TryGetValue(dividendEvent.Asset, out var positionQuantity))
+            {
+                continue;
+            }
+
+            // Calculate the dividend amount by multiplying the dividend per share with the position quantity
+            var dividendAmount = dividendEvent.DividendPerShare * positionQuantity;
+
+            // Update the strategy's cash balance by adding the dividend amount in the native currency
+            strategy.UpdateCash(assetCurrency, dividendAmount);
+        }
     }
 }

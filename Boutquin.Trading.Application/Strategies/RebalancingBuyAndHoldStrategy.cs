@@ -83,8 +83,8 @@ public sealed class RebalancingBuyAndHoldStrategy : IStrategy
     /// <exception cref="EmptyOrNullDictionaryException">Thrown when historicalMarketData or historicalFxConversionRates dictionaries are empty or null.</exception>
     public SignalEvent GenerateSignals(
         DateOnly timestamp,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<string, MarketData>> historicalMarketData,
         CurrencyCode baseCurrency,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<string, MarketData>?> historicalMarketData,
         IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
     {
         // Validate parameters

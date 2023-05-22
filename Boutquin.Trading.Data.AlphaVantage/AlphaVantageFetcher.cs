@@ -100,7 +100,7 @@ public sealed class AlphaVantageFetcher : IMarketDataFetcher
     /// }
     /// </code>
     /// </example>
-    public async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<string, MarketData>>> FetchMarketDataAsync(IEnumerable<string> assets)
+    public async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<string, MarketData>?>> FetchMarketDataAsync(IEnumerable<string> assets)
     {
         // Validate the input assets list
         Guard.AgainstEmptyOrNullEnumerable(() => assets);
@@ -153,7 +153,7 @@ public sealed class AlphaVantageFetcher : IMarketDataFetcher
                 }
 
                 // Deserialize, yield, and cache the JSON time series data
-                var marketData = new SortedDictionary<DateOnly, SortedDictionary<string, MarketData>>();
+                var marketData = new SortedDictionary<DateOnly, SortedDictionary<string, MarketData>?>();
 
                 // Deserialize, accumulate, and cache the JSON time series data
                 var accumulatedMarketData = DeserializeAndYieldMarketDataFromApi(timeSeries, asset, options);
@@ -313,13 +313,13 @@ public sealed class AlphaVantageFetcher : IMarketDataFetcher
     /// The key is the date of the data point, and the value is a sorted dictionary containing the asset symbol and
     /// its corresponding market data.
     /// </returns>
-    private async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<string, MarketData>>> DeserializeAndYieldCachedMarketData(
-        string cachedData, string asset, JsonSerializerOptions options)
+    private async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<string, MarketData>?>> DeserializeAndYieldCachedMarketData(
+        string cachedData, string asset, JsonSerializerOptions? options)
     {
         var cachedMarketData = JsonSerializer.Deserialize<SortedDictionary<DateOnly, MarketData>>(cachedData, options);
         foreach (var dataPoint in cachedMarketData)
         {
-            yield return new KeyValuePair<DateOnly, SortedDictionary<string, MarketData>>(dataPoint.Key, new SortedDictionary<string, MarketData> { { asset, dataPoint.Value } });
+            yield return new KeyValuePair<DateOnly, SortedDictionary<string, MarketData>?>(dataPoint.Key, new SortedDictionary<string, MarketData> { { asset, dataPoint.Value } });
         }
     }
 
@@ -338,8 +338,8 @@ public sealed class AlphaVantageFetcher : IMarketDataFetcher
     /// This method catches any FormatException or MarketDataRetrievalException and logs the error (if a logger is available)
     /// while continuing to process the remaining data points.
     /// </remarks>
-    private IEnumerable<KeyValuePair<DateOnly, SortedDictionary<string, MarketData>>> DeserializeAndYieldMarketDataFromApi(
-        JsonElement timeSeries, string asset, JsonSerializerOptions options)
+    private IEnumerable<KeyValuePair<DateOnly, SortedDictionary<string, MarketData>?>> DeserializeAndYieldMarketDataFromApi(
+        JsonElement timeSeries, string asset, JsonSerializerOptions? options)
     {
         var marketData = new SortedDictionary<DateOnly, MarketData>();
         foreach (var entry in timeSeries.EnumerateObject())
@@ -351,7 +351,7 @@ public sealed class AlphaVantageFetcher : IMarketDataFetcher
             if (dataPoint != null)
             {
                 marketData.Add(date, dataPoint);
-                yield return new KeyValuePair<DateOnly, SortedDictionary<string, MarketData>>(date, new SortedDictionary<string, MarketData> { { asset, dataPoint } });
+                yield return new KeyValuePair<DateOnly, SortedDictionary<string, MarketData>?>(date, new SortedDictionary<string, MarketData> { { asset, dataPoint } });
             }
         }
     }

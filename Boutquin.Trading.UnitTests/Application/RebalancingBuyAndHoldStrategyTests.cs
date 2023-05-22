@@ -60,7 +60,7 @@ public sealed class RebalancingBuyAndHoldStrategyTests
     {
         // Arrange
         var strategy = new RebalancingBuyAndHoldStrategy(_name, _assets, _cash, _orderPriceCalculationStrategyMock.Object, _positionSizerMock.Object, RebalancingFrequency.Daily);
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<string, MarketData>>
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<string, MarketData>?>
         {
             { _initialTimestamp, new SortedDictionary<string, MarketData> { { "AAPL", _marketData } } }
         };
@@ -85,7 +85,7 @@ public sealed class RebalancingBuyAndHoldStrategyTests
     {
         // Arrange
         var strategy = new RebalancingBuyAndHoldStrategy(_name, _assets, _cash, _orderPriceCalculationStrategyMock.Object, _positionSizerMock.Object, RebalancingFrequency.Monthly);
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<string, MarketData>>
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<string, MarketData>?>
         {
             { _initialTimestamp, new SortedDictionary<string, MarketData> { { "AAPL", _marketData } } }
         };
@@ -110,7 +110,7 @@ public sealed class RebalancingBuyAndHoldStrategyTests
     {
         // Arrange
         var strategy = new RebalancingBuyAndHoldStrategy(_name, _assets, _cash, _orderPriceCalculationStrategyMock.Object, _positionSizerMock.Object, RebalancingFrequency.Monthly);
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<string, MarketData>>
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<string, MarketData>?>
         {
             { _initialTimestamp, new SortedDictionary<string, MarketData> { { "AAPL", _marketData } } },
             { _initialTimestamp.AddMonths(1), new SortedDictionary<string, MarketData> { { "AAPL", _marketData } } }

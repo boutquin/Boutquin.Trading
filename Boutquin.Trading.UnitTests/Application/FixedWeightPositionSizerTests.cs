@@ -45,7 +45,7 @@ public sealed class FixedWeightPositionSizerTests
             DividendPerShare: 0,
             SplitCoefficient: 1);
 
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<string, MarketData>>
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<string, MarketData>?>
         {
             { _initialTimestamp, new SortedDictionary<string, MarketData> { { "AAPL", marketData } } }
         };
@@ -84,7 +84,7 @@ public sealed class FixedWeightPositionSizerTests
             Volume: 1000000,
             DividendPerShare: 0,
             SplitCoefficient: 1);
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<string, MarketData>>
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<string, MarketData>?>
         {
             { _initialTimestamp, new SortedDictionary<string, MarketData> { { "MSFT", marketData } } }
         };
@@ -132,8 +132,8 @@ public sealed class FixedWeightPositionSizerTests
             DividendPerShare: 0,
             SplitCoefficient: 1);
 
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<string, MarketData>>
-    {
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<string, MarketData>?>
+        {
         { _initialTimestamp, new SortedDictionary<string, MarketData> { { "AAPL", marketDataAAPL }, { "MSFT", marketDataMSFT } } }
     };
 

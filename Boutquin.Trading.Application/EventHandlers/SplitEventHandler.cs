@@ -27,12 +27,11 @@ public sealed class SplitEventHandler : IEventHandler
 
     public async Task HandleEventAsync(IEvent eventObj)
     {
-        var splitEvent = eventObj as SplitEvent;
-        if (splitEvent == null)
-        {
-            throw new ArgumentException("Event must be of type SplitEvent.", nameof(eventObj));
-        }
+        var splitEvent = eventObj as SplitEvent 
+            ?? throw new ArgumentException("Event must be of type SplitEvent.", nameof(eventObj));
 
         // Call methods on the Portfolio class to perform the necessary actions
+        _portfolio.AdjustPositionForSplit(splitEvent.Asset, splitEvent.SplitRatio);
+        _portfolio.AdjustHistoricalDataForSplit(splitEvent.Asset, splitEvent.SplitRatio);
     }
 }

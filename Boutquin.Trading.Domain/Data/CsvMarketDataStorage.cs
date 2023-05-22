@@ -36,7 +36,7 @@ public sealed class CsvMarketDataStorage : IMarketDataStorage
     }
 
     /// <inheritdoc/>
-    public async Task SaveMarketDataAsync(KeyValuePair<DateOnly, SortedDictionary<string, MarketData>> dataPoint)
+    public async Task SaveMarketDataAsync(KeyValuePair<DateOnly, SortedDictionary<string, MarketData>?> dataPoint)
     {
         // Validate the input data point
         if (dataPoint.Value == null || dataPoint.Value.Count == 0)

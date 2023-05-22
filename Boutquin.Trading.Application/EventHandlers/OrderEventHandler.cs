@@ -27,12 +27,17 @@ public sealed class OrderEventHandler : IEventHandler
 
     public async Task HandleEventAsync(IEvent eventObj)
     {
-        var orderEvent = eventObj as OrderEvent;
-        if (orderEvent == null)
-        {
-            throw new ArgumentException("Event must be of type OrderEvent.", nameof(eventObj));
-        }
+        var orderEvent = eventObj as OrderEvent 
+            ?? throw new ArgumentException("Event must be of type OrderEvent.", nameof(eventObj));
 
         // Call methods on the Portfolio class to perform the necessary actions
+        if (await _portfolio.SubmitOrderAsync(orderEvent))
+        {
+            // Log success
+        }
+        else
+        {
+            // Log failure
+        }
     }
 }

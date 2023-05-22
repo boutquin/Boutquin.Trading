@@ -35,7 +35,7 @@ public sealed class CsvMarketDataFetcher : IMarketDataFetcher
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<string, MarketData>>> FetchMarketDataAsync(
+    public async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<string, MarketData>?>> FetchMarketDataAsync(
         IEnumerable<string> symbols)
     {
         if (symbols == null || !symbols.Any())
@@ -62,7 +62,7 @@ public sealed class CsvMarketDataFetcher : IMarketDataFetcher
 
             while (await streamReader.ReadLineAsync() is { } line)
             {
-                KeyValuePair<DateOnly, SortedDictionary<string, MarketData>>? dataPoint = null;
+                KeyValuePair<DateOnly, SortedDictionary<string, MarketData>?>? dataPoint = null;
                 Exception? dataException = null;
 
                 try

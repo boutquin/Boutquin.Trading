@@ -17,25 +17,52 @@ namespace Boutquin.Trading.Application.EventHandlers;
 public sealed class MarketEventHandler : IEventHandler
 {
     private readonly IPortfolio _portfolio;
+    private readonly CurrencyCode _baseCurrency;
 
-    public MarketEventHandler(IPortfolio portfolio)
+    public MarketEventHandler(IPortfolio portfolio, CurrencyCode baseCurrency)
     {
+        // Validate parameters
         Guard.AgainstNull(() => portfolio); // Throws ArgumentNullException
+        Guard.AgainstUndefinedEnumValue(() => baseCurrency); // Throws ArgumentOutOfRangeException
 
         _portfolio = portfolio;
+        _baseCurrency = baseCurrency;
     }
 
     public async Task HandleEventAsync(IEvent eventObj)
     {
-        var marketEvent = eventObj as MarketEvent;
-        if (marketEvent == null)
-        {
-            throw new ArgumentException("Event must be of type MarketEvent.", nameof(eventObj));
-        }
+        var marketEvent = eventObj as MarketEvent 
+            ?? throw new ArgumentException("Event must be of type MarketEvent.", nameof(eventObj));
 
         // Call methods on the Portfolio class to perform the necessary actions
-        await _portfolio.UpdateHistoricalDataAsync(marketEvent);
+        _portfolio.UpdateHistoricalData(marketEvent);
+
+        // Detect and handle dividend and split events
+        foreach (var (asset, marketData) in marketEvent.HistoricalMarketData)
+        {
+            // Detect and handle dividend events
+            var dividendPerShare = marketData.DividendPerShare;
+            if (dividendPerShare > 0)
+            {
+                _portfolio.UpdateCashForDividend(asset, dividendPerShare);
+            }
+
+            // Detect and handle split events
+            var splitCoefficient = marketData.SplitCoefficient;
+            if (splitCoefficient == 1)
+            {
+                continue;
+            }
+
+            _portfolio.AdjustPositionForSplit(asset, splitCoefficient);
+            if (_portfolio.IsLive)
+            {
+                _portfolio.AdjustHistoricalDataForSplit(asset, splitCoefficient);
+            }
+        }
+
         await _portfolio.AllocateCapitalAsync();
-        await _portfolio.GenerateSignalsAsync(marketEvent);
+
+        _portfolio.GenerateSignals(marketEvent, _baseCurrency);
     }
 }

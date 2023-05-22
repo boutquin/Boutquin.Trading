@@ -27,7 +27,7 @@ public sealed class Portfolio
     private readonly IBrokerage _broker;
     private readonly CurrencyCode _baseCurrency;
     private readonly IReadOnlyDictionary<string, CurrencyCode> _assetCurrencies;
-    private readonly SortedDictionary<DateOnly, SortedDictionary<string, MarketData>> _historicalMarketData;
+    private readonly SortedDictionary<DateOnly, SortedDictionary<string, MarketData>?> _historicalMarketData;
     private readonly SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> _historicalFxConversionRates;
     private readonly IEventProcessor _eventProcessor;
 
@@ -54,7 +54,7 @@ public sealed class Portfolio
         IBrokerage broker,
         CurrencyCode baseCurrency,
         IReadOnlyDictionary<string, CurrencyCode> assetCurrencies,
-        SortedDictionary<DateOnly, SortedDictionary<string, MarketData>> historicalMarketData,
+        SortedDictionary<DateOnly, SortedDictionary<string, MarketData>?> historicalMarketData,
         SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates, 
         IEventProcessor eventProcessor)
     {
@@ -170,8 +170,8 @@ public sealed class Portfolio
             // Generate signals for the current strategy
             var signals = strategy.GenerateSignals(
                 marketEvent.Timestamp,
-                _historicalMarketData,
                 _baseCurrency,
+                _historicalMarketData,
                 _historicalFxConversionRates);
 
             // Process the signal
@@ -441,8 +441,8 @@ public sealed class Portfolio
 
             var strategyTotalValue = strategy.ComputeTotalValue(
                 timestamp,
-                _historicalMarketData,
                 _baseCurrency,
+                _historicalMarketData,
                 _historicalFxConversionRates);
 
             totalPortfolioValue += strategyTotalValue;
@@ -450,5 +450,4 @@ public sealed class Portfolio
 
         return totalPortfolioValue;
     }
-
 }
