@@ -12,28 +12,9 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-namespace Boutquin.Trading.Domain.Events;
+namespace Boutquin.Trading.Domain.Interfaces;
 
-using Interfaces;
-
-public sealed class EventProcessor : IEventProcessor
+public interface IEventProcessor
 {
-    private readonly Dictionary<Type, IEventHandler> _handlers;
-
-    public EventProcessor(Dictionary<Type, IEventHandler> handlers)
-    {
-        _handlers = handlers;
-    }
-
-    public async Task ProcessEventAsync(IEvent eventObj)
-    {
-        if (_handlers.TryGetValue(eventObj.GetType(), out var handler))
-        {
-            await handler.HandleEventAsync(eventObj);
-        }
-        else
-        {
-            throw new NotSupportedException($"Unsupported event type: {eventObj.GetType()}");
-        }
-    }
+    Task ProcessEventAsync(IEvent eventObj);
 }

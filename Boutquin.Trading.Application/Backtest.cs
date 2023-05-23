@@ -26,13 +26,13 @@ public sealed class BackTest
     /// The portfolio to use for the backtesting simulation, represented
     /// as a Portfolio object.
     /// </summary>
-    private readonly Portfolio _portfolio;
+    private readonly IPortfolio _portfolio;
 
     /// <summary>
     /// The benchmark portfolio to use for the backtesting simulation,
     /// represented as a Portfolio object.
     /// </summary>
-    private readonly Portfolio _benchmarkPortfolio;
+    private readonly IPortfolio _benchmarkPortfolio;
 
     /// <summary>
     /// The market data source to use for loading historical market data
@@ -53,7 +53,7 @@ public sealed class BackTest
     /// <param name="marketDataFetcher">An object implementing the IMarketDataFetcher interface, responsible for providing market data for the backtest.</param>
     /// <param name="baseCurrency">A CurrencyCode enum value representing the base currency for the backtest.</param>
     /// <exception cref="ArgumentNullException">Thrown when any of the provided arguments are null.</exception>
-    public BackTest(Portfolio portfolio, Portfolio benchmarkPortfolio, IMarketDataFetcher marketDataFetcher, CurrencyCode baseCurrency)
+    public BackTest(IPortfolio portfolio, IPortfolio benchmarkPortfolio, IMarketDataFetcher marketDataFetcher, CurrencyCode baseCurrency)
     {
         _portfolio = portfolio ?? throw new ArgumentNullException(nameof(portfolio), "The provided portfolio cannot be null.");
         _benchmarkPortfolio = benchmarkPortfolio ?? throw new ArgumentNullException(nameof(benchmarkPortfolio), "The provided benchmark portfolio cannot be null.");
@@ -77,14 +77,14 @@ public sealed class BackTest
         }
 
         // Fetch the historical market data for the backtest period for both the portfolio and the benchmark portfolio.
-        var symbols = _portfolio.Strategies.SelectMany(s => s.Assets.Keys)
-                      .Union(_benchmarkPortfolio.Strategies.SelectMany(s => s.Assets.Keys))
+        var symbols = _portfolio.Strategies.Values.SelectMany(s => s.Assets.Keys)
+                      .Union(_benchmarkPortfolio.Strategies.Values.SelectMany(s => s.Assets.Keys))
                       .Distinct();
 
         var marketDataTimeline = _marketDataFetcher.FetchMarketDataAsync(symbols);
 
         // Get currency pairs by combining the base currency with the currencies of the assets in the portfolio strategies.
-        var currencyPairs = _portfolio.Strategies
+        var currencyPairs = _portfolio.Strategies.Values
                                       .SelectMany(s => s.Assets.Values)
                                       .Select(currencyCode => $"{_baseCurrency}_{currencyCode}")
                                       .Distinct();

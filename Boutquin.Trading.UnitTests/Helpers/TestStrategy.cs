@@ -25,7 +25,6 @@ public class TestStrategy : IStrategy
     public SortedDictionary<string, int> Positions { get; set; } = new SortedDictionary<string, int>();
     public IReadOnlyDictionary<string, CurrencyCode> Assets { get; set; } = new Dictionary<string, CurrencyCode>();
     public SortedDictionary<CurrencyCode, decimal> Cash { get; set; } = new SortedDictionary<CurrencyCode, decimal>();
-    public SortedDictionary<string, SortedDictionary<DateOnly, decimal>> DailyNativeReturns { get; set; } = new SortedDictionary<string, SortedDictionary<DateOnly, decimal>>();
     public IOrderPriceCalculationStrategy OrderPriceCalculationStrategy { get; set; }
     public IPositionSizer PositionSizer { get; set; }
 

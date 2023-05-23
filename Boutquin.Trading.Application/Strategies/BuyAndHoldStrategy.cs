@@ -57,14 +57,12 @@ public sealed class BuyAndHoldStrategy : IStrategy
         OrderPriceCalculationStrategy = orderPriceCalculationStrategy;
         PositionSizer = positionSizer;
         Positions = new SortedDictionary<string, int>();
-        DailyNativeReturns = new SortedDictionary<string, SortedDictionary<DateOnly, decimal>>();
     }
 
     public string Name { get; }
     public SortedDictionary<string, int> Positions { get; }
     public IReadOnlyDictionary<string, CurrencyCode> Assets { get; }
     public SortedDictionary<CurrencyCode, decimal> Cash { get; }
-    public SortedDictionary<string, SortedDictionary<DateOnly, decimal>> DailyNativeReturns { get; }
     public IOrderPriceCalculationStrategy OrderPriceCalculationStrategy { get; }
     public IPositionSizer PositionSizer { get; }
 

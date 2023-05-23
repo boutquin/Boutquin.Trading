@@ -61,7 +61,7 @@ public sealed class MarketEventHandler : IEventHandler
             }
         }
 
-        await _portfolio.AllocateCapitalAsync();
+        //await _portfolio.AllocateCapitalAsync();
 
         _portfolio.GenerateSignals(marketEvent, _baseCurrency);
     }

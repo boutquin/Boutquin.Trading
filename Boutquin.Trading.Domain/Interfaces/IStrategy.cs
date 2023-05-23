@@ -60,16 +60,6 @@ public interface IStrategy
     /// </remarks>
     SortedDictionary<CurrencyCode, decimal> Cash { get; }
 
-    /// <summary>
-    /// Gets a sorted dictionary containing the daily native returns for each asset managed by the strategy.
-    /// The outer dictionary has asset symbols as keys, and the inner dictionary has DateOnly objects as keys
-    /// and the corresponding daily native returns as decimal values.
-    /// </summary>
-    /// <remarks>
-    /// The daily native returns represent the daily percentage return of an asset in its native currency.
-    /// This can be useful for various calculations, such as risk assessment and performance evaluation.
-    /// </remarks>
-    SortedDictionary<string, SortedDictionary<DateOnly, decimal>> DailyNativeReturns { get; }
 
     /// <summary>
     /// Gets the instance of the IOrderPriceCalculationStrategy associated with the strategy.

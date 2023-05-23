@@ -49,7 +49,7 @@ public interface IPortfolio
     /// <summary>
     /// The EventProcessor property represents a system to process events for the portfolio.
     /// </summary>
-    EventProcessor EventProcessor { get; }
+    IEventProcessor EventProcessor { get; }
 
     /// <summary>
     /// The Broker property represents the brokerage that executes trades for the portfolio.
@@ -82,6 +82,28 @@ public interface IPortfolio
     SortedDictionary<DateOnly, decimal> EquityCurve { get; }
 
     /// <summary>
+    /// Asynchronously handles the specified event, processing it using the portfolio's event processor.
+    /// </summary>
+    /// <param name="event">The event to handle. This represents an occurrence in the system that may affect the state of the portfolio.</param>
+    /// <returns>A <see cref="Task"/> that represents the asynchronous operation. The task result contains no value.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if the provided event is null.</exception>
+    /// <exception cref="EventProcessingException">Thrown if an error occurs while processing the event.</exception>
+    /// <remarks>
+    /// This method processes the given event using the portfolio's event processor. The event represents something that has happened in the system,
+    /// such as a change in the market, a change in the portfolio's assets, or a change in the portfolio's strategy.
+    /// The portfolio's event processor is responsible for updating the state of the portfolio based on the event.
+    /// Note that the event is processed asynchronously, so the method may return before the event processing has completed.
+    /// Any errors that occur during the event processing are thrown as exceptions.
+    /// </remarks>
+    async Task HandleEventAsync(IEvent @event)
+    {
+        // Ensure that the marketEvent is not null.
+        Guard.AgainstNull(() => @event); // Throws ArgumentNullException when the @event parameter is null
+
+        await EventProcessor.ProcessEventAsync(@event);
+    }
+
+    /// <summary>
     /// Updates historical data of the portfolio.
     /// </summary>
     /// <param name="marketEvent">Market event containing the updated historical data.</param>
@@ -95,18 +117,6 @@ public interface IPortfolio
         HistoricalMarketData[marketEvent.Timestamp] = marketEvent.HistoricalMarketData;
         HistoricalFxConversionRates[marketEvent.Timestamp] = marketEvent.HistoricalFxConversionRates;
     }
-
-    /// <summary>
-    /// Asynchronously allocates capital to the portfolio's strategies based on their defined allocation rules.
-    /// </summary>
-    /// <returns>A task that represents the asynchronous operation.</returns>
-    /// <remarks>
-    /// This method is typically called at the start of each trading period (day, hour, minute, etc.) 
-    /// to allocate the portfolio's available capital to the strategies based on their capital allocation rules. 
-    /// The method implementation should ensure that the sum of the allocated capital does not exceed 
-    /// the total available capital in the portfolio.
-    /// </remarks>
-    Task AllocateCapitalAsync();
 
     /// <summary>
     /// Updates the cash balance for each strategy that holds a given asset in response to a dividend event.
@@ -243,24 +253,6 @@ public interface IPortfolio
         var strategy = GetStrategy(strategyName);
         strategy.UpdateCash(currency, amount);
     }
-
-    /// <summary>
-    /// Updates the daily return for a given asset in a specific strategy.
-    /// </summary>
-    /// <param name="strategyName">The name of the strategy.</param>
-    /// <param name="asset">The asset symbol.</param>
-    /// <param name="timestamp">The timestamp of the return.</param>
-    /// <param name="returnAmount">The amount of the return.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
-    /// <remarks>
-    /// This method is called when the daily return for a given asset in a specific strategy needs to be updated.
-    /// The method implementation should ensure that the return is updated correctly and that the updated return does not lead to an inconsistent portfolio state.
-    /// </remarks>
-    Task UpdateDailyReturnAsync(
-        string strategyName, 
-        string asset, 
-        DateOnly timestamp, 
-        decimal returnAmount);
 
     /// <summary>
     /// Updates the equity curve for the portfolio.

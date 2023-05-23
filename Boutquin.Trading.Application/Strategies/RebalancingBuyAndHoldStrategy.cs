@@ -56,7 +56,6 @@ public sealed class RebalancingBuyAndHoldStrategy : IStrategy
         OrderPriceCalculationStrategy = orderPriceCalculationStrategy;
         PositionSizer = positionSizer;
         Positions = new SortedDictionary<string, int>();
-        DailyNativeReturns = new SortedDictionary<string, SortedDictionary<DateOnly, decimal>>();
         _rebalancingFrequency = rebalancingFrequency;
     }
 
@@ -64,7 +63,6 @@ public sealed class RebalancingBuyAndHoldStrategy : IStrategy
     public SortedDictionary<string, int> Positions { get; }
     public IReadOnlyDictionary<string, CurrencyCode> Assets { get; }
     public SortedDictionary<CurrencyCode, decimal> Cash { get; }
-    public SortedDictionary<string, SortedDictionary<DateOnly, decimal>> DailyNativeReturns { get; }
     public IOrderPriceCalculationStrategy OrderPriceCalculationStrategy { get; }
     public IPositionSizer PositionSizer { get; }
 
