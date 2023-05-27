@@ -113,7 +113,7 @@ public sealed class CsvMarketDataStorage : IMarketDataStorage
                 if (!File.Exists(filePath))
                 {
                     await using var fileStream = File.Create(filePath);
-                    using var streamWriter = new StreamWriter(fileStream);
+                    await using var streamWriter = new StreamWriter(fileStream);
 
                     await streamWriter.WriteLineAsync("Timestamp,Open,High,Low,Close,AdjustedClose,Volume,DividendPerShare,SplitCoefficient");
                 }

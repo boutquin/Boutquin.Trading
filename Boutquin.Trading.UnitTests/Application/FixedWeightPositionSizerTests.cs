@@ -54,11 +54,11 @@ public sealed class FixedWeightPositionSizerTests
             { _initialTimestamp, new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
         };
         var strategyMock = new Mock<IStrategy>();
-        strategyMock.Setup(s => s.Assets).Returns(assetCurrencies);
-        strategyMock.Setup(s => s.ComputeTotalValue(
+        _ = strategyMock.Setup(s => s.Assets).Returns(assetCurrencies);
+        _ = strategyMock.Setup(s => s.ComputeTotalValue(
             It.IsAny<DateOnly>(),
             It.IsAny<CurrencyCode>(),
-            It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<string, MarketData>>>(), 
+            It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<string, MarketData>>>(),
             It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>>())).Returns(1000m);
 
         // Act

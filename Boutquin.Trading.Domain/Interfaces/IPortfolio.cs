@@ -54,7 +54,8 @@ public interface IPortfolio
     /// <summary>
     /// The Broker property represents the brokerage that executes trades for the portfolio.
     /// </summary>
-    IBrokerage Broker { get; }
+    IBrokerage Broker
+    { get; }
 
     /// <summary>
     /// The Strategies property represents a read-only dictionary of strategies used in the portfolio.
@@ -97,7 +98,7 @@ public interface IPortfolio
     /// </remarks>
     async Task HandleEventAsync(IEvent @event)
     {
-        // Ensure that the marketEvent is not null.
+        // Ensure that the @event is not null.
         Guard.AgainstNull(() => @event); // Throws ArgumentNullException when the @event parameter is null
 
         await EventProcessor.ProcessEventAsync(@event);
@@ -317,7 +318,7 @@ public interface IPortfolio
         {
             if (historicalData.TryGetValue(asset, out var marketData))
             {
-                marketData.AdjustForSplit(splitRatio);
+                historicalData[asset] = marketData.AdjustForSplit(splitRatio);
             }
         }
     }

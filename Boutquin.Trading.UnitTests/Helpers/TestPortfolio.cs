@@ -14,28 +14,8 @@
 //
 namespace Boutquin.Trading.UnitTests.Helpers;
 
-using System;
-using System.Collections.Generic;
+using Boutquin.Trading.Application;
 
-using Boutquin.Trading.Domain.Data;
-using Boutquin.Trading.Domain.Enums;
-using Boutquin.Trading.Domain.Interfaces;
-
-public class TestPortfolio : IPortfolio
+public class TestPortfolio : BasePortfolio
 {
-    public bool IsLive => false;
-
-    public IEventProcessor EventProcessor { get; set; }
-
-    public IBrokerage Broker { get; set; }
-
-    public IReadOnlyDictionary<string, IStrategy> Strategies { get; set; } = new Dictionary<string, IStrategy>();
-
-    public IReadOnlyDictionary<string, CurrencyCode> AssetCurrencies { get; set; } = new Dictionary<string, CurrencyCode>();
-
-    public SortedDictionary<DateOnly, SortedDictionary<string, MarketData>?> HistoricalMarketData { get; set; } = new();
-
-    public SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> HistoricalFxConversionRates { get; set; } = new();
-
-    public SortedDictionary<DateOnly, decimal> EquityCurve { get; } = new ();
 }

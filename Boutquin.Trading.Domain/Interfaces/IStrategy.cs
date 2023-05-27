@@ -260,6 +260,6 @@ public interface IStrategy
         // Validate parameters
         Guard.AgainstNullOrWhiteSpace(() => asset); // Throws ArgumentException
 
-        return Positions.ContainsKey(asset) ? Positions[asset] : 0;
+        return Positions.TryGetValue(asset, out var position) ? position : 0;
     }
 }

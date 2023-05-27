@@ -435,9 +435,9 @@ public sealed class AlphaVantageFetcher : IMarketDataFetcher
     {
         HttpResponseMessage response = null;
         var retryCount = 0;
-        const int maxRetryCount = 3;
+        const int MaxRetryCount = 3;
 
-        while (retryCount < maxRetryCount)
+        while (retryCount < MaxRetryCount)
         {
             try
             {
