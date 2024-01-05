@@ -12,26 +12,13 @@ A multi-asset, multi-strategy, event-driven trading platform for back testing st
 
 This will contain all entities, enums, exceptions, interfaces, types and logic specific to the domain layer.
 
-A key extension class here is the [DecimalArrayExtensions class](./doc/DecimalArrayExtensions.md), a static class that provides extension methods for working with arrays of decimal values. It includes methods for calculating the Sharpe Ratio and Annualized Sharpe Ratio of daily returns for a given array of decimal values.
+Here are few key details:
 
-#### Entities
+IPortfolio Interface: The interface defines the properties and methods that a portfolio should have. It includes properties like IsLive, EventProcessor, Broker, Strategies, AssetCurrencies, HistoricalMarketData, HistoricalFxConversionRates, and EquityCurve which give essential data about the portfolio.
 
-These classes cover a wide range of entities related to the financial trading domain, including asset classes, securities, exchange-related data, currency rates, and geographical information.
+The implementation of the IPortfolio Interface is in the application layer.
 
-- AssetClass
-- City
-- Continent
-- Country
-- Currency
-- Exchange
-- ExchangeHoliday
-- ExchangeSchedule
-- FxRate
-- Security
-- SecurityPrice
-- SecuritySymbol
-- SymbolStandard
-- TimeZone
+At the lower level, a key extension class here is the [DecimalArrayExtensions class](./doc/DecimalArrayExtensions.md), a static class that provides extension methods for working with arrays of decimal values. It includes methods for calculating the Sharpe Ratio and Annualized Sharpe Ratio of daily returns for a given array of decimal values.
 
 ## Contributing
 

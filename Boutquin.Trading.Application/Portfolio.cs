@@ -43,23 +43,55 @@ public class Portfolio : IPortfolio
     /// </summary>
     private IBrokerage _broker;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Portfolio"/> class.
+    /// </summary>
+    /// <param name="strategies">
+    /// A dictionary containing the set of strategies to be employed by the portfolio.
+    /// Each entry is a key-value pair where the key is a unique identifier for a strategy and the value is the strategy instance.
+    /// </param>
+    /// <param name="assetCurrencies">
+    /// A dictionary containing the asset-currency associations.
+    /// Each entry is a key-value pair where the key is a unique identifier for an asset and the value is the currency of the asset.
+    /// </param>
+    /// <param name="eventProcessor">
+    /// An instance of the <see cref="IEventProcessor"/> interface to handle the processing of events.
+    /// </param>
+    /// <param name="broker">
+    /// An instance of the <see cref="IBrokerage"/> interface to handle the execution of orders.
+    /// </param>
+    /// <param name="isLive">
+    /// A Boolean flag indicating whether the portfolio is live. The default value is false.
+    /// </param>
+    /// <exception cref="EmptyOrNullDictionaryException">
+    /// Throws this exception if either the 'strategies' or 'assetCurrencies' dictionary is null or empty.
+    /// </exception>
+    /// <exception cref="ArgumentNullException">
+    /// Throws this exception if either the 'eventProcessor' or 'broker' argument is null.
+    /// </exception>
+    /// <remarks>
+    /// When an instance of this class is created, it subscribes to the FillOccurred event of the provided brokerage. 
+    /// This event is triggered when an order is filled by the brokerage.
+    /// </remarks>
     public Portfolio(
         IReadOnlyDictionary<string, IStrategy> strategies,
         IReadOnlyDictionary<string, CurrencyCode> assetCurrencies,
-        SortedDictionary<DateOnly, SortedDictionary<string, MarketData>?> historicalMarketData, 
-        SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates,
         IEventProcessor eventProcessor,
         IBrokerage broker,
         bool isLive = false)
     {
+        // Validate parameters
+        Guard.AgainstEmptyOrNullReadOnlyDictionary(() => strategies); // Throws EmptyOrNullDictionaryException
+        Guard.AgainstEmptyOrNullReadOnlyDictionary(() => assetCurrencies); // Throws EmptyOrNullDictionaryException
+        Guard.AgainstNull(() => eventProcessor);
+        Guard.AgainstNull(() => broker);
+
         EventProcessor = eventProcessor;
-        _broker = broker;
         Strategies = strategies;
         AssetCurrencies = assetCurrencies;
-        HistoricalMarketData = historicalMarketData;
-        HistoricalFxConversionRates = historicalFxConversionRates;
         IsLive = isLive;
 
+        _broker = broker;
         _broker.FillOccurred += HandleFillEvent;
     }
 
@@ -76,17 +108,20 @@ public class Portfolio : IPortfolio
     /// <summary>
     /// The HistoricalMarketData property represents a sorted dictionary of historical market data used by the portfolio.
     /// </summary>
-    public SortedDictionary<DateOnly, SortedDictionary<string, MarketData>?> HistoricalMarketData { get; }
+    public SortedDictionary<DateOnly, SortedDictionary<string, MarketData>?> HistoricalMarketData { get; } 
+        = new();
 
     /// <summary>
     /// The HistoricalFxConversionRates property represents a sorted dictionary of historical foreign exchange conversion rates used by the portfolio.
     /// </summary>
-    public SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> HistoricalFxConversionRates { get; }
+    public SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> HistoricalFxConversionRates { get; } =
+        new();
 
     /// <summary>
     /// The EquityCurve property represents a sorted dictionary of equity values over time.
     /// </summary>
-    public SortedDictionary<DateOnly, decimal> EquityCurve { get; } = new();
+    public SortedDictionary<DateOnly, decimal> EquityCurve { get; } 
+        = new();
 
     /// <summary>
     /// Asynchronously handles the specified event, processing it using the portfolio's event processor.

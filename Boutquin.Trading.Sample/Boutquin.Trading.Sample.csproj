@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -8,16 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="Data\Symbols.csv" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <ProjectReference Include="..\Boutquin.Trading.Application\Boutquin.Trading.Application.csproj" />
     <ProjectReference Include="..\Boutquin.Trading.Data.AlphaVantage\Boutquin.Trading.Data.AlphaVantage.csproj" />
-    <ProjectReference Include="..\Boutquin.Trading.Domain\Boutquin.Trading.Domain.csproj" />
   </ItemGroup>
 
 </Project>

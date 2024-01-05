@@ -59,12 +59,44 @@ public sealed class AlphaVantageFetcher : IMarketDataFetcher
         int rateLimitDelay = 5,
         TimeSpan? cacheExpiration = null)
     {
+        _apiKey = Environment.GetEnvironmentVariable("ALPHA_VANTAGE_API_KEY");
         if (string.IsNullOrEmpty(apiKey))
         {
             throw new ArgumentNullException(nameof(apiKey), "API key cannot be null or empty.");
         }
 
         _apiKey = apiKey;
+        _cache = cache ?? throw new ArgumentNullException(nameof(cache), "IDistributedCache cannot be null.");
+        _rateLimitDelay = rateLimitDelay;
+        _httpClient = httpClient ?? new HttpClient();
+        _apiEndpoint = !string.IsNullOrEmpty(apiEndpoint) ? apiEndpoint : throw new ArgumentNullException(nameof(apiEndpoint), "API endpoint cannot be null or empty.");
+        _rateLimitSemaphore = rateLimiter ?? new SemaphoreSlim(5); // Adjust the number according to the allowed rate limit
+        _cacheExpiration = cacheExpiration ?? TimeSpan.FromHours(6);
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the AlphaVantageFetcher class with the specified API key, IDistributedCache, and optional HttpClient, API endpoint, rate limiter, and cache expiration.
+    /// </summary>
+    /// <param name="cache">The IDistributedCache instance for caching the API responses.</param>
+    /// <param name="httpClient">An optional HttpClient instance to use for making API requests. If not provided, a new instance will be created.</param>
+    /// <param name="apiEndpoint">An optional API endpoint for the Alpha Vantage API. If not provided, the default endpoint will be used.</param>
+    /// <param name="rateLimiter">An optional SemaphoreSlim instance for rate limiting. If not provided, a new instance with a limit of 5 will be created.</param>
+    /// <param name="cacheExpiration">An optional TimeSpan for setting the cache expiration. If not provided, a default value of 6 hours will be used.</param>
+    /// <exception cref="ArgumentNullException">Thrown when the provided API key or IDistributedCache is null or empty.</exception>
+    public AlphaVantageFetcher(
+        IDistributedCache cache,
+        HttpClient httpClient = null,
+        string apiEndpoint = "https://www.alphavantage.co/query",
+        SemaphoreSlim rateLimiter = null,
+        int rateLimitDelay = 5,
+        TimeSpan? cacheExpiration = null)
+    {
+        _apiKey = Environment.GetEnvironmentVariable("ALPHA_VANTAGE_API_KEY");
+        if (string.IsNullOrEmpty(_apiKey))
+        {
+            throw new InvalidOperationException("API key cannot be read from ALPHA_VANTAGE_API_KEY environment variable.");
+        }
+
         _cache = cache ?? throw new ArgumentNullException(nameof(cache), "IDistributedCache cannot be null.");
         _rateLimitDelay = rateLimitDelay;
         _httpClient = httpClient ?? new HttpClient();

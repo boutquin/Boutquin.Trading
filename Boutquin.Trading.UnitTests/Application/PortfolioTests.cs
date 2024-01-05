@@ -46,15 +46,11 @@ public class PortfolioTests
 
         IStrategy strategy = new TestStrategy();
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
-        var assetCurrencies = new Dictionary<string, CurrencyCode>();
-        var historicalMarketData = new SortedDictionary<DateOnly, SortedDictionary<string, MarketData>?>();
-        var historicalFxConversionRates = new SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>();
+        var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
             strategies,
             assetCurrencies,
-            historicalMarketData,
-            historicalFxConversionRates,
             _mockEventProcessor.Object,
             _mockBroker.Object,
             isLive: false);
@@ -74,15 +70,11 @@ public class PortfolioTests
 
         IStrategy strategy = new TestStrategy();
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
-        var assetCurrencies = new Dictionary<string, CurrencyCode>();
-        var historicalMarketData = new SortedDictionary<DateOnly, SortedDictionary<string, MarketData>?>();
-        var historicalFxConversionRates = new SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>();
+        var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
             strategies,
             assetCurrencies,
-            historicalMarketData,
-            historicalFxConversionRates,
             _mockEventProcessor.Object,
             _mockBroker.Object,
             isLive: false);
@@ -107,14 +99,10 @@ public class PortfolioTests
 
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", testStrategy } };
         var assetCurrencies = new Dictionary<string, CurrencyCode> { { asset, CurrencyCode.USD } };
-        var historicalMarketData = new SortedDictionary<DateOnly, SortedDictionary<string, MarketData>?>();
-        var historicalFxConversionRates = new SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>();
 
         var portfolio = new Portfolio(
             strategies,
             assetCurrencies,
-            historicalMarketData,
-            historicalFxConversionRates,
             _mockEventProcessor.Object,
             _mockBroker.Object,
             isLive: false
@@ -139,14 +127,10 @@ public class PortfolioTests
 
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
         var assetCurrencies = new Dictionary<string, CurrencyCode> { { asset, CurrencyCode.USD } };
-        var historicalMarketData = new SortedDictionary<DateOnly, SortedDictionary<string, MarketData>?>();
-        var historicalFxConversionRates = new SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>();
 
         var portfolio = new Portfolio(
             strategies,
             assetCurrencies,
-            historicalMarketData,
-            historicalFxConversionRates,
             _mockEventProcessor.Object,
             _mockBroker.Object,
             isLive: false);
@@ -179,17 +163,12 @@ public class PortfolioTests
             It.IsAny<SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>>()
         )).Returns(expectedSignal);
 
-        IStrategy strategy = new TestStrategy();
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", mockStrategy.Object } };
-        var assetCurrencies = new Dictionary<string, CurrencyCode>();
-        var historicalMarketData = new SortedDictionary<DateOnly, SortedDictionary<string, MarketData>?>();
-        var historicalFxConversionRates = new SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>();
+        var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
             strategies,
             assetCurrencies,
-            historicalMarketData,
-            historicalFxConversionRates,
             _mockEventProcessor.Object,
             _mockBroker.Object,
             isLive: false);
@@ -214,15 +193,11 @@ public class PortfolioTests
 
         IStrategy strategy = new TestStrategy();
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
-        var assetCurrencies = new Dictionary<string, CurrencyCode>();
-        var historicalMarketData = new SortedDictionary<DateOnly, SortedDictionary<string, MarketData>?>();
-        var historicalFxConversionRates = new SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>();
+        var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
             strategies,
             assetCurrencies,
-            historicalMarketData,
-            historicalFxConversionRates,
             _mockEventProcessor.Object,
             _mockBroker.Object,
             isLive: false);
@@ -249,15 +224,11 @@ public class PortfolioTests
 
         IStrategy strategy = new TestStrategy();
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
-        var assetCurrencies = new Dictionary<string, CurrencyCode>();
-        var historicalMarketData = new SortedDictionary<DateOnly, SortedDictionary<string, MarketData>?>();
-        var historicalFxConversionRates = new SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>();
+        var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
             strategies,
             assetCurrencies,
-            historicalMarketData,
-            historicalFxConversionRates,
             _mockEventProcessor.Object,
             _mockBroker.Object,
             isLive: false);
@@ -288,15 +259,11 @@ public class PortfolioTests
 
         IStrategy strategy = new TestStrategy();
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
-        var assetCurrencies = new Dictionary<string, CurrencyCode>();
-        var historicalMarketData = new SortedDictionary<DateOnly, SortedDictionary<string, MarketData>?>();
-        var historicalFxConversionRates = new SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>();
+        var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
             strategies,
             assetCurrencies,
-            historicalMarketData,
-            historicalFxConversionRates,
             _mockEventProcessor.Object,
             _mockBroker.Object,
             isLive: false);
@@ -315,15 +282,11 @@ public class PortfolioTests
 
         IStrategy strategy = new TestStrategy();
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
-        var assetCurrencies = new Dictionary<string, CurrencyCode>();
-        var historicalMarketData = new SortedDictionary<DateOnly, SortedDictionary<string, MarketData>?>();
-        var historicalFxConversionRates = new SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>();
+        var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
             strategies,
             assetCurrencies,
-            historicalMarketData,
-            historicalFxConversionRates,
             _mockEventProcessor.Object,
             _mockBroker.Object,
             isLive: false);
@@ -343,15 +306,11 @@ public class PortfolioTests
         strategy.Positions[asset] = 10;
 
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
-        var assetCurrencies = new Dictionary<string, CurrencyCode>();
-        var historicalMarketData = new SortedDictionary<DateOnly, SortedDictionary<string, MarketData>?>();
-        var historicalFxConversionRates = new SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>();
+        var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
             strategies,
             assetCurrencies,
-            historicalMarketData,
-            historicalFxConversionRates,
             _mockEventProcessor.Object,
             _mockBroker.Object,
             isLive: false);
@@ -383,19 +342,19 @@ public class PortfolioTests
             }
         };
 
-        var strategies = new Dictionary<string, IStrategy>();
-        var assetCurrencies = new Dictionary<string, CurrencyCode>();
-        var historicalMarketData = new SortedDictionary<DateOnly, SortedDictionary<string, MarketData>?>{ { timestamp, marketData } };
-        var historicalFxConversionRates = new SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>();
+        IStrategy strategy = new TestStrategy();
+        var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
+        var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
             strategies,
             assetCurrencies,
-            historicalMarketData,
-            historicalFxConversionRates,
             _mockEventProcessor.Object,
             _mockBroker.Object,
-            isLive: false);
+            isLive: false)
+        {
+            HistoricalMarketData = { [timestamp] = marketData }
+        };
 
         portfolio.AdjustHistoricalDataForSplit(asset, splitRatio);
 
@@ -413,17 +372,12 @@ public class PortfolioTests
     {
         var strategyName = "TestStrategy";
         IStrategy strategy = new TestStrategy();
-
-        var strategies = new Dictionary<string, IStrategy>() { { strategyName, strategy } };
-        var assetCurrencies = new Dictionary<string, CurrencyCode>();
-        var historicalMarketData = new SortedDictionary<DateOnly, SortedDictionary<string, MarketData>?>();
-        var historicalFxConversionRates = new SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>();
+        var strategies = new Dictionary<string, IStrategy> { { strategyName, strategy } };
+        var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
             strategies,
             assetCurrencies,
-            historicalMarketData,
-            historicalFxConversionRates,
             _mockEventProcessor.Object,
             _mockBroker.Object,
             isLive: false);
@@ -439,16 +393,13 @@ public class PortfolioTests
         var asset = "AAPL";
         var currency = CurrencyCode.USD;
 
-        var strategies = new Dictionary<string, IStrategy>();
+        IStrategy strategy = new TestStrategy();
+        var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
         var assetCurrencies = new Dictionary<string, CurrencyCode> { { asset, currency } };
-        var historicalMarketData = new SortedDictionary<DateOnly, SortedDictionary<string, MarketData>?>();
-        var historicalFxConversionRates = new SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>();
 
         var portfolio = new Portfolio(
             strategies,
             assetCurrencies,
-            historicalMarketData,
-            historicalFxConversionRates,
             _mockEventProcessor.Object,
             _mockBroker.Object,
             isLive: false);
@@ -479,10 +430,7 @@ public class PortfolioTests
                     SplitCoefficient: 1)
             }
         };
-        var fxRates = new SortedDictionary<CurrencyCode, decimal>
-        {
-            { CurrencyCode.EUR, 0.85m }
-        };
+        var fxRates = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.EUR, 0.85m } };
 
         strategy.Positions["AAPL"] = 10;
         ((TestStrategy)strategy).Assets = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
@@ -490,18 +438,18 @@ public class PortfolioTests
 
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
         var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
-        var historicalMarketData = new SortedDictionary<DateOnly, SortedDictionary<string, MarketData>> { { timestamp, marketData } };
-        var historicalFxConversionRates = new SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> { { timestamp, fxRates } };
 
         var portfolio = new Portfolio(
             strategies,
             assetCurrencies,
-            historicalMarketData,
-            historicalFxConversionRates,
             _mockEventProcessor.Object,
             _mockBroker.Object,
-            isLive: false);
-        
+            isLive: false) 
+        { 
+            HistoricalMarketData = { [timestamp] = marketData }, 
+            HistoricalFxConversionRates = { [timestamp] = fxRates }
+        };
+
         portfolio.UpdateEquityCurve(timestamp, baseCurrency);
 
         portfolio.EquityCurve[timestamp].Should().Be(2500m);
@@ -522,15 +470,11 @@ public class PortfolioTests
         )).Returns(1000m);
 
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", mockStrategy.Object } };
-        var assetCurrencies = new Dictionary<string, CurrencyCode>();
-        var historicalMarketData = new SortedDictionary<DateOnly, SortedDictionary<string, MarketData>?>();
-        var historicalFxConversionRates = new SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>();
+        var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
             strategies,
             assetCurrencies,
-            historicalMarketData,
-            historicalFxConversionRates,
             _mockEventProcessor.Object,
             _mockBroker.Object,
             isLive: false

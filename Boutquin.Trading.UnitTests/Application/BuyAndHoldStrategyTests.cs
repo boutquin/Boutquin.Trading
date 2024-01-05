@@ -41,6 +41,7 @@ public sealed class BuyAndHoldStrategyTests
         _name = "TestStrategy";
         _initialTimestamp = DateOnly.FromDateTime(DateTime.Today);
     }
+
     [Fact]
     public void BuyAndHoldStrategy_Constructor_ValidParameters_ShouldCreateInstance()
     {
