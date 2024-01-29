@@ -15,10 +15,10 @@
 namespace Boutquin.Trading.Domain.Interfaces;
 
 /// <summary>
-/// The IEvent interface defines the properties of a financial event,
+/// The IFinancialEvent interface defines the properties of a financial event,
 /// including its timestamp and associated asset.
 /// </summary>
-public interface IEvent
+public interface IFinancialEvent
 {
     /// <summary>
     /// Gets the timestamp of the financial event, represented as a

@@ -42,4 +42,4 @@ public sealed record FillEvent(
     string StrategyName,
     decimal FillPrice,
     int Quantity,
-    decimal Commission) : IEvent;
+    decimal Commission) : IFinancialEvent;

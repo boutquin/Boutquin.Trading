@@ -29,7 +29,7 @@ public sealed class MarketEventHandler : IEventHandler
         _baseCurrency = baseCurrency;
     }
 
-    public async Task HandleEventAsync(IEvent eventObj)
+    public async Task HandleEventAsync(IFinancialEvent eventObj)
     {
         var marketEvent = eventObj as MarketEvent 
             ?? throw new ArgumentException("Event must be of type MarketEvent.", nameof(eventObj));

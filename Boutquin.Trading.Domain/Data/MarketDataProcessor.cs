@@ -19,18 +19,15 @@ using Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-public sealed class MarketDataProcessor : IMarketDataProcessor
+public sealed class MarketDataProcessor(
+    IMarketDataFetcher fetcher,
+    IMarketDataStorage storage,
+    ILoggerFactory loggerFactory = null)
+    : IMarketDataProcessor
 {
-    private readonly IMarketDataFetcher _fetcher;
-    private readonly IMarketDataStorage _storage;
-    private readonly ILogger _logger;
-
-    public MarketDataProcessor(IMarketDataFetcher fetcher, IMarketDataStorage storage, ILoggerFactory loggerFactory = null)
-    {
-        _fetcher = fetcher ?? throw new ArgumentNullException(nameof(fetcher));
-        _storage = storage ?? throw new ArgumentNullException(nameof(storage));
-        _logger = loggerFactory?.CreateLogger<MarketDataProcessor>() ?? new NullLogger<MarketDataProcessor>();
-    }
+    private readonly IMarketDataFetcher _fetcher = fetcher ?? throw new ArgumentNullException(nameof(fetcher));
+    private readonly IMarketDataStorage _storage = storage ?? throw new ArgumentNullException(nameof(storage));
+    private readonly ILogger _logger = loggerFactory?.CreateLogger<MarketDataProcessor>() ?? new NullLogger<MarketDataProcessor>();
 
     public async Task ProcessAndStoreMarketDataAsync(IEnumerable<string> symbols)
     {

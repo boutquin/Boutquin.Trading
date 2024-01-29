@@ -16,5 +16,5 @@ namespace Boutquin.Trading.Domain.Interfaces;
 
 public interface IEventProcessor
 {
-    Task ProcessEventAsync(IEvent eventObj);
+    Task ProcessEventAsync(IFinancialEvent eventObj);
 }

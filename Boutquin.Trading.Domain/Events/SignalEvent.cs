@@ -37,4 +37,4 @@ public sealed record SignalEvent(
     DateOnly Timestamp,
     string StrategyName,
     IReadOnlyDictionary<string, SignalType> Signals
-) : IEvent;
+) : IFinancialEvent;

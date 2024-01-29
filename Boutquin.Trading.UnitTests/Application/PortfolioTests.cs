@@ -26,19 +26,13 @@ using Trading.Domain.Interfaces;
 
 public class PortfolioTests
 {
-    private readonly Mock<IEventProcessor> _mockEventProcessor;
-    private readonly Mock<IBrokerage> _mockBroker;
-
-    public PortfolioTests()
-    {
-        _mockEventProcessor = new Mock<IEventProcessor>();
-        _mockBroker = new Mock<IBrokerage>();
-    }
+    private readonly Mock<IEventProcessor> _mockEventProcessor = new();
+    private readonly Mock<IBrokerage> _mockBroker = new();
 
     [Fact]
     public async Task HandleEventAsync_ShouldCallProcessEventAsync_GivenValidEvent()
     {
-        var mockEvent = new Mock<IEvent>();
+        var mockEvent = new Mock<IFinancialEvent>();
 
         IStrategy strategy = new TestStrategy();
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
@@ -53,7 +47,7 @@ public class PortfolioTests
 
         await portfolio.HandleEventAsync(mockEvent.Object);
 
-        _mockEventProcessor.Verify(x => x.ProcessEventAsync(It.IsAny<IEvent>()), Times.Once);
+        _mockEventProcessor.Verify(x => x.ProcessEventAsync(It.IsAny<IFinancialEvent>()), Times.Once);
     }
 
     [Fact]
@@ -215,7 +209,7 @@ public class PortfolioTests
     public async Task Broker_FillOccurred_ShouldCallHandleEventAsync()
     {
         // Arrange
-        _mockEventProcessor.Setup(x => x.ProcessEventAsync(It.IsAny<IEvent>()))
+        _mockEventProcessor.Setup(x => x.ProcessEventAsync(It.IsAny<IFinancialEvent>()))
             .Returns(Task.CompletedTask);
 
         IStrategy strategy = new TestStrategy();
@@ -241,9 +235,8 @@ public class PortfolioTests
         // Act
         _mockBroker.Raise(broker => broker.FillOccurred += null, this, fillEvent);
 
-
         // Assert
-        _mockEventProcessor.Verify(x => x.ProcessEventAsync(It.Is<IEvent>(e => e == fillEvent)), Times.Once);
+        _mockEventProcessor.Verify(x => x.ProcessEventAsync(It.Is<IFinancialEvent>(e => e == fillEvent)), Times.Once);
     }
 
     [Fact]

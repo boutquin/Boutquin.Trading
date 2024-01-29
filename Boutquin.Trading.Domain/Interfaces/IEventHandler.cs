@@ -16,5 +16,5 @@ namespace Boutquin.Trading.Domain.Interfaces;
 
 public interface IEventHandler
 {
-    Task HandleEventAsync(IEvent eventObj);
+    Task HandleEventAsync(IFinancialEvent eventObj);
 }

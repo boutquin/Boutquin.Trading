@@ -25,7 +25,7 @@ public sealed class FillEventHandler : IEventHandler
         _portfolio = portfolio;
     }
 
-    public async Task HandleEventAsync(IEvent eventObj)
+    public async Task HandleEventAsync(IFinancialEvent eventObj)
     {
         var fillEvent = eventObj as FillEvent 
             ?? throw new ArgumentException("Event must be of type FillEvent.", nameof(eventObj));

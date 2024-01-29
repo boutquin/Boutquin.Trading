@@ -30,5 +30,5 @@ using Interfaces;
 public sealed record MarketEvent(
     DateOnly Timestamp,
     SortedDictionary<string, MarketData>? HistoricalMarketData,
-    SortedDictionary<CurrencyCode, decimal> HistoricalFxConversionRates) : IEvent;
+    SortedDictionary<CurrencyCode, decimal> HistoricalFxConversionRates) : IFinancialEvent;
 

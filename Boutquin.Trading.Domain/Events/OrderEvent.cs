@@ -50,4 +50,4 @@ public sealed record OrderEvent(
     OrderType OrderType,
     int Quantity,
     decimal? PrimaryPrice = null, 
-    decimal? SecondaryPrice = null) : IEvent;
+    decimal? SecondaryPrice = null) : IFinancialEvent;

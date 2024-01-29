@@ -36,7 +36,7 @@ public class Portfolio : IPortfolio
     /// <summary>
     /// The Broker property represents the brokerage that executes trades for the portfolio.
     /// </summary>
-    private IBrokerage _broker;
+    private readonly IBrokerage _broker;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Portfolio"/> class.
@@ -124,7 +124,7 @@ public class Portfolio : IPortfolio
     /// <param name="event">The event to handle. This represents an occurrence in the system that may affect the state of the portfolio.</param>
     /// <returns>A <see cref="Task"/> that represents the asynchronous operation. The task result contains no value.</returns>
     /// <exception cref="ArgumentNullException">Thrown if the provided event is null.</exception>
-    /// <exception cref="EventProcessingException">Thrown if an error occurs while processing the event.</exception>
+    /// <exception cref="NotSupportedException">Thrown if an error occurs while processing the event.</exception>
     /// <remarks>
     /// This method processes the given event using the portfolio's event processor. The event represents something that has happened in the system,
     /// such as a change in the market, a change in the portfolio's assets, or a change in the portfolio's strategy.
@@ -132,7 +132,7 @@ public class Portfolio : IPortfolio
     /// Note that the event is processed asynchronously, so the method may return before the event processing has completed.
     /// Any errors that occur during the event processing are thrown as exceptions.
     /// </remarks>
-    public async Task HandleEventAsync(IEvent @event)
+    public async Task HandleEventAsync(IFinancialEvent @event)
     {
         // Ensure that the @event is not null.
         Guard.AgainstNull(() => @event); // Throws ArgumentNullException when the @event parameter is null
@@ -144,7 +144,7 @@ public class Portfolio : IPortfolio
     /// Updates historical data of the portfolio.
     /// </summary>
     /// <param name="marketEvent">Market event containing the updated historical data.</param>
-    /// <exception cref="System.ArgumentNullException">Thrown when the marketEvent parameter is null.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when the marketEvent parameter is null.</exception>
     public void UpdateHistoricalData(MarketEvent marketEvent)
     {
         // Ensure that the marketEvent is not null.
@@ -160,7 +160,7 @@ public class Portfolio : IPortfolio
     /// </summary>
     /// <param name="asset">The asset symbol for which the dividend event occurred.</param>
     /// <param name="dividendPerShare">The amount of dividend received per share.</param>
-    /// <exception cref="System.ArgumentException">Thrown when the asset parameter is null, empty, or consists only of white-space characters.</exception>
+    /// <exception cref="ArgumentException">Thrown when the asset parameter is null, empty, or consists only of white-space characters.</exception>
     /// <remarks>
     /// This method is called when a dividend event occurs for an asset held by one or more strategies in the portfolio.
     /// The method implementation should ensure that the cash balance for each strategy that holds the asset is updated 
@@ -198,7 +198,7 @@ public class Portfolio : IPortfolio
     /// </summary>
     /// <param name="orderEvent">The OrderEvent containing the order information.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains a boolean indicating whether the order submission was successful.</returns>
-    /// <exception cref="System.ArgumentNullException">Thrown when the orderEvent parameter is null.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when the orderEvent parameter is null.</exception>
     /// <remarks>
     /// This method is called when an order needs to be submitted to the brokerage.
     /// The method implementation should ensure that the necessary checks and validations are performed on the order event data 
@@ -255,7 +255,7 @@ public class Portfolio : IPortfolio
     /// <param name="strategyName">The name of the strategy.</param>
     /// <param name="asset">The asset symbol.</param>
     /// <param name="quantity">The quantity of the asset to be updated.</param>
-    /// <exception cref="System.ArgumentException">Thrown when the strategyName or asset parameter is null, empty, or consists only of white-space characters.</exception>
+    /// <exception cref="ArgumentException">Thrown when the strategyName or asset parameter is null, empty, or consists only of white-space characters.</exception>
     /// <remarks>
     /// This method is called when a position for a given asset in a specific strategy needs to be updated.
     /// The method implementation should ensure that the position is updated correctly 
@@ -276,8 +276,8 @@ public class Portfolio : IPortfolio
     /// <param name="strategyName">The name of the strategy.</param>
     /// <param name="currency">The currency of the cash balance to be updated.</param>
     /// <param name="amount">The amount to be updated.</param>
-    /// <exception cref="System.ArgumentException">Thrown when the strategyName parameter is null, empty, or consists only of white-space characters.</exception>
-    /// <exception cref="System.ArgumentOutOfRangeException">Thrown when the currency parameter is not a defined value of the CurrencyCode enumeration.</exception>
+    /// <exception cref="ArgumentException">Thrown when the strategyName parameter is null, empty, or consists only of white-space characters.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the currency parameter is not a defined value of the CurrencyCode enumeration.</exception>
     /// <remarks>
     /// This method is called when the cash balance for a specific strategy and currency needs to be updated.
     /// The method implementation should ensure that the cash balance is updated correctly and that the new cash balance does not lead to an inconsistent portfolio state.
@@ -312,7 +312,7 @@ public class Portfolio : IPortfolio
     /// </summary>
     /// <param name="asset">The asset that has been split.</param>
     /// <param name="splitRatio">The ratio of the split.</param>
-    /// <exception cref="System.ArgumentException">Thrown when the asset parameter is null, empty, or consists only of white-space characters.</exception>
+    /// <exception cref="ArgumentException">Thrown when the asset parameter is null, empty, or consists only of white-space characters.</exception>
     /// <remarks>
     /// This method is called when a stock split has occurred, and the portfolio's positions need to be adjusted.
     /// The method implementation should ensure that the positions are adjusted correctly and that the adjusted positions do not lead to an inconsistent portfolio state.
@@ -338,7 +338,7 @@ public class Portfolio : IPortfolio
     /// </summary>
     /// <param name="asset">The asset that has been split.</param>
     /// <param name="splitRatio">The ratio of the split.</param>
-    /// <exception cref="System.ArgumentException">Thrown when the asset parameter is null, empty, or consists only of white-space characters.</exception>
+    /// <exception cref="ArgumentException">Thrown when the asset parameter is null, empty, or consists only of white-space characters.</exception>
     /// <remarks>
     /// This method is called when a stock split has occurred, and the portfolio's historical data needs to be adjusted.
     /// The method implementation should ensure that the historical data is adjusted correctly.
@@ -364,7 +364,7 @@ public class Portfolio : IPortfolio
     /// </summary>
     /// <param name="strategyName">The name of the strategy to retrieve.</param>
     /// <returns>The strategy associated with the provided name.</returns>
-    /// <exception cref="System.ArgumentException">Thrown when the strategyName parameter is null, empty, or consists only of white-space characters.</exception>
+    /// <exception cref="ArgumentException">Thrown when the strategyName parameter is null, empty, or consists only of white-space characters.</exception>
     /// <remarks>
     /// This method is called when a strategy needs to be retrieved based on its name.
     /// The method implementation should ensure that the correct strategy is retrieved, or an appropriate error is thrown if the strategy cannot be found.
@@ -386,7 +386,7 @@ public class Portfolio : IPortfolio
     /// </summary>
     /// <param name="asset">The asset for which the currency is to be retrieved.</param>
     /// <returns>The currency associated with the provided asset.</returns>
-    /// <exception cref="System.ArgumentException">Thrown when the asset parameter is null, empty, or consists only of white-space characters.</exception>
+    /// <exception cref="ArgumentException">Thrown when the asset parameter is null, empty, or consists only of white-space characters.</exception>
     /// <remarks>
     /// This method is called when the currency of a specific asset needs to be retrieved.
     /// The method implementation should ensure that the correct currency is returned, or an appropriate error is thrown if the currency cannot be found.
@@ -409,7 +409,7 @@ public class Portfolio : IPortfolio
     /// <param name="timestamp">The timestamp for which the total value is calculated.</param>
     /// <param name="baseCurrency">The base currency used for the calculation.</param>
     /// <returns>The total value of the portfolio.</returns>
-    /// <exception cref="System.ArgumentOutOfRangeException">Thrown when the baseCurrency parameter is not a defined value of the CurrencyCode enumeration.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the baseCurrency parameter is not a defined value of the CurrencyCode enumeration.</exception>
     /// <remarks>
     /// This method is called when the total value of the portfolio needs to be calculated.
     /// The method implementation should ensure that the calculation is accurate and that it correctly reflects the current state of the portfolio.

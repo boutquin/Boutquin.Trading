@@ -36,20 +36,20 @@ public static class ExchangeExtensionsTestData
             exchange.ExchangeHolidays.Add(new ExchangeHoliday(ExchangeCode.XNYS, DateOnly.FromDateTime(new DateTime(2023, 1, 1)), "New Year's Day"));
 
             // Test case 1: Normal trading day, exchange should be open.
-            yield return new object[]
-            {
+            yield return
+            [
                 exchange,
                 DateOnly.FromDateTime(new DateTime(2023, 1, 2, 12, 0, 0)), // Monday, 12:00 PM
                 true
-            };
+            ];
 
             // Test case 2: Exchange closed on holiday.
-            yield return new object[]
-            {
+            yield return
+            [
                 exchange,
                 DateOnly.FromDateTime(new DateTime(2023, 1, 1, 12, 0, 0)), // Sunday (holiday), 12:00 PM
                 false
-            };
+            ];
 
             // ... Add more test cases.
         }
@@ -67,31 +67,31 @@ public static class ExchangeExtensionsTestData
             exchange.ExchangeHolidays.Add(new ExchangeHoliday(ExchangeCode.XNYS, DateOnly.FromDateTime(new DateTime(2023, 1, 1)), "New Year's Day"));
 
             // Test case 1: Normal trading day, should return the closing time.
-            yield return new object[]
-            {
+            yield return
+            [
                 exchange,
                 new DateTime(2023, 1, 2), // Monday
                 0, // No additional closed minutes
                 new DateTime(2023, 1, 2, 17, 0, 0) // Expected closing time
-            };
+            ];
 
             // Test case 2: Exchange closed early by 30 minutes.
-            yield return new object[]
-            {
+            yield return
+            [
                 exchange,
                 new DateTime(2023, 1, 2), // Monday
                 30, // Closed 30 minutes early
                 new DateTime(2023, 1, 2, 16, 30, 0) // Expected closing time
-            };
+            ];
 
             // Test case 3: Exchange closed on holiday, should return null.
-            yield return new object[]
-            {
+            yield return
+            [
                 exchange,
                 new DateTime(2023, 1, 1), // Sunday (holiday)
                 0, // No additional closed minutes
                 null // Exchange closed on holiday
-            };
+            ];
 
             // ... Add more test cases.
         }

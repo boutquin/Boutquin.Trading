@@ -90,7 +90,7 @@ public interface IPortfolio
     /// Note that the event is processed asynchronously, so the method may return before the event processing has completed.
     /// Any errors that occur during the event processing are thrown as exceptions.
     /// </remarks>
-    Task HandleEventAsync(IEvent @event);
+    Task HandleEventAsync(IFinancialEvent @event);
 
     /// <summary>
     /// Updates historical data of the portfolio.

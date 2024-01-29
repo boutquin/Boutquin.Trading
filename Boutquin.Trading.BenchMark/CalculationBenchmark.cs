@@ -34,7 +34,7 @@ public sealed class CalculationBenchmark
     public void Setup()
     {
         // Define sample daily returns for the benchmark.
-        _dailyReturns = new[] { 0.01m, -0.02m, 0.03m, -0.04m, 0.05m, -0.06m, 0.07m, -0.08m };
+        _dailyReturns = [0.01m, -0.02m, 0.03m, -0.04m, 0.05m, -0.06m, 0.07m, -0.08m];
 
         // Define the risk-free rate for the benchmark.
         _riskFreeRate = 0.02m;

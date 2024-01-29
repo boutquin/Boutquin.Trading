@@ -22,9 +22,9 @@ using Trading.Domain.Interfaces;
 public class TestStrategy : IStrategy
 {
     public string Name { get; set; }
-    public SortedDictionary<string, int> Positions { get; set; } = new SortedDictionary<string, int>();
+    public SortedDictionary<string, int> Positions { get; set; } = new();
     public IReadOnlyDictionary<string, CurrencyCode> Assets { get; set; } = new Dictionary<string, CurrencyCode>();
-    public SortedDictionary<CurrencyCode, decimal> Cash { get; set; } = new SortedDictionary<CurrencyCode, decimal>();
+    public SortedDictionary<CurrencyCode, decimal> Cash { get; set; } = new();
     public IOrderPriceCalculationStrategy OrderPriceCalculationStrategy { get; set; }
     public IPositionSizer PositionSizer { get; set; }
 

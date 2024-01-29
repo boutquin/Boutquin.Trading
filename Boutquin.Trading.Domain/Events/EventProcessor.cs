@@ -16,18 +16,11 @@ namespace Boutquin.Trading.Domain.Events;
 
 using Interfaces;
 
-public sealed class EventProcessor : IEventProcessor
+public sealed class EventProcessor(IReadOnlyDictionary<Type, IEventHandler> handlers) : IEventProcessor
 {
-    private readonly Dictionary<Type, IEventHandler> _handlers;
-
-    public EventProcessor(Dictionary<Type, IEventHandler> handlers)
+    public async Task ProcessEventAsync(IFinancialEvent eventObj)
     {
-        _handlers = handlers;
-    }
-
-    public async Task ProcessEventAsync(IEvent eventObj)
-    {
-        if (_handlers.TryGetValue(eventObj.GetType(), out var handler))
+        if (handlers.TryGetValue(eventObj.GetType(), out var handler))
         {
             await handler.HandleEventAsync(eventObj);
         }

@@ -25,22 +25,12 @@ using Trading.Domain.Interfaces;
 
 public sealed class BuyAndHoldStrategyTests
 {
-    private readonly Mock<IOrderPriceCalculationStrategy> _orderPriceCalculationStrategyMock;
-    private readonly Mock<IPositionSizer> _positionSizerMock;
-    private readonly SortedDictionary<CurrencyCode, decimal> _cash;
-    private readonly IReadOnlyDictionary<string, CurrencyCode> _assets;
-    private readonly string _name;
-    private readonly DateOnly _initialTimestamp;
-
-    public BuyAndHoldStrategyTests()
-    {
-        _orderPriceCalculationStrategyMock = new Mock<IOrderPriceCalculationStrategy>();
-        _positionSizerMock = new Mock<IPositionSizer>();
-        _cash = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 10000m } };
-        _assets = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
-        _name = "TestStrategy";
-        _initialTimestamp = DateOnly.FromDateTime(DateTime.Today);
-    }
+    private readonly Mock<IOrderPriceCalculationStrategy> _orderPriceCalculationStrategyMock = new();
+    private readonly Mock<IPositionSizer> _positionSizerMock = new();
+    private readonly SortedDictionary<CurrencyCode, decimal> _cash = new() { { CurrencyCode.USD, 10000m } };
+    private readonly IReadOnlyDictionary<string, CurrencyCode> _assets = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
+    private readonly string _name = "TestStrategy";
+    private readonly DateOnly _initialTimestamp = DateOnly.FromDateTime(DateTime.Today);
 
     [Fact]
     public void BuyAndHoldStrategy_Constructor_ValidParameters_ShouldCreateInstance()

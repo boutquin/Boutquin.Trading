@@ -25,7 +25,7 @@ public sealed class OrderEventHandler : IEventHandler
         _portfolio = portfolio;
     }
 
-    public async Task HandleEventAsync(IEvent eventObj)
+    public async Task HandleEventAsync(IFinancialEvent eventObj)
     {
         var orderEvent = eventObj as OrderEvent 
             ?? throw new ArgumentException("Event must be of type OrderEvent.", nameof(eventObj));

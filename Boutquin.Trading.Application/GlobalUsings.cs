@@ -12,9 +12,12 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
+global using Boutquin.Domain.Exceptions;
 global using Boutquin.Domain.Helpers;
+
 global using Boutquin.Trading.Domain.Enums;
 global using Boutquin.Trading.Domain.Events;
+global using Boutquin.Trading.Domain.Exceptions;
 global using Boutquin.Trading.Domain.Extensions;
 global using Boutquin.Trading.Domain.Helpers;
 global using Boutquin.Trading.Domain.Interfaces;

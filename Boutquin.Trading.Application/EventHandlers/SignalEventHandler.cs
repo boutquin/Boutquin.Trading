@@ -25,7 +25,7 @@ public sealed class SignalEventHandler : IEventHandler
         _portfolio = portfolio;
     }
 
-    public async Task HandleEventAsync(IEvent eventObj)
+    public async Task HandleEventAsync(IFinancialEvent eventObj)
     {
         var signalEvent = eventObj as SignalEvent 
             ?? throw new ArgumentException("Event must be of type SignalEvent.", nameof(eventObj));
