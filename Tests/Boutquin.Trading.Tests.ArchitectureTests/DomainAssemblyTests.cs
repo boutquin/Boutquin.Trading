@@ -41,7 +41,7 @@ public sealed class DomainAssemblyTests : BaseTest
             .BeSealed()
             .GetResult();
 
-        Assert.True(result.IsSuccessful, $"The following types failed: [{GetFailingTypes(result)}].");
+        GetFailingTypes(result).Should().BeEmpty();
     }
 
     /// <summary>
@@ -58,7 +58,7 @@ public sealed class DomainAssemblyTests : BaseTest
             .Should().HaveNameEndingWith("DomainEvent")
             .GetResult();
 
-        Assert.True(result.IsSuccessful, $"The following types failed: [{GetFailingTypes(result)}].");
+        GetFailingTypes(result).Should().BeEmpty();
     }
 
     /// <summary>
@@ -75,7 +75,6 @@ public sealed class DomainAssemblyTests : BaseTest
             .Should().HaveNameStartingWith("I")
             .GetResult();
 
-        Assert.True(result.IsSuccessful, $"The following types failed: [{GetFailingTypes(result)}].");
+        GetFailingTypes(result).Should().BeEmpty();
     }
-
 }

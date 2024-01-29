@@ -45,6 +45,8 @@ public class BaseTest
     ///     var result = //... perform some architecture test ...;
     ///     var failingTypes = GetFailingTypes(result);
     ///     Assert.True(result.IsSuccessful, $"The following types failed: [{GetFailingTypes(result)}].");
+    ///     // FluentAssertions usage for asserting the test result
+    ///     GetFailingTypes(result).Should().BeEmpty();
     /// }
     /// </example>
     protected string GetFailingTypes(TestResult result)
