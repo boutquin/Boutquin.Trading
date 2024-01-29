@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2023 Pierre G. Boutquin. All rights reserved.
+﻿// Copyright (c) 2023-2024 Pierre G. Boutquin. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License").
 //  You may not use this file except in compliance with the License.
@@ -206,13 +206,9 @@ public interface IStrategy
         // Validate parameters
         Guard.AgainstUndefinedEnumValue(() => currency); // Throws ArgumentOutOfRangeException
 
-        if (Cash.ContainsKey(currency))
+        if (!Cash.TryAdd(currency, amount))
         {
             Cash[currency] += amount;
-        }
-        else
-        {
-            Cash[currency] = amount;
         }
     }
 
@@ -233,13 +229,9 @@ public interface IStrategy
         // Validate parameters
         Guard.AgainstNullOrWhiteSpace(() => asset); // Throws ArgumentException
 
-        if (Positions.ContainsKey(asset))
+        if (!Positions.TryAdd(asset, quantity))
         {
             Positions[asset] += quantity;
-        }
-        else
-        {
-            Positions[asset] = quantity;
         }
     }
 
@@ -260,6 +252,6 @@ public interface IStrategy
         // Validate parameters
         Guard.AgainstNullOrWhiteSpace(() => asset); // Throws ArgumentException
 
-        return Positions.TryGetValue(asset, out var position) ? position : 0;
+        return Positions.GetValueOrDefault(asset, 0);
     }
 }

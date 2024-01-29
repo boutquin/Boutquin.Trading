@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2023 Pierre G. Boutquin. All rights reserved.
+﻿// Copyright (c) 2023-2024 Pierre G. Boutquin. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License").
 //  You may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-
 namespace Boutquin.Trading.Domain.Helpers;
 
 /// <summary>
@@ -87,7 +86,7 @@ namespace Boutquin.Trading.Domain.Helpers;
 /// between the peak and the subsequent recovery to a new peak
 /// in the strategy's value during the backtesting period.
 /// </param>
-public record Tearsheet(
+public sealed record Tearsheet(
     decimal AnnualizedReturn,
     decimal SharpeRatio,
     decimal SortinoRatio,

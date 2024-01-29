@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2023 Pierre G. Boutquin. All rights reserved.
+﻿// Copyright (c) 2023-2024 Pierre G. Boutquin. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License").
 //  You may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ using Enums;
 /// </summary>
 /// <param name="Symbol">The unique symbol or ticker of the financial asset, represented as a string.</param>
 /// <param name="Currency">The currency in which the asset is denominated, represented as a CurrencyCode enum value.</param>
-public record Asset(
+public sealed record Asset(
     string Symbol,
     CurrencyCode Currency)
 {

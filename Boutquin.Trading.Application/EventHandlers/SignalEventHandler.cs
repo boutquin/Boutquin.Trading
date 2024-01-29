@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2023 Pierre G. Boutquin. All rights reserved.
+﻿// Copyright (c) 2023-2024 Pierre G. Boutquin. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License").
 //  You may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ public sealed class SignalEventHandler : IEventHandler
             var desiredPositionSize = positionSizes[asset];
 
             // Get the current position size for the current asset.
-            var currentPositionSize = strategy.Positions.TryGetValue(asset, out var position) ? position : 0;
+            var currentPositionSize = strategy.Positions.GetValueOrDefault(asset, 0);
 
             // Calculate the order size based on the difference between the desired position size and the current position size.
             var orderSize = desiredPositionSize - currentPositionSize;

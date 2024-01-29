@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2023 Pierre G. Boutquin. All rights reserved.
+﻿// Copyright (c) 2023-2024 Pierre G. Boutquin. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License").
 //  You may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ using Interfaces;
 /// </param>
 /// <param name="Commission">The commission associated with the fill event, represented as a decimal value.
 /// </param>
-public record FillEvent(
+public sealed record FillEvent(
     DateOnly Timestamp,
     string Asset,
     string StrategyName,

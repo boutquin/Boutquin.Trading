@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2023 Pierre G. Boutquin. All rights reserved.
+﻿// Copyright (c) 2023-2024 Pierre G. Boutquin. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License").
 //  You may not use this file except in compliance with the License.
@@ -14,12 +14,7 @@
 //
 namespace Boutquin.Trading.Application;
 
-using System;
-using System.Collections.Generic;
-
 using Domain.Data;
-using Domain.Enums;
-using Domain.Interfaces;
 
 public class Portfolio : IPortfolio
 {

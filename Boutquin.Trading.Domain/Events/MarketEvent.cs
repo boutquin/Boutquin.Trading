@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2023 Pierre G. Boutquin. All rights reserved.
+﻿// Copyright (c) 2023-2024 Pierre G. Boutquin. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License").
 //  You may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ using Interfaces;
 /// <param name="Timestamp">The timestamp of the market event, represented as a DateOnly object.</param>
 /// <param name="HistoricalMarketData">A sorted dictionary containing the historical market data for multiple assets, with asset symbols as keys and MarketData objects as values.</param>
 /// <param name="HistoricalFxConversionRates">A sorted dictionary containing the historical foreign exchange (FX) conversion rates for multiple currency pairs, with DateOnly as keys and a SortedDictionary of CurrencyCode and decimal pairs as values.</param>
-public record MarketEvent(
+public sealed record MarketEvent(
     DateOnly Timestamp,
     SortedDictionary<string, MarketData>? HistoricalMarketData,
     SortedDictionary<CurrencyCode, decimal> HistoricalFxConversionRates) : IEvent;

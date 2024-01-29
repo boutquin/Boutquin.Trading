@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2023 Pierre G. Boutquin. All rights reserved.
+﻿// Copyright (c) 2023-2024 Pierre G. Boutquin. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License").
 //  You may not use this file except in compliance with the License.
@@ -12,21 +12,17 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
+namespace Boutquin.Trading.Tests.UnitTests.Application;
 
-namespace Boutquin.Trading.UnitTests.Application;
-
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using Helpers;
 
 using Moq;
 
-using Boutquin.Trading.Domain.Enums;
-using Boutquin.Trading.Domain.Events;
-using Boutquin.Trading.Domain.Interfaces;
-using Helpers;
-using Boutquin.Trading.Domain.Data;
-using Boutquin.Trading.Application;
+using Trading.Application;
+using Trading.Domain.Data;
+using Trading.Domain.Enums;
+using Trading.Domain.Events;
+using Trading.Domain.Interfaces;
 
 public class PortfolioTests
 {
