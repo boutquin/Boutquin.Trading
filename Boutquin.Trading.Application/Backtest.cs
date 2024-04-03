@@ -107,7 +107,7 @@ public sealed class BackTest
             // Get the FX rates for the current date.
             var fxRates = fxRatesForDate.TryGetValue(marketData.Key, out var ratesForDate)
                           ? ratesForDate
-                          : new SortedDictionary<CurrencyCode, decimal>(); // Use an empty dictionary if there are no rates for this date.
+                          : []; // Use an empty dictionary if there are no rates for this date.
 
             // Generate a MarketEvent for the current day's market data.
             var marketEvent = new MarketEvent(

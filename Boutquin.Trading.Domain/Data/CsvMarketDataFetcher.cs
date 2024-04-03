@@ -22,6 +22,27 @@ using Helpers;
 
 using Interfaces;
 
+/// <summary>
+/// Fetches market data from CSV files.
+/// </summary>
+/// <remarks>
+/// This class is responsible for fetching market data from CSV files. The CSV files should be located in the directory specified during the object creation.
+/// The CSV files should have a specific format. For market data, the format is: Date,Open,High,Low,Close,AdjustedClose,Volume,DividendPerShare,SplitCoefficient.
+/// For FX rates, the format is: Date,Rate.
+/// 
+/// Here is a sample usage of this class:
+/// <code>
+/// var fetcher = new CsvMarketDataFetcher("path/to/your/directory");
+/// await foreach (var data in fetcher.FetchMarketDataAsync(new[] { "AAPL", "MSFT" }))
+/// {
+///     // Process data
+/// }
+/// await foreach (var rate in fetcher.FetchFxRatesAsync(new[] { "USD_EUR", "USD_GBP" }))
+/// {
+///     // Process rate
+/// }
+/// </code>
+/// </remarks>
 public sealed class CsvMarketDataFetcher : IMarketDataFetcher
 {
     // The directory where the CSV files will be stored

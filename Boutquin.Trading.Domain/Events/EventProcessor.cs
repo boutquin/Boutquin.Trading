@@ -16,8 +16,35 @@ namespace Boutquin.Trading.Domain.Events;
 
 using Interfaces;
 
+/// <summary>
+/// Processes financial events by delegating to the appropriate event handler.
+/// </summary>
+/// <remarks>
+/// This class is responsible for processing financial events. It does this by delegating the processing to the appropriate event handler.
+/// The event handlers are provided to the EventProcessor via a dictionary mapping event types to their handlers.
+/// 
+/// Here is an example of how to use this class:
+/// <code>
+/// var handlers = new Dictionary&lt;Type, IEventHandler&gt;()
+/// {
+///     { typeof(TradeEvent), new TradeEventHandler() },
+///     { typeof(QuoteEvent), new QuoteEventHandler() }
+/// };
+/// 
+/// var eventProcessor = new EventProcessor(handlers);
+/// 
+/// var tradeEvent = new TradeEvent();
+/// await eventProcessor.ProcessEventAsync(tradeEvent);
+/// </code>
+/// </remarks>
 public sealed class EventProcessor(IReadOnlyDictionary<Type, IEventHandler> handlers) : IEventProcessor
 {
+    /// <summary>
+    /// Processes the provided financial event.
+    /// </summary>
+    /// <param name="eventObj">The financial event to process.</param>
+    /// <exception cref="NotSupportedException">Thrown when there is no handler for the provided event type.</exception>
+    /// <returns>A Task representing the asynchronous operation.</returns>
     public async Task ProcessEventAsync(IFinancialEvent eventObj)
     {
         if (handlers.TryGetValue(eventObj.GetType(), out var handler))

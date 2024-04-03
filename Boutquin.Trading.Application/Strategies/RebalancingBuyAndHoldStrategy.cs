@@ -55,7 +55,7 @@ public sealed class RebalancingBuyAndHoldStrategy : IStrategy
         Cash = cash;
         OrderPriceCalculationStrategy = orderPriceCalculationStrategy;
         PositionSizer = positionSizer;
-        Positions = new SortedDictionary<string, int>();
+        Positions = [];
         _rebalancingFrequency = rebalancingFrequency;
     }
 

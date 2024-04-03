@@ -19,6 +19,24 @@ using Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
+/// <summary>
+/// The MarketDataProcessor is responsible for fetching and storing market data.
+/// It uses the provided fetcher and storage implementations to perform these tasks.
+/// </summary>
+/// <remarks>
+/// This class is sealed and cannot be inherited.
+/// </remarks>
+/// <example>
+/// Here is an example of how to use the MarketDataProcessor:
+/// <code>
+/// IMarketDataFetcher fetcher = new MyMarketDataFetcher();
+/// IMarketDataStorage storage = new MyMarketDataStorage();
+/// ILoggerFactory loggerFactory = new LoggerFactory();
+/// 
+/// MarketDataProcessor processor = new MarketDataProcessor(fetcher, storage, loggerFactory);
+/// await processor.ProcessAndStoreMarketDataAsync(new List&gt;string&lt; { "AAPL", "MSFT" });
+/// </code>
+/// </example>
 public sealed class MarketDataProcessor(
     IMarketDataFetcher fetcher,
     IMarketDataStorage storage,
@@ -29,6 +47,11 @@ public sealed class MarketDataProcessor(
     private readonly IMarketDataStorage _storage = storage ?? throw new ArgumentNullException(nameof(storage));
     private readonly ILogger _logger = loggerFactory?.CreateLogger<MarketDataProcessor>() ?? new NullLogger<MarketDataProcessor>();
 
+    /// <summary>
+    /// Fetches and stores market data for the provided symbols.
+    /// </summary>
+    /// <param name="symbols">The symbols to fetch and store market data for.</param>
+    /// <exception cref="ArgumentException">Thrown when no symbols are provided.</exception>
     public async Task ProcessAndStoreMarketDataAsync(IEnumerable<string> symbols)
     {
         if (symbols == null || !symbols.Any())

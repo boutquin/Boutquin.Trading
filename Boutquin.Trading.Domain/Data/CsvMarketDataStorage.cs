@@ -22,11 +22,42 @@ using Helpers;
 
 using Interfaces;
 
+/// <summary>
+/// The CsvMarketDataStorage class provides functionality to store market data in CSV format.
+/// It implements the IMarketDataStorage interface.
+/// </summary>
+/// <remarks>
+/// This class is responsible for saving market data points to a CSV file. 
+/// The data points can be saved individually or in a batch. 
+/// The CSV files are stored in a directory specified during the instantiation of the class.
+/// Each CSV file corresponds to a specific symbol and contains market data for that symbol.
+/// The market data includes timestamp, open, high, low, close, adjusted close, volume, dividend per share, and split coefficient.
+/// </remarks>
+/// <example>
+/// Here is an example of how to use the CsvMarketDataStorage class:
+/// <code>
+/// var storage = new CsvMarketDataStorage("path/to/directory");
+/// var dataPoint = new KeyValuePair&lt;DateOnly, SortedDictionary&lt;string, MarketData&gt;&gt;(...);
+/// await storage.SaveMarketDataAsync(dataPoint);
+/// var dataPoints = new List&lt;KeyValuePair&lt;DateOnly, SortedDictionary&lt;string, MarketData&gt;&gt;&gt;(...);
+/// await storage.SaveMarketDataAsync(dataPoints);
+/// </code>
+/// </example>
 public sealed class CsvMarketDataStorage : IMarketDataStorage
 {
     // The directory where the CSV files will be stored
     private readonly string _dataDirectory;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CsvMarketDataStorage"/> class.
+    /// </summary>
+    /// <param name="directory">The directory where the CSV files will be stored.</param>
+    /// <exception cref="ArgumentNullException">Thrown when the directory is null.</exception>
+    /// <example>
+    /// <code>
+    /// var storage = new CsvMarketDataStorage("path/to/directory");
+    /// </code>
+    /// </example>
     public CsvMarketDataStorage(string directory)
     {
         _dataDirectory = directory ?? throw new ArgumentNullException(nameof(directory));
@@ -38,6 +69,12 @@ public sealed class CsvMarketDataStorage : IMarketDataStorage
     }
 
     /// <inheritdoc/>
+    /// <example>
+    /// <code>
+    /// var dataPoint = new KeyValuePair&lt;DateOnly, SortedDictionary&lt;string, MarketData&gt;&gt;(...);
+    /// await storage.SaveMarketDataAsync(dataPoint);
+    /// </code>
+    /// </example>
     public async Task SaveMarketDataAsync(KeyValuePair<DateOnly, SortedDictionary<string, MarketData>?> dataPoint)
     {
         // Validate the input data point
@@ -89,6 +126,12 @@ public sealed class CsvMarketDataStorage : IMarketDataStorage
 
 
     /// <inheritdoc/>
+    /// <example>
+    /// <code>
+    /// var dataPoints = new List&lt;KeyValuePair&lt;DateOnly, SortedDictionary&lt;string, MarketData&gt;&gt;&gt;(...);
+    /// await storage.SaveMarketDataAsync(dataPoints);
+    /// </code>
+    /// </example>
     public async Task SaveMarketDataAsync(IEnumerable<KeyValuePair<DateOnly, SortedDictionary<string, MarketData>>> dataPoints)
     {
         if (dataPoints == null)

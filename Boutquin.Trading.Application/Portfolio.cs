@@ -104,19 +104,19 @@ public class Portfolio : IPortfolio
     /// The HistoricalMarketData property represents a sorted dictionary of historical market data used by the portfolio.
     /// </summary>
     public SortedDictionary<DateOnly, SortedDictionary<string, MarketData>?> HistoricalMarketData { get; } 
-        = new();
+        = [];
 
     /// <summary>
     /// The HistoricalFxConversionRates property represents a sorted dictionary of historical foreign exchange conversion rates used by the portfolio.
     /// </summary>
     public SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> HistoricalFxConversionRates { get; } =
-        new();
+        [];
 
     /// <summary>
     /// The EquityCurve property represents a sorted dictionary of equity values over time.
     /// </summary>
     public SortedDictionary<DateOnly, decimal> EquityCurve { get; } 
-        = new();
+        = [];
 
     /// <summary>
     /// Asynchronously handles the specified event, processing it using the portfolio's event processor.

@@ -19,10 +19,9 @@ public sealed class EquityCurveExtensionsTestData
     /// <summary>
     /// Gets a collection of test cases containing varied equity curves and their corresponding drawdown analysis results.
     /// </summary>
-    public static IEnumerable<object[]> DrawdownAnalysisData => new List<object[]>
-    {
-        new object[]
-        {
+    public static IEnumerable<object[]> DrawdownAnalysisData =>
+    [
+        [
             new SortedDictionary<DateOnly, decimal>
             {
                 { DateOnly.Parse("2021-01-01"), 1000m },
@@ -39,9 +38,8 @@ public sealed class EquityCurveExtensionsTestData
             },
             -0.0098039215686274509803921569M,
             2
-        },
-        new object[]
-        {
+        ],
+        [
             new SortedDictionary<DateOnly, decimal>
             {
                 { DateOnly.Parse("2021-01-01"), 1000m },
@@ -58,6 +56,6 @@ public sealed class EquityCurveExtensionsTestData
             },
             -0.0400000000000000000000000000m,
             3
-        }
-    };
+        ]
+    ];
 }

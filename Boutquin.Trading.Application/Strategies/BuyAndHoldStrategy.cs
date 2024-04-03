@@ -56,7 +56,7 @@ public sealed class BuyAndHoldStrategy : IStrategy
         InitialTimestamp = initialTimestamp;
         OrderPriceCalculationStrategy = orderPriceCalculationStrategy;
         PositionSizer = positionSizer;
-        Positions = new SortedDictionary<string, int>();
+        Positions = [];
     }
 
     public string Name { get; }

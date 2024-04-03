@@ -55,8 +55,8 @@ public class PortfolioTests
     {
         var timestamp = DateOnly.FromDateTime(DateTime.Today);
         var marketEvent = new MarketEvent(Timestamp: timestamp,
-                                            HistoricalMarketData: new SortedDictionary<string, MarketData>(),
-                                            HistoricalFxConversionRates: new SortedDictionary<CurrencyCode, decimal>());
+                                            HistoricalMarketData: [],
+                                            HistoricalFxConversionRates: []);
 
         IStrategy strategy = new TestStrategy();
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
@@ -136,8 +136,8 @@ public class PortfolioTests
         var timestamp = DateOnly.FromDateTime(DateTime.Today);
         var baseCurrency = CurrencyCode.USD;
         var marketEvent = new MarketEvent(Timestamp: timestamp,
-            HistoricalMarketData: new SortedDictionary<string, MarketData>(),
-            HistoricalFxConversionRates: new SortedDictionary<CurrencyCode, decimal>());
+            HistoricalMarketData: [],
+            HistoricalFxConversionRates: []);
 
         var expectedSignal = new SignalEvent(timestamp, "TestStrategy", new Dictionary<string, SignalType>
         {

@@ -48,7 +48,7 @@ public class SimulatedBrokerage : IBrokerage
     /// <returns>A task that represents the asynchronous operation. The task result contains a boolean value that is true if the order was successfully processed; otherwise, false.</returns>
     public async Task<bool> SubmitOrderAsync(Order order)
     {
-        var marketData = await _marketDataFetcher.FetchMarketDataAsync(new List<string> { order.Asset }).FirstOrDefaultAsync();
+        var marketData = await _marketDataFetcher.FetchMarketDataAsync([order.Asset]).FirstOrDefaultAsync();
 
         if (marketData.Value == null || !marketData.Value.ContainsKey(order.Asset))
         {

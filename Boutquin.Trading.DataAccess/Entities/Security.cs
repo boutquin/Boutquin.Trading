@@ -83,13 +83,13 @@ public sealed class Security
     /// Navigation property to the related SecuritySymbols.
     /// </summary>
     public ICollection<SecuritySymbol> SecuritySymbols { get; private set; } // Setter is for EF 
-        = new HashSet<SecuritySymbol>();
+        = [];
 
     /// <summary>
     /// Navigation property to the related SecurityPrices.
     /// </summary>
     public ICollection<SecurityPrice> SecurityPrices { get; private set; } // Setter is for EF 
-        = new HashSet<SecurityPrice>();
+        = [];
 
     /// <summary>
     /// The name of the primary key column in the Security table.

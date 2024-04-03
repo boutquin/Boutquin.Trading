@@ -48,6 +48,7 @@ public sealed class AlphaVantageFetcher : IMarketDataFetcher
     /// <param name="httpClient">An optional HttpClient instance to use for making API requests. If not provided, a new instance will be created.</param>
     /// <param name="apiEndpoint">An optional API endpoint for the Alpha Vantage API. If not provided, the default endpoint will be used.</param>
     /// <param name="rateLimiter">An optional SemaphoreSlim instance for rate limiting. If not provided, a new instance with a limit of 5 will be created.</param>
+    /// <param name="rateLimitDelay">An optional delay between API requests when rate limiting is applied. If not provided, a default value of 5 will be used.</param>
     /// <param name="cacheExpiration">An optional TimeSpan for setting the cache expiration. If not provided, a default value of 6 hours will be used.</param>
     /// <exception cref="ArgumentNullException">Thrown when the provided API key or IDistributedCache is null or empty.</exception>
     public AlphaVantageFetcher(
@@ -81,6 +82,7 @@ public sealed class AlphaVantageFetcher : IMarketDataFetcher
     /// <param name="httpClient">An optional HttpClient instance to use for making API requests. If not provided, a new instance will be created.</param>
     /// <param name="apiEndpoint">An optional API endpoint for the Alpha Vantage API. If not provided, the default endpoint will be used.</param>
     /// <param name="rateLimiter">An optional SemaphoreSlim instance for rate limiting. If not provided, a new instance with a limit of 5 will be created.</param>
+    /// <param name="rateLimitDelay">An optional delay between API requests when rate limiting is applied. If not provided, a default value of 5 will be used.</param>
     /// <param name="cacheExpiration">An optional TimeSpan for setting the cache expiration. If not provided, a default value of 6 hours will be used.</param>
     /// <exception cref="ArgumentNullException">Thrown when the provided API key or IDistributedCache is null or empty.</exception>
     public AlphaVantageFetcher(
