@@ -23,6 +23,9 @@ using Trading.Domain.Data;
 using Trading.Domain.Enums;
 using Trading.Domain.Interfaces;
 
+/// <summary>
+/// Represents a set of tests for the BuyAndHoldStrategy class.
+/// </summary>
 public sealed class BuyAndHoldStrategyTests
 {
     private readonly Mock<IOrderPriceCalculationStrategy> _orderPriceCalculationStrategyMock = new();
@@ -32,6 +35,9 @@ public sealed class BuyAndHoldStrategyTests
     private readonly string _name = "TestStrategy";
     private readonly DateOnly _initialTimestamp = DateOnly.FromDateTime(DateTime.Today);
 
+    /// <summary>
+    /// Tests that the BuyAndHoldStrategy constructor creates an instance when given valid parameters.
+    /// </summary>
     [Fact]
     public void BuyAndHoldStrategy_Constructor_ValidParameters_ShouldCreateInstance()
     {
@@ -43,6 +49,9 @@ public sealed class BuyAndHoldStrategyTests
         strategy.Should().NotBeNull();
     }
 
+    /// <summary>
+    /// Tests that the BuyAndHoldStrategy constructor throws an exception when given null or invalid parameters.
+    /// </summary>
     [Fact]
     public void BuyAndHoldStrategy_Constructor_NullOrInvalidParameters_ShouldThrowException()
     {
@@ -55,6 +64,9 @@ public sealed class BuyAndHoldStrategyTests
         Assert.Throws<ArgumentNullException>(() => new BuyAndHoldStrategy(_name, _assets, _cash, _initialTimestamp, _orderPriceCalculationStrategyMock.Object, null));
     }
 
+    /// <summary>
+    /// Tests that the GenerateSignals method of the BuyAndHoldStrategy class generates buy signals at the initial timestamp.
+    /// </summary>
     [Fact]
     public void BuyAndHoldStrategy_GenerateSignals_InitialTimestamp_ShouldGenerateBuySignals()
     {
@@ -72,19 +84,19 @@ public sealed class BuyAndHoldStrategyTests
                 SplitCoefficient: 1);
 
         var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<string, MarketData>?>
-        {
-            { _initialTimestamp, new SortedDictionary<string, MarketData> { { "AAPL", marketData } } }
-        };
+                    {
+                        { _initialTimestamp, new SortedDictionary<string, MarketData> { { "AAPL", marketData } } }
+                    };
         var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
-        {
-            { _initialTimestamp, new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
-        };
+                    {
+                        { _initialTimestamp, new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
+                    };
 
         // Act
         var signalEvent = strategy.GenerateSignals(
             _initialTimestamp,
             CurrencyCode.USD,
-            historicalMarketData, 
+            historicalMarketData,
             historicalFxConversionRates);
 
         // Assert
@@ -95,6 +107,9 @@ public sealed class BuyAndHoldStrategyTests
         signalEvent.Signals["AAPL"].Should().Be(SignalType.Underweight);
     }
 
+    /// <summary>
+    /// Tests that the GenerateSignals method of the BuyAndHoldStrategy class does not generate buy signals at timestamps other than the initial timestamp.
+    /// </summary>
     [Fact]
     public void BuyAndHoldStrategy_GenerateSignals_NotInitialTimestamp_ShouldNotGenerateBuySignals()
     {
@@ -110,21 +125,21 @@ public sealed class BuyAndHoldStrategyTests
                 Volume: 1000000,
                 DividendPerShare: 0,
                 SplitCoefficient: 1);
-        
+
         var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<string, MarketData>?>
-        {
-            { _initialTimestamp.AddDays(1), new SortedDictionary<string, MarketData> { { "AAPL", marketData } } }
-        };
+                    {
+                        { _initialTimestamp.AddDays(1), new SortedDictionary<string, MarketData> { { "AAPL", marketData } } }
+                    };
         var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
-        {
-            { _initialTimestamp.AddDays(1), new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
-        };
+                    {
+                        { _initialTimestamp.AddDays(1), new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
+                    };
 
         // Act
         var signalEvent = strategy.GenerateSignals(
             _initialTimestamp.AddDays(1),
             CurrencyCode.USD,
-            historicalMarketData, 
+            historicalMarketData,
             historicalFxConversionRates);
 
         // Assert

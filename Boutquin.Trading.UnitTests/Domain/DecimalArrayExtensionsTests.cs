@@ -18,6 +18,9 @@ using Boutquin.Domain.Exceptions;
 
 using Trading.Domain.Extensions;
 
+/// <summary>
+/// Contains unit tests for the <see cref="DecimalArrayExtensions"/> methods.
+/// </summary>
 public sealed class DecimalArrayExtensionsTests
 {
     private const decimal Precision = 1e-12m;

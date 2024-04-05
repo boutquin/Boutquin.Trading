@@ -14,6 +14,9 @@
 //
 namespace Boutquin.Trading.Tests.UnitTests.Domain;
 
+/// <summary>
+/// Provides test data for the <see cref="DecimalArrayExtensionsTests"/> class.
+/// </summary>
 public sealed class DecimalArrayExtensionsTestData
 {
     /// <summary>

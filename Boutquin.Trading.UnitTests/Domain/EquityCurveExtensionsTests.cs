@@ -16,6 +16,9 @@ namespace Boutquin.Trading.Tests.UnitTests.Domain;
 
 using Trading.Domain.Extensions;
 
+/// <summary>
+/// Contains unit tests for the <see cref="EquityCurveExtensions"/> methods.
+/// </summary>
 public sealed class EquityCurveExtensionsTests
 {
     private const decimal Precision = 1e-12m;

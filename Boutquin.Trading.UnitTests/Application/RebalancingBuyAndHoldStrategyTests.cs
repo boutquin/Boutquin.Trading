@@ -21,6 +21,9 @@ using Trading.Domain.Data;
 using Trading.Domain.Enums;
 using Trading.Domain.Interfaces;
 
+/// <summary>
+/// Represents a set of tests for the RebalancingBuyAndHoldStrategy class.
+/// </summary>
 public sealed class RebalancingBuyAndHoldStrategyTests
 {
     private readonly string _name = "TestStrategy";
@@ -40,6 +43,9 @@ public sealed class RebalancingBuyAndHoldStrategyTests
         DividendPerShare: 0,
         SplitCoefficient: 1);
 
+    /// <summary>
+    /// Tests that the RebalancingBuyAndHoldStrategy constructor creates an instance when given valid parameters.
+    /// </summary>
     [Fact]
     public void RebalancingBuyAndHoldStrategy_Constructor_ShouldCreateInstance()
     {
@@ -55,6 +61,9 @@ public sealed class RebalancingBuyAndHoldStrategyTests
         strategy.PositionSizer.Should().Be(_positionSizerMock.Object);
     }
 
+    /// <summary>
+    /// Tests that the GenerateSignals method of the RebalancingBuyAndHoldStrategy class generates rebalance signals on the rebalancing date.
+    /// </summary>
     [Fact]
     public void RebalancingBuyAndHoldStrategy_GenerateSignals_RebalancingDate_ShouldGenerateRebalanceSignals()
     {
@@ -84,6 +93,9 @@ public sealed class RebalancingBuyAndHoldStrategyTests
         signalEvent.Signals["AAPL"].Should().Be(SignalType.Rebalance);
     }
 
+    /// <summary>
+    /// Tests that the GenerateSignals method of the RebalancingBuyAndHoldStrategy class does not generate rebalance signals on dates that are not the rebalancing date.
+    /// </summary>
     [Fact]
     public void RebalancingBuyAndHoldStrategy_GenerateSignals_NotRebalancingDate_ShouldNotGenerateRebalanceSignals()
     {
@@ -117,6 +129,9 @@ public sealed class RebalancingBuyAndHoldStrategyTests
         signalEvent.Signals.Should().BeEmpty();  // No rebalancing signals should be generated
     }
 
+    /// <summary>
+    /// Tests that the GenerateSignals method of the RebalancingBuyAndHoldStrategy class generates rebalance signals on the second rebalancing date.
+    /// </summary>
     [Fact]
     public void RebalancingBuyAndHoldStrategy_GenerateSignals_SecondRebalancingDate_ShouldGenerateRebalanceSignals()
     {

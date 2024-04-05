@@ -13,8 +13,36 @@
 //  limitations under the License.
 //
 namespace Boutquin.Trading.Domain.Interfaces;
-
+/// <summary>
+/// The IEventHandler interface defines a method for handling financial events.
+/// This interface is used by the EventProcessor class to delegate the processing of financial events to the appropriate event handler.
+/// </summary>
+/// <remarks>
+/// The IEventHandler interface should be implemented by classes that handle specific types of financial events.
+/// The HandleEventAsync method should be implemented to process the event and perform any necessary actions.
+/// 
+/// Here is an example of how to implement this interface:
+/// <code>
+/// public class TradeEventHandler : IEventHandler
+/// {
+///     public async Task HandleEventAsync(IFinancialEvent eventObj)
+///     {
+///         var tradeEvent = eventObj as TradeEvent;
+///         // Process the trade event...
+///     }
+/// }
+/// </code>
+/// </remarks>
 public interface IEventHandler
 {
+    /// <summary>
+    /// Handles the provided financial event.
+    /// </summary>
+    /// <param name="eventObj">The financial event to handle.</param>
+    /// <returns>A Task representing the asynchronous operation.</returns>
+    /// <remarks>
+    /// The HandleEventAsync method should be implemented to process the provided financial event and perform any necessary actions.
+    /// The specific actions to be performed will depend on the type of the event and the specific implementation of the IEventHandler interface.
+    /// </remarks>
     Task HandleEventAsync(IFinancialEvent eventObj);
 }

@@ -19,15 +19,49 @@ using Trading.Domain.Enums;
 using Trading.Domain.Events;
 using Trading.Domain.Interfaces;
 
+/// <summary>
+/// Represents a test strategy for trading.
+/// </summary>
 public class TestStrategy : IStrategy
 {
+    /// <summary>
+    /// Gets or sets the name of the strategy.
+    /// </summary>
     public string Name { get; set; }
+
+    /// <summary>
+    /// Gets the positions held in the strategy.
+    /// </summary>
     public SortedDictionary<string, int> Positions { get; init; } = [];
+
+    /// <summary>
+    /// Gets or sets the assets involved in the strategy.
+    /// </summary>
     public IReadOnlyDictionary<string, CurrencyCode> Assets { get; set; } = new Dictionary<string, CurrencyCode>();
+
+    /// <summary>
+    /// Gets the cash held in different currencies.
+    /// </summary>
     public SortedDictionary<CurrencyCode, decimal> Cash { get; init; } = [];
+
+    /// <summary>
+    /// Gets or sets the strategy for calculating order prices.
+    /// </summary>
     public IOrderPriceCalculationStrategy OrderPriceCalculationStrategy { get; set; }
+
+    /// <summary>
+    /// Gets or sets the position sizer.
+    /// </summary>
     public IPositionSizer PositionSizer { get; set; }
 
+    /// <summary>
+    /// Generates signals for trading based on market data and conversion rates.
+    /// </summary>
+    /// <param name="timestamp">The date of the signal.</param>
+    /// <param name="baseCurrency">The base currency for trading.</param>
+    /// <param name="historicalMarketData">The historical market data.</param>
+    /// <param name="historicalFxConversionRates">The historical foreign exchange conversion rates.</param>
+    /// <returns>A signal event.</returns>
     public SignalEvent GenerateSignals(DateOnly timestamp, CurrencyCode baseCurrency, IReadOnlyDictionary<DateOnly, SortedDictionary<string, MarketData>?> historicalMarketData, IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
     {
         throw new NotImplementedException();

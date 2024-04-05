@@ -38,9 +38,13 @@ using Interfaces;
 /// </param>
 /// <param name="Quantity">The quantity of the financial asset in the order, represented as an integer.
 /// </param>
-/// <param name="Price">The price at which the order should be executed,
+/// <param name="PrimaryPrice">The primary price at which the order should be executed,
 /// represented as a decimal value. This parameter is only relevant for
-/// Limit, Stop, and StopLimit orders.
+/// Limit, Stop, and StopLimit orders. This represents the primary price at which the order should be executed.
+/// </param>
+/// <param name="SecondaryPrice">The secondary price at which the order should be executed,
+/// represented as a decimal value. This parameter is only relevant for
+/// StopLimit orders. This represents the secondary price at which the order should be executed.
 /// </param>
 public sealed record OrderEvent(
     DateOnly Timestamp,

@@ -14,11 +14,35 @@
 //
 namespace Boutquin.Trading.Application.EventHandlers;
 
+/// <summary>
+/// The MarketEventHandler class is an implementation of the IEventHandler interface that handles MarketEvent objects.
+/// MarketEvent objects represent the market data for a specific financial asset at a specific point in time.
+/// </summary>
+/// <remarks>
+/// This class handles MarketEvent objects by updating the historical data, positions, and cash of the portfolio.
+/// The IPortfolio object that is passed to the MarketEventHandler constructor is used to update the portfolio state.
+/// 
+/// Here is an example of how to use this class:
+/// <code>
+/// var portfolio = new Portfolio();
+/// var marketEventHandler = new MarketEventHandler(portfolio, CurrencyCode.USD);
+/// 
+/// var marketEvent = new MarketEvent();
+/// await marketEventHandler.HandleEventAsync(marketEvent);
+/// </code>
+/// </remarks>
 public sealed class MarketEventHandler : IEventHandler
 {
     private readonly IPortfolio _portfolio;
     private readonly CurrencyCode _baseCurrency;
 
+    /// <summary>
+    /// Initializes a new instance of the MarketEventHandler class.
+    /// </summary>
+    /// <param name="portfolio">The portfolio that contains the strategies that can create orders.</param>
+    /// <param name="baseCurrency">The base currency for the portfolio.</param>
+    /// <exception cref="ArgumentNullException">Thrown when portfolio is null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when baseCurrency is an undefined enum value.</exception>
     public MarketEventHandler(IPortfolio portfolio, CurrencyCode baseCurrency)
     {
         // Validate parameters
@@ -29,9 +53,19 @@ public sealed class MarketEventHandler : IEventHandler
         _baseCurrency = baseCurrency;
     }
 
+    /// <summary>
+    /// Handles the provided MarketEvent object.
+    /// </summary>
+    /// <param name="eventObj">The MarketEvent object to handle.</param>
+    /// <exception cref="ArgumentException">Thrown when eventObj is not a MarketEvent object.</exception>
+    /// <returns>A Task representing the asynchronous operation.</returns>
+    /// <remarks>
+    /// The HandleEventAsync method updates the historical data, positions, and cash of the portfolio based on the MarketEvent object.
+    /// The portfolio is retrieved from the portfolio that was passed to the MarketEventHandler constructor.
+    /// </remarks>
     public async Task HandleEventAsync(IFinancialEvent eventObj)
     {
-        var marketEvent = eventObj as MarketEvent 
+        var marketEvent = eventObj as MarketEvent
             ?? throw new ArgumentException("Event must be of type MarketEvent.", nameof(eventObj));
 
         // Call methods on the Portfolio class to perform the necessary actions

@@ -25,7 +25,7 @@ using Trading.Domain.Enums;
 public static class ExchangeExtensionsTestData
 {
     /// <summary>
-    /// Gets test data for the <see cref="ExchangeExtensions.IsOpen"/> method.
+    /// Gets test data for the <see cref="ExchangeExtensions.IsExchangeOpen"/> method.
     /// </summary>
     public static IEnumerable<object[]> IsExchangeOpenData
     {
@@ -56,7 +56,7 @@ public static class ExchangeExtensionsTestData
     }
 
     /// <summary>
-    /// Gets test data for the <see cref="ExchangeExtensions.GetClosingTime"/> method.
+    /// Gets test data for the <see cref="ExchangeExtensions.GetExchangeClosingTime"/> method.
     /// </summary>
     public static IEnumerable<object[]> GetExchangeClosingTimeData
     {

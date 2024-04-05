@@ -22,17 +22,26 @@ using Trading.Domain.Enums;
 using Trading.Domain.Events;
 using Trading.Domain.Interfaces;
 
+/// <summary>
+/// Represents a set of tests for the SimulatedBrokerage class.
+/// </summary>
 public sealed class SimulatedBrokerageTests
 {
     private readonly Mock<IMarketDataFetcher> _marketDataFetcherMock;
     private readonly SimulatedBrokerage _simulatedBrokerage;
 
+    /// <summary>
+    /// Initializes a new instance of the SimulatedBrokerageTests class.
+    /// </summary>
     public SimulatedBrokerageTests()
     {
         _marketDataFetcherMock = new Mock<IMarketDataFetcher>();
         _simulatedBrokerage = new SimulatedBrokerage(_marketDataFetcherMock.Object);
     }
 
+    /// <summary>
+    /// Tests that the SubmitOrderAsync method of the SimulatedBrokerage class returns true when given a valid market order.
+    /// </summary>
     [Fact]
     public async Task SubmitOrderAsync_WithValidMarketOrder_ShouldReturnTrue()
     {
@@ -73,6 +82,9 @@ public sealed class SimulatedBrokerageTests
         result.Should().BeTrue();
     }
 
+    /// <summary>
+    /// Tests that the SubmitOrderAsync method of the SimulatedBrokerage class returns false when there is no market data.
+    /// </summary>
     [Fact]
     public async Task SubmitOrderAsync_NoMarketData_ShouldReturnFalse()
     {
@@ -94,6 +106,9 @@ public sealed class SimulatedBrokerageTests
         result.Should().BeFalse();
     }
 
+    /// <summary>
+    /// Tests that the SubmitOrderAsync method of the SimulatedBrokerage class returns true when given a valid limit order.
+    /// </summary>
     [Fact]
     public async Task SubmitOrderAsync_WithValidLimitOrder_ShouldReturnTrue()
     {
@@ -135,6 +150,9 @@ public sealed class SimulatedBrokerageTests
         result.Should().BeTrue();
     }
 
+    /// <summary>
+    /// Tests that the SubmitOrderAsync method of the SimulatedBrokerage class returns false when given an invalid limit order.
+    /// </summary>
     [Fact]
     public async Task SubmitOrderAsync_WithInValidLimitOrder_ShouldReturnFalse()
     {
@@ -176,6 +194,9 @@ public sealed class SimulatedBrokerageTests
         result.Should().BeFalse();
     }
 
+    /// <summary>
+    /// Tests that the SubmitOrderAsync method of the SimulatedBrokerage class does not trigger the FillOccurred event when given a limit order that is not better than the close price.
+    /// </summary>
     [Fact]
     public async Task SubmitOrderAsync_LimitOrderNotBetterThanClose_ShouldNotTriggerFillEvent()
     {
@@ -221,6 +242,9 @@ public sealed class SimulatedBrokerageTests
         eventTriggered.Should().BeFalse();
     }
 
+    /// <summary>
+    /// Tests that the SubmitOrderAsync method of the SimulatedBrokerage class triggers the FillOccurred event when given a stop order that is not worse than the close price.
+    /// </summary>
     [Fact]
     public async Task SubmitOrderAsync_StopOrderNotWorseThanClose_ShouldTriggerFillEvent()
     {
@@ -266,6 +290,9 @@ public sealed class SimulatedBrokerageTests
         eventTriggered.Should().BeTrue();
     }
 
+    /// <summary>
+    /// Tests that the SubmitOrderAsync method of the SimulatedBrokerage class does not trigger the FillOccurred event when given a stop limit order that does not meet the conditions.
+    /// </summary>
     [Fact]
     public async Task SubmitOrderAsync_StopLimitOrderNotMeetingConditions_ShouldNotTriggerFillEvent()
     {
@@ -312,6 +339,9 @@ public sealed class SimulatedBrokerageTests
         eventTriggered.Should().BeFalse();
     }
 
+    /// <summary>
+    /// Tests that the SubmitOrderAsync method of the SimulatedBrokerage class triggers the FillOccurred event when given a stop limit order that meets the conditions.
+    /// </summary>
     [Fact]
     public async Task SubmitOrderAsync_StopLimitOrderMeetingConditions_ShouldTriggerFillEvent()
     {

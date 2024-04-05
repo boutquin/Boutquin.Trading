@@ -14,10 +14,32 @@
 //
 namespace Boutquin.Trading.Application.EventHandlers;
 
+/// <summary>
+/// The FillEventHandler class is an implementation of the IEventHandler interface that handles FillEvent objects.
+/// FillEvent objects represent the filling of an order in the trading system.
+/// </summary>
+/// <remarks>
+/// This class handles FillEvent objects by updating the positions and cash of the strategy that created the order.
+/// The IPortfolio object that is passed to the FillEventHandler constructor is used to get the strategy and update its state.
+/// 
+/// Here is an example of how to use this class:
+/// <code>
+/// var portfolio = new Portfolio();
+/// var fillEventHandler = new FillEventHandler(portfolio);
+/// 
+/// var fillEvent = new FillEvent();
+/// await fillEventHandler.HandleEventAsync(fillEvent);
+/// </code>
+/// </remarks>
 public sealed class FillEventHandler : IEventHandler
 {
     private readonly IPortfolio _portfolio;
 
+    /// <summary>
+    /// Initializes a new instance of the FillEventHandler class.
+    /// </summary>
+    /// <param name="portfolio">The portfolio that contains the strategies that can create orders.</param>
+    /// <exception cref="ArgumentNullException">Thrown when portfolio is null.</exception>
     public FillEventHandler(IPortfolio portfolio)
     {
         Guard.AgainstNull(() => portfolio); // Throws ArgumentNullException
@@ -25,9 +47,19 @@ public sealed class FillEventHandler : IEventHandler
         _portfolio = portfolio;
     }
 
+    /// <summary>
+    /// Handles the provided FillEvent object.
+    /// </summary>
+    /// <param name="eventObj">The FillEvent object to handle.</param>
+    /// <exception cref="ArgumentException">Thrown when eventObj is not a FillEvent object.</exception>
+    /// <returns>A Task representing the asynchronous operation.</returns>
+    /// <remarks>
+    /// The HandleEventAsync method updates the positions and cash of the strategy that created the order represented by the FillEvent object.
+    /// The strategy is retrieved from the portfolio that was passed to the FillEventHandler constructor.
+    /// </remarks>
     public async Task HandleEventAsync(IFinancialEvent eventObj)
     {
-        var fillEvent = eventObj as FillEvent 
+        var fillEvent = eventObj as FillEvent
             ?? throw new ArgumentException("Event must be of type FillEvent.", nameof(eventObj));
 
         // Call methods on the Portfolio class to perform the necessary actions

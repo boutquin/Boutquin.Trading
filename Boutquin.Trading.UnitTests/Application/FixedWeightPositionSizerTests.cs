@@ -21,10 +21,16 @@ using Trading.Domain.Data;
 using Trading.Domain.Enums;
 using Trading.Domain.Interfaces;
 
+/// <summary>
+/// Represents a set of tests for the FixedWeightPositionSizer class.
+/// </summary>
 public sealed class FixedWeightPositionSizerTests
 {
     private readonly DateOnly _initialTimestamp = new(year: 2023, month: 5, day: 1);
 
+    /// <summary>
+    /// Tests that the ComputePositionSizes method of the FixedWeightPositionSizer class computes position sizes correctly when given valid parameters.
+    /// </summary>
     [Fact]
     public void FixedWeightPositionSizer_ComputePositionSizes_ValidParameters_ShouldComputePositionSizes()
     {
@@ -70,6 +76,9 @@ public sealed class FixedWeightPositionSizerTests
         positionSizes["AAPL"].Should().Be(5);  // 1000 / 200 = 5
     }
 
+    /// <summary>
+    /// Tests that the ComputePositionSizes method of the FixedWeightPositionSizer class throws an InvalidOperationException when the fixed asset weight is not found.
+    /// </summary>
     [Fact]
     public void FixedWeightPositionSizer_ComputePositionSizes_FixedAssetWeightNotFound_ShouldThrowInvalidOperationException()
     {
@@ -103,6 +112,9 @@ public sealed class FixedWeightPositionSizerTests
         Assert.Throws<InvalidOperationException>(() => positionSizer.ComputePositionSizes(_initialTimestamp, signalType, strategyMock.Object, historicalMarketData, historicalFxConversionRates));
     }
 
+    /// <summary>
+    /// Tests that the ComputePositionSizes method of the FixedWeightPositionSizer class computes position sizes correctly when there are two assets.
+    /// </summary>
     [Fact]
     public void FixedWeightPositionSizer_ComputePositionSizes_TwoAssets_ShouldComputePositionSizes()
     {

@@ -24,11 +24,17 @@ using Trading.Domain.Enums;
 using Trading.Domain.Events;
 using Trading.Domain.Interfaces;
 
+/// <summary>
+/// Represents a set of tests for the Portfolio class.
+/// </summary>
 public class PortfolioTests
 {
     private readonly Mock<IEventProcessor> _mockEventProcessor = new();
     private readonly Mock<IBrokerage> _mockBroker = new();
 
+    /// <summary>
+    /// Tests that the HandleEventAsync method of the Portfolio class calls the ProcessEventAsync method of the IEventProcessor interface when given a valid event.
+    /// </summary>
     [Fact]
     public async Task HandleEventAsync_ShouldCallProcessEventAsync_GivenValidEvent()
     {
@@ -50,6 +56,9 @@ public class PortfolioTests
         _mockEventProcessor.Verify(x => x.ProcessEventAsync(It.IsAny<IFinancialEvent>()), Times.Once);
     }
 
+    /// <summary>
+    /// Tests that the UpdateHistoricalData method of the Portfolio class updates the historical data correctly when given a valid market event.
+    /// </summary>
     [Fact]
     public void UpdateHistoricalData_ShouldUpdateHistoricalData_GivenValidMarketEvent()
     {
@@ -75,6 +84,9 @@ public class PortfolioTests
         portfolio.HistoricalFxConversionRates.Should().ContainKey(timestamp);
     }
 
+    /// <summary>
+    /// Tests that the UpdateCashForDividend method of the Portfolio class updates the cash correctly when given an asset with a dividend.
+    /// </summary>
     [Fact]
     public void UpdateCashForDividend_ShouldUpdateCash_GivenAssetWithDividend()
     {
@@ -103,6 +115,9 @@ public class PortfolioTests
         testStrategy.Cash[CurrencyCode.USD].Should().Be(10082m);
     }
 
+    /// <summary>
+    /// Tests that the UpdateCashForDividend method of the Portfolio class updates the cash for a dividend correctly when given an asset and a dividend per share.
+    /// </summary>
     [Fact]
     public void UpdateCashForDividend_ShouldUpdateCashForDividend_GivenAssetAndDividendPerShare()
     {
@@ -130,6 +145,9 @@ public class PortfolioTests
         strategy.Cash[CurrencyCode.USD].Should().Be(1020m);
     }
 
+    /// <summary>
+    /// Tests that the GenerateSignals method of the Portfolio class returns the correct signals when given a valid market event and a base currency.
+    /// </summary>
     [Fact]
     public void GenerateSignals_ShouldReturnSignals_GivenValidMarketEventAndBaseCurrency()
     {
@@ -169,6 +187,9 @@ public class PortfolioTests
         signals[0].Should().BeEquivalentTo(expectedSignal);
     }
 
+    /// <summary>
+    /// Tests that the SubmitOrderAsync method of the Portfolio class submits an order correctly when given a valid order event.
+    /// </summary>
     [Fact]
     public async Task SubmitOrderAsync_ShouldSubmitOrder_GivenValidOrderEvent()
     {
@@ -205,6 +226,9 @@ public class PortfolioTests
             o.SecondaryPrice == orderEvent.SecondaryPrice)), Times.Once);
     }
 
+    /// <summary>
+    /// Tests that the FillOccurred event of the IBrokerage interface calls the HandleEventAsync method of the Portfolio class.
+    /// </summary>
     [Fact]
     public async Task Broker_FillOccurred_ShouldCallHandleEventAsync()
     {
@@ -239,6 +263,9 @@ public class PortfolioTests
         _mockEventProcessor.Verify(x => x.ProcessEventAsync(It.Is<IFinancialEvent>(e => e == fillEvent)), Times.Once);
     }
 
+    /// <summary>
+    /// Tests that the UpdatePosition method of the Portfolio class updates a position correctly when given a valid strategy name, asset, and quantity.
+    /// </summary>
     [Fact]
     public void UpdatePosition_ShouldUpdatePosition_GivenValidStrategyNameAssetAndQuantity()
     {
@@ -262,6 +289,9 @@ public class PortfolioTests
         strategy.Positions[asset].Should().Be(quantity);
     }
 
+    /// <summary>
+    /// Tests that the UpdateCash method of the Portfolio class updates the cash correctly when given a valid strategy name, currency, and amount.
+    /// </summary>
     [Fact]
     public void UpdateCash_ShouldUpdateCash_GivenValidStrategyNameCurrencyAndAmount()
     {
@@ -285,6 +315,9 @@ public class PortfolioTests
         strategy.Cash[currency].Should().Be(amount);
     }
 
+    /// <summary>
+    /// Tests that the AdjustPositionForSplit method of the Portfolio class adjusts a position correctly when given an asset and a split ratio.
+    /// </summary>
     [Fact]
     public void AdjustPositionForSplit_ShouldAdjustPosition_GivenAssetAndSplitRatio()
     {
@@ -309,6 +342,9 @@ public class PortfolioTests
         strategy.Positions[asset].Should().Be(20);
     }
 
+    /// <summary>
+    /// Tests that the AdjustHistoricalDataForSplit method of the Portfolio class adjusts the historical data correctly when given an asset and a split ratio.
+    /// </summary>
     [Fact]
     public void AdjustHistoricalDataForSplit_ShouldAdjustHistoricalData_GivenAssetAndSplitRatio()
     {
@@ -356,6 +392,9 @@ public class PortfolioTests
         adjustedData.Volume.Should().Be(2000000);
     }
 
+    /// <summary>
+    /// Tests that the GetStrategy method of the Portfolio class returns the correct strategy when given a valid strategy name.
+    /// </summary>
     [Fact]
     public void GetStrategy_ShouldReturnStrategy_GivenValidStrategyName()
     {
@@ -376,6 +415,9 @@ public class PortfolioTests
         result.Should().Be(strategy);
     }
 
+    /// <summary>
+    /// Tests that the GetAssetCurrency method of the Portfolio class returns the correct currency when given a valid asset.
+    /// </summary>
     [Fact]
     public void GetAssetCurrency_ShouldReturnCurrency_GivenValidAsset()
     {
@@ -398,6 +440,9 @@ public class PortfolioTests
         result.Should().Be(currency);
     }
 
+    /// <summary>
+    /// Tests that the UpdateEquityCurve method of the Portfolio class updates the equity correctly when given a timestamp and a base currency.
+    /// </summary>
     [Fact]
     public void UpdateEquityCurve_ShouldUpdateEquity_GivenTimestampAndBaseCurrency()
     {
@@ -444,6 +489,9 @@ public class PortfolioTests
         portfolio.EquityCurve[timestamp].Should().Be(2500m);
     }
 
+    /// <summary>
+    /// Tests that the CalculateTotalPortfolioValue method of the Portfolio class returns the correct total value when given a timestamp and a base currency.
+    /// </summary>
     [Fact]
     public void CalculateTotalPortfolioValue_ShouldReturnTotalValue_GivenTimestampAndBaseCurrency()
     {

@@ -37,7 +37,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 /// <code>
 /// protected override void OnModelCreating(ModelBuilder modelBuilder)
 /// {
-///     modelBuilder.Entity<MyEntity>()
+///     modelBuilder.Entity&lt;MyEntity&gt;
 ///         .Property(e => e.MyDateOnlyProperty)
 ///         .HasConversion(new DateOnlyConverter());
 /// }

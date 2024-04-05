@@ -23,7 +23,7 @@ using DataAccess.Extensions;
 public sealed class ExchangeExtensionsTests
 {
     /// <summary>
-    /// Tests the <see cref="ExchangeExtensions.IsOpen(Exchange, DateTime)"/> method with various scenarios.
+    /// Tests the <see cref="ExchangeExtensions.IsOpen(Exchange, DateTime)/> method with various scenarios.
     /// </summary>
     /// <param name="exchange">The exchange instance to test.</param>
     /// <param name="dateTime">The date and time to check if the exchange is open.</param>

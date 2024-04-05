@@ -20,6 +20,19 @@ using Exceptions;
 
 using Interfaces;
 
+/// <summary>
+/// The CsvSymbolReader class is an implementation of the ISymbolReader interface that reads symbols from a CSV file.
+/// </summary>
+/// <remarks>
+/// This class reads symbols from a CSV file. Each line in the file should contain a single symbol.
+/// The path to the CSV file is provided when the CsvSymbolReader is constructed.
+/// 
+/// Here is an example of how to use this class:
+/// <code>
+/// var symbolReader = new CsvSymbolReader("symbols.csv");
+/// var symbols = await symbolReader.ReadSymbolsAsync();
+/// </code>
+/// </remarks>
 public sealed class CsvSymbolReader : ISymbolReader
 {
     private readonly string _filePath;
@@ -28,6 +41,8 @@ public sealed class CsvSymbolReader : ISymbolReader
     /// Initializes a new instance of the CsvSymbolReader class.
     /// </summary>
     /// <param name="filePath">The path to the CSV file containing symbols.</param>
+    /// <exception cref="ArgumentNullException">Thrown when filePath is null.</exception>
+    /// <exception cref="FileNotFoundException">Thrown when the file at filePath does not exist.</exception>
     public CsvSymbolReader(string filePath)
     {
         _filePath = filePath ?? throw new ArgumentNullException(nameof(filePath));
@@ -42,6 +57,7 @@ public sealed class CsvSymbolReader : ISymbolReader
     /// Reads symbols from a CSV file.
     /// </summary>
     /// <returns>A task representing the asynchronous operation that returns an IEnumerable of symbols.</returns>
+    /// <exception cref="SymbolReaderException">Thrown when an error occurs while reading the CSV file.</exception>
     public async Task<IEnumerable<string>> ReadSymbolsAsync()
     {
         try
