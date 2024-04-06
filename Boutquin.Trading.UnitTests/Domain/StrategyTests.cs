@@ -22,8 +22,14 @@ using Trading.Domain.Data;
 using Trading.Domain.Enums;
 using Trading.Domain.Interfaces;
 
+/// <summary>
+/// Contains unit tests for the Strategy class.
+/// </summary>
 public class StrategyTests
 {
+    /// <summary>
+    /// Tests that the ComputeTotalValue method correctly computes the total value.
+    /// </summary>
     [Fact]
     public void ComputeTotalValue_ShouldComputeCorrectly()
     {
@@ -65,6 +71,9 @@ public class StrategyTests
         totalValue.Should().Be(2500);
     }
 
+    /// <summary>
+    /// Tests that the ComputeTotalValue method throws an exception when market data is not found.
+    /// </summary>
     [Fact]
     public void ComputeTotalValue_ShouldThrowException_WhenMarketDataNotFound()
     {
@@ -91,6 +100,9 @@ public class StrategyTests
             .WithMessage("Parameter 'historicalMarketData' cannot be null or an empty dictionary.");
     }
 
+    /// <summary>
+    /// Tests that the UpdateCash method correctly updates the cash.
+    /// </summary>
     [Fact]
     public void UpdateCash_ShouldUpdateCorrectly()
     {
@@ -105,6 +117,9 @@ public class StrategyTests
         strategy.Cash[currency].Should().Be(1000);
     }
 
+    /// <summary>
+    /// Tests that the UpdateCash method throws an exception when an invalid currency is provided.
+    /// </summary>
     [Fact]
     public void UpdateCash_ShouldThrowException_WhenInvalidCurrency()
     {
@@ -120,6 +135,9 @@ public class StrategyTests
             .WithMessage("Parameter 'currency' has an undefined value '999' for enum 'CurrencyCode'. (Parameter 'currency')");
     }
 
+    /// <summary>
+    /// Tests that the UpdatePositions method correctly updates the positions.
+    /// </summary>
     [Fact]
     public void UpdatePositions_ShouldUpdateCorrectly()
     {
@@ -134,6 +152,9 @@ public class StrategyTests
         strategy.Positions[asset].Should().Be(10);
     }
 
+    /// <summary>
+    /// Tests that the UpdatePositions method throws an exception when an invalid asset is provided.
+    /// </summary>
     [Fact]
     public void UpdatePositions_ShouldThrowException_WhenInvalidAsset()
     {
@@ -149,6 +170,9 @@ public class StrategyTests
             .WithMessage("Parameter 'asset' cannot be null, empty or contain only white-space characters. (Parameter 'asset')");
     }
 
+    /// <summary>
+    /// Tests that the GetPositionQuantity method returns the correct quantity.
+    /// </summary>
     [Fact]
     public void GetPositionQuantity_ShouldReturnCorrectQuantity()
     {
@@ -164,6 +188,9 @@ public class StrategyTests
         quantity.Should().Be(10);
     }
 
+    /// <summary>
+    /// Tests that the GetPositionQuantity method returns zero when the asset is not found.
+    /// </summary>
     [Fact]
     public void GetPositionQuantity_ShouldReturnZero_WhenAssetNotFound()
     {
