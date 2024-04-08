@@ -39,8 +39,9 @@ public sealed class ExchangeHoliday
         string description)
     {
         // Validate parameters
-        Guard.AgainstUndefinedEnumValue(() => exchangeCode);
-        Guard.AgainstNullOrWhiteSpaceAndOverflow(() => description, ColumnConstants.ExchangeHoliday_Description_Length);
+        Guard.AgainstUndefinedEnumValue(() => exchangeCode); // Throws ArgumentOutOfRangeException
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(() => description, 
+            ColumnConstants.ExchangeHoliday_Description_Length); // Throws ArgumentException for null or empty and ArgumentOutOfRangeException for overflow
 
         _id = -1;
         ExchangeCode = exchangeCode;

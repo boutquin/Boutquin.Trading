@@ -35,15 +35,15 @@ public static class DecimalArrayExtensions
     /// <param name="tradingDaysPerYear">The number of trading days in a year.</param>
     /// <returns>The annualized return of the portfolio.</returns>
     /// <exception cref="EmptyOrNullArrayException">Thrown when the <paramref name="dailyReturns"/> array is null or empty.</exception>
-    /// <exception cref="NegativeTradingDaysPerYearException">Thrown when the <paramref name="tradingDaysPerYear"/> is non-positive.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the <paramref name="tradingDaysPerYear"/> is non-positive.</exception>
     public static decimal AnnualizedReturn(
         this decimal[] dailyReturns, 
         int tradingDaysPerYear = DefaultTradingDaysInYear)
     {
         // Ensure that the input daily returns array is not null or empty.
-        Guard.AgainstNullOrEmptyArray(() => dailyReturns);
+        Guard.AgainstNullOrEmptyArray(() => dailyReturns); // Throws EmptyOrNullArrayException
         // Ensure that the input trading days per year is positive.
-        Guard.AgainstNegativeOrZero(() => tradingDaysPerYear);
+        Guard.AgainstNegativeOrZero(() => tradingDaysPerYear); // Throws ArgumentOutOfRangeException
 
         // Calculate the cumulative return of the portfolio.
         var cumulativeReturn = dailyReturns.Aggregate(1m, (acc, r) => acc * (r + 1m)) - 1m;
@@ -65,7 +65,7 @@ public static class DecimalArrayExtensions
     public static decimal Volatility(this decimal[] dailyReturns)
     {
         // Ensure that the input daily returns array is not null or empty.
-        Guard.AgainstNullOrEmptyArray(() => dailyReturns);
+        Guard.AgainstNullOrEmptyArray(() => dailyReturns); // Throws EmptyOrNullArrayException
         // Check if there is enough data for sample calculation
         Guard.Against(dailyReturns.Length == 1)
             .With<InsufficientDataException>(ExceptionMessages.InsufficientDataForSampleCalculation);
@@ -82,11 +82,11 @@ public static class DecimalArrayExtensions
     /// <returns>The annualized volatility.</returns>
     /// <exception cref="EmptyOrNullArrayException">Thrown when the <paramref name="dailyReturns"/> array is null or empty.</exception>
     /// <exception cref="InsufficientDataException">Thrown when the <paramref name="dailyReturns"/> array contains less than two elements for sample calculation.</exception>
-    /// <exception cref="NegativeTradingDaysPerYearException">Thrown when the <paramref name="tradingDaysPerYear"/> is non-positive.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the <paramref name="tradingDaysPerYear"/> is non-positive.</exception>
     public static decimal AnnualizedVolatility(this decimal[] dailyReturns, int tradingDaysPerYear = DefaultTradingDaysInYear)
     {
         // Ensure that the input trading days per year is positive.
-        Guard.AgainstNegativeOrZero(() => tradingDaysPerYear);
+        Guard.AgainstNegativeOrZero(() => tradingDaysPerYear); // Throws ArgumentOutOfRangeException
 
         // Relies on Volatility for remaining input validation.
         var dailyVolatility = dailyReturns.Volatility();
@@ -106,7 +106,7 @@ public static class DecimalArrayExtensions
         decimal riskFreeRate = 0m)
     {
         // Ensure that the input daily returns array is not null or empty.
-        Guard.AgainstNullOrEmptyArray(() => dailyReturns);
+        Guard.AgainstNullOrEmptyArray(() => dailyReturns); // Throws EmptyOrNullArrayException
         // Check if there is enough data for sample calculation
         Guard.Against(dailyReturns.Length == 1)
             .With<InsufficientDataException>(ExceptionMessages.InsufficientDataForSampleCalculation);
@@ -126,14 +126,14 @@ public static class DecimalArrayExtensions
     /// <returns>The Annualized Sharpe Ratio.</returns>
     /// <exception cref="EmptyOrNullArrayException">Thrown when the <paramref name="dailyReturns"/> array is null or empty.</exception>
     /// <exception cref="InsufficientDataException">Thrown when the <paramref name="dailyReturns"/> array contains less than two elements for sample calculation.</exception>
-    /// <exception cref="NegativeTradingDaysPerYearException">Thrown when the <paramref name="tradingDaysPerYear"/> is non-positive.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the <paramref name="tradingDaysPerYear"/> is non-positive.</exception>
     public static decimal AnnualizedSharpeRatio(
         this decimal[] dailyReturns, 
         decimal riskFreeRate = 0m, 
         int tradingDaysPerYear = DefaultTradingDaysInYear)
     {
         // Ensure that the input trading days per year is positive.
-        Guard.AgainstNegativeOrZero(() => tradingDaysPerYear);
+        Guard.AgainstNegativeOrZero(() => tradingDaysPerYear); // Throws ArgumentOutOfRangeException
 
         // Relies on SharpeRatio for remaining input validation.
         var sharpeRatio = dailyReturns.SharpeRatio(riskFreeRate);
@@ -153,7 +153,7 @@ public static class DecimalArrayExtensions
         decimal riskFreeRate = 0m)
     {
         // Ensure the array of daily returns is not null or empty
-        Guard.AgainstNullOrEmptyArray(() => dailyReturns);
+        Guard.AgainstNullOrEmptyArray(() => dailyReturns); // Throws EmptyOrNullArrayException
         // Check if there is enough data for sample calculation
         Guard.Against(dailyReturns.Length == 1)
             .With<InsufficientDataException>(ExceptionMessages.InsufficientDataForSampleCalculation);
@@ -170,7 +170,7 @@ public static class DecimalArrayExtensions
     /// <param name="riskFreeRate">The risk-free rate, expressed as a daily value.</param>
     /// <param name="tradingDaysPerYear">The number of trading days per year, by default 252.</param>
     /// <returns>The Annualized Sortino Ratio.</returns>
-    /// <exception cref="NegativeTradingDaysPerYearException">Thrown when the <paramref name="tradingDaysPerYear"/> is non-positive.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the <paramref name="tradingDaysPerYear"/> is non-positive.</exception>
     /// <exception cref="EmptyOrNullArrayException">Thrown when the <paramref name="dailyReturns"/> array is null or empty.</exception>
     /// <exception cref="InsufficientDataException">Thrown when the <paramref name="dailyReturns"/> array contains less than two elements for sample calculation.</exception>
     public static decimal AnnualizedSortinoRatio(
@@ -179,7 +179,7 @@ public static class DecimalArrayExtensions
         int tradingDaysPerYear = DefaultTradingDaysInYear)
     {
         // Ensure that the input trading days per year is positive.
-        Guard.AgainstNegativeOrZero(() => tradingDaysPerYear);
+        Guard.AgainstNegativeOrZero(() => tradingDaysPerYear); // Throws ArgumentOutOfRangeException
 
         // Relies on SortinoRatio for remaining input validation.
         var sortinoRatio = dailyReturns.SortinoRatio(riskFreeRate);
@@ -197,17 +197,18 @@ public static class DecimalArrayExtensions
     /// <exception cref="EmptyOrNullArrayException">Thrown when the <paramref name="dailyReturns"/> array is null or empty.</exception>
     /// <exception cref="InsufficientDataException">Thrown when the <paramref name="dailyReturns"/> array contains less than two elements for sample calculation.</exception>
     /// <exception cref="CalculationException">Thrown when the calculated CAGR value is too large or too small for a decimal.</exception>
+    /// <exception cref ="ArgumentOutOfRangeException">Thrown when the <paramref name="tradingDaysPerYear"/> is non-positive.</exception>
     public static decimal CompoundAnnualGrowthRate(
         this decimal[] dailyReturns,
         double tradingDaysPerYear = DefaultTradingDaysInYear)
     {
         // Ensure that the input daily returns array is not null or empty.
-        Guard.AgainstNullOrEmptyArray(() => dailyReturns);
+        Guard.AgainstNullOrEmptyArray(() => dailyReturns); // Throws EmptyOrNullArrayException
         // Check if there is enough data for sample calculation
         Guard.Against(dailyReturns.Length == 1)
             .With<InsufficientDataException>(ExceptionMessages.InsufficientDataForSampleCalculation);
         // Ensure that the input trading days per year is positive.
-        Guard.AgainstNegativeOrZero(() => tradingDaysPerYear);
+        Guard.AgainstNegativeOrZero(() => tradingDaysPerYear); // Throws ArgumentOutOfRangeException
 
         // Calculate the cumulative return
         var cumulativeReturn = dailyReturns
@@ -249,7 +250,7 @@ public static class DecimalArrayExtensions
         decimal riskFreeRate = 0m)
     {
         // Ensure the array of daily returns is not null or empty
-        Guard.AgainstNullOrEmptyArray(() => dailyReturns);
+        Guard.AgainstNullOrEmptyArray(() => dailyReturns); // Throws EmptyOrNullArrayException
         // Check if there is enough data for sample calculation
         Guard.Against(dailyReturns.Length == 1)
             .With<InsufficientDataException>(ExceptionMessages.InsufficientDataForSampleCalculation);
@@ -271,7 +272,7 @@ public static class DecimalArrayExtensions
         this decimal[] equityCurve)
     {
         // Ensure that the input equity curve array is not null or empty.
-        Guard.AgainstNullOrEmptyArray(() => equityCurve);
+        Guard.AgainstNullOrEmptyArray(() => equityCurve); // Throws EmptyOrNullArrayException
         // Check if there is enough data for sample calculation
         Guard.Against(equityCurve.Length == 1)
             .With<InsufficientDataException>(ExceptionMessages.InsufficientDataForSampleCalculation);
@@ -307,7 +308,7 @@ public static class DecimalArrayExtensions
         decimal initialInvestment = 10000m)
     {
         // Ensure the array of daily returns is not null or empty
-        Guard.AgainstNullOrEmptyArray(() => dailyReturns);
+        Guard.AgainstNullOrEmptyArray(() => dailyReturns); // Throws EmptyOrNullArrayException
         
         var equityCurve = new decimal[dailyReturns.Length + 1];
         equityCurve[0] = initialInvestment;
@@ -339,8 +340,8 @@ public static class DecimalArrayExtensions
         decimal[] benchmarkDailyReturns)
     {
         // Ensure that the input daily returns arrays are not null or empty.
-        Guard.AgainstNullOrEmptyArray(() => portfolioDailyReturns);
-        Guard.AgainstNullOrEmptyArray(() => benchmarkDailyReturns);
+        Guard.AgainstNullOrEmptyArray(() => portfolioDailyReturns); // Throws EmptyOrNullArrayException
+        Guard.AgainstNullOrEmptyArray(() => benchmarkDailyReturns); // Throws EmptyOrNullArrayException
         // Check if there is enough data for sample calculation
         Guard.Against(portfolioDailyReturns.Length == 1)
             .With<InsufficientDataException>(ExceptionMessages.InsufficientDataForSampleCalculation);
@@ -380,8 +381,8 @@ public static class DecimalArrayExtensions
         decimal riskFreeRate = 0m)
     {
         // Ensure that the input daily returns arrays are not null or empty.
-        Guard.AgainstNullOrEmptyArray(() => portfolioDailyReturns);
-        Guard.AgainstNullOrEmptyArray(() => benchmarkDailyReturns);
+        Guard.AgainstNullOrEmptyArray(() => portfolioDailyReturns); // Throws EmptyOrNullArrayException
+        Guard.AgainstNullOrEmptyArray(() => benchmarkDailyReturns); // Throws EmptyOrNullArrayException
         // Check if there is enough data for sample calculation
         Guard.Against(portfolioDailyReturns.Length == 1)
             .With<InsufficientDataException>(ExceptionMessages.InsufficientDataForSampleCalculation);
@@ -413,8 +414,8 @@ public static class DecimalArrayExtensions
         decimal[] benchmarkDailyReturns)
     {
         // Ensure that the input daily returns array and benchmark daily returns array are not null or empty.
-        Guard.AgainstNullOrEmptyArray(() => dailyReturns);
-        Guard.AgainstNullOrEmptyArray(() => benchmarkDailyReturns);
+        Guard.AgainstNullOrEmptyArray(() => dailyReturns); // Throws EmptyOrNullArrayException
+        Guard.AgainstNullOrEmptyArray(() => benchmarkDailyReturns); // Throws EmptyOrNullArrayException
 
         // Check if there is enough data for sample calculation
         Guard.Against(dailyReturns.Length == 1)

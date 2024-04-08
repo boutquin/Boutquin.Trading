@@ -31,7 +31,7 @@ public sealed class TimeZoneConfiguration : IEntityTypeConfiguration<TimeZone>
     public void Configure(EntityTypeBuilder<TimeZone> builder)
     {
         // Validate parameters
-        Guard.AgainstNull(() => builder);
+        Guard.AgainstNull(() => builder); // Throws ArgumentNullException
         
         // Configure the primary key
         builder.HasKey(tz => tz.Code);

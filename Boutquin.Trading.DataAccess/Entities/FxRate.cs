@@ -29,7 +29,8 @@ public sealed class FxRate
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when <paramref name="rate"/> is less than or equal to 0, or 
     /// when <paramref name="baseCurrencyCode"/> or <paramref name="quoteCurrencyCode"/> 
-    /// are not defined in the <see cref="CurrencyCode"/> enumeration.
+    /// are not defined in the <see cref="CurrencyCode"/> enumeration or
+    /// when <paramref name="rate"/> is non-positive.
     /// </exception>
     public FxRate(
         DateOnly rateDate,
@@ -39,9 +40,9 @@ public sealed class FxRate
         )
     {
         // Validate parameters
-        Guard.AgainstUndefinedEnumValue(() => baseCurrencyCode);
-        Guard.AgainstUndefinedEnumValue(() => quoteCurrencyCode);
-        Guard.AgainstNegativeOrZero(() => rate);
+        Guard.AgainstUndefinedEnumValue(() => baseCurrencyCode); // Throws ArgumentOutOfRangeException
+        Guard.AgainstUndefinedEnumValue(() => quoteCurrencyCode); // Throws ArgumentOutOfRangeException
+        Guard.AgainstNegativeOrZero(() => rate); // Throws ArgumentOutOfRangeException
 
         _id = -1;
         RateDate = rateDate;

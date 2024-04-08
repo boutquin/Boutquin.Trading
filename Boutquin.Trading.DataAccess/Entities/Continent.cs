@@ -37,10 +37,11 @@ public sealed class Continent
         string? name = null)
     {
         // Validate parameters
-        Guard.AgainstUndefinedEnumValue(() => code);     
+        Guard.AgainstUndefinedEnumValue(() => code); // Throws ArgumentOutOfRangeException    
         if (!name.IsNullOrWhiteSpace())
         {
-            Guard.AgainstOverflow(() => name, ColumnConstants.Continent_Name_Length);
+            Guard.AgainstOverflow(() => name, 
+                ColumnConstants.Continent_Name_Length); // Throws ArgumentOutOfRangeException
         }
 
         Code = code;

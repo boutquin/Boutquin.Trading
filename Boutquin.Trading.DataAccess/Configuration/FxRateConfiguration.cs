@@ -29,7 +29,7 @@ public sealed class FxRateConfiguration : IEntityTypeConfiguration<FxRate>
     public void Configure(EntityTypeBuilder<FxRate> builder)
     {
         // Validate parameters
-        Guard.AgainstNull(() => builder);
+        Guard.AgainstNull(() => builder); // Throws ArgumentNullException
 
         // Configure primary key
         builder.HasKey(FxRate.FxRate_Key_Name);

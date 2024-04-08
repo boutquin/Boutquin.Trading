@@ -29,7 +29,7 @@ public sealed class CurrencyConfiguration : IEntityTypeConfiguration<Currency>
     public void Configure(EntityTypeBuilder<Currency> builder)
     {
         // Validate parameters
-        Guard.AgainstNull(() => builder);
+        Guard.AgainstNull(() => builder); // Throws ArgumentNullException
 
         // Configure the primary key
         builder.HasKey(c => c.Code);

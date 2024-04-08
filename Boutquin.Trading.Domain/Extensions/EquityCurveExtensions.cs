@@ -45,7 +45,7 @@ public static class EquityCurveExtensions
         CalculateDrawdownsAndMaxDrawdownInfo(this IReadOnlyDictionary<DateOnly, decimal> equityCurve)
     {
         // Ensure the equity curve dictionary is not null or empty
-        Guard.AgainstEmptyOrNullReadOnlyDictionary(() => equityCurve);
+        Guard.AgainstEmptyOrNullReadOnlyDictionary(() => equityCurve); // Throws EmptyOrNullDictionaryException
         // Check if there is enough data for sample calculation
         Guard.Against(equityCurve.Count == 1)
             .With<InsufficientDataException>(ExceptionMessages.InsufficientDataForSampleCalculation);

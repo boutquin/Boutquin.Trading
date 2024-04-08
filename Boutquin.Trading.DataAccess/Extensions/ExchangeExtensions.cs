@@ -39,7 +39,7 @@ public static class ExchangeExtensions
         this Exchange exchange, 
         DateOnly day)
     {
-        Guard.AgainstNull(() => exchange);
+        Guard.AgainstNull(() => exchange); // Throws ArgumentNullException
 
         var weekDay = day.DayOfWeek;
         var schedule = exchange.ExchangeSchedules.FirstOrDefault(es => es.DayOfWeek == weekDay);
@@ -75,7 +75,7 @@ public static class ExchangeExtensions
         DateTime day, 
         int minutesBeforeClosing = 0)
     {
-        Guard.AgainstNull(() => exchange);
+        Guard.AgainstNull(() => exchange); // Throws ArgumentNullException
 
         if (!exchange.IsOpen(DateOnly.FromDateTime(day)))
         {

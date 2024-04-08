@@ -50,7 +50,7 @@ public sealed class Position
         int quantity, 
         decimal bookValue)
     {
-        Guard.AgainstNullOrWhiteSpace(() => symbol);
+        Guard.AgainstNullOrWhiteSpace(() => symbol); // Throws ArgumentException
 
         Symbol = symbol;
         Quantity = quantity;
@@ -64,15 +64,15 @@ public sealed class Position
     /// <param name="shares">The number of shares to buy.</param>
     /// <param name="price">The price per share.</param>
     /// <param name="transactionFee">The transaction fee.</param>
-    /// <exception cref="ArgumentException">Thrown if shares, price, or transactionFee is negative.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if shares, price, or transactionFee is negative.</exception>
     public void Buy(
         int shares, 
         decimal price, 
         decimal transactionFee)
     {
-        Guard.AgainstNegative(() => shares);
-        Guard.AgainstNegative(() => price);
-        Guard.AgainstNegative(() => transactionFee);
+        Guard.AgainstNegative(() => shares); // Throws ArgumentOutOfRangeException
+        Guard.AgainstNegative(() => price); // Throws ArgumentOutOfRangeException
+        Guard.AgainstNegative(() => transactionFee); // Throws ArgumentOutOfRangeException
 
         Quantity += shares;
         BookValue += (shares * price) + transactionFee;
@@ -84,12 +84,14 @@ public sealed class Position
     /// <param name="shares">The number of shares to sell.</param>
     /// <param name="price">The price per share.</param>
     /// <param name="transactionFee">The transaction fee.</param>
-    /// <exception cref="ArgumentException">Thrown if shares, price, or transactionFee is negative or if the number of shares to sell is greater than the current quantity.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if shares, price, or transactionFee is negative.</exception>
+    /// <exception cref="ArgumentException">Thrown if the number of shares to sell is greater than the current quantity.</exception>
+
     public void Sell(int shares, decimal price, decimal transactionFee)
     {
-        Guard.AgainstNegative(() => shares);
-        Guard.AgainstNegative(() => price);
-        Guard.AgainstNegative(() => transactionFee);
+        Guard.AgainstNegative(() => shares); // Throws ArgumentOutOfRangeException
+        Guard.AgainstNegative(() => price); // Throws ArgumentOutOfRangeException
+        Guard.AgainstNegative(() => transactionFee); // Throws ArgumentOutOfRangeException
         Guard.Against(shares > Quantity).With<ArgumentException>("Cannot sell more shares than the current quantity.");
         
         Quantity -= shares;
@@ -102,10 +104,10 @@ public sealed class Position
     /// Updates the market value of the position.
     /// </summary>
     /// <param name="price">The current price per share.</param>
-    /// <exception cref="ArgumentException">Thrown if the price is negative.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if the price is negative.</exception>
     public void UpdateMarketValue(decimal price)
     {
-        Guard.AgainstNegative(() => price);
+        Guard.AgainstNegative(() => price); // Throws ArgumentOutOfRangeException
 
         MarketValue = Quantity * price;
     }

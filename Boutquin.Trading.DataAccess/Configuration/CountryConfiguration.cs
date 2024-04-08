@@ -29,7 +29,7 @@ public sealed class CountryConfiguration : IEntityTypeConfiguration<Country>
     public void Configure(EntityTypeBuilder<Country> builder)
     {
         // Validate parameters
-        Guard.AgainstNull(() => builder);
+        Guard.AgainstNull(() => builder); // Throws ArgumentNullException
 
         // Configure the primary key
         builder.HasKey(c => c.Code);

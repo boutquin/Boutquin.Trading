@@ -38,10 +38,11 @@ public sealed class SymbolStandard
         string? description = null)
     {
         // Validate parameters
-        Guard.AgainstUndefinedEnumValue(() => id);
+        Guard.AgainstUndefinedEnumValue(() => id); // Throws ArgumentOutOfRangeException
         if (!description.IsNullOrWhiteSpace())
         {
-            Guard.AgainstOverflow(() => description, ColumnConstants.SymbolStandard_Description_Length);
+            Guard.AgainstOverflow(() => description, 
+                ColumnConstants.SymbolStandard_Description_Length); // Throws ArgumentOutOfRangeException
         }
 
         Id = id;

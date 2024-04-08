@@ -30,6 +30,12 @@ public class FixedWeightPositionSizer : IPositionSizer
     /// </summary>
     /// <param name="fixedAssetWeights">A dictionary containing the fixed asset weights, with asset names as keys and weights as values.</param>
     /// <param name="baseCurrency">The base currency used for calculations and conversions.</param>
+    /// <exception cref="EmptyOrNullDictionaryException">
+    /// Throws this exception if the fixed asset weights dictionary is empty or null.
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Throws this exception if the base currency is undefined.
+    /// </exception>
     public FixedWeightPositionSizer(IReadOnlyDictionary<string, decimal> fixedAssetWeights, CurrencyCode baseCurrency)
     {
         // Validate parameters
@@ -49,6 +55,12 @@ public class FixedWeightPositionSizer : IPositionSizer
     /// <param name="historicalMarketData">The historical market data to use for calculations.</param>
     /// <param name="historicalFxConversionRates">The historical foreign exchange conversion rates to use for currency conversions.</param>
     /// <returns>A dictionary containing the desired position sizes for all assets in the strategy.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Throws this exception if the signal type or strategy is null.
+    /// </exception>
+    /// <exception cref="EmptyOrNullDictionaryException">
+    /// Throws this exception if the historical market data or historical FX conversion rates dictionaries are empty or null.
+    /// </exception>
     public IReadOnlyDictionary<string, int> ComputePositionSizes(
         DateOnly timestamp,
         IReadOnlyDictionary<string, SignalType> signalType,
@@ -57,10 +69,10 @@ public class FixedWeightPositionSizer : IPositionSizer
         IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
     {
         // Validate parameters
-        Guard.AgainstNull(() => signalType);
-        Guard.AgainstNull(() => strategy);
-        Guard.AgainstEmptyOrNullReadOnlyDictionary(() => historicalMarketData);
-        Guard.AgainstEmptyOrNullReadOnlyDictionary(() => historicalFxConversionRates);
+        Guard.AgainstNull(() => signalType); // Throws ArgumentNullException
+        Guard.AgainstNull(() => strategy); // Throws ArgumentNullException
+        Guard.AgainstEmptyOrNullReadOnlyDictionary(() => historicalMarketData); // Throws EmptyOrNullDictionaryException
+        Guard.AgainstEmptyOrNullReadOnlyDictionary(() => historicalFxConversionRates); // Throws EmptyOrNullDictionaryException
 
         var positionSizes = new Dictionary<string, int>();
 

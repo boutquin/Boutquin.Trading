@@ -124,10 +124,13 @@ public readonly struct SecurityId : IEquatable<SecurityId>, IComparable<Security
     /// </summary>
     /// <param name="id">The security ID value.</param>
     /// <returns>A new SecurityId instance with the specified value.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// When the <paramref name="id"/> is less than or equal to 0.
+    /// </exception>
     public static SecurityId Create(int id)
     {
         // Validate parameters
-        Guard.AgainstNegativeOrZero(() => id);
+        Guard.AgainstNegativeOrZero(() => id); // Throws ArgumentOutOfRangeException
 
         return new SecurityId(id);
     }

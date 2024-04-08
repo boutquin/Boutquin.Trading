@@ -24,7 +24,8 @@ public sealed class SecuritySymbol
     /// <param name="standard">The security symbol standard.</param>
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when <paramref name="standard"/> is not defined in 
-    /// the <see cref="SecuritySymbolStandard"/> enumeration.
+    /// the <see cref="SecuritySymbolStandard"/> enumeration or
+    /// when <paramref name="securityId"/> is non-positive.
     /// </exception>
     public SecuritySymbol(
         int securityId,
@@ -32,9 +33,10 @@ public sealed class SecuritySymbol
         SecuritySymbolStandard standard)
     {
         // Validate parameters
-        Guard.AgainstNegativeOrZero(() => securityId);
-        Guard.AgainstNullOrWhiteSpaceAndOverflow(() => symbol, ColumnConstants.SecuritySymbol_Symbol_Length);
-        Guard.AgainstUndefinedEnumValue(() => standard);
+        Guard.AgainstNegativeOrZero(() => securityId); // Throws ArgumentOutOfRangeException
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(() => symbol, 
+            ColumnConstants.SecuritySymbol_Symbol_Length); // Throws ArgumentException for null or empty and ArgumentOutOfRangeException for overflow
+        Guard.AgainstUndefinedEnumValue(() => standard); // Throws ArgumentOutOfRangeException
 
         _id = -1;
         SecurityId = securityId;

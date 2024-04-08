@@ -137,7 +137,7 @@ public sealed class AlphaVantageFetcher : IMarketDataFetcher
     public async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<string, MarketData>?>> FetchMarketDataAsync(IEnumerable<string> assets)
     {
         // Validate the input assets list
-        Guard.AgainstEmptyOrNullEnumerable(() => assets);
+        Guard.AgainstEmptyOrNullEnumerable(() => assets); // Throws ArgumentException
 
         // Configure the JsonSerializerOptions with custom converter for DateOnly and DateOnlyDictionary
         var options = new JsonSerializerOptions();
@@ -235,7 +235,7 @@ public sealed class AlphaVantageFetcher : IMarketDataFetcher
     public async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<CurrencyCode, decimal>>> FetchFxRatesAsync(IEnumerable<string> currencyPairs)
     {
         // Validate the input currency pairs list
-        Guard.AgainstEmptyOrNullEnumerable(() => currencyPairs);
+        Guard.AgainstEmptyOrNullEnumerable(() => currencyPairs); // Throws ArgumentException
 
         // Configure the JsonSerializerOptions with custom converter for DateOnly and DateOnlyDictionary
         var options = new JsonSerializerOptions();

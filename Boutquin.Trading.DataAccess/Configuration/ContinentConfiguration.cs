@@ -29,7 +29,7 @@ public sealed class ContinentConfiguration : IEntityTypeConfiguration<Continent>
     public void Configure(EntityTypeBuilder<Continent> builder)
     {
         // Validate parameters
-        Guard.AgainstNull(() => builder);
+        Guard.AgainstNull(() => builder); // Throws ArgumentNullException
 
         // Configure the primary key
         builder.HasKey(c => c.Code);

@@ -32,7 +32,8 @@ public sealed class Country
     /// </exception>
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when <paramref name="code"/>, <paramref name="currencyCode"/>, or 
-    /// <paramref name="continentCode"/> are not defined in their respective enumerations.
+    /// <paramref name="continentCode"/> are not defined in their respective enumerations
+    /// or when <paramref name="numericCode"/> is non-positive.
     /// </exception>
     public Country(
         CountryCode code,
@@ -42,11 +43,12 @@ public sealed class Country
         ContinentCode continentCode)
     {
         // Validate parameters
-        Guard.AgainstUndefinedEnumValue(() => code);
-        Guard.AgainstNullOrWhiteSpaceAndOverflow(() => name, ColumnConstants.Country_Name_Length);
-        Guard.AgainstNegativeOrZero(() => numericCode);
-        Guard.AgainstUndefinedEnumValue(() => currencyCode);
-        Guard.AgainstUndefinedEnumValue(() => continentCode);
+        Guard.AgainstUndefinedEnumValue(() => code); // Throws ArgumentOutOfRangeException
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(() => name, 
+            ColumnConstants.Country_Name_Length); // Throws ArgumentException for null or empty and ArgumentOutOfRangeException for overflow
+        Guard.AgainstNegativeOrZero(() => numericCode); // Throws ArgumentOutOfRangeException
+        Guard.AgainstUndefinedEnumValue(() => currencyCode); // Throws ArgumentOutOfRangeException
+        Guard.AgainstUndefinedEnumValue(() => continentCode); // Throws ArgumentOutOfRangeException
 
         Code = code;
         Name = name;

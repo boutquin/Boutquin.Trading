@@ -30,7 +30,10 @@ public sealed class SecurityPrice
     /// <param name="closePrice">The close price.</param>
     /// <param name="volume">The volume.</param>
     /// <param name="dividend">The dividend.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when the id, securityId, volume is less than or equal to 0, or the openPrice, highPrice, lowPrice, closePrice, dividend is less than 0.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the securityId,
+    /// openPrice, highPrice, lowPrice, closePrice, volume is less than or equal to 0,
+    /// or the dividend is less than 0.
+    /// </exception>
     public SecurityPrice(
         DateOnly tradeDate,
         int securityId,
@@ -42,13 +45,13 @@ public sealed class SecurityPrice
         decimal dividend)
     {
         // Validate parameters
-        Guard.AgainstNegativeOrZero(() => securityId);
-        Guard.AgainstNegativeOrZero(() => openPrice);
-        Guard.AgainstNegativeOrZero(() => highPrice);
-        Guard.AgainstNegativeOrZero(() => lowPrice);
-        Guard.AgainstNegativeOrZero(() => closePrice);
-        Guard.AgainstNegativeOrZero(() => volume);
-        Guard.AgainstNegative(() => dividend);
+        Guard.AgainstNegativeOrZero(() => securityId); // Throws ArgumentOutOfRangeException
+        Guard.AgainstNegativeOrZero(() => openPrice); // Throws ArgumentOutOfRangeException
+        Guard.AgainstNegativeOrZero(() => highPrice); // Throws ArgumentOutOfRangeException
+        Guard.AgainstNegativeOrZero(() => lowPrice); // Throws ArgumentOutOfRangeException
+        Guard.AgainstNegativeOrZero(() => closePrice); // Throws ArgumentOutOfRangeException
+        Guard.AgainstNegativeOrZero(() => volume); // Throws ArgumentOutOfRangeException
+        Guard.AgainstNegative(() => dividend); // Throws ArgumentOutOfRangeException
 
         _id = -1;
         TradeDate = tradeDate;

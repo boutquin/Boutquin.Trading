@@ -41,9 +41,10 @@ public sealed class City
         CountryCode countryCode)
     {
         // Validate parameters
-        Guard.AgainstNullOrWhiteSpaceAndOverflow(() => name, ColumnConstants.City_Name_Length);
-        Guard.AgainstUndefinedEnumValue(() => timeZoneCode);
-        Guard.AgainstUndefinedEnumValue(() => countryCode);
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(() => name, 
+            ColumnConstants.City_Name_Length); // Throws ArgumentException for null or empty and ArgumentOutOfRangeException for overflow
+        Guard.AgainstUndefinedEnumValue(() => timeZoneCode); // Throws ArgumentOutOfRangeException
+        Guard.AgainstUndefinedEnumValue(() => countryCode); // Throws ArgumentOutOfRangeException
 
         _id = -1;
         Name = name;

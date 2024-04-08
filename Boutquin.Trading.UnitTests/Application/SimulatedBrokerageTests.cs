@@ -12,6 +12,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
+// ReSharper disable ObjectCreationAsStatement
 namespace Boutquin.Trading.Tests.UnitTests.Application;
 
 using Moq;
@@ -37,6 +38,22 @@ public sealed class SimulatedBrokerageTests
     {
         _marketDataFetcherMock = new Mock<IMarketDataFetcher>();
         _simulatedBrokerage = new SimulatedBrokerage(_marketDataFetcherMock.Object);
+    }
+
+    // write a test to verify the constructor throws ArgumentNullException when the marketDataFetcher is null
+    /// <summary>
+    /// Tests that the constructor of the SimulatedBrokerage class throws an ArgumentNullException when the marketDataFetcher is null.
+    /// </summary>
+    [Fact]
+    public void Constructor_WithNullMarketDataFetcher_ShouldThrowArgumentNullException()
+    {
+        // Act
+#pragma warning disable CA1806
+        Action act = () => new SimulatedBrokerage(null);
+#pragma warning restore CA1806
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>();
     }
 
     /// <summary>

@@ -29,7 +29,7 @@ public sealed class ExchangeScheduleConfiguration : IEntityTypeConfiguration<Exc
     public void Configure(EntityTypeBuilder<ExchangeSchedule> builder)
     {
         // Validate parameters
-        Guard.AgainstNull(() => builder);
+        Guard.AgainstNull(() => builder); // Throws ArgumentNullException
 
         // Configure primary key
         builder.HasKey(ExchangeSchedule.ExchangeSchedule_Key_Name);

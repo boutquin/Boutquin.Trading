@@ -29,7 +29,7 @@ public sealed class SecuritySymbolConfiguration : IEntityTypeConfiguration<Secur
     public void Configure(EntityTypeBuilder<SecuritySymbol> builder)
     {
         // Validate parameters
-        Guard.AgainstNull(() => builder);
+        Guard.AgainstNull(() => builder); // Throws ArgumentNullException
 
         // Configure primary key
         builder.HasKey(SecuritySymbol.SecuritySymbol_Key_Name);

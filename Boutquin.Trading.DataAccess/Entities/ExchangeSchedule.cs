@@ -38,10 +38,12 @@ public sealed class ExchangeSchedule
         TimeSpan closeTime)
     {
         // Validate parameters
-        Guard.AgainstUndefinedEnumValue(() => exchangeCode);
-        Guard.AgainstUndefinedEnumValue(() => dayOfWeek);
-        Guard.AgainstOutOfRange(() => openTime, TimeSpan.Zero, TimeSpan.FromHours(24));
-        Guard.AgainstOutOfRange(() => closeTime, TimeSpan.Zero, TimeSpan.FromHours(24));
+        Guard.AgainstUndefinedEnumValue(() => exchangeCode); // Throws ArgumentOutOfRangeException
+        Guard.AgainstUndefinedEnumValue(() => dayOfWeek); // Throws ArgumentOutOfRangeException
+        Guard.AgainstOutOfRange(() => openTime, 
+            TimeSpan.Zero, TimeSpan.FromHours(24)); // Throws ArgumentOutOfRangeException
+        Guard.AgainstOutOfRange(() => closeTime, 
+            TimeSpan.Zero, TimeSpan.FromHours(24)); // Throws ArgumentOutOfRangeException
 
         _id = -1;
         ExchangeCode = exchangeCode;

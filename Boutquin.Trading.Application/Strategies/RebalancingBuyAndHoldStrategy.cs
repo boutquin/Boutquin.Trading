@@ -44,11 +44,11 @@ public sealed class RebalancingBuyAndHoldStrategy : IStrategy
         RebalancingFrequency rebalancingFrequency)
     {
         // Validate parameters
-        Guard.AgainstNull(() => name);
-        Guard.AgainstEmptyOrNullReadOnlyDictionary(() => assets);
-        Guard.AgainstEmptyOrNullDictionary(() => cash);
-        Guard.AgainstNull(() => orderPriceCalculationStrategy);
-        Guard.AgainstNull(() => positionSizer);
+        Guard.AgainstNull(() => name); // Throws ArgumentNullException
+        Guard.AgainstEmptyOrNullReadOnlyDictionary(() => assets); // Throws EmptyOrNullDictionaryException
+        Guard.AgainstEmptyOrNullDictionary(() => cash); // Throws EmptyOrNullDictionaryException
+        Guard.AgainstNull(() => orderPriceCalculationStrategy); // Throws ArgumentNullException
+        Guard.AgainstNull(() => positionSizer); // Throws ArgumentNullException
 
         Name = name;
         Assets = assets;
@@ -86,9 +86,9 @@ public sealed class RebalancingBuyAndHoldStrategy : IStrategy
         IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
     {
         // Validate parameters
-        Guard.AgainstUndefinedEnumValue(() => baseCurrency);
-        Guard.AgainstEmptyOrNullReadOnlyDictionary(() => historicalMarketData);
-        Guard.AgainstEmptyOrNullReadOnlyDictionary(() => historicalFxConversionRates);
+        Guard.AgainstUndefinedEnumValue(() => baseCurrency); // Throws ArgumentOutOfRangeException
+        Guard.AgainstEmptyOrNullReadOnlyDictionary(() => historicalMarketData); // Throws EmptyOrNullDictionaryException
+        Guard.AgainstEmptyOrNullReadOnlyDictionary(() => historicalFxConversionRates); // Throws EmptyOrNullDictionaryException
 
         // Create a new SignalEvent instance for the given timestamp
         var signalEvents = new SortedDictionary<string, SignalType>();

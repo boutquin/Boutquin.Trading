@@ -37,9 +37,10 @@ public sealed class Security
         )
     {
         // Validate parameters
-        Guard.AgainstNullOrWhiteSpaceAndOverflow(() => name, ColumnConstants.Security_Name_Length);
-        Guard.AgainstUndefinedEnumValue(() => assetClassCode);
-        Guard.AgainstNull(() => exchange);
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(() => name, 
+            ColumnConstants.Security_Name_Length); // Throws ArgumentException for null or empty and ArgumentOutOfRangeException for overflow
+        Guard.AgainstUndefinedEnumValue(() => assetClassCode); // Throws ArgumentOutOfRangeException
+        Guard.AgainstNull(() => exchange); // Throws ArgumentNullException
 
         _id = -1;
         Name = name;

@@ -29,7 +29,7 @@ public sealed class ExchangeHolidayConfiguration : IEntityTypeConfiguration<Exch
     public void Configure(EntityTypeBuilder<ExchangeHoliday> builder)
     {
         // Validate parameters
-        Guard.AgainstNull(() => builder);
+        Guard.AgainstNull(() => builder); // Throws ArgumentNullException
 
         // Configure primary key
         builder.HasKey(ExchangeHoliday.ExchangeHoliday_Key_Name);

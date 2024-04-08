@@ -29,7 +29,7 @@ public sealed class ExchangeConfiguration : IEntityTypeConfiguration<Exchange>
     public void Configure(EntityTypeBuilder<Exchange> builder)
     {
         // Validate parameters
-        Guard.AgainstNull(() => builder);
+        Guard.AgainstNull(() => builder); // Throws ArgumentNullException
 
         // Configure the primary key
         builder.HasKey(e => e.Code);

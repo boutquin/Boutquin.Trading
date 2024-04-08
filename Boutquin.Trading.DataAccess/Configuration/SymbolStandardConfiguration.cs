@@ -29,7 +29,7 @@ public sealed class SymbolStandardConfiguration : IEntityTypeConfiguration<Symbo
     public void Configure(EntityTypeBuilder<SymbolStandard> builder)
     {
         // Validate parameters
-        Guard.AgainstNull(() => builder);
+        Guard.AgainstNull(() => builder); // Throws ArgumentNullException
 
         // Configure the primary key
         builder.HasKey(ac => ac.Id);

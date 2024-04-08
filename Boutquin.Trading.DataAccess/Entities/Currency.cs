@@ -28,7 +28,8 @@ public sealed class Currency
     /// <param name="symbol">The symbol of the currency.</param>
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when <paramref name="code"/> is not defined in 
-    /// the <see cref="CurrencyCode"/> enumeration.
+    /// the <see cref="CurrencyCode"/> enumeration or when <paramref name="numericCode"/>
+    /// is non-positive.
     /// </exception>
     /// <exception cref="ArgumentException">
     /// Thrown when the <paramref name="name"/> or <paramref name="symbol"/> are null, empty or 
@@ -41,10 +42,12 @@ public sealed class Currency
         string symbol)
     {
         // Validate parameters
-        Guard.AgainstUndefinedEnumValue(() => code);
-        Guard.AgainstNegativeOrZero(() => numericCode);
-        Guard.AgainstNullOrWhiteSpaceAndOverflow(() => name, ColumnConstants.Currency_Name_Length);
-        Guard.AgainstNullOrWhiteSpaceAndOverflow(() => symbol, ColumnConstants.Currency_Symbol_Length);
+        Guard.AgainstUndefinedEnumValue(() => code); // Throws ArgumentOutOfRangeException
+        Guard.AgainstNegativeOrZero(() => numericCode); // Throws ArgumentOutOfRangeException
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(() => name, 
+            ColumnConstants.Currency_Name_Length); // Throws ArgumentException for null or empty and ArgumentOutOfRangeException for overflow
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(() => symbol, 
+            ColumnConstants.Currency_Symbol_Length); // Throws ArgumentException for null or empty and ArgumentOutOfRangeException for overflow
 
         Code = code;
         NumericCode = numericCode;

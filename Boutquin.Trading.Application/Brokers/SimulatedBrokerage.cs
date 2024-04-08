@@ -14,6 +14,7 @@
 //
 namespace Boutquin.Trading.Application.Brokers;
 
+using Domain.Interfaces;
 using Domain.Data;
 
 /// <summary>
@@ -31,6 +32,8 @@ public class SimulatedBrokerage : IBrokerage
     /// <param name="marketDataFetcher">An instance of an object implementing the IMarketDataFetcher interface.</param>
     public SimulatedBrokerage(IMarketDataFetcher marketDataFetcher)
     {
+        Guard.AgainstNull(() => marketDataFetcher); // Throws ArgumentNullException
+
         _marketDataFetcher = marketDataFetcher;
     }
 
@@ -48,6 +51,8 @@ public class SimulatedBrokerage : IBrokerage
     /// <returns>A task that represents the asynchronous operation. The task result contains a boolean value that is true if the order was successfully processed; otherwise, false.</returns>
     public async Task<bool> SubmitOrderAsync(Order order)
     {
+        Guard.AgainstNull(() => order); // Throws ArgumentNullException
+
         var marketData = await _marketDataFetcher.FetchMarketDataAsync([order.Asset]).FirstOrDefaultAsync();
 
         if (marketData.Value == null || !marketData.Value.ContainsKey(order.Asset))
@@ -56,26 +61,14 @@ public class SimulatedBrokerage : IBrokerage
         }
 
         var assetMarketData = marketData.Value[order.Asset];
-        bool isOrderFilled;
-
-        switch (order.OrderType)
+        var isOrderFilled = order.OrderType switch
         {
-            case OrderType.Market:
-                isOrderFilled = HandleMarketOrder(order, assetMarketData);
-                break;
-            case OrderType.Limit:
-                isOrderFilled = HandleLimitOrder(order, assetMarketData);
-                break;
-            case OrderType.Stop:
-                isOrderFilled = HandleStopOrder(order, assetMarketData);
-                break;
-            case OrderType.StopLimit:
-                isOrderFilled = HandleStopLimitOrder(order, assetMarketData);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
-
+            OrderType.Market => HandleMarketOrder(order, assetMarketData),
+            OrderType.Limit => HandleLimitOrder(order, assetMarketData),
+            OrderType.Stop => HandleStopOrder(order, assetMarketData),
+            OrderType.StopLimit => HandleStopLimitOrder(order, assetMarketData),
+            _ => throw new ArgumentOutOfRangeException(nameof(order.OrderType), order.OrderType, "OrderType is out of range"),
+        };
         return isOrderFilled;
     }
 

@@ -78,8 +78,8 @@ public class Portfolio : IPortfolio
         // Validate parameters
         Guard.AgainstEmptyOrNullReadOnlyDictionary(() => strategies); // Throws EmptyOrNullDictionaryException
         Guard.AgainstEmptyOrNullReadOnlyDictionary(() => assetCurrencies); // Throws EmptyOrNullDictionaryException
-        Guard.AgainstNull(() => eventProcessor);
-        Guard.AgainstNull(() => broker);
+        Guard.AgainstNull(() => eventProcessor); // Throws ArgumentNullException
+        Guard.AgainstNull(() => broker); // Throws ArgumentNullException
 
         EventProcessor = eventProcessor;
         Strategies = strategies;
