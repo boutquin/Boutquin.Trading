@@ -223,7 +223,7 @@ public interface IStrategy
     /// This method should be used whenever the strategy executes a trade and needs to update its position quantity accordingly.
     /// The asset parameter must be a valid asset symbol, and the quantity should reflect the net change in the strategy's position quantity as a result of the trade.
     /// </remarks>
-    /// <exception cref="System.ArgumentException">Thrown when a null, empty, or whitespace string is provided for the asset.</exception>
+    /// <exception cref="System.ArgumentException">Thrown when a null, empty, or whitespace string is provided for the <paramref name="asset"/>.</exception>
     void UpdatePositions(string asset, int quantity)
     {
         // Validate parameters
@@ -246,7 +246,7 @@ public interface IStrategy
     /// This method should be used whenever the strategy executes a trade and needs to update its position quantity accordingly.
     /// The asset parameter must be a valid asset symbol, and the quantity should reflect the net change in the strategy's position quantity as a result of the trade.
     /// </remarks>
-    /// <exception cref="System.ArgumentException">Thrown when a null, empty, or whitespace string is provided for the asset.</exception>
+    /// <exception cref="System.ArgumentException">Thrown when a null, empty, or whitespace string is provided for the <paramref name="asset"/>.</exception>
     int GetPositionQuantity(string asset)
     {
         // Validate parameters

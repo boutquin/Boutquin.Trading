@@ -57,7 +57,10 @@ public sealed class BuyAndHoldStrategyTests
     {
         // Arrange
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => new BuyAndHoldStrategy(null, _assets, _cash, _initialTimestamp, _orderPriceCalculationStrategyMock.Object, _positionSizerMock.Object));
+        Assert.Throws<ArgumentException>(() => new BuyAndHoldStrategy(null, _assets, _cash, _initialTimestamp, _orderPriceCalculationStrategyMock.Object, _positionSizerMock.Object));
+        Assert.Throws<ArgumentException>(() => new BuyAndHoldStrategy(string.Empty, _assets, _cash, _initialTimestamp, _orderPriceCalculationStrategyMock.Object, _positionSizerMock.Object));
+        Assert.Throws<ArgumentException>(() => new BuyAndHoldStrategy(" ", _assets, _cash, _initialTimestamp, _orderPriceCalculationStrategyMock.Object, _positionSizerMock.Object));
+        Assert.Throws<ArgumentException>(() => new BuyAndHoldStrategy("  ", _assets, _cash, _initialTimestamp, _orderPriceCalculationStrategyMock.Object, _positionSizerMock.Object));
         Assert.Throws<EmptyOrNullDictionaryException>(() => new BuyAndHoldStrategy(_name, new Dictionary<string, CurrencyCode>(), _cash, _initialTimestamp, _orderPriceCalculationStrategyMock.Object, _positionSizerMock.Object));
         Assert.Throws<EmptyOrNullDictionaryException>(() => new BuyAndHoldStrategy(_name, _assets, [], _initialTimestamp, _orderPriceCalculationStrategyMock.Object, _positionSizerMock.Object));
         Assert.Throws<ArgumentNullException>(() => new BuyAndHoldStrategy(_name, _assets, _cash, _initialTimestamp, null, _positionSizerMock.Object));

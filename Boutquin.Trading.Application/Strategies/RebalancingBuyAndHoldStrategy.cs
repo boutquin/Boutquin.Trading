@@ -32,7 +32,7 @@ public sealed class RebalancingBuyAndHoldStrategy : IStrategy
     /// <param name="orderPriceCalculationStrategy">An instance of IOrderPriceCalculationStrategy to calculate order prices.</param>
     /// <param name="positionSizer">An instance of IPositionSizer to compute position sizes.</param>
     /// <param name="rebalancingFrequency">The frequency at which the strategy should rebalance its assets.</param>
-    /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when any parameter is null or whitespace.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the baseCurrency is not defined.</exception>
     /// <exception cref="EmptyOrNullDictionaryException">Thrown when assets or cash dictionaries are empty or null.</exception>
     public RebalancingBuyAndHoldStrategy(
@@ -44,7 +44,7 @@ public sealed class RebalancingBuyAndHoldStrategy : IStrategy
         RebalancingFrequency rebalancingFrequency)
     {
         // Validate parameters
-        Guard.AgainstNull(() => name); // Throws ArgumentNullException
+        Guard.AgainstNullOrWhiteSpace(() => name); // Throws ArgumentNullException
         Guard.AgainstEmptyOrNullReadOnlyDictionary(() => assets); // Throws EmptyOrNullDictionaryException
         Guard.AgainstEmptyOrNullDictionary(() => cash); // Throws EmptyOrNullDictionaryException
         Guard.AgainstNull(() => orderPriceCalculationStrategy); // Throws ArgumentNullException

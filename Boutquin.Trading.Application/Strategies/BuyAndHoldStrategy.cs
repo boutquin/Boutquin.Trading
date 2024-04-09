@@ -32,7 +32,8 @@ public sealed class BuyAndHoldStrategy : IStrategy
     /// <param name="initialTimestamp">The initial timestamp when the strategy starts.</param>
     /// <param name="orderPriceCalculationStrategy">An instance of IOrderPriceCalculationStrategy to calculate order prices.</param>
     /// <param name="positionSizer">An instance of IPositionSizer to compute position sizes.</param>
-    /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
+    /// <exception cref="ArgumentException">When <paramref name="name"/> is null or whitespace.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="orderPriceCalculationStrategy"/> or <paramref name="positionSizer"/> is null.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the baseCurrency is not defined.</exception>
     /// <exception cref="EmptyOrNullDictionaryException">Thrown when assets or cash dictionaries are empty or null.</exception>
     public BuyAndHoldStrategy(
@@ -44,7 +45,7 @@ public sealed class BuyAndHoldStrategy : IStrategy
         IPositionSizer positionSizer)
     {
         // Validate parameters
-        Guard.AgainstNull(() => name); // Throws ArgumentNullException
+        Guard.AgainstNullOrWhiteSpace(() => name); // Throws ArgumentException
         Guard.AgainstEmptyOrNullReadOnlyDictionary(() => assets); // Throws EmptyOrNullDictionaryException
         Guard.AgainstEmptyOrNullDictionary(() => cash); // Throws EmptyOrNullDictionaryException
         Guard.AgainstNull(() => orderPriceCalculationStrategy); // Throws ArgumentNullException
