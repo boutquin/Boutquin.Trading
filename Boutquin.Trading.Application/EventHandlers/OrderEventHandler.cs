@@ -14,6 +14,8 @@
 //
 namespace Boutquin.Trading.Application.EventHandlers;
 
+using Boutquin.Trading.Domain.Interfaces;
+
 /// <summary>
 /// The OrderEventHandler class is an implementation of the IEventHandler interface that handles OrderEvent objects.
 /// OrderEvent objects represent the creation of an order in the trading system.
@@ -25,28 +27,14 @@ namespace Boutquin.Trading.Application.EventHandlers;
 /// Here is an example of how to use this class:
 /// <code>
 /// var portfolio = new Portfolio();
-/// var orderEventHandler = new OrderEventHandler(portfolio);
+/// var orderEventHandler = new OrderEventHandler();
 /// 
 /// var orderEvent = new OrderEvent();
-/// await orderEventHandler.HandleEventAsync(orderEvent);
+/// await orderEventHandler.HandleEventAsync(portfolio, orderEvent);
 /// </code>
 /// </remarks>
 public sealed class OrderEventHandler : IEventHandler
 {
-    private readonly IPortfolio _portfolio;
-
-    /// <summary>
-    /// Initializes a new instance of the OrderEventHandler class.
-    /// </summary>
-    /// <param name="portfolio">The portfolio that the order will be submitted to.</param>
-    /// <exception cref="ArgumentNullException">Thrown when portfolio is null.</exception>
-    public OrderEventHandler(IPortfolio portfolio)
-    {
-        Guard.AgainstNull(() => portfolio); // Throws ArgumentNullException
-
-        _portfolio = portfolio;
-    }
-
     /// <summary>
     /// Handles the provided OrderEvent object.
     /// </summary>
@@ -57,13 +45,15 @@ public sealed class OrderEventHandler : IEventHandler
     /// The HandleEventAsync method submits the order represented by the OrderEvent object to the portfolio.
     /// The portfolio is retrieved from the portfolio that was passed to the OrderEventHandler constructor.
     /// </remarks>
-    public async Task HandleEventAsync(IFinancialEvent eventObj)
+    public async Task HandleEventAsync(IPortfolio portfolio, IFinancialEvent eventObj)
     {
+        Guard.AgainstNull(() => portfolio); // Throws ArgumentNullException
+
         var orderEvent = eventObj as OrderEvent
             ?? throw new ArgumentException("Event must be of type OrderEvent.", nameof(eventObj));
 
         // Call methods on the Portfolio class to perform the necessary actions
-        if (await _portfolio.SubmitOrderAsync(orderEvent))
+        if (await portfolio.SubmitOrderAsync(orderEvent))
         {
             // Log success
         }

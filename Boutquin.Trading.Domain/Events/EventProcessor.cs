@@ -27,8 +27,10 @@ using Interfaces;
 /// <code>
 /// var handlers = new Dictionary&lt;Type, IEventHandler&gt;()
 /// {
-///     { typeof(TradeEvent), new TradeEventHandler() },
-///     { typeof(QuoteEvent), new QuoteEventHandler() }
+///     { typeof(OrderEvent), new OrderEventHandler() },
+///     { typeof(MarketEvent), new MarketEventHandler() },
+///     { typeof(FillEvent), new FillEventHandler() },
+///     { typeof(SignalEvent), new SignalEventHandler() }
 /// };
 /// 
 /// var eventProcessor = new EventProcessor(handlers);
@@ -37,7 +39,7 @@ using Interfaces;
 /// await eventProcessor.ProcessEventAsync(tradeEvent);
 /// </code>
 /// </remarks>
-public sealed class EventProcessor(IReadOnlyDictionary<Type, IEventHandler> handlers) : IEventProcessor
+public sealed class EventProcessor(IPortfolio portfolio, IReadOnlyDictionary<Type, IEventHandler> handlers) : IEventProcessor
 {
     /// <summary>
     /// Processes the provided financial event.
@@ -49,7 +51,7 @@ public sealed class EventProcessor(IReadOnlyDictionary<Type, IEventHandler> hand
     {
         if (handlers.TryGetValue(eventObj.GetType(), out var handler))
         {
-            await handler.HandleEventAsync(eventObj);
+            await handler.HandleEventAsync(portfolio, eventObj);
         }
         else
         {

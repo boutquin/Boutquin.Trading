@@ -38,11 +38,12 @@ public interface IEventHandler
     /// <summary>
     /// Handles the provided financial event.
     /// </summary>
+    /// <param name="portfolio">The portfolio for which the event is relevant.</param>
     /// <param name="eventObj">The financial event to handle.</param>
     /// <returns>A Task representing the asynchronous operation.</returns>
     /// <remarks>
     /// The HandleEventAsync method should be implemented to process the provided financial event and perform any necessary actions.
     /// The specific actions to be performed will depend on the type of the event and the specific implementation of the IEventHandler interface.
     /// </remarks>
-    Task HandleEventAsync(IFinancialEvent eventObj);
+    Task HandleEventAsync(IPortfolio portfolio, IFinancialEvent eventObj);
 }

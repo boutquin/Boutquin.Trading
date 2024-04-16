@@ -150,13 +150,13 @@ public sealed class FixedWeightPositionSizerTests
 
         var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<string, MarketData>?>
         {
-        { _initialTimestamp, new SortedDictionary<string, MarketData> { { "AAPL", marketDataAAPL }, { "MSFT", marketDataMSFT } } }
-    };
+            { _initialTimestamp, new SortedDictionary<string, MarketData> { { "AAPL", marketDataAAPL }, { "MSFT", marketDataMSFT } } }
+        };
 
         var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
-    {
-        { _initialTimestamp, new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
-    };
+            {
+                { _initialTimestamp, new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
+            };
 
         var strategyMock = new Mock<IStrategy>();
         strategyMock.Setup(s => s.Assets).Returns(assetCurrencies);

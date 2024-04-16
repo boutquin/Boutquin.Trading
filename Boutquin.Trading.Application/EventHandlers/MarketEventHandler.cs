@@ -14,6 +14,8 @@
 //
 namespace Boutquin.Trading.Application.EventHandlers;
 
+using Domain.Interfaces;
+
 /// <summary>
 /// The MarketEventHandler class is an implementation of the IEventHandler interface that handles MarketEvent objects.
 /// MarketEvent objects represent the market data for a specific financial asset at a specific point in time.
@@ -25,34 +27,14 @@ namespace Boutquin.Trading.Application.EventHandlers;
 /// Here is an example of how to use this class:
 /// <code>
 /// var portfolio = new Portfolio();
-/// var marketEventHandler = new MarketEventHandler(portfolio, CurrencyCode.USD);
+/// var marketEventHandler = new MarketEventHandler();
 /// 
 /// var marketEvent = new MarketEvent();
-/// await marketEventHandler.HandleEventAsync(marketEvent);
+/// await marketEventHandler.HandleEventAsync(portfolio, marketEvent);
 /// </code>
 /// </remarks>
 public sealed class MarketEventHandler : IEventHandler
 {
-    private readonly IPortfolio _portfolio;
-    private readonly CurrencyCode _baseCurrency;
-
-    /// <summary>
-    /// Initializes a new instance of the MarketEventHandler class.
-    /// </summary>
-    /// <param name="portfolio">The portfolio that contains the strategies that can create orders.</param>
-    /// <param name="baseCurrency">The base currency for the portfolio.</param>
-    /// <exception cref="ArgumentNullException">Thrown when portfolio is null.</exception>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when baseCurrency is an undefined enum value.</exception>
-    public MarketEventHandler(IPortfolio portfolio, CurrencyCode baseCurrency)
-    {
-        // Validate parameters
-        Guard.AgainstNull(() => portfolio); // Throws ArgumentNullException
-        Guard.AgainstUndefinedEnumValue(() => baseCurrency); // Throws ArgumentOutOfRangeException
-
-        _portfolio = portfolio;
-        _baseCurrency = baseCurrency;
-    }
-
     /// <summary>
     /// Handles the provided MarketEvent object.
     /// </summary>
@@ -63,13 +45,15 @@ public sealed class MarketEventHandler : IEventHandler
     /// The HandleEventAsync method updates the historical data, positions, and cash of the portfolio based on the MarketEvent object.
     /// The portfolio is retrieved from the portfolio that was passed to the MarketEventHandler constructor.
     /// </remarks>
-    public async Task HandleEventAsync(IFinancialEvent eventObj)
+    public async Task HandleEventAsync(IPortfolio portfolio, IFinancialEvent eventObj)
     {
+        Guard.AgainstNull(() => portfolio); // Throws ArgumentNullException
+
         var marketEvent = eventObj as MarketEvent
             ?? throw new ArgumentException("Event must be of type MarketEvent.", nameof(eventObj));
 
         // Call methods on the Portfolio class to perform the necessary actions
-        _portfolio.UpdateHistoricalData(marketEvent);
+        portfolio.UpdateHistoricalData(marketEvent);
 
         // Detect and handle dividend and split events
         foreach (var (asset, marketData) in marketEvent.HistoricalMarketData)
@@ -78,7 +62,7 @@ public sealed class MarketEventHandler : IEventHandler
             var dividendPerShare = marketData.DividendPerShare;
             if (dividendPerShare > 0)
             {
-                _portfolio.UpdateCashForDividend(asset, dividendPerShare);
+                portfolio.UpdateCashForDividend(asset, dividendPerShare);
             }
 
             // Detect and handle split events
@@ -88,15 +72,15 @@ public sealed class MarketEventHandler : IEventHandler
                 continue;
             }
 
-            _portfolio.AdjustPositionForSplit(asset, splitCoefficient);
-            if (_portfolio.IsLive)
+            portfolio.AdjustPositionForSplit(asset, splitCoefficient);
+            if (portfolio.IsLive)
             {
-                _portfolio.AdjustHistoricalDataForSplit(asset, splitCoefficient);
+                portfolio.AdjustHistoricalDataForSplit(asset, splitCoefficient);
             }
         }
 
         //await _portfolio.AllocateCapitalAsync();
 
-        _portfolio.GenerateSignals(marketEvent, _baseCurrency);
+        portfolio.GenerateSignals(marketEvent);
     }
 }

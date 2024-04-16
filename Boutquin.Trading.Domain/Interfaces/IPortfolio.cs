@@ -47,6 +47,16 @@ public interface IPortfolio
     public bool IsLive { get; }
 
     /// <summary>
+    /// Gets the base currency of the portfolio.
+    /// </summary>
+    /// <value>The base currency of the portfolio.</value>
+    /// <remarks>
+    /// The base currency is the currency in which the portfolio's value is calculated and reported.
+    /// All cash balances, asset prices, and portfolio values are converted to the base currency for calculations and reporting.
+    /// </remarks>
+    CurrencyCode BaseCurrency { get; }
+
+    /// <summary>
     /// The EventProcessor property represents a system to process events for the portfolio.
     /// </summary>
     public IEventProcessor EventProcessor { get; }
@@ -131,7 +141,6 @@ public interface IPortfolio
     /// Generates trading signals for each strategy in the portfolio based on updated market data.
     /// </summary>
     /// <param name="marketEvent">The MarketEvent containing the updated market data.</param>
-    /// <param name="baseCurrency">The base currency used for calculations.</param>
     /// <returns>An enumerable of SignalEvent containing the generated signals for each strategy.</returns>
     /// <remarks>
     /// This method is called when new market data is available and trading signals need to be generated for the portfolio's strategies.
@@ -139,8 +148,7 @@ public interface IPortfolio
     /// according to the strategy's signal generation rules and that the generated signals are correctly formatted and returned.
     /// </remarks>
     IEnumerable<SignalEvent> GenerateSignals(
-        MarketEvent marketEvent,
-        CurrencyCode baseCurrency);
+        MarketEvent marketEvent);
 
     /// <summary>
     /// Updates the position for a given asset in a specific strategy.
@@ -180,14 +188,12 @@ public interface IPortfolio
     /// Updates the equity curve for the portfolio.
     /// </summary>
     /// <param name="timestamp">The timestamp for the equity curve update.</param>
-    /// <param name="baseCurrency">The base currency used for calculations.</param>
     /// <remarks>
     /// This method is called when the equity curve for the portfolio needs to be updated.
     /// The method implementation should ensure that the equity curve is updated correctly and that the updated equity curve accurately reflects the current state of the portfolio.
     /// </remarks>
     void UpdateEquityCurve(
-        DateOnly timestamp,
-        CurrencyCode baseCurrency);
+        DateOnly timestamp);
 
     /// <summary>
     /// Adjusts positions for a specific asset due to a stock split.
@@ -245,7 +251,6 @@ public interface IPortfolio
     /// Calculates the total value of the portfolio.
     /// </summary>
     /// <param name="timestamp">The timestamp for which the total value is calculated.</param>
-    /// <param name="baseCurrency">The base currency used for the calculation.</param>
     /// <returns>The total value of the portfolio.</returns>
     /// <exception cref="System.ArgumentOutOfRangeException">Thrown when the baseCurrency parameter is not a defined value of the CurrencyCode enumeration.</exception>
     /// <remarks>
@@ -253,6 +258,5 @@ public interface IPortfolio
     /// The method implementation should ensure that the calculation is accurate and that it correctly reflects the current state of the portfolio.
     /// </remarks>
     decimal CalculateTotalPortfolioValue(
-        DateOnly timestamp,
-        CurrencyCode baseCurrency);
+        DateOnly timestamp);
 }

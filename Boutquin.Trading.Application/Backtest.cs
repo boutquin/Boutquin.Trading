@@ -120,7 +120,7 @@ public sealed class BackTest
             foreach (var portfolio in new[] { _portfolio, _benchmarkPortfolio })
             {
                 await portfolio.HandleEventAsync(marketEvent);
-                portfolio.UpdateEquityCurve(marketData.Key, _baseCurrency);
+                portfolio.UpdateEquityCurve(marketData.Key);
             }
         }
 

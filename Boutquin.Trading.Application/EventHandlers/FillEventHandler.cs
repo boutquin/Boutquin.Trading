@@ -14,6 +14,8 @@
 //
 namespace Boutquin.Trading.Application.EventHandlers;
 
+using Domain.Interfaces;
+
 /// <summary>
 /// The FillEventHandler class is an implementation of the IEventHandler interface that handles FillEvent objects.
 /// FillEvent objects represent the filling of an order in the trading system.
@@ -25,28 +27,14 @@ namespace Boutquin.Trading.Application.EventHandlers;
 /// Here is an example of how to use this class:
 /// <code>
 /// var portfolio = new Portfolio();
-/// var fillEventHandler = new FillEventHandler(portfolio);
+/// var fillEventHandler = new FillEventHandler();
 /// 
 /// var fillEvent = new FillEvent();
-/// await fillEventHandler.HandleEventAsync(fillEvent);
+/// await fillEventHandler.HandleEventAsync(portfolio, fillEvent);
 /// </code>
 /// </remarks>
 public sealed class FillEventHandler : IEventHandler
 {
-    private readonly IPortfolio _portfolio;
-
-    /// <summary>
-    /// Initializes a new instance of the FillEventHandler class.
-    /// </summary>
-    /// <param name="portfolio">The portfolio that contains the strategies that can create orders.</param>
-    /// <exception cref="ArgumentNullException">Thrown when portfolio is null.</exception>
-    public FillEventHandler(IPortfolio portfolio)
-    {
-        Guard.AgainstNull(() => portfolio); // Throws ArgumentNullException
-
-        _portfolio = portfolio;
-    }
-
     /// <summary>
     /// Handles the provided FillEvent object.
     /// </summary>
@@ -57,17 +45,19 @@ public sealed class FillEventHandler : IEventHandler
     /// The HandleEventAsync method updates the positions and cash of the strategy that created the order represented by the FillEvent object.
     /// The strategy is retrieved from the portfolio that was passed to the FillEventHandler constructor.
     /// </remarks>
-    public async Task HandleEventAsync(IFinancialEvent eventObj)
+    public async Task HandleEventAsync(IPortfolio portfolio, IFinancialEvent eventObj)
     {
+        Guard.AgainstNull(() => portfolio); // Throws ArgumentNullException
+
         var fillEvent = eventObj as FillEvent
             ?? throw new ArgumentException("Event must be of type FillEvent.", nameof(eventObj));
 
         // Call methods on the Portfolio class to perform the necessary actions
-        var strategy = _portfolio.GetStrategy(fillEvent.StrategyName);
+        var strategy = portfolio.GetStrategy(fillEvent.StrategyName);
         strategy.UpdatePositions(fillEvent.Asset, fillEvent.Quantity);
 
         var tradeValue = fillEvent.FillPrice * fillEvent.Quantity;
         var tradeCost = tradeValue + fillEvent.Commission;
-        strategy.UpdateCash(_portfolio.GetAssetCurrency(fillEvent.Asset), -tradeCost);
+        strategy.UpdateCash(portfolio.GetAssetCurrency(fillEvent.Asset), -tradeCost);
     }
 }

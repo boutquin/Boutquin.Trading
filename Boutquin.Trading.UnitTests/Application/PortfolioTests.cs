@@ -14,11 +14,14 @@
 //
 namespace Boutquin.Trading.Tests.UnitTests.Application;
 
+using System.Collections.ObjectModel;
+
 using Helpers;
 
 using Moq;
 
 using Trading.Application;
+using Trading.Application.EventHandlers;
 using Trading.Domain.Data;
 using Trading.Domain.Enums;
 using Trading.Domain.Events;
@@ -31,6 +34,13 @@ public class PortfolioTests
 {
     private readonly Mock<IEventProcessor> _mockEventProcessor = new();
     private readonly Mock<IBrokerage> _mockBroker = new();
+    private readonly Dictionary<Type, IEventHandler> _handlers = new() 
+    {
+        { typeof(OrderEvent), new OrderEventHandler() },
+        { typeof(MarketEvent), new MarketEventHandler() },
+        { typeof(FillEvent), new FillEventHandler() },
+        { typeof(SignalEvent), new SignalEventHandler() }
+    };
 
     /// <summary>
     /// Tests that the HandleEventAsync method of the Portfolio class calls the ProcessEventAsync method of the IEventProcessor interface when given a valid event.
@@ -38,6 +48,8 @@ public class PortfolioTests
     [Fact]
     public async Task HandleEventAsync_ShouldCallProcessEventAsync_GivenValidEvent()
     {
+        // Arrange
+        const CurrencyCode BaseCurrency = CurrencyCode.USD;
         var mockEvent = new Mock<IFinancialEvent>();
 
         IStrategy strategy = new TestStrategy();
@@ -45,14 +57,18 @@ public class PortfolioTests
         var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
-            strategies,
+            BaseCurrency,
+            new ReadOnlyDictionary<string, IStrategy>(strategies),
             assetCurrencies,
-            _mockEventProcessor.Object,
+            _handlers,
             _mockBroker.Object,
-            isLive: false);
+            isLive: false
+        );
 
+        // Act
         await portfolio.HandleEventAsync(mockEvent.Object);
 
+        // Assert
         _mockEventProcessor.Verify(x => x.ProcessEventAsync(It.IsAny<IFinancialEvent>()), Times.Once);
     }
 
@@ -62,6 +78,8 @@ public class PortfolioTests
     [Fact]
     public void UpdateHistoricalData_ShouldUpdateHistoricalData_GivenValidMarketEvent()
     {
+        // Arrange
+        const CurrencyCode BaseCurrency = CurrencyCode.USD;
         var timestamp = DateOnly.FromDateTime(DateTime.Today);
         var marketEvent = new MarketEvent(Timestamp: timestamp,
                                             HistoricalMarketData: [],
@@ -72,14 +90,18 @@ public class PortfolioTests
         var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
-            strategies,
+            BaseCurrency,
+            new ReadOnlyDictionary<string, IStrategy>(strategies),
             assetCurrencies,
-            _mockEventProcessor.Object,
+            _handlers,
             _mockBroker.Object,
-            isLive: false);
+            isLive: false
+        );
 
+        // Act
         portfolio.UpdateHistoricalData(marketEvent);
 
+        // Assert
         portfolio.HistoricalMarketData.Should().ContainKey(timestamp);
         portfolio.HistoricalFxConversionRates.Should().ContainKey(timestamp);
     }
@@ -90,6 +112,8 @@ public class PortfolioTests
     [Fact]
     public void UpdateCashForDividend_ShouldUpdateCash_GivenAssetWithDividend()
     {
+        // Arrange
+        const CurrencyCode BaseCurrency = CurrencyCode.USD;
         var asset = "AAPL";
         var dividendPerShare = 0.82m;
 
@@ -98,20 +122,22 @@ public class PortfolioTests
             Positions = new SortedDictionary<string, int> { { asset, 100 } },
             Cash = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 10000m } }
         };
-
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", testStrategy } };
         var assetCurrencies = new Dictionary<string, CurrencyCode> { { asset, CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
-            strategies,
+            BaseCurrency,
+            new ReadOnlyDictionary<string, IStrategy>(strategies),
             assetCurrencies,
-            _mockEventProcessor.Object,
+            _handlers,
             _mockBroker.Object,
             isLive: false
         );
 
+        // Act
         portfolio.UpdateCashForDividend(asset, dividendPerShare);
 
+        // Assert
         testStrategy.Cash[CurrencyCode.USD].Should().Be(10082m);
     }
 
@@ -121,28 +147,34 @@ public class PortfolioTests
     [Fact]
     public void UpdateCashForDividend_ShouldUpdateCashForDividend_GivenAssetAndDividendPerShare()
     {
+        // Arrange
+        const CurrencyCode BaseCurrency = CurrencyCode.USD;
         var asset = "AAPL";
         var dividendPerShare = 2m;
         var quantity = 10;
 
-        IStrategy strategy = new TestStrategy();
-        strategy.Positions[asset] = quantity;
-        ((TestStrategy)strategy).Assets = new Dictionary<string, CurrencyCode> { { asset, CurrencyCode.USD } };
-        strategy.Cash[CurrencyCode.USD] = 1000;
-
-        var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
+        var testStrategy = new TestStrategy
+        {
+            Positions = new SortedDictionary<string, int> { { asset, quantity } },
+            Cash = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1000m } }
+        };
+        var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", testStrategy } };
         var assetCurrencies = new Dictionary<string, CurrencyCode> { { asset, CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
-            strategies,
+            BaseCurrency,
+            new ReadOnlyDictionary<string, IStrategy>(strategies),
             assetCurrencies,
-            _mockEventProcessor.Object,
+            _handlers,
             _mockBroker.Object,
-            isLive: false);
+            isLive: false
+        );
 
+        // Act
         portfolio.UpdateCashForDividend(asset, dividendPerShare);
-
-        strategy.Cash[CurrencyCode.USD].Should().Be(1020m);
+        
+        // Assert
+        testStrategy.Cash[CurrencyCode.USD].Should().Be(1020m);
     }
 
     /// <summary>
@@ -151,8 +183,9 @@ public class PortfolioTests
     [Fact]
     public void GenerateSignals_ShouldReturnSignals_GivenValidMarketEventAndBaseCurrency()
     {
+        // Arrange
+        const CurrencyCode BaseCurrency = CurrencyCode.USD;
         var timestamp = DateOnly.FromDateTime(DateTime.Today);
-        var baseCurrency = CurrencyCode.USD;
         var marketEvent = new MarketEvent(Timestamp: timestamp,
             HistoricalMarketData: [],
             HistoricalFxConversionRates: []);
@@ -175,14 +208,18 @@ public class PortfolioTests
         var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
-            strategies,
+            BaseCurrency,
+            new ReadOnlyDictionary<string, IStrategy>(strategies),
             assetCurrencies,
-            _mockEventProcessor.Object,
+            _handlers,
             _mockBroker.Object,
-            isLive: false);
+            isLive: false
+        );
 
-        var signals = portfolio.GenerateSignals(marketEvent, baseCurrency).ToList();
+        // Act
+        var signals = portfolio.GenerateSignals(marketEvent).ToList();
 
+        // Assert  
         signals.Should().HaveCount(1);
         signals[0].Should().BeEquivalentTo(expectedSignal);
     }
@@ -193,6 +230,8 @@ public class PortfolioTests
     [Fact]
     public async Task SubmitOrderAsync_ShouldSubmitOrder_GivenValidOrderEvent()
     {
+        // Arrange
+        const CurrencyCode BaseCurrency = CurrencyCode.USD;
         var orderEvent = new OrderEvent(
             DateOnly.FromDateTime(DateTime.Today),
             "TestStrategy",
@@ -207,14 +246,18 @@ public class PortfolioTests
         var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
-            strategies,
+            BaseCurrency,
+            new ReadOnlyDictionary<string, IStrategy>(strategies),
             assetCurrencies,
-            _mockEventProcessor.Object,
+            _handlers,
             _mockBroker.Object,
-            isLive: false);
+            isLive: false
+        );
 
+        // Act
         await portfolio.SubmitOrderAsync(orderEvent);
 
+        // Assert
         _mockBroker.Verify(x => x.SubmitOrderAsync(It.Is<Order>(o =>
             o.Timestamp == orderEvent.Timestamp &&
             o.StrategyName == orderEvent.StrategyName &&
@@ -233,19 +276,19 @@ public class PortfolioTests
     public async Task Broker_FillOccurred_ShouldCallHandleEventAsync()
     {
         // Arrange
-        _mockEventProcessor.Setup(x => x.ProcessEventAsync(It.IsAny<IFinancialEvent>()))
-            .Returns(Task.CompletedTask);
-
+        const CurrencyCode BaseCurrency = CurrencyCode.USD;
         IStrategy strategy = new TestStrategy();
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
         var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
-            strategies,
+            BaseCurrency,
+            new ReadOnlyDictionary<string, IStrategy>(strategies),
             assetCurrencies,
-            _mockEventProcessor.Object,
+            _handlers,
             _mockBroker.Object,
-            isLive: false);
+            isLive: false
+        );
 
         var fillEvent = new FillEvent(
             Timestamp: DateOnly.FromDateTime(DateTime.Today),
@@ -255,6 +298,8 @@ public class PortfolioTests
             Quantity: 10,
             Commission: 1m
         );
+        _mockEventProcessor.Setup(x => x.ProcessEventAsync(It.IsAny<IFinancialEvent>()))
+            .Returns(Task.CompletedTask);
 
         // Act
         _mockBroker.Raise(broker => broker.FillOccurred += null, this, fillEvent);
@@ -269,6 +314,8 @@ public class PortfolioTests
     [Fact]
     public void UpdatePosition_ShouldUpdatePosition_GivenValidStrategyNameAssetAndQuantity()
     {
+        // Arrange
+        const CurrencyCode BaseCurrency = CurrencyCode.USD;
         var strategyName = "TestStrategy";
         var asset = "AAPL";
         var quantity = 10;
@@ -278,14 +325,18 @@ public class PortfolioTests
         var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
-            strategies,
+            BaseCurrency,
+            new ReadOnlyDictionary<string, IStrategy>(strategies),
             assetCurrencies,
-            _mockEventProcessor.Object,
+            _handlers,
             _mockBroker.Object,
-            isLive: false);
+            isLive: false
+        );
 
+        // Act
         portfolio.UpdatePosition(strategyName, asset, quantity);
 
+        // Assert
         strategy.Positions[asset].Should().Be(quantity);
     }
 
@@ -295,6 +346,8 @@ public class PortfolioTests
     [Fact]
     public void UpdateCash_ShouldUpdateCash_GivenValidStrategyNameCurrencyAndAmount()
     {
+        // Arrange
+        const CurrencyCode BaseCurrency = CurrencyCode.USD;
         var strategyName = "TestStrategy";
         var currency = CurrencyCode.USD;
         var amount = 1000m;
@@ -304,14 +357,18 @@ public class PortfolioTests
         var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
-            strategies,
+            BaseCurrency,
+            new ReadOnlyDictionary<string, IStrategy>(strategies),
             assetCurrencies,
-            _mockEventProcessor.Object,
+            _handlers,
             _mockBroker.Object,
-            isLive: false);
+            isLive: false
+        );
 
+        // Act
         portfolio.UpdateCash(strategyName, currency, amount);
 
+        // Assert
         strategy.Cash[currency].Should().Be(amount);
     }
 
@@ -321,6 +378,8 @@ public class PortfolioTests
     [Fact]
     public void AdjustPositionForSplit_ShouldAdjustPosition_GivenAssetAndSplitRatio()
     {
+        // Arrange
+        const CurrencyCode BaseCurrency = CurrencyCode.USD;
         var asset = "AAPL";
         var splitRatio = 2m;
 
@@ -331,14 +390,18 @@ public class PortfolioTests
         var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
-            strategies,
+            BaseCurrency,
+            new ReadOnlyDictionary<string, IStrategy>(strategies),
             assetCurrencies,
-            _mockEventProcessor.Object,
+            _handlers,
             _mockBroker.Object,
-            isLive: false);
+            isLive: false
+        );
 
+        // Act
         portfolio.AdjustPositionForSplit(asset, splitRatio);
 
+        // Assert
         strategy.Positions[asset].Should().Be(20);
     }
 
@@ -348,6 +411,8 @@ public class PortfolioTests
     [Fact]
     public void AdjustHistoricalDataForSplit_ShouldAdjustHistoricalData_GivenAssetAndSplitRatio()
     {
+        // Arrange
+        const CurrencyCode BaseCurrency = CurrencyCode.USD;
         var asset = "AAPL";
         var timestamp = DateOnly.FromDateTime(DateTime.Today);
         var splitRatio = 2m;
@@ -372,17 +437,20 @@ public class PortfolioTests
         var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
-            strategies,
+            BaseCurrency,
+            new ReadOnlyDictionary<string, IStrategy>(strategies),
             assetCurrencies,
-            _mockEventProcessor.Object,
+            _handlers,
             _mockBroker.Object,
             isLive: false)
         {
             HistoricalMarketData = { [timestamp] = marketData }
         };
 
+        // Act
         portfolio.AdjustHistoricalDataForSplit(asset, splitRatio);
 
+        // Assert
         var adjustedData = portfolio.HistoricalMarketData[timestamp][asset];
         adjustedData.Open.Should().Be(50);
         adjustedData.High.Should().Be(100);
@@ -398,20 +466,26 @@ public class PortfolioTests
     [Fact]
     public void GetStrategy_ShouldReturnStrategy_GivenValidStrategyName()
     {
+        // Arrange
+        const CurrencyCode BaseCurrency = CurrencyCode.USD;
         var strategyName = "TestStrategy";
         IStrategy strategy = new TestStrategy();
         var strategies = new Dictionary<string, IStrategy> { { strategyName, strategy } };
         var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
-            strategies,
+            BaseCurrency,
+            new ReadOnlyDictionary<string, IStrategy>(strategies),
             assetCurrencies,
-            _mockEventProcessor.Object,
+            _handlers,
             _mockBroker.Object,
-            isLive: false);
+            isLive: false
+        );
 
+        // Act
         var result = portfolio.GetStrategy(strategyName);
 
+        // Assert
         result.Should().Be(strategy);
     }
 
@@ -421,6 +495,8 @@ public class PortfolioTests
     [Fact]
     public void GetAssetCurrency_ShouldReturnCurrency_GivenValidAsset()
     {
+        // Arrange
+        const CurrencyCode BaseCurrency = CurrencyCode.USD;
         var asset = "AAPL";
         var currency = CurrencyCode.USD;
 
@@ -429,14 +505,18 @@ public class PortfolioTests
         var assetCurrencies = new Dictionary<string, CurrencyCode> { { asset, currency } };
 
         var portfolio = new Portfolio(
-            strategies,
+            BaseCurrency,
+            new ReadOnlyDictionary<string, IStrategy>(strategies),
             assetCurrencies,
-            _mockEventProcessor.Object,
+            _handlers,
             _mockBroker.Object,
-            isLive: false);
+            isLive: false
+        );
 
+        // Act
         var result = portfolio.GetAssetCurrency(asset);
 
+        // Assert
         result.Should().Be(currency);
     }
 
@@ -446,6 +526,8 @@ public class PortfolioTests
     [Fact]
     public void UpdateEquityCurve_ShouldUpdateEquity_GivenTimestampAndBaseCurrency()
     {
+        // Arrange
+        const CurrencyCode BaseCurrency = CurrencyCode.USD;
         IStrategy strategy = new TestStrategy();
         var timestamp = DateOnly.FromDateTime(DateTime.Today);
         var baseCurrency = CurrencyCode.USD;
@@ -474,18 +556,21 @@ public class PortfolioTests
         var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
-            strategies,
+            BaseCurrency,
+            new ReadOnlyDictionary<string, IStrategy>(strategies),
             assetCurrencies,
-            _mockEventProcessor.Object,
+            _handlers,
             _mockBroker.Object,
-            isLive: false) 
-        { 
+            isLive: false)
+        {
             HistoricalMarketData = { [timestamp] = marketData }, 
             HistoricalFxConversionRates = { [timestamp] = fxRates }
         };
 
-        portfolio.UpdateEquityCurve(timestamp, baseCurrency);
+        // Act
+        portfolio.UpdateEquityCurve(timestamp);
 
+        // Assert
         portfolio.EquityCurve[timestamp].Should().Be(2500m);
     }
 
@@ -495,8 +580,9 @@ public class PortfolioTests
     [Fact]
     public void CalculateTotalPortfolioValue_ShouldReturnTotalValue_GivenTimestampAndBaseCurrency()
     {
+        // Arrange
+        const CurrencyCode BaseCurrency = CurrencyCode.USD;
         var timestamp = DateOnly.FromDateTime(DateTime.Today);
-        var baseCurrency = CurrencyCode.USD;
 
         var mockStrategy = new Mock<IStrategy>();
         mockStrategy.Setup(s => s.ComputeTotalValue(
@@ -510,15 +596,18 @@ public class PortfolioTests
         var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
-            strategies,
+            BaseCurrency,
+            new ReadOnlyDictionary<string, IStrategy>(strategies),
             assetCurrencies,
-            _mockEventProcessor.Object,
+            _handlers,
             _mockBroker.Object,
             isLive: false
         );
 
-        var result = portfolio.CalculateTotalPortfolioValue(timestamp, baseCurrency);
+        // Act
+        var result = portfolio.CalculateTotalPortfolioValue(timestamp);
 
+        // Assert
         result.Should().Be(1000m);
     }
 }

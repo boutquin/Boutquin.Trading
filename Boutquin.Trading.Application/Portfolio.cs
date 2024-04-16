@@ -16,7 +16,7 @@ namespace Boutquin.Trading.Application;
 
 using Domain.Data;
 
-public class Portfolio : IPortfolio
+public sealed class Portfolio : IPortfolio
 {
     /// <summary>
     /// Indicates whether the portfolio is being run in live mode.
@@ -27,6 +27,16 @@ public class Portfolio : IPortfolio
     /// In live mode, the portfolio operates in real-time and is subject to live market data. In a backtest or simulation mode, the portfolio operates on historical data.
     /// </remarks>
     public bool IsLive { get; }
+
+    /// <summary>
+    /// Gets the base currency of the portfolio.
+    /// </summary>
+    /// <value>The base currency of the portfolio.</value>
+    /// <remarks>
+    /// The base currency is the currency in which the portfolio's value is calculated and reported.
+    /// All cash balances, asset prices, and portfolio values are converted to the base currency for calculations and reporting.
+    /// </remarks>
+    public CurrencyCode BaseCurrency { get; }
 
     /// <summary>
     /// The EventProcessor property represents a system to process events for the portfolio.
@@ -41,6 +51,9 @@ public class Portfolio : IPortfolio
     /// <summary>
     /// Initializes a new instance of the <see cref="Portfolio"/> class.
     /// </summary>
+    /// <param name="baseCurrency">
+    /// The base currency used for the calculations.
+    /// </param>
     /// <param name="strategies">
     /// A dictionary containing the set of strategies to be employed by the portfolio.
     /// Each entry is a key-value pair where the key is a unique identifier for a strategy and the value is the strategy instance.
@@ -58,6 +71,9 @@ public class Portfolio : IPortfolio
     /// <param name="isLive">
     /// A Boolean flag indicating whether the portfolio is live. The default value is false.
     /// </param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when the baseCurrency parameter is not a defined value of the CurrencyCode enumeration.
+    /// </exception>
     /// <exception cref="EmptyOrNullDictionaryException">
     /// Throws this exception if either the 'strategies' or 'assetCurrencies' dictionary is null or empty.
     /// </exception>
@@ -69,19 +85,22 @@ public class Portfolio : IPortfolio
     /// This event is triggered when an order is filled by the brokerage.
     /// </remarks>
     public Portfolio(
+        CurrencyCode baseCurrency,
         IReadOnlyDictionary<string, IStrategy> strategies,
         IReadOnlyDictionary<string, CurrencyCode> assetCurrencies,
-        IEventProcessor eventProcessor,
+        IReadOnlyDictionary<Type, IEventHandler> handlers,
         IBrokerage broker,
         bool isLive = false)
     {
         // Validate parameters
+        Guard.AgainstUndefinedEnumValue(() => baseCurrency); // Throws ArgumentOutOfRangeException
         Guard.AgainstEmptyOrNullReadOnlyDictionary(() => strategies); // Throws EmptyOrNullDictionaryException
         Guard.AgainstEmptyOrNullReadOnlyDictionary(() => assetCurrencies); // Throws EmptyOrNullDictionaryException
-        Guard.AgainstNull(() => eventProcessor); // Throws ArgumentNullException
+        Guard.AgainstEmptyOrNullReadOnlyDictionary(() => handlers); // Throws EmptyOrNullDictionaryException
         Guard.AgainstNull(() => broker); // Throws ArgumentNullException
 
-        EventProcessor = eventProcessor;
+        BaseCurrency = baseCurrency;
+        EventProcessor = new EventProcessor(this, handlers);
         Strategies = strategies;
         AssetCurrencies = assetCurrencies;
         IsLive = isLive;
@@ -228,7 +247,6 @@ public class Portfolio : IPortfolio
     /// Generates trading signals for each strategy in the portfolio based on updated market data.
     /// </summary>
     /// <param name="marketEvent">The MarketEvent containing the updated market data.</param>
-    /// <param name="baseCurrency">The base currency used for calculations.</param>
     /// <returns>An enumerable of SignalEvent containing the generated signals for each strategy.</returns>
     /// <remarks>
     /// This method is called when new market data is available and trading signals need to be generated for the portfolio's strategies.
@@ -236,15 +254,14 @@ public class Portfolio : IPortfolio
     /// according to the strategy's signal generation rules and that the generated signals are correctly formatted and returned.
     /// </remarks>
     public IEnumerable<SignalEvent> GenerateSignals(
-        MarketEvent marketEvent,
-        CurrencyCode baseCurrency)
+        MarketEvent marketEvent)
     {
         // Iterate through each strategy and generate signals based on the updated market data
         return Strategies
             .Select(strategyPair => strategyPair.Value)
             .Select(strategy => strategy.GenerateSignals(
                                             marketEvent.Timestamp,
-                                            baseCurrency,
+                                            BaseCurrency,
                                             HistoricalMarketData,
                                             HistoricalFxConversionRates));
     }
@@ -295,16 +312,14 @@ public class Portfolio : IPortfolio
     /// Updates the equity curve for the portfolio.
     /// </summary>
     /// <param name="timestamp">The timestamp for the equity curve update.</param>
-    /// <param name="baseCurrency">The base currency used for calculations.</param>
     /// <remarks>
     /// This method is called when the equity curve for the portfolio needs to be updated.
     /// The method implementation should ensure that the equity curve is updated correctly and that the updated equity curve accurately reflects the current state of the portfolio.
     /// </remarks>
     public void UpdateEquityCurve(
-        DateOnly timestamp,
-        CurrencyCode baseCurrency)
+        DateOnly timestamp)
     {
-        EquityCurve[timestamp] = CalculateTotalPortfolioValue(timestamp, baseCurrency);
+        EquityCurve[timestamp] = CalculateTotalPortfolioValue(timestamp);
     }
 
     /// <summary>
@@ -407,22 +422,18 @@ public class Portfolio : IPortfolio
     /// Calculates the total value of the portfolio.
     /// </summary>
     /// <param name="timestamp">The timestamp for which the total value is calculated.</param>
-    /// <param name="baseCurrency">The base currency used for the calculation.</param>
     /// <returns>The total value of the portfolio.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when the baseCurrency parameter is not a defined value of the CurrencyCode enumeration.</exception>
     /// <remarks>
     /// This method is called when the total value of the portfolio needs to be calculated.
     /// The method implementation should ensure that the calculation is accurate and that it correctly reflects the current state of the portfolio.
     /// </remarks>
     public decimal CalculateTotalPortfolioValue(
-        DateOnly timestamp,
-        CurrencyCode baseCurrency)
+        DateOnly timestamp)
     {
-        Guard.AgainstUndefinedEnumValue(() => baseCurrency); // Throws ArgumentOutOfRangeException
 
         return Strategies
             .Select(strategyPair => strategyPair.Value)
-            .Select(strategy => strategy.ComputeTotalValue(timestamp, baseCurrency, HistoricalMarketData, HistoricalFxConversionRates))
+            .Select(strategy => strategy.ComputeTotalValue(timestamp, BaseCurrency, HistoricalMarketData, HistoricalFxConversionRates))
             .Sum();
     }
 
