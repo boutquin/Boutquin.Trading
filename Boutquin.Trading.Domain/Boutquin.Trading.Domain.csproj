@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Boutquin.Domain" Version="0.2.1-beta09" />
+    <PackageReference Include="Boutquin.Domain" Version="0.3.0-beta01" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
   </ItemGroup>
 
