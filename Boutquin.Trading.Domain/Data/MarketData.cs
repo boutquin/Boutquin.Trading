@@ -60,7 +60,7 @@ public sealed record MarketData(
     decimal AdjustedClose,
     long Volume,
     decimal DividendPerShare,
-    decimal SplitCoefficient)
+    decimal SplitCoefficient = 1.0m)
 {
     /// <summary>
     /// Adjusts the market data for a split event by applying the given split ratio and returns

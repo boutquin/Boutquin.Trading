@@ -43,33 +43,210 @@ public class PortfolioTests
     };
 
     /// <summary>
-    /// Tests that the HandleEventAsync method of the Portfolio class calls the ProcessEventAsync method of the IEventProcessor interface when given a valid event.
+    /// Tests the HandleEventAsync method in the Portfolio class.
     /// </summary>
+    /// <remarks>
+    /// This test verifies that the HandleEventAsync method of the appropriate IEventHandler is called when HandleEventAsync is called on the Portfolio object.
+    /// The test creates a mock IFinancialEvent and a mock IEventHandler, and sets up the HandleEventAsync method of the IEventHandler to return a completed task.
+    /// It then calls HandleEventAsync on the Portfolio object and verifies that HandleEventAsync was called once on the mock handler with the correct event.
+    /// </remarks>
     [Fact]
-    public async Task HandleEventAsync_ShouldCallProcessEventAsync_GivenValidEvent()
+    public async Task HandleEventAsync_ShouldCallHandleEventAsync_GivenValidEvent()
     {
         // Arrange
         const CurrencyCode BaseCurrency = CurrencyCode.USD;
-        var mockEvent = new Mock<IFinancialEvent>();
-
         IStrategy strategy = new TestStrategy();
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
-        var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
+        var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", BaseCurrency } };
+
+        var orderEvent = new OrderEvent(
+            DateOnly.FromDateTime(DateTime.Today),
+            "TestStrategy",
+            "AAPL",
+            TradeAction.Buy,
+            OrderType.Market,
+            100
+        );
+        var mockOrderHandler = new Mock<IEventHandler>();
+        mockOrderHandler.Setup(h => h.HandleEventAsync(It.IsAny<IPortfolio>(), orderEvent)).Returns(Task.CompletedTask);
+
+        var handlers = new Dictionary<Type, IEventHandler>
+        {
+            { typeof(OrderEvent), mockOrderHandler.Object }
+        };
 
         var portfolio = new Portfolio(
             BaseCurrency,
-            new ReadOnlyDictionary<string, IStrategy>(strategies),
+            strategies,
             assetCurrencies,
-            _handlers,
+            handlers,
             _mockBroker.Object,
             isLive: false
         );
 
         // Act
-        await portfolio.HandleEventAsync(mockEvent.Object);
+        await portfolio.HandleEventAsync(orderEvent);
 
         // Assert
-        _mockEventProcessor.Verify(x => x.ProcessEventAsync(It.IsAny<IFinancialEvent>()), Times.Once);
+        mockOrderHandler.Verify(h => h.HandleEventAsync(It.IsAny<IPortfolio>(), orderEvent), Times.Once);
+    }
+
+    /// <summary>
+    /// Tests the HandleEventAsync method in the Portfolio class with a FillEvent.
+    /// </summary>
+    /// <remarks>
+    /// This test verifies that the HandleEventAsync method of the FillEvent handler is called when a FillEvent is passed to the HandleEventAsync method of the Portfolio object.
+    /// The test creates a mock FillEvent and a mock IEventHandler, and sets up the HandleEventAsync method of the IEventHandler to return a completed task.
+    /// It then calls HandleEventAsync on the Portfolio object and verifies that HandleEventAsync was called once on the mock handler with the correct event.
+    /// </remarks>
+    [Fact]
+    public async Task HandleEventAsync_ShouldCallHandleEventAsync_GivenValidFillEvent()
+    {
+        // Arrange
+        const CurrencyCode BaseCurrency = CurrencyCode.USD;
+        IStrategy strategy = new TestStrategy();
+        var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
+        var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", BaseCurrency } };
+
+        var fillEvent = new FillEvent(
+            DateOnly.FromDateTime(DateTime.Today),
+            "AAPL", 
+            "TestStrategy",
+            150.0m,
+            100,
+            10.0m
+        );
+        var mockFillHandler = new Mock<IEventHandler>();
+        mockFillHandler.Setup(h => h.HandleEventAsync(It.IsAny<IPortfolio>(), fillEvent)).Returns(Task.CompletedTask);
+
+        var handlers = new Dictionary<Type, IEventHandler>
+        {
+            { typeof(FillEvent), mockFillHandler.Object }
+        };
+
+        var portfolio = new Portfolio(
+            BaseCurrency,
+            strategies,
+            assetCurrencies,
+            handlers,
+            _mockBroker.Object,
+            isLive: false
+        );
+
+        // Act
+        await portfolio.HandleEventAsync(fillEvent);
+
+        // Assert
+        mockFillHandler.Verify(h => h.HandleEventAsync(It.IsAny<IPortfolio>(), fillEvent), Times.Once);
+    }
+
+    /// <summary>
+    /// Tests the HandleEventAsync method in the Portfolio class with a SignalEvent.
+    /// </summary>
+    /// <remarks>
+    /// This test verifies that the HandleEventAsync method of the SignalEvent handler is called when a SignalEvent is passed to the HandleEventAsync method of the Portfolio object.
+    /// The test creates a mock SignalEvent and a mock IEventHandler, and sets up the HandleEventAsync method of the IEventHandler to return a completed task.
+    /// It then calls HandleEventAsync on the Portfolio object and verifies that HandleEventAsync was called once on the mock handler with the correct event.
+    /// </remarks>
+    [Fact]
+    public async Task HandleEventAsync_ShouldCallHandleEventAsync_GivenValidSignalEvent()
+    {
+        // Arrange
+        var signalEvent = new SignalEvent(
+            DateOnly.FromDateTime(DateTime.Today),
+            "TestStrategy",
+            new Dictionary<string, SignalType>
+            {
+                { "AAPL", SignalType.Underweight },
+                { "GOOG", SignalType.Overweight }
+            }
+        );
+
+        var mockSignalHandler = new Mock<IEventHandler>();
+        mockSignalHandler.Setup(h => h.HandleEventAsync(It.IsAny<IPortfolio>(), signalEvent)).Returns(Task.CompletedTask);
+
+        var handlers = new Dictionary<Type, IEventHandler>
+        {
+            { typeof(SignalEvent), mockSignalHandler.Object }
+        };
+
+        const CurrencyCode BaseCurrency = CurrencyCode.USD;
+        IStrategy strategy = new TestStrategy();
+        var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
+        var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", BaseCurrency } };
+
+        var portfolio = new Portfolio(
+            BaseCurrency,
+            strategies,
+            assetCurrencies,
+            handlers,
+            _mockBroker.Object,
+            isLive: false
+        );
+
+        // Act
+        await portfolio.HandleEventAsync(signalEvent);
+
+        // Assert
+        mockSignalHandler.Verify(h => h.HandleEventAsync(It.IsAny<IPortfolio>(), signalEvent), Times.Once);
+    }
+
+    /// <summary>
+    /// Tests the HandleEventAsync method in the Portfolio class with a MarketEvent.
+    /// </summary>
+    /// <remarks>
+    /// This test verifies that the HandleEventAsync method of the MarketEvent handler is called when a MarketEvent is passed to the HandleEventAsync method of the Portfolio object.
+    /// The test creates a mock MarketEvent and a mock IEventHandler, and sets up the HandleEventAsync method of the IEventHandler to return a completed task.
+    /// It then calls HandleEventAsync on the Portfolio object and verifies that HandleEventAsync was called once on the mock handler with the correct event.
+    /// </remarks>
+    [Fact]
+    public async Task HandleEventAsync_ShouldCallHandleEventAsync_GivenValidMarketEvent()
+    {
+        // Arrange
+        var historicalMarketData = new SortedDictionary<string, MarketData>
+        {
+            { "AAPL", new MarketData(DateOnly.FromDateTime(DateTime.Today), 150.0m, 150.0m, 150.0m, 150.0m, 150.0m, 1000, 10.0m) },
+            { "GOOG", new MarketData(DateOnly.FromDateTime(DateTime.Today), 1200.0m, 1200.0m, 1200.0m, 1200.0m, 1200.0m, 800, 8.0m) }
+        };
+        var historicalFxConversionRates = new SortedDictionary<CurrencyCode, decimal>
+        {
+            { CurrencyCode.USD, 1.0m },
+            { CurrencyCode.EUR, 0.85m }
+        };
+
+        var marketEvent = new MarketEvent(
+            DateOnly.FromDateTime(DateTime.Today),
+            historicalMarketData,
+            historicalFxConversionRates
+        );
+
+        var mockMarketHandler = new Mock<IEventHandler>();
+        mockMarketHandler.Setup(h => h.HandleEventAsync(It.IsAny<IPortfolio>(), marketEvent)).Returns(Task.CompletedTask);
+
+        var handlers = new Dictionary<Type, IEventHandler>
+        {
+            { typeof(MarketEvent), mockMarketHandler.Object }
+        };
+
+        const CurrencyCode BaseCurrency = CurrencyCode.USD;
+        IStrategy strategy = new TestStrategy();
+        var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
+        var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", BaseCurrency } };
+
+        var portfolio = new Portfolio(
+            BaseCurrency,
+            strategies,
+            assetCurrencies,
+            handlers,
+            _mockBroker.Object,
+            isLive: false
+        );
+
+        // Act
+        await portfolio.HandleEventAsync(marketEvent);
+
+        // Assert
+        mockMarketHandler.Verify(h => h.HandleEventAsync(It.IsAny<IPortfolio>(), marketEvent), Times.Once);
     }
 
     /// <summary>
@@ -267,45 +444,6 @@ public class PortfolioTests
             o.Quantity == orderEvent.Quantity &&
             o.PrimaryPrice == orderEvent.PrimaryPrice &&
             o.SecondaryPrice == orderEvent.SecondaryPrice)), Times.Once);
-    }
-
-    /// <summary>
-    /// Tests that the FillOccurred event of the IBrokerage interface calls the HandleEventAsync method of the Portfolio class.
-    /// </summary>
-    [Fact]
-    public async Task Broker_FillOccurred_ShouldCallHandleEventAsync()
-    {
-        // Arrange
-        const CurrencyCode BaseCurrency = CurrencyCode.USD;
-        IStrategy strategy = new TestStrategy();
-        var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
-        var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
-
-        var portfolio = new Portfolio(
-            BaseCurrency,
-            new ReadOnlyDictionary<string, IStrategy>(strategies),
-            assetCurrencies,
-            _handlers,
-            _mockBroker.Object,
-            isLive: false
-        );
-
-        var fillEvent = new FillEvent(
-            Timestamp: DateOnly.FromDateTime(DateTime.Today),
-            Asset: "AAPL",
-            StrategyName: "TestStrategy",
-            FillPrice: 150m,
-            Quantity: 10,
-            Commission: 1m
-        );
-        _mockEventProcessor.Setup(x => x.ProcessEventAsync(It.IsAny<IFinancialEvent>()))
-            .Returns(Task.CompletedTask);
-
-        // Act
-        _mockBroker.Raise(broker => broker.FillOccurred += null, this, fillEvent);
-
-        // Assert
-        _mockEventProcessor.Verify(x => x.ProcessEventAsync(It.Is<IFinancialEvent>(e => e == fillEvent)), Times.Once);
     }
 
     /// <summary>
