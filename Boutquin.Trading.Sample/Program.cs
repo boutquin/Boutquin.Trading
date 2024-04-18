@@ -28,13 +28,14 @@ using Boutquin.Trading.Domain.Enums;
 using Boutquin.Trading.Domain.Events;
 using Boutquin.Trading.Domain.Interfaces;
 using Boutquin.Trading.Sample;
+using Boutquin.Trading.Domain.ValueObjects;
 
 const CurrencyCode BaseCurrency = CurrencyCode.USD;
-var fixedAssetWeights = new Dictionary<string, decimal> { { "SPX", 1m } };
-var assetCurrencies = new Dictionary<string, CurrencyCode> { { "SPX", BaseCurrency } };
+var fixedAssetWeights = new Dictionary<Ticker, decimal> { { new Ticker("SPX"), 1m } };
+var assetCurrencies = new Dictionary<Ticker, CurrencyCode> { { new Ticker("SPX"), BaseCurrency } };
 var positionSizer = new FixedWeightPositionSizer(fixedAssetWeights, BaseCurrency);
 
-var options = Options.Create<MemoryDistributedCacheOptions>(new MemoryDistributedCacheOptions());
+var options = Options.Create(new MemoryDistributedCacheOptions());
 var dataFetcher = new AlphaVantageFetcher(new MemoryDistributedCache(options));
 var broker = new SimulatedBrokerage(dataFetcher);
 

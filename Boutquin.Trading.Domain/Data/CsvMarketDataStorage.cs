@@ -16,6 +16,8 @@ namespace Boutquin.Trading.Domain.Data;
 
 using System.Security;
 
+using ValueObjects;
+
 using Exceptions;
 
 using Helpers;
@@ -75,7 +77,7 @@ public sealed class CsvMarketDataStorage : IMarketDataStorage
     /// await storage.SaveMarketDataAsync(dataPoint);
     /// </code>
     /// </example>
-    public async Task SaveMarketDataAsync(KeyValuePair<DateOnly, SortedDictionary<string, MarketData>?> dataPoint)
+    public async Task SaveMarketDataAsync(KeyValuePair<DateOnly, SortedDictionary<Ticker, MarketData>?> dataPoint)
     {
         // Validate the input data point
         if (dataPoint.Value == null || dataPoint.Value.Count == 0)
@@ -88,7 +90,7 @@ public sealed class CsvMarketDataStorage : IMarketDataStorage
         {
             var symbol = symbolData.Key;
             var marketData = symbolData.Value;
-            var fileName = MarketDataFileNameHelper.GetCsvFileNameForMarketData(_dataDirectory, symbol);
+            var fileName = MarketDataFileNameHelper.GetCsvFileNameForMarketData(_dataDirectory, symbol.Value);
             var filePath = Path.Combine(_dataDirectory, fileName);
 
             try
@@ -132,7 +134,7 @@ public sealed class CsvMarketDataStorage : IMarketDataStorage
     /// await storage.SaveMarketDataAsync(dataPoints);
     /// </code>
     /// </example>
-    public async Task SaveMarketDataAsync(IEnumerable<KeyValuePair<DateOnly, SortedDictionary<string, MarketData>>> dataPoints)
+    public async Task SaveMarketDataAsync(IEnumerable<KeyValuePair<DateOnly, SortedDictionary<Ticker, MarketData>>> dataPoints)
     {
         if (dataPoints == null)
         {
@@ -147,7 +149,7 @@ public sealed class CsvMarketDataStorage : IMarketDataStorage
         foreach (var symbolDataPoints in groupedDataPoints)
         {
             var symbol = symbolDataPoints.Key;
-            var fileName = MarketDataFileNameHelper.GetCsvFileNameForMarketData(_dataDirectory, symbol);
+            var fileName = MarketDataFileNameHelper.GetCsvFileNameForMarketData(_dataDirectory, symbol.Value);
             var filePath = Path.Combine(_dataDirectory, fileName);
 
             try

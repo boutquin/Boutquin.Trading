@@ -14,6 +14,8 @@
 //
 namespace Boutquin.Trading.Domain.Events;
 
+using ValueObjects;
+
 using Interfaces;
 
 /// <summary>
@@ -38,7 +40,7 @@ using Interfaces;
 /// </param>
 public sealed record FillEvent(
     DateOnly Timestamp,
-    string Asset,
+    Ticker Asset,
     string StrategyName,
     decimal FillPrice,
     int Quantity,

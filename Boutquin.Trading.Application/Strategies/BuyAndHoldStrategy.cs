@@ -16,6 +16,7 @@ namespace Boutquin.Trading.Application.Strategies;
 
 using Boutquin.Domain.Exceptions;
 
+using Domain.ValueObjects;
 using Domain.Data;
 
 /// <summary>
@@ -38,7 +39,7 @@ public sealed class BuyAndHoldStrategy : IStrategy
     /// <exception cref="EmptyOrNullDictionaryException">Thrown when assets or cash dictionaries are empty or null.</exception>
     public BuyAndHoldStrategy(
         string name,
-        IReadOnlyDictionary<string, CurrencyCode> assets,
+        IReadOnlyDictionary<Ticker, CurrencyCode> assets,
         SortedDictionary<CurrencyCode, decimal> cash,
         DateOnly initialTimestamp,
         IOrderPriceCalculationStrategy orderPriceCalculationStrategy,
@@ -61,8 +62,8 @@ public sealed class BuyAndHoldStrategy : IStrategy
     }
 
     public string Name { get; }
-    public SortedDictionary<string, int> Positions { get; }
-    public IReadOnlyDictionary<string, CurrencyCode> Assets { get; }
+    public SortedDictionary<Ticker, int> Positions { get; }
+    public IReadOnlyDictionary<Ticker, CurrencyCode> Assets { get; }
     public SortedDictionary<CurrencyCode, decimal> Cash { get; }
     public IOrderPriceCalculationStrategy OrderPriceCalculationStrategy { get; }
     public IPositionSizer PositionSizer { get; }
@@ -82,7 +83,7 @@ public sealed class BuyAndHoldStrategy : IStrategy
     public SignalEvent GenerateSignals(
         DateOnly timestamp,
         CurrencyCode baseCurrency,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<string, MarketData>?> historicalMarketData,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Ticker, MarketData>?> historicalMarketData,
         IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
     {
         // Validate parameters
@@ -91,7 +92,7 @@ public sealed class BuyAndHoldStrategy : IStrategy
         Guard.AgainstEmptyOrNullReadOnlyDictionary(() => historicalFxConversionRates); // Throws EmptyOrNullDictionaryException
 
         // Create a new SignalEvent instance for the given timestamp
-        var signalEvents = new SortedDictionary<string, SignalType>();
+        var signalEvents = new SortedDictionary<Ticker, SignalType>();
 
         // Check if it's the initial timestamp
         if (timestamp != InitialTimestamp)

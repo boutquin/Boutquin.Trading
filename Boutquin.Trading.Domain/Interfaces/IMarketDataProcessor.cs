@@ -14,6 +14,8 @@
 //
 namespace Boutquin.Trading.Domain.Interfaces;
 
+using ValueObjects;
+
 /// <summary>
 /// The IMarketDataProcessor interface provides a contract for processing and storing market data.
 /// </summary>
@@ -26,5 +28,5 @@ public interface IMarketDataProcessor
     /// <returns>A Task representing the asynchronous operation.</returns>
     /// <exception cref="System.ArgumentNullException">Thrown if symbols is null or empty.</exception>
     /// <exception cref="MarketDataProcessingException">Thrown if an error occurs while processing the market data.</exception>
-    Task ProcessAndStoreMarketDataAsync(IEnumerable<string> symbols);
+    Task ProcessAndStoreMarketDataAsync(IEnumerable<Ticker> symbols);
 }

@@ -14,6 +14,8 @@
 //
 namespace Boutquin.Trading.Domain.Interfaces;
 
+using ValueObjects;
+
 using Exceptions;
 
 /// <summary>
@@ -31,5 +33,5 @@ public interface ISymbolReader
     /// <exception cref="SymbolReaderException">
     /// Thrown when an error occurs while reading symbols from the data source.
     /// </exception>
-    Task<IEnumerable<string>> ReadSymbolsAsync();
+    Task<IEnumerable<Ticker>> ReadSymbolsAsync();
 }

@@ -14,6 +14,8 @@
 //
 namespace Boutquin.Trading.Domain.Events;
 
+using ValueObjects;
+
 using Enums;
 
 using Interfaces;
@@ -42,14 +44,18 @@ using Interfaces;
 /// <param name="Quantity">The quantity of the financial asset to be traded,
 /// represented as an integer value.
 /// </param>
-/// <param name="Price">The price at which the order should be executed,
+/// <param name="PrimaryPrice">The primary price at which the order should be executed,
 /// represented as a decimal value. This parameter is only relevant for
-/// Limit, Stop, and StopLimit orders.
+/// Limit, Stop, and StopLimit orders. This represents the primary price at which the order should be executed.
+/// </param>
+/// <param name="SecondaryPrice">The secondary price at which the order should be executed,
+/// represented as a decimal value. This parameter is only relevant for
+/// StopLimit orders. This represents the secondary price at which the order should be executed.
 /// </param>
 public sealed record Order(
     DateOnly Timestamp,
     string StrategyName,
-    string Asset,
+    Ticker Asset,
     TradeAction TradeAction,
     OrderType OrderType,
     int Quantity,

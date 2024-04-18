@@ -14,6 +14,8 @@
 //
 namespace Boutquin.Trading.Domain.Interfaces;
 
+using ValueObjects;
+
 using Data;
 
 using Enums;
@@ -38,9 +40,10 @@ public interface IOrderPriceCalculationStrategy
     /// <param name="tradeAction">The trade action (buy or sell) for which the order prices are to be calculated.</param>
     /// <param name="historicalData">The historical market data, organized as a dictionary with timestamps as keys and dictionaries of asset market data as values.</param>
     /// <returns>A tuple containing the order type, primary price, and secondary price for the calculated order.</returns>
-    (OrderType OrderType, decimal PrimaryPrice, decimal SecondaryPrice) CalculateOrderPrices(
-        DateOnly timestamp,
-        string asset,
-        TradeAction tradeAction,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<string, MarketData>?> historicalData);
+    (OrderType OrderType, decimal PrimaryPrice, decimal SecondaryPrice) 
+        CalculateOrderPrices(
+            DateOnly timestamp,
+            Ticker asset,
+            TradeAction tradeAction,
+            IReadOnlyDictionary<DateOnly, SortedDictionary<Ticker, MarketData>?> historicalData);
 }

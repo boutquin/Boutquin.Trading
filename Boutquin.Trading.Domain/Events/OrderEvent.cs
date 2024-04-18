@@ -14,6 +14,8 @@
 //
 namespace Boutquin.Trading.Domain.Events;
 
+using ValueObjects;
+
 using Enums;
 
 using Interfaces;
@@ -49,7 +51,7 @@ using Interfaces;
 public sealed record OrderEvent(
     DateOnly Timestamp,
     string StrategyName,
-    string Asset,
+    Ticker Asset,
     TradeAction TradeAction,
     OrderType OrderType,
     int Quantity,

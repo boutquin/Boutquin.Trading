@@ -19,6 +19,7 @@ using System.Text.Json;
 
 using Boutquin.Domain.Converters;
 using Boutquin.Domain.Helpers;
+using Domain.ValueObjects;
 
 using Domain.Data;
 using Domain.Enums;
@@ -134,7 +135,7 @@ public sealed class AlphaVantageFetcher : IMarketDataFetcher
     /// }
     /// </code>
     /// </example>
-    public async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<string, MarketData>?>> FetchMarketDataAsync(IEnumerable<string> assets)
+    public async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<Ticker, MarketData>?>> FetchMarketDataAsync(IEnumerable<Ticker> assets)
     {
         // Validate the input assets list
         Guard.AgainstEmptyOrNullEnumerable(() => assets); // Throws ArgumentException
@@ -187,7 +188,7 @@ public sealed class AlphaVantageFetcher : IMarketDataFetcher
                 }
 
                 // Deserialize, yield, and cache the JSON time series data
-                var marketData = new SortedDictionary<DateOnly, SortedDictionary<string, MarketData>?>();
+                var marketData = new SortedDictionary<DateOnly, SortedDictionary<Ticker, MarketData>?>();
 
                 // Deserialize, accumulate, and cache the JSON time series data
                 var accumulatedMarketData = DeserializeAndYieldMarketDataFromApi(timeSeries, asset, options);
@@ -315,9 +316,9 @@ public sealed class AlphaVantageFetcher : IMarketDataFetcher
     /// </summary>
     /// <param name="asset">The asset symbol for which the request URI is being built.</param>
     /// <returns>A string representing the request URI.</returns>
-    private string BuildRequestUri(string asset)
+    private string BuildRequestUri(Ticker asset)
     {
-        return $"{_apiEndpoint}?function=TIME_SERIES_DAILY_ADJUSTED&symbol={asset}&apikey={_apiKey}&outputsize=full&datatype=json";
+        return $"{_apiEndpoint}?function=TIME_SERIES_DAILY_ADJUSTED&symbol={asset.Value}&apikey={_apiKey}&outputsize=full&datatype=json";
     }
 
     /// <summary>
@@ -347,13 +348,13 @@ public sealed class AlphaVantageFetcher : IMarketDataFetcher
     /// The key is the date of the data point, and the value is a sorted dictionary containing the asset symbol and
     /// its corresponding market data.
     /// </returns>
-    private async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<string, MarketData>?>> DeserializeAndYieldCachedMarketData(
-        string cachedData, string asset, JsonSerializerOptions? options)
+    private async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<Ticker, MarketData>?>> DeserializeAndYieldCachedMarketData(
+        string cachedData, Ticker asset, JsonSerializerOptions? options)
     {
         var cachedMarketData = JsonSerializer.Deserialize<SortedDictionary<DateOnly, MarketData>>(cachedData, options);
         foreach (var dataPoint in cachedMarketData)
         {
-            yield return new KeyValuePair<DateOnly, SortedDictionary<string, MarketData>?>(dataPoint.Key, new SortedDictionary<string, MarketData> { { asset, dataPoint.Value } });
+            yield return new KeyValuePair<DateOnly, SortedDictionary<Ticker, MarketData>?>(dataPoint.Key, new SortedDictionary<Ticker, MarketData> { { asset, dataPoint.Value } });
         }
     }
 
@@ -372,8 +373,8 @@ public sealed class AlphaVantageFetcher : IMarketDataFetcher
     /// This method catches any FormatException or MarketDataRetrievalException and logs the error (if a logger is available)
     /// while continuing to process the remaining data points.
     /// </remarks>
-    private IEnumerable<KeyValuePair<DateOnly, SortedDictionary<string, MarketData>?>> DeserializeAndYieldMarketDataFromApi(
-        JsonElement timeSeries, string asset, JsonSerializerOptions? options)
+    private IEnumerable<KeyValuePair<DateOnly, SortedDictionary<Ticker, MarketData>?>> DeserializeAndYieldMarketDataFromApi(
+        JsonElement timeSeries, Ticker asset, JsonSerializerOptions? options)
     {
         var marketData = new SortedDictionary<DateOnly, MarketData>();
         foreach (var entry in timeSeries.EnumerateObject())
@@ -385,7 +386,7 @@ public sealed class AlphaVantageFetcher : IMarketDataFetcher
             if (dataPoint != null)
             {
                 marketData.Add(date, dataPoint);
-                yield return new KeyValuePair<DateOnly, SortedDictionary<string, MarketData>?>(date, new SortedDictionary<string, MarketData> { { asset, dataPoint } });
+                yield return new KeyValuePair<DateOnly, SortedDictionary<Ticker, MarketData>?>(date, new SortedDictionary<Ticker, MarketData> { { asset, dataPoint } });
             }
         }
     }

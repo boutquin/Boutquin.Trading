@@ -15,13 +15,15 @@
 namespace Boutquin.Trading.Sample;
 
 using Boutquin.Trading.Domain.Data;
+using Boutquin.Trading.Domain.ValueObjects;
+
 using Domain.Enums;
 using Domain.Interfaces;
 
 internal class ClosePriceOrderPriceCalculationStrategy : IOrderPriceCalculationStrategy
 {
     public (OrderType OrderType, decimal PrimaryPrice, decimal SecondaryPrice) CalculateOrderPrices(DateOnly timestamp,
-        string asset, TradeAction tradeAction, IReadOnlyDictionary<DateOnly, SortedDictionary<string, MarketData>?> historicalData)
+        Ticker asset, TradeAction tradeAction, IReadOnlyDictionary<DateOnly, SortedDictionary<Ticker, MarketData>?> historicalData)
     {
         throw new NotImplementedException();
     }

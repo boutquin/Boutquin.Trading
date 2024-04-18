@@ -16,6 +16,8 @@ namespace Boutquin.Trading.Domain.Helpers;
 
 using System.Security;
 
+using ValueObjects;
+
 using Exceptions;
 
 using Interfaces;
@@ -58,18 +60,18 @@ public sealed class CsvSymbolReader : ISymbolReader
     /// </summary>
     /// <returns>A task representing the asynchronous operation that returns an IEnumerable of symbols.</returns>
     /// <exception cref="SymbolReaderException">Thrown when an error occurs while reading the CSV file.</exception>
-    public async Task<IEnumerable<string>> ReadSymbolsAsync()
+    public async Task<IEnumerable<Ticker>> ReadSymbolsAsync()
     {
         try
         {
-            var symbols = new List<string>();
+            var symbols = new List<Ticker>();
 
             await using var fileStream = File.OpenRead(_filePath);
             using var streamReader = new StreamReader(fileStream);
 
             while (await streamReader.ReadLineAsync() is { } line)
             {
-                symbols.Add(line);
+                symbols.Add(new Ticker(line));
             }
 
             return symbols;

@@ -16,6 +16,8 @@ namespace Boutquin.Trading.Domain.Interfaces;
 
 using System.Collections.Immutable;
 
+using ValueObjects;
+
 using Data;
 
 using Enums;
@@ -42,6 +44,6 @@ public interface ICapitalAllocationStrategy
     /// </remarks>
     IReadOnlyDictionary<string, SortedDictionary<CurrencyCode, decimal>> AllocateCapital(
         ImmutableList<IStrategy> strategies,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<string, MarketData>?> historicalMarketData,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Ticker, MarketData>?> historicalMarketData,
         IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates);
 }

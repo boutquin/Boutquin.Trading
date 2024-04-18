@@ -18,6 +18,8 @@ using Data;
 
 using Enums;
 
+using ValueObjects;
+
 /// <summary>
 /// Represents the strategy for determining the position size of assets.
 /// </summary>
@@ -38,10 +40,10 @@ public interface IPositionSizer
     /// <param name="historicalMarketData">A read-only dictionary containing the historical market data for the assets.</param>
     /// <param name="historicalFxConversionRates">A read-only dictionary containing the historical FX conversion rates.</param>
     /// <returns>A dictionary containing the position sizes for all assets in the strategy.</returns>
-    IReadOnlyDictionary<string, int> ComputePositionSizes(
+    IReadOnlyDictionary<Ticker, int> ComputePositionSizes(
         DateOnly timestamp,
-        IReadOnlyDictionary<string, SignalType> signalType,
+        IReadOnlyDictionary<Ticker, SignalType> signalType,
         IStrategy strategy,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<string, MarketData>?> historicalMarketData,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Ticker, MarketData>?> historicalMarketData,
         IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates);
 }

@@ -14,6 +14,8 @@
 //
 namespace Boutquin.Trading.Domain.Data;
 
+using ValueObjects;
+
 using Enums;
 
 using Exceptions;
@@ -59,8 +61,8 @@ public sealed class CsvMarketDataFetcher : IMarketDataFetcher
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<string, MarketData>?>> FetchMarketDataAsync(
-        IEnumerable<string> symbols)
+    public async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<Ticker, MarketData>?>> FetchMarketDataAsync(
+        IEnumerable<Ticker> symbols)
     {
         if (symbols == null || !symbols.Any())
         {
@@ -69,7 +71,7 @@ public sealed class CsvMarketDataFetcher : IMarketDataFetcher
 
         foreach (var symbol in symbols)
         {
-            var fileName = MarketDataFileNameHelper.GetCsvFileNameForMarketData(_dataDirectory, symbol);
+            var fileName = MarketDataFileNameHelper.GetCsvFileNameForMarketData(_dataDirectory, symbol.Value);
 
             if (!File.Exists(fileName))
             {
@@ -86,7 +88,7 @@ public sealed class CsvMarketDataFetcher : IMarketDataFetcher
 
             while (await streamReader.ReadLineAsync() is { } line)
             {
-                KeyValuePair<DateOnly, SortedDictionary<string, MarketData>?>? dataPoint = null;
+                KeyValuePair<DateOnly, SortedDictionary<Ticker, MarketData>?>? dataPoint = null;
                 Exception? dataException = null;
 
                 try
@@ -107,8 +109,8 @@ public sealed class CsvMarketDataFetcher : IMarketDataFetcher
                         dividendPerShare, splitCoefficient);
                     marketData[date] = marketDataPoint;
 
-                    dataPoint = new KeyValuePair<DateOnly, SortedDictionary<string, MarketData>>(date,
-                        new SortedDictionary<string, MarketData> { { symbol, marketDataPoint } });
+                    dataPoint = new KeyValuePair<DateOnly, SortedDictionary<Ticker, MarketData>>(date,
+                        new SortedDictionary<Ticker, MarketData> { { symbol, marketDataPoint } });
                 }
                 catch (FormatException ex)
                 {

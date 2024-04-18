@@ -14,7 +14,7 @@
 //
 namespace Boutquin.Trading.Application.EventHandlers;
 
-using Boutquin.Trading.Domain.Interfaces;
+using Domain.Interfaces;
 
 /// <summary>
 /// The OrderEventHandler class is an implementation of the IEventHandler interface that handles OrderEvent objects.

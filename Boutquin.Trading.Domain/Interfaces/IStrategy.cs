@@ -14,6 +14,8 @@
 //
 namespace Boutquin.Trading.Domain.Interfaces;
 
+using ValueObjects;
+
 using Data;
 
 using Enums;
@@ -41,13 +43,13 @@ public interface IStrategy
     /// dictionary where the key is the asset symbol and the value is the
     /// quantity of the asset held.
     /// </summary>
-    SortedDictionary<string, int> Positions { get; }
+    SortedDictionary<Ticker, int> Positions { get; }
 
     /// <summary>
     /// Gets a read-only dictionary of assets and their associated currency codes.
     /// The key is the asset symbol and the value is the asset's currency code.
     /// </summary>
-    IReadOnlyDictionary<string, CurrencyCode> Assets { get; }
+    IReadOnlyDictionary<Ticker, CurrencyCode> Assets { get; }
 
     /// <summary>
     /// Gets the available cash for this strategy as a sorted dictionary, where the key
@@ -96,7 +98,7 @@ public interface IStrategy
     SignalEvent GenerateSignals(
         DateOnly timestamp,
         CurrencyCode baseCurrency,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<string, MarketData>?> historicalMarketData,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Ticker, MarketData>?> historicalMarketData,
         IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates);
 
     /// <summary>
@@ -118,7 +120,7 @@ public interface IStrategy
     decimal ComputeTotalValue(
         DateOnly timestamp,
         CurrencyCode baseCurrency,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<string, MarketData>?> historicalMarketData,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Ticker, MarketData>?> historicalMarketData,
         IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
     {
         // Validate parameters
@@ -224,10 +226,10 @@ public interface IStrategy
     /// The asset parameter must be a valid asset symbol, and the quantity should reflect the net change in the strategy's position quantity as a result of the trade.
     /// </remarks>
     /// <exception cref="System.ArgumentException">Thrown when a null, empty, or whitespace string is provided for the <paramref name="asset"/>.</exception>
-    void UpdatePositions(string asset, int quantity)
+    void UpdatePositions(Ticker asset, int quantity)
     {
         // Validate parameters
-        Guard.AgainstNullOrWhiteSpace(() => asset); // Throws ArgumentException
+        Guard.AgainstNullOrWhiteSpace(() => asset.Value); // Throws ArgumentException
 
         if (!Positions.TryAdd(asset, quantity))
         {
@@ -247,10 +249,10 @@ public interface IStrategy
     /// The asset parameter must be a valid asset symbol, and the quantity should reflect the net change in the strategy's position quantity as a result of the trade.
     /// </remarks>
     /// <exception cref="System.ArgumentException">Thrown when a null, empty, or whitespace string is provided for the <paramref name="asset"/>.</exception>
-    int GetPositionQuantity(string asset)
+    int GetPositionQuantity(Ticker asset)
     {
         // Validate parameters
-        Guard.AgainstNullOrWhiteSpace(() => asset); // Throws ArgumentException
+        Guard.AgainstNullOrWhiteSpace(() => asset.Value); // Throws ArgumentException
 
         return Positions.GetValueOrDefault(asset, 0);
     }

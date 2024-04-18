@@ -14,6 +14,8 @@
 //
 namespace Boutquin.Trading.Domain.Events;
 
+using ValueObjects;
+
 using Data;
 
 using Enums;
@@ -29,6 +31,6 @@ using Interfaces;
 /// <param name="HistoricalFxConversionRates">A sorted dictionary containing the historical foreign exchange (FX) conversion rates for multiple currency pairs, with DateOnly as keys and a SortedDictionary of CurrencyCode and decimal pairs as values.</param>
 public sealed record MarketEvent(
     DateOnly Timestamp,
-    SortedDictionary<string, MarketData>? HistoricalMarketData,
+    SortedDictionary<Ticker, MarketData>? HistoricalMarketData,
     SortedDictionary<CurrencyCode, decimal> HistoricalFxConversionRates) : IFinancialEvent;
 

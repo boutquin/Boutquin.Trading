@@ -19,6 +19,8 @@ using Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
+using ValueObjects;
+
 /// <summary>
 /// The MarketDataProcessor is responsible for fetching and storing market data.
 /// It uses the provided fetcher and storage implementations to perform these tasks.
@@ -52,7 +54,7 @@ public sealed class MarketDataProcessor(
     /// </summary>
     /// <param name="symbols">The symbols to fetch and store market data for.</param>
     /// <exception cref="ArgumentException">Thrown when no symbols are provided.</exception>
-    public async Task ProcessAndStoreMarketDataAsync(IEnumerable<string> symbols)
+    public async Task ProcessAndStoreMarketDataAsync(IEnumerable<Ticker> symbols)
     {
         if (symbols == null || !symbols.Any())
         {

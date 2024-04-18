@@ -14,6 +14,8 @@
 //
 namespace Boutquin.Trading.Domain.Events;
 
+using ValueObjects;
+
 using Enums;
 
 using Interfaces;
@@ -36,5 +38,5 @@ using Interfaces;
 public sealed record SignalEvent(
     DateOnly Timestamp,
     string StrategyName,
-    IReadOnlyDictionary<string, SignalType> Signals
+    IReadOnlyDictionary<Ticker, SignalType> Signals
 ) : IFinancialEvent;

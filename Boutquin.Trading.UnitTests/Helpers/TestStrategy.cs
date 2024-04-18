@@ -14,6 +14,8 @@
 //
 namespace Boutquin.Trading.Tests.UnitTests.Helpers;
 
+using Boutquin.Trading.Domain.ValueObjects;
+
 using Trading.Domain.Data;
 using Trading.Domain.Enums;
 using Trading.Domain.Events;
@@ -32,12 +34,12 @@ public class TestStrategy : IStrategy
     /// <summary>
     /// Gets the positions held in the strategy.
     /// </summary>
-    public SortedDictionary<string, int> Positions { get; init; } = [];
+    public SortedDictionary<Ticker, int> Positions { get; init; } = [];
 
     /// <summary>
     /// Gets or sets the assets involved in the strategy.
     /// </summary>
-    public IReadOnlyDictionary<string, CurrencyCode> Assets { get; set; } = new Dictionary<string, CurrencyCode>();
+    public IReadOnlyDictionary<Ticker, CurrencyCode> Assets { get; set; } = new Dictionary<Ticker, CurrencyCode>();
 
     /// <summary>
     /// Gets the cash held in different currencies.
@@ -62,7 +64,7 @@ public class TestStrategy : IStrategy
     /// <param name="historicalMarketData">The historical market data.</param>
     /// <param name="historicalFxConversionRates">The historical foreign exchange conversion rates.</param>
     /// <returns>A signal event.</returns>
-    public SignalEvent GenerateSignals(DateOnly timestamp, CurrencyCode baseCurrency, IReadOnlyDictionary<DateOnly, SortedDictionary<string, MarketData>?> historicalMarketData, IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
+    public SignalEvent GenerateSignals(DateOnly timestamp, CurrencyCode baseCurrency, IReadOnlyDictionary<DateOnly, SortedDictionary<Ticker, MarketData>?> historicalMarketData, IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
     {
         throw new NotImplementedException();
     }
