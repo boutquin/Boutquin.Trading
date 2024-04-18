@@ -39,6 +39,9 @@ public sealed class OrderEventHandler : IEventHandler
     /// Handles the provided OrderEvent object.
     /// </summary>
     /// <param name="eventObj">The OrderEvent object to handle.</param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when portfolio is null.
+    /// </exception>
     /// <exception cref="ArgumentException">Thrown when eventObj is not a OrderEvent object.</exception>
     /// <returns>A Task representing the asynchronous operation.</returns>
     /// <remarks>

@@ -39,6 +39,9 @@ public sealed class FillEventHandler : IEventHandler
     /// Handles the provided FillEvent object.
     /// </summary>
     /// <param name="eventObj">The FillEvent object to handle.</param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when portfolio is null.
+    /// </exception>
     /// <exception cref="ArgumentException">Thrown when eventObj is not a FillEvent object.</exception>
     /// <returns>A Task representing the asynchronous operation.</returns>
     /// <remarks>

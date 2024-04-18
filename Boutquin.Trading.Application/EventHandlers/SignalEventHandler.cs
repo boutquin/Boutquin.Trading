@@ -40,7 +40,12 @@ public sealed class SignalEventHandler : IEventHandler
     /// Handles the provided SignalEvent object.
     /// </summary>
     /// <param name="eventObj">The SignalEvent object to handle.</param>
-    /// <exception cref="ArgumentException">Thrown when eventObj is not a SignalEvent object.</exception>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when portfolio is null.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when eventObj is not a SignalEvent object.
+    /// </exception>
     /// <returns>A Task representing the asynchronous operation.</returns>
     /// <remarks>
     /// The HandleEventAsync method computes the position sizes for the assets based on the signals,

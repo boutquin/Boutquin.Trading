@@ -48,7 +48,15 @@ public class SimulatedBrokerage : IBrokerage
     /// For Limit, Stop, and StopLimit orders, additional checks are performed.
     /// </summary>
     /// <param name="order">The order to be executed.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains a boolean value that is true if the order was successfully processed; otherwise, false.</returns>
+    /// <returns>A task that represents the asynchronous operation. 
+    /// The task result contains a boolean value that is true if the 
+    /// order was successfully processed; otherwise, false.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when the order is null.
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when the order type is not recognized.
+    /// </exception>
     public async Task<bool> SubmitOrderAsync(Order order)
     {
         Guard.AgainstNull(() => order); // Throws ArgumentNullException

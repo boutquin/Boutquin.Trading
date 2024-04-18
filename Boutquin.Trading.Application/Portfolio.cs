@@ -62,8 +62,8 @@ public sealed class Portfolio : IPortfolio
     /// A dictionary containing the asset-currency associations.
     /// Each entry is a key-value pair where the key is a unique identifier for an asset and the value is the currency of the asset.
     /// </param>
-    /// <param name="eventProcessor">
-    /// An instance of the <see cref="IEventProcessor"/> interface to handle the processing of events.
+    /// <param name="handlers">
+    /// A dictionary containing the event handlers to be used by the portfolio.
     /// </param>
     /// <param name="broker">
     /// An instance of the <see cref="IBrokerage"/> interface to handle the execution of orders.

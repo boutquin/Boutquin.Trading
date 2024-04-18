@@ -14,6 +14,4 @@
 //
 namespace Boutquin.Trading.Domain.ValueObjects;
 
-public sealed record Asset(string Value)
-{
-}
+public readonly record struct Ticker(string Value);

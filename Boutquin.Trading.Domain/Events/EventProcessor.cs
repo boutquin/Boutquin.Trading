@@ -45,7 +45,9 @@ public sealed class EventProcessor(IPortfolio portfolio, IReadOnlyDictionary<Typ
     /// Processes the provided financial event.
     /// </summary>
     /// <param name="eventObj">The financial event to process.</param>
-    /// <exception cref="NotSupportedException">Thrown when there is no handler for the provided event type.</exception>
+    /// <exception cref="NotSupportedException">
+    /// Thrown when there is no handler for the provided event type.
+    /// </exception>
     /// <returns>A Task representing the asynchronous operation.</returns>
     public async Task ProcessEventAsync(IFinancialEvent eventObj)
     {
