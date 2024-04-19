@@ -40,7 +40,7 @@ using Interfaces;
 /// </param>
 public sealed record FillEvent(
     DateOnly Timestamp,
-    Ticker Asset,
+    Asset Asset,
     string StrategyName,
     decimal FillPrice,
     int Quantity,

@@ -60,18 +60,18 @@ public sealed class CsvSymbolReader : ISymbolReader
     /// </summary>
     /// <returns>A task representing the asynchronous operation that returns an IEnumerable of symbols.</returns>
     /// <exception cref="SymbolReaderException">Thrown when an error occurs while reading the CSV file.</exception>
-    public async Task<IEnumerable<Ticker>> ReadSymbolsAsync()
+    public async Task<IEnumerable<ValueObjects.Asset>> ReadSymbolsAsync()
     {
         try
         {
-            var symbols = new List<Ticker>();
+            var symbols = new List<ValueObjects.Asset>();
 
             await using var fileStream = File.OpenRead(_filePath);
             using var streamReader = new StreamReader(fileStream);
 
             while (await streamReader.ReadLineAsync() is { } line)
             {
-                symbols.Add(new Ticker(line));
+                symbols.Add(new ValueObjects.Asset(line));
             }
 
             return symbols;

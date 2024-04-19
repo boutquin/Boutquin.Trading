@@ -20,6 +20,7 @@ using Trading.Application.Strategies;
 using Trading.Domain.Data;
 using Trading.Domain.Enums;
 using Trading.Domain.Interfaces;
+using Trading.Domain.ValueObjects;
 
 /// <summary>
 /// Represents a set of tests for the RebalancingBuyAndHoldStrategy class.
@@ -27,7 +28,7 @@ using Trading.Domain.Interfaces;
 public sealed class RebalancingBuyAndHoldStrategyTests
 {
     private readonly string _name = "TestStrategy";
-    private readonly IReadOnlyDictionary<string, CurrencyCode> _assets = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
+    private readonly IReadOnlyDictionary<Asset, CurrencyCode> _assets = new Dictionary<Asset, CurrencyCode> { { new Asset("AAPL"), CurrencyCode.USD } };
     private readonly SortedDictionary<CurrencyCode, decimal> _cash = new() { { CurrencyCode.USD, 10000m } };
     private readonly Mock<IOrderPriceCalculationStrategy> _orderPriceCalculationStrategyMock = new();
     private readonly Mock<IPositionSizer> _positionSizerMock = new();
@@ -69,9 +70,9 @@ public sealed class RebalancingBuyAndHoldStrategyTests
     {
         // Arrange
         var strategy = new RebalancingBuyAndHoldStrategy(_name, _assets, _cash, _orderPriceCalculationStrategyMock.Object, _positionSizerMock.Object, RebalancingFrequency.Daily);
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<string, MarketData>?>
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>?>
         {
-            { _initialTimestamp, new SortedDictionary<string, MarketData> { { "AAPL", _marketData } } }
+            { _initialTimestamp, new SortedDictionary<Asset, MarketData> { { new Asset("AAPL"), _marketData } } }
         };
         var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
         {
@@ -89,8 +90,8 @@ public sealed class RebalancingBuyAndHoldStrategyTests
         signalEvent.Should().NotBeNull();
         signalEvent.Timestamp.Should().Be(_initialTimestamp);
         signalEvent.StrategyName.Should().Be(_name);
-        signalEvent.Signals.Should().ContainKey("AAPL");
-        signalEvent.Signals["AAPL"].Should().Be(SignalType.Rebalance);
+        signalEvent.Signals.Should().ContainKey(new Asset("AAPL"));
+        signalEvent.Signals[new Asset("AAPL")].Should().Be(SignalType.Rebalance);
     }
 
     /// <summary>
@@ -101,9 +102,9 @@ public sealed class RebalancingBuyAndHoldStrategyTests
     {
         // Arrange
         var strategy = new RebalancingBuyAndHoldStrategy(_name, _assets, _cash, _orderPriceCalculationStrategyMock.Object, _positionSizerMock.Object, RebalancingFrequency.Monthly);
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<string, MarketData>?>
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>?>
         {
-            { _initialTimestamp, new SortedDictionary<string, MarketData> { { "AAPL", _marketData } } }
+            { _initialTimestamp, new SortedDictionary<Asset, MarketData> { { new Asset("AAPL"), _marketData } } }
         };
         var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
         {
@@ -137,10 +138,10 @@ public sealed class RebalancingBuyAndHoldStrategyTests
     {
         // Arrange
         var strategy = new RebalancingBuyAndHoldStrategy(_name, _assets, _cash, _orderPriceCalculationStrategyMock.Object, _positionSizerMock.Object, RebalancingFrequency.Monthly);
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<string, MarketData>?>
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>?>
         {
-            { _initialTimestamp, new SortedDictionary<string, MarketData> { { "AAPL", _marketData } } },
-            { _initialTimestamp.AddMonths(1), new SortedDictionary<string, MarketData> { { "AAPL", _marketData } } }
+            { _initialTimestamp, new SortedDictionary<Asset, MarketData> { { new Asset("AAPL"), _marketData } } },
+            { _initialTimestamp.AddMonths(1), new SortedDictionary<Asset, MarketData> { { new Asset("AAPL"), _marketData } } }
         };
         var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
         {
@@ -164,13 +165,13 @@ public sealed class RebalancingBuyAndHoldStrategyTests
         firstSignalEvent.Should().NotBeNull();
         firstSignalEvent.Timestamp.Should().Be(_initialTimestamp);
         firstSignalEvent.StrategyName.Should().Be(_name);
-        firstSignalEvent.Signals.Should().ContainKey("AAPL");
-        firstSignalEvent.Signals["AAPL"].Should().Be(SignalType.Rebalance);
+        firstSignalEvent.Signals.Should().ContainKey(new Asset("AAPL"));
+        firstSignalEvent.Signals[new Asset("AAPL")].Should().Be(SignalType.Rebalance);
 
         secondSignalEvent.Should().NotBeNull();
         secondSignalEvent.Timestamp.Should().Be(_initialTimestamp.AddMonths(1));
         secondSignalEvent.StrategyName.Should().Be(_name);
-        secondSignalEvent.Signals.Should().ContainKey("AAPL");
-        secondSignalEvent.Signals["AAPL"].Should().Be(SignalType.Rebalance);
+        secondSignalEvent.Signals.Should().ContainKey(new Asset("AAPL"));
+        secondSignalEvent.Signals[new Asset("AAPL")].Should().Be(SignalType.Rebalance);
     }
 }

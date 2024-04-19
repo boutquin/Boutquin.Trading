@@ -30,7 +30,7 @@ public interface IMarketDataStorage
     /// <returns>A Task representing the asynchronous operation.</returns>
     /// <exception cref="System.ArgumentNullException">Thrown if dataPoint is null.</exception>
     /// <exception cref="System.IO.IOException">Thrown if an error occurs while saving the market data.</exception>
-    Task SaveMarketDataAsync(KeyValuePair<DateOnly, SortedDictionary<Ticker, MarketData>?> dataPoint);
+    Task SaveMarketDataAsync(KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>?> dataPoint);
 
     /// <summary>
     /// Asynchronously saves multiple market data points.
@@ -39,5 +39,5 @@ public interface IMarketDataStorage
     /// <returns>A Task representing the asynchronous operation.</returns>
     /// <exception cref="System.ArgumentNullException">Thrown if dataPoints is null.</exception>
     /// <exception cref="System.IO.IOException">Thrown if an error occurs while saving the market data.</exception>
-    Task SaveMarketDataAsync(IEnumerable<KeyValuePair<DateOnly, SortedDictionary<Ticker, MarketData>>> dataPoints);
+    Task SaveMarketDataAsync(IEnumerable<KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>> dataPoints);
 }

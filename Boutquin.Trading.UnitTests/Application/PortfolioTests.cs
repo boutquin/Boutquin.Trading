@@ -26,6 +26,7 @@ using Trading.Domain.Data;
 using Trading.Domain.Enums;
 using Trading.Domain.Events;
 using Trading.Domain.Interfaces;
+using Trading.Domain.ValueObjects;
 
 /// <summary>
 /// Represents a set of tests for the Portfolio class.
@@ -57,12 +58,12 @@ public class PortfolioTests
         const CurrencyCode BaseCurrency = CurrencyCode.USD;
         IStrategy strategy = new TestStrategy();
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
-        var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", BaseCurrency } };
+        var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { new Asset("AAPL"), BaseCurrency } };
 
         var orderEvent = new OrderEvent(
             DateOnly.FromDateTime(DateTime.Today),
             "TestStrategy",
-            "AAPL",
+            new Asset("AAPL"),
             TradeAction.Buy,
             OrderType.Market,
             100
@@ -106,11 +107,11 @@ public class PortfolioTests
         const CurrencyCode BaseCurrency = CurrencyCode.USD;
         IStrategy strategy = new TestStrategy();
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
-        var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", BaseCurrency } };
+        var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { new Asset("AAPL"), BaseCurrency } };
 
         var fillEvent = new FillEvent(
             DateOnly.FromDateTime(DateTime.Today),
-            "AAPL", 
+            new Asset("AAPL"), 
             "TestStrategy",
             150.0m,
             100,
@@ -155,10 +156,10 @@ public class PortfolioTests
         var signalEvent = new SignalEvent(
             DateOnly.FromDateTime(DateTime.Today),
             "TestStrategy",
-            new Dictionary<string, SignalType>
+            new Dictionary<Asset, SignalType>
             {
-                { "AAPL", SignalType.Underweight },
-                { "GOOG", SignalType.Overweight }
+                { new Asset("AAPL"), SignalType.Underweight },
+                { new Asset("GOOG"), SignalType.Overweight }
             }
         );
 
@@ -173,7 +174,7 @@ public class PortfolioTests
         const CurrencyCode BaseCurrency = CurrencyCode.USD;
         IStrategy strategy = new TestStrategy();
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
-        var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", BaseCurrency } };
+        var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { new Asset("AAPL"), BaseCurrency } };
 
         var portfolio = new Portfolio(
             BaseCurrency,
@@ -203,10 +204,10 @@ public class PortfolioTests
     public async Task HandleEventAsync_ShouldCallHandleEventAsync_GivenValidMarketEvent()
     {
         // Arrange
-        var historicalMarketData = new SortedDictionary<string, MarketData>
+        var historicalMarketData = new SortedDictionary<Asset, MarketData>
         {
-            { "AAPL", new MarketData(DateOnly.FromDateTime(DateTime.Today), 150.0m, 150.0m, 150.0m, 150.0m, 150.0m, 1000, 10.0m) },
-            { "GOOG", new MarketData(DateOnly.FromDateTime(DateTime.Today), 1200.0m, 1200.0m, 1200.0m, 1200.0m, 1200.0m, 800, 8.0m) }
+            { new Asset("AAPL"), new MarketData(DateOnly.FromDateTime(DateTime.Today), 150.0m, 150.0m, 150.0m, 150.0m, 150.0m, 1000, 10.0m) },
+            { new Asset("GOOG"), new MarketData(DateOnly.FromDateTime(DateTime.Today), 1200.0m, 1200.0m, 1200.0m, 1200.0m, 1200.0m, 800, 8.0m) }
         };
         var historicalFxConversionRates = new SortedDictionary<CurrencyCode, decimal>
         {
@@ -231,7 +232,7 @@ public class PortfolioTests
         const CurrencyCode BaseCurrency = CurrencyCode.USD;
         IStrategy strategy = new TestStrategy();
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
-        var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", BaseCurrency } };
+        var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { new Asset("AAPL"), BaseCurrency } };
 
         var portfolio = new Portfolio(
             BaseCurrency,
@@ -264,7 +265,7 @@ public class PortfolioTests
 
         IStrategy strategy = new TestStrategy();
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
-        var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
+        var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { new Asset("AAPL"), CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
             BaseCurrency,
@@ -291,16 +292,16 @@ public class PortfolioTests
     {
         // Arrange
         const CurrencyCode BaseCurrency = CurrencyCode.USD;
-        var asset = "AAPL";
+        var asset = new Asset("AAPL");
         var dividendPerShare = 0.82m;
 
         var testStrategy = new TestStrategy
         {
-            Positions = new SortedDictionary<string, int> { { asset, 100 } },
+            Positions = new SortedDictionary<Asset, int> { { asset, 100 } },
             Cash = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 10000m } }
         };
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", testStrategy } };
-        var assetCurrencies = new Dictionary<string, CurrencyCode> { { asset, CurrencyCode.USD } };
+        var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { asset, CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
             BaseCurrency,
@@ -326,17 +327,17 @@ public class PortfolioTests
     {
         // Arrange
         const CurrencyCode BaseCurrency = CurrencyCode.USD;
-        var asset = "AAPL";
+        var asset = new Asset("AAPL");
         var dividendPerShare = 2m;
         var quantity = 10;
 
         var testStrategy = new TestStrategy
         {
-            Positions = new SortedDictionary<string, int> { { asset, quantity } },
+            Positions = new SortedDictionary<Asset, int> { { asset, quantity } },
             Cash = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1000m } }
         };
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", testStrategy } };
-        var assetCurrencies = new Dictionary<string, CurrencyCode> { { asset, CurrencyCode.USD } };
+        var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { asset, CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
             BaseCurrency,
@@ -367,22 +368,22 @@ public class PortfolioTests
             HistoricalMarketData: [],
             HistoricalFxConversionRates: []);
 
-        var expectedSignal = new SignalEvent(timestamp, "TestStrategy", new Dictionary<string, SignalType>
+        var expectedSignal = new SignalEvent(timestamp, "TestStrategy", new Dictionary<Asset, SignalType>
         {
-            { "AAPL", SignalType.Underweight },
-            { "GOOG", SignalType.Overweight }
+            { new Asset("AAPL"), SignalType.Underweight },
+            { new Asset("GOOG"), SignalType.Overweight }
         });
 
         var mockStrategy = new Mock<IStrategy>();
         mockStrategy.Setup(s => s.GenerateSignals(
             It.IsAny<DateOnly>(),
             It.IsAny<CurrencyCode>(),
-            It.IsAny<SortedDictionary<DateOnly, SortedDictionary<string, MarketData>?>>(),
+            It.IsAny<SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>?>>(),
             It.IsAny<SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>>()
         )).Returns(expectedSignal);
 
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", mockStrategy.Object } };
-        var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
+        var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { new Asset("AAPL"), CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
             BaseCurrency,
@@ -412,7 +413,7 @@ public class PortfolioTests
         var orderEvent = new OrderEvent(
             DateOnly.FromDateTime(DateTime.Today),
             "TestStrategy",
-            "AAPL",
+            new Asset("AAPL"),
             TradeAction.Buy,
             OrderType.Market,
             100
@@ -420,7 +421,7 @@ public class PortfolioTests
 
         IStrategy strategy = new TestStrategy();
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
-        var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
+        var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { new Asset("AAPL"), CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
             BaseCurrency,
@@ -455,12 +456,12 @@ public class PortfolioTests
         // Arrange
         const CurrencyCode BaseCurrency = CurrencyCode.USD;
         var strategyName = "TestStrategy";
-        var asset = "AAPL";
+        var asset = new Asset("AAPL");
         var quantity = 10;
 
         IStrategy strategy = new TestStrategy();
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
-        var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
+        var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { new Asset("AAPL"), CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
             BaseCurrency,
@@ -492,7 +493,7 @@ public class PortfolioTests
 
         IStrategy strategy = new TestStrategy();
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
-        var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
+        var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { new Asset("AAPL"), CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
             BaseCurrency,
@@ -518,14 +519,14 @@ public class PortfolioTests
     {
         // Arrange
         const CurrencyCode BaseCurrency = CurrencyCode.USD;
-        var asset = "AAPL";
+        var asset = new Asset("AAPL");
         var splitRatio = 2m;
 
         IStrategy strategy = new TestStrategy();
         strategy.Positions[asset] = 10;
 
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
-        var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
+        var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { new Asset("AAPL"), CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
             BaseCurrency,
@@ -551,10 +552,10 @@ public class PortfolioTests
     {
         // Arrange
         const CurrencyCode BaseCurrency = CurrencyCode.USD;
-        var asset = "AAPL";
+        var asset = new Asset("AAPL");
         var timestamp = DateOnly.FromDateTime(DateTime.Today);
         var splitRatio = 2m;
-        var marketData = new SortedDictionary<string, MarketData>
+        var marketData = new SortedDictionary<Asset, MarketData>
         {
             {
                 asset, new MarketData(
@@ -572,7 +573,7 @@ public class PortfolioTests
 
         IStrategy strategy = new TestStrategy();
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
-        var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
+        var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { new Asset("AAPL"), CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
             BaseCurrency,
@@ -609,7 +610,7 @@ public class PortfolioTests
         var strategyName = "TestStrategy";
         IStrategy strategy = new TestStrategy();
         var strategies = new Dictionary<string, IStrategy> { { strategyName, strategy } };
-        var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
+        var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { new Asset("AAPL"), CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
             BaseCurrency,
@@ -635,12 +636,12 @@ public class PortfolioTests
     {
         // Arrange
         const CurrencyCode BaseCurrency = CurrencyCode.USD;
-        var asset = "AAPL";
+        var asset = new Asset("AAPL");
         var currency = CurrencyCode.USD;
 
         IStrategy strategy = new TestStrategy();
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
-        var assetCurrencies = new Dictionary<string, CurrencyCode> { { asset, currency } };
+        var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { asset, currency } };
 
         var portfolio = new Portfolio(
             BaseCurrency,
@@ -669,9 +670,9 @@ public class PortfolioTests
         IStrategy strategy = new TestStrategy();
         var timestamp = DateOnly.FromDateTime(DateTime.Today);
         var baseCurrency = CurrencyCode.USD;
-        var marketData = new SortedDictionary<string, MarketData>
+        var marketData = new SortedDictionary<Asset, MarketData>
         {
-            { "AAPL",
+            { new Asset("AAPL"),
                 new MarketData(
                     Timestamp: timestamp,
                     Open: 100,
@@ -686,12 +687,12 @@ public class PortfolioTests
         };
         var fxRates = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.EUR, 0.85m } };
 
-        strategy.Positions["AAPL"] = 10;
-        ((TestStrategy)strategy).Assets = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
+        strategy.Positions[new Asset("AAPL")] = 10;
+        ((TestStrategy)strategy).Assets = new Dictionary<Asset, CurrencyCode> { { new Asset("AAPL"), CurrencyCode.USD } };
         strategy.Cash[CurrencyCode.USD] = 1000;
 
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
-        var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
+        var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { new Asset("AAPL"), CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
             BaseCurrency,
@@ -726,12 +727,12 @@ public class PortfolioTests
         mockStrategy.Setup(s => s.ComputeTotalValue(
             It.IsAny<DateOnly>(),
             It.IsAny<CurrencyCode>(),
-            It.IsAny<SortedDictionary<DateOnly, SortedDictionary<string, MarketData>?>>(),
+            It.IsAny<SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>?>>(),
             It.IsAny<SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>>()
         )).Returns(1000m);
 
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", mockStrategy.Object } };
-        var assetCurrencies = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
+        var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { new Asset("AAPL"), CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
             BaseCurrency,

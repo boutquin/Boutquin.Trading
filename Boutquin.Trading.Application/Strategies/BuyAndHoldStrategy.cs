@@ -39,7 +39,7 @@ public sealed class BuyAndHoldStrategy : IStrategy
     /// <exception cref="EmptyOrNullDictionaryException">Thrown when assets or cash dictionaries are empty or null.</exception>
     public BuyAndHoldStrategy(
         string name,
-        IReadOnlyDictionary<Ticker, CurrencyCode> assets,
+        IReadOnlyDictionary<Asset, CurrencyCode> assets,
         SortedDictionary<CurrencyCode, decimal> cash,
         DateOnly initialTimestamp,
         IOrderPriceCalculationStrategy orderPriceCalculationStrategy,
@@ -62,8 +62,8 @@ public sealed class BuyAndHoldStrategy : IStrategy
     }
 
     public string Name { get; }
-    public SortedDictionary<Ticker, int> Positions { get; }
-    public IReadOnlyDictionary<Ticker, CurrencyCode> Assets { get; }
+    public SortedDictionary<Asset, int> Positions { get; }
+    public IReadOnlyDictionary<Asset, CurrencyCode> Assets { get; }
     public SortedDictionary<CurrencyCode, decimal> Cash { get; }
     public IOrderPriceCalculationStrategy OrderPriceCalculationStrategy { get; }
     public IPositionSizer PositionSizer { get; }
@@ -83,7 +83,7 @@ public sealed class BuyAndHoldStrategy : IStrategy
     public SignalEvent GenerateSignals(
         DateOnly timestamp,
         CurrencyCode baseCurrency,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<Ticker, MarketData>?> historicalMarketData,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>?> historicalMarketData,
         IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
     {
         // Validate parameters
@@ -92,7 +92,7 @@ public sealed class BuyAndHoldStrategy : IStrategy
         Guard.AgainstEmptyOrNullReadOnlyDictionary(() => historicalFxConversionRates); // Throws EmptyOrNullDictionaryException
 
         // Create a new SignalEvent instance for the given timestamp
-        var signalEvents = new SortedDictionary<Ticker, SignalType>();
+        var signalEvents = new SortedDictionary<Asset, SignalType>();
 
         // Check if it's the initial timestamp
         if (timestamp != InitialTimestamp)

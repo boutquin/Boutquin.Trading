@@ -35,7 +35,7 @@ using Interfaces;
 /// Here is a sample usage of this class:
 /// <code>
 /// var fetcher = new CsvMarketDataFetcher("path/to/your/directory");
-/// await foreach (var data in fetcher.FetchMarketDataAsync(new[] { "AAPL", "MSFT" }))
+/// await foreach (var data in fetcher.FetchMarketDataAsync(new[] { new Asset("AAPL"), new Asset("MSFT") }))
 /// {
 ///     // Process data
 /// }
@@ -61,8 +61,8 @@ public sealed class CsvMarketDataFetcher : IMarketDataFetcher
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<Ticker, MarketData>?>> FetchMarketDataAsync(
-        IEnumerable<Ticker> symbols)
+    public async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<ValueObjects.Asset, MarketData>?>> FetchMarketDataAsync(
+        IEnumerable<ValueObjects.Asset> symbols)
     {
         if (symbols == null || !symbols.Any())
         {
@@ -71,7 +71,7 @@ public sealed class CsvMarketDataFetcher : IMarketDataFetcher
 
         foreach (var symbol in symbols)
         {
-            var fileName = MarketDataFileNameHelper.GetCsvFileNameForMarketData(_dataDirectory, symbol.Value);
+            var fileName = MarketDataFileNameHelper.GetCsvFileNameForMarketData(_dataDirectory, symbol.Ticker);
 
             if (!File.Exists(fileName))
             {
@@ -88,7 +88,7 @@ public sealed class CsvMarketDataFetcher : IMarketDataFetcher
 
             while (await streamReader.ReadLineAsync() is { } line)
             {
-                KeyValuePair<DateOnly, SortedDictionary<Ticker, MarketData>?>? dataPoint = null;
+                KeyValuePair<DateOnly, SortedDictionary<ValueObjects.Asset, MarketData>?>? dataPoint = null;
                 Exception? dataException = null;
 
                 try
@@ -109,8 +109,8 @@ public sealed class CsvMarketDataFetcher : IMarketDataFetcher
                         dividendPerShare, splitCoefficient);
                     marketData[date] = marketDataPoint;
 
-                    dataPoint = new KeyValuePair<DateOnly, SortedDictionary<Ticker, MarketData>>(date,
-                        new SortedDictionary<Ticker, MarketData> { { symbol, marketDataPoint } });
+                    dataPoint = new KeyValuePair<DateOnly, SortedDictionary<ValueObjects.Asset, MarketData>>(date,
+                        new SortedDictionary<ValueObjects.Asset, MarketData> { { symbol, marketDataPoint } });
                 }
                 catch (FormatException ex)
                 {

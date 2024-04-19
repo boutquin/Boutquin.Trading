@@ -44,6 +44,6 @@ public interface ICapitalAllocationStrategy
     /// </remarks>
     IReadOnlyDictionary<string, SortedDictionary<CurrencyCode, decimal>> AllocateCapital(
         ImmutableList<IStrategy> strategies,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<Ticker, MarketData>?> historicalMarketData,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>?> historicalMarketData,
         IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates);
 }

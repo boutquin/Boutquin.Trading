@@ -23,7 +23,7 @@ using Domain.Interfaces;
 internal class ClosePriceOrderPriceCalculationStrategy : IOrderPriceCalculationStrategy
 {
     public (OrderType OrderType, decimal PrimaryPrice, decimal SecondaryPrice) CalculateOrderPrices(DateOnly timestamp,
-        Ticker asset, TradeAction tradeAction, IReadOnlyDictionary<DateOnly, SortedDictionary<Ticker, MarketData>?> historicalData)
+        Asset asset, TradeAction tradeAction, IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>?> historicalData)
     {
         throw new NotImplementedException();
     }

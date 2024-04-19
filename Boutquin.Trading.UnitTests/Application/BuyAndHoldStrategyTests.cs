@@ -22,6 +22,7 @@ using Trading.Application.Strategies;
 using Trading.Domain.Data;
 using Trading.Domain.Enums;
 using Trading.Domain.Interfaces;
+using Trading.Domain.ValueObjects;
 
 /// <summary>
 /// Represents a set of tests for the BuyAndHoldStrategy class.
@@ -31,7 +32,7 @@ public sealed class BuyAndHoldStrategyTests
     private readonly Mock<IOrderPriceCalculationStrategy> _orderPriceCalculationStrategyMock = new();
     private readonly Mock<IPositionSizer> _positionSizerMock = new();
     private readonly SortedDictionary<CurrencyCode, decimal> _cash = new() { { CurrencyCode.USD, 10000m } };
-    private readonly IReadOnlyDictionary<string, CurrencyCode> _assets = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
+    private readonly IReadOnlyDictionary<Asset, CurrencyCode> _assets = new Dictionary<Asset, CurrencyCode> { { new Asset("AAPL"), CurrencyCode.USD } };
     private readonly string _name = "TestStrategy";
     private readonly DateOnly _initialTimestamp = DateOnly.FromDateTime(DateTime.Today);
 
@@ -61,7 +62,7 @@ public sealed class BuyAndHoldStrategyTests
         Assert.Throws<ArgumentException>(() => new BuyAndHoldStrategy(string.Empty, _assets, _cash, _initialTimestamp, _orderPriceCalculationStrategyMock.Object, _positionSizerMock.Object));
         Assert.Throws<ArgumentException>(() => new BuyAndHoldStrategy(" ", _assets, _cash, _initialTimestamp, _orderPriceCalculationStrategyMock.Object, _positionSizerMock.Object));
         Assert.Throws<ArgumentException>(() => new BuyAndHoldStrategy("  ", _assets, _cash, _initialTimestamp, _orderPriceCalculationStrategyMock.Object, _positionSizerMock.Object));
-        Assert.Throws<EmptyOrNullDictionaryException>(() => new BuyAndHoldStrategy(_name, new Dictionary<string, CurrencyCode>(), _cash, _initialTimestamp, _orderPriceCalculationStrategyMock.Object, _positionSizerMock.Object));
+        Assert.Throws<EmptyOrNullDictionaryException>(() => new BuyAndHoldStrategy(_name, new Dictionary<Asset, CurrencyCode>(), _cash, _initialTimestamp, _orderPriceCalculationStrategyMock.Object, _positionSizerMock.Object));
         Assert.Throws<EmptyOrNullDictionaryException>(() => new BuyAndHoldStrategy(_name, _assets, [], _initialTimestamp, _orderPriceCalculationStrategyMock.Object, _positionSizerMock.Object));
         Assert.Throws<ArgumentNullException>(() => new BuyAndHoldStrategy(_name, _assets, _cash, _initialTimestamp, null, _positionSizerMock.Object));
         Assert.Throws<ArgumentNullException>(() => new BuyAndHoldStrategy(_name, _assets, _cash, _initialTimestamp, _orderPriceCalculationStrategyMock.Object, null));
@@ -86,9 +87,9 @@ public sealed class BuyAndHoldStrategyTests
                 DividendPerShare: 0,
                 SplitCoefficient: 1);
 
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<string, MarketData>?>
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>?>
                     {
-                        { _initialTimestamp, new SortedDictionary<string, MarketData> { { "AAPL", marketData } } }
+                        { _initialTimestamp, new SortedDictionary<Asset, MarketData> { { new Asset("AAPL"), marketData } } }
                     };
         var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
                     {
@@ -106,8 +107,8 @@ public sealed class BuyAndHoldStrategyTests
         signalEvent.Should().NotBeNull();
         signalEvent.Timestamp.Should().Be(_initialTimestamp);
         signalEvent.StrategyName.Should().Be(_name);
-        signalEvent.Signals.Should().ContainKey("AAPL");
-        signalEvent.Signals["AAPL"].Should().Be(SignalType.Underweight);
+        signalEvent.Signals.Should().ContainKey(new Asset("AAPL"));
+        signalEvent.Signals[new Asset("AAPL")].Should().Be(SignalType.Underweight);
     }
 
     /// <summary>
@@ -129,9 +130,9 @@ public sealed class BuyAndHoldStrategyTests
                 DividendPerShare: 0,
                 SplitCoefficient: 1);
 
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<string, MarketData>?>
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>?>
                     {
-                        { _initialTimestamp.AddDays(1), new SortedDictionary<string, MarketData> { { "AAPL", marketData } } }
+                        { _initialTimestamp.AddDays(1), new SortedDictionary<Asset, MarketData> { { new Asset("AAPL"), marketData } } }
                     };
         var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
                     {

@@ -31,8 +31,8 @@ using Boutquin.Trading.Sample;
 using Boutquin.Trading.Domain.ValueObjects;
 
 const CurrencyCode BaseCurrency = CurrencyCode.USD;
-var fixedAssetWeights = new Dictionary<Ticker, decimal> { { new Ticker("SPX"), 1m } };
-var assetCurrencies = new Dictionary<Ticker, CurrencyCode> { { new Ticker("SPX"), BaseCurrency } };
+var fixedAssetWeights = new Dictionary<Asset, decimal> { { new Asset("SPX"), 1m } };
+var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { new Asset("SPX"), BaseCurrency } };
 var positionSizer = new FixedWeightPositionSizer(fixedAssetWeights, BaseCurrency);
 
 var options = Options.Create(new MemoryDistributedCacheOptions());

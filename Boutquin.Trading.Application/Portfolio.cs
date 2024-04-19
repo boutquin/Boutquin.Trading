@@ -89,7 +89,7 @@ public sealed class Portfolio : IPortfolio
     public Portfolio(
         CurrencyCode baseCurrency,
         IReadOnlyDictionary<string, IStrategy> strategies,
-        IReadOnlyDictionary<Ticker, CurrencyCode> assetCurrencies,
+        IReadOnlyDictionary<Asset, CurrencyCode> assetCurrencies,
         IReadOnlyDictionary<Type, IEventHandler> handlers,
         IBrokerage broker,
         bool isLive = false)
@@ -119,12 +119,12 @@ public sealed class Portfolio : IPortfolio
     /// <summary>
     /// The AssetCurrencies property represents a read-only dictionary of assets and their respective currencies used in the portfolio.
     /// </summary>
-    public IReadOnlyDictionary<Ticker, CurrencyCode> AssetCurrencies { get; }
+    public IReadOnlyDictionary<Asset, CurrencyCode> AssetCurrencies { get; }
 
     /// <summary>
     /// The HistoricalMarketData property represents a sorted dictionary of historical market data used by the portfolio.
     /// </summary>
-    public SortedDictionary<DateOnly, SortedDictionary<Ticker, MarketData>?> HistoricalMarketData { get; } 
+    public SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>?> HistoricalMarketData { get; } 
         = [];
 
     /// <summary>
@@ -187,9 +187,9 @@ public sealed class Portfolio : IPortfolio
     /// The method implementation should ensure that the cash balance for each strategy that holds the asset is updated 
     /// by adding the total dividend amount (dividend per share * position quantity) to the current cash balance.
     /// </remarks>
-    public void UpdateCashForDividend(Ticker asset, decimal dividendPerShare)
+    public void UpdateCashForDividend(Asset asset, decimal dividendPerShare)
     {
-        Guard.AgainstNullOrWhiteSpace(() => asset.Value); // Throws ArgumentException
+        Guard.AgainstNullOrWhiteSpace(() => asset.Ticker); // Throws ArgumentException
 
         // Determine the currency of the asset
         var assetCurrency = GetAssetCurrency(asset);
@@ -280,10 +280,10 @@ public sealed class Portfolio : IPortfolio
     /// The method implementation should ensure that the position is updated correctly 
     /// and that the new position does not lead to an inconsistent portfolio state.
     /// </remarks>
-    public void UpdatePosition(string strategyName, Ticker asset, int quantity)
+    public void UpdatePosition(string strategyName, Asset asset, int quantity)
     {
         Guard.AgainstNullOrWhiteSpace(() => strategyName); // Throws ArgumentException
-        Guard.AgainstNullOrWhiteSpace(() => asset.Value); // Throws ArgumentException
+        Guard.AgainstNullOrWhiteSpace(() => asset.Ticker); // Throws ArgumentException
 
         var strategy = GetStrategy(strategyName);
         strategy.UpdatePositions(asset, quantity);
@@ -335,10 +335,10 @@ public sealed class Portfolio : IPortfolio
     /// The method implementation should ensure that the positions are adjusted correctly and that the adjusted positions do not lead to an inconsistent portfolio state.
     /// </remarks>
     public void AdjustPositionForSplit(
-        Ticker asset,
+        Asset asset,
         decimal splitRatio)
     {
-        Guard.AgainstNullOrWhiteSpace(() => asset.Value); // Throws ArgumentException
+        Guard.AgainstNullOrWhiteSpace(() => asset.Ticker); // Throws ArgumentException
 
         // Adjust the positions for all strategies in the portfolio.
         foreach (var strategy in Strategies.Values)
@@ -361,10 +361,10 @@ public sealed class Portfolio : IPortfolio
     /// The method implementation should ensure that the historical data is adjusted correctly.
     /// </remarks>
     public void AdjustHistoricalDataForSplit(
-        Ticker asset,
+        Asset asset,
         decimal splitRatio)
     {
-        Guard.AgainstNullOrWhiteSpace(() => asset.Value); // Throws ArgumentException
+        Guard.AgainstNullOrWhiteSpace(() => asset.Ticker); // Throws ArgumentException
 
         // Adjust the historical market data for the affected asset.
         foreach (var historicalData in HistoricalMarketData.Values)
@@ -408,9 +408,9 @@ public sealed class Portfolio : IPortfolio
     /// This method is called when the currency of a specific asset needs to be retrieved.
     /// The method implementation should ensure that the correct currency is returned, or an appropriate error is thrown if the currency cannot be found.
     /// </remarks>
-    public CurrencyCode GetAssetCurrency(Ticker asset)
+    public CurrencyCode GetAssetCurrency(Asset asset)
     {
-        Guard.AgainstNullOrWhiteSpace(() => asset.Value); // Throws ArgumentException
+        Guard.AgainstNullOrWhiteSpace(() => asset.Ticker); // Throws ArgumentException
 
         if (!AssetCurrencies.TryGetValue(asset, out var currency))
         {

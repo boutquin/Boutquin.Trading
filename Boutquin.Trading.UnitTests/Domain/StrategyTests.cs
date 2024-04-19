@@ -21,6 +21,7 @@ using Helpers;
 using Trading.Domain.Data;
 using Trading.Domain.Enums;
 using Trading.Domain.Interfaces;
+using Trading.Domain.ValueObjects;
 
 /// <summary>
 /// Contains unit tests for the Strategy class.
@@ -37,9 +38,9 @@ public class StrategyTests
         IStrategy strategy = new TestStrategy();
         var timestamp = DateOnly.FromDateTime(DateTime.Today);
         var baseCurrency = CurrencyCode.USD;
-        var marketData = new SortedDictionary<string, MarketData>
+        var marketData = new SortedDictionary<Asset, MarketData>
         {
-            { "AAPL",
+            { new Asset("AAPL"),
                 new MarketData(
                     Timestamp: timestamp,
                     Open: 100,
@@ -57,11 +58,11 @@ public class StrategyTests
             { CurrencyCode.EUR, 0.85m }
         };
 
-        strategy.Positions["AAPL"] = 10;
-        ((TestStrategy)strategy).Assets = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
+        strategy.Positions[new Asset("AAPL")] = 10;
+        ((TestStrategy)strategy).Assets = new Dictionary<Asset, CurrencyCode> { { new Asset("AAPL"), CurrencyCode.USD } };
         strategy.Cash[CurrencyCode.USD] = 1000;
 
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<string, MarketData>> { { timestamp, marketData } };
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>> { { timestamp, marketData } };
         var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> { { timestamp, fxRates } };
 
         // Act
@@ -86,10 +87,10 @@ public class StrategyTests
             { CurrencyCode.EUR, 0.85m }
         };
 
-        strategy.Positions["AAPL"] = 10;
-        ((TestStrategy)strategy).Assets = new Dictionary<string, CurrencyCode> { { "AAPL", CurrencyCode.USD } };
+        strategy.Positions[new Asset("AAPL")] = 10;
+        ((TestStrategy)strategy).Assets = new Dictionary<Asset, CurrencyCode> { { new Asset("AAPL"), CurrencyCode.USD } };
 
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<string, MarketData>>();
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>();
         var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> { { date, fxRates } };
 
         // Act
@@ -143,7 +144,7 @@ public class StrategyTests
     {
         // Arrange
         IStrategy strategy = new TestStrategy();
-        var asset = "AAPL";
+        var asset = new Asset("AAPL");
 
         // Act
         strategy.UpdatePositions(asset, 10);
@@ -160,7 +161,7 @@ public class StrategyTests
     {
         // Arrange
         IStrategy strategy = new TestStrategy();
-        var asset = "   ";
+        var asset = new Asset("   ");
 
         // Act
         var act = () => strategy.UpdatePositions(asset, 10);
@@ -178,7 +179,7 @@ public class StrategyTests
     {
         // Arrange
         IStrategy strategy = new TestStrategy();
-        var asset = "AAPL";
+        var asset = new Asset("AAPL");
         strategy.Positions[asset] = 10;
 
         // Act
@@ -196,7 +197,7 @@ public class StrategyTests
     {
         // Arrange
         IStrategy strategy = new TestStrategy();
-        var asset = "AAPL";
+        var asset = new Asset("AAPL");
 
         // Act
         var quantity = strategy.GetPositionQuantity(asset);

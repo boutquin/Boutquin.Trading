@@ -38,5 +38,5 @@ using Interfaces;
 public sealed record SignalEvent(
     DateOnly Timestamp,
     string StrategyName,
-    IReadOnlyDictionary<Ticker, SignalType> Signals
+    IReadOnlyDictionary<Asset, SignalType> Signals
 ) : IFinancialEvent;

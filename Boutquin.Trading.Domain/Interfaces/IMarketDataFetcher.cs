@@ -35,7 +35,7 @@ public interface IMarketDataFetcher
     /// <param name="symbols">A list of financial asset symbols for which to fetch historical market data.</param>
     /// <returns>An IAsyncEnumerable of key-value pairs, where the key is a DateOnly object and the value is a SortedDictionary of string asset symbols and MarketData values.</returns>
     /// <exception cref="MarketDataRetrievalException">Thrown when there is an error in fetching or parsing the market data.</exception>
-    IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<Ticker, MarketData>?>> FetchMarketDataAsync(IEnumerable<Ticker> symbols);
+    IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>?>> FetchMarketDataAsync(IEnumerable<Asset> symbols);
 
     /// <summary>
     /// Fetches historical foreign exchange rates for the specified currency pairs and

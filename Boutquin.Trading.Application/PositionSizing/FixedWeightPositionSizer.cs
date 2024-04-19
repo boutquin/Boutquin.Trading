@@ -24,7 +24,7 @@ using Domain.Data;
 /// </summary>
 public class FixedWeightPositionSizer : IPositionSizer
 {
-    private readonly IReadOnlyDictionary<Ticker, decimal> _fixedAssetWeights;
+    private readonly IReadOnlyDictionary<Asset, decimal> _fixedAssetWeights;
     private readonly CurrencyCode _baseCurrency;
 
     /// <summary>
@@ -38,7 +38,7 @@ public class FixedWeightPositionSizer : IPositionSizer
     /// <exception cref="ArgumentOutOfRangeException">
     /// Throws this exception if the base currency is undefined.
     /// </exception>
-    public FixedWeightPositionSizer(IReadOnlyDictionary<Ticker, decimal> fixedAssetWeights, CurrencyCode baseCurrency)
+    public FixedWeightPositionSizer(IReadOnlyDictionary<Asset, decimal> fixedAssetWeights, CurrencyCode baseCurrency)
     {
         // Validate parameters
         Guard.AgainstEmptyOrNullReadOnlyDictionary(() => fixedAssetWeights); // Throws EmptyOrNullDictionaryException
@@ -63,11 +63,11 @@ public class FixedWeightPositionSizer : IPositionSizer
     /// <exception cref="EmptyOrNullDictionaryException">
     /// Throws this exception if the historical market data or historical FX conversion rates dictionaries are empty or null.
     /// </exception>
-    public IReadOnlyDictionary<Ticker, int> ComputePositionSizes(
+    public IReadOnlyDictionary<Asset, int> ComputePositionSizes(
         DateOnly timestamp,
-        IReadOnlyDictionary<Ticker, SignalType> signalType,
+        IReadOnlyDictionary<Asset, SignalType> signalType,
         IStrategy strategy,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<Ticker, MarketData>?> historicalMarketData,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>?> historicalMarketData,
         IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
     {
         // Validate parameters
@@ -76,7 +76,7 @@ public class FixedWeightPositionSizer : IPositionSizer
         Guard.AgainstEmptyOrNullReadOnlyDictionary(() => historicalMarketData); // Throws EmptyOrNullDictionaryException
         Guard.AgainstEmptyOrNullReadOnlyDictionary(() => historicalFxConversionRates); // Throws EmptyOrNullDictionaryException
 
-        var positionSizes = new Dictionary<Ticker, int>();
+        var positionSizes = new Dictionary<Asset, int>();
 
         // Compute the total value of the strategy in the base currency
         var totalStrategyValue = strategy.ComputeTotalValue(

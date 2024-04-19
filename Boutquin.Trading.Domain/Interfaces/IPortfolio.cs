@@ -71,12 +71,12 @@ public interface IPortfolio
     /// <summary>
     /// The AssetCurrencies property represents a read-only dictionary of assets and their respective currencies used in the portfolio.
     /// </summary>
-    IReadOnlyDictionary<Ticker, CurrencyCode> AssetCurrencies { get; }
+    IReadOnlyDictionary<Asset, CurrencyCode> AssetCurrencies { get; }
 
     /// <summary>
     /// The HistoricalMarketData property represents a sorted dictionary of historical market data used by the portfolio.
     /// </summary>
-    SortedDictionary<DateOnly, SortedDictionary<Ticker, MarketData>?> HistoricalMarketData { get; }
+    SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>?> HistoricalMarketData { get; }
 
     /// <summary>
     /// The HistoricalFxConversionRates property represents a sorted dictionary of historical foreign exchange conversion rates used by the portfolio.
@@ -123,7 +123,7 @@ public interface IPortfolio
     /// by adding the total dividend amount (dividend per share * position quantity) to the current cash balance.
     /// </remarks>
     void UpdateCashForDividend(
-        Ticker asset,
+        Asset asset,
         decimal dividendPerShare);
 
     /// <summary>
@@ -166,7 +166,7 @@ public interface IPortfolio
     /// </remarks>
     void UpdatePosition(
         string strategyName,
-        Ticker asset,
+        Asset asset,
         int quantity);
 
     /// <summary>
@@ -208,7 +208,7 @@ public interface IPortfolio
     /// The method implementation should ensure that the positions are adjusted correctly and that the adjusted positions do not lead to an inconsistent portfolio state.
     /// </remarks>
     void AdjustPositionForSplit(
-        Ticker asset,
+        Asset asset,
         decimal splitRatio);
 
     /// <summary>
@@ -222,7 +222,7 @@ public interface IPortfolio
     /// The method implementation should ensure that the historical data is adjusted correctly.
     /// </remarks>
     void AdjustHistoricalDataForSplit(
-        Ticker asset,
+        Asset asset,
         decimal splitRatio);
 
     /// <summary>
@@ -247,7 +247,7 @@ public interface IPortfolio
     /// This method is called when the currency of a specific asset needs to be retrieved.
     /// The method implementation should ensure that the correct currency is returned, or an appropriate error is thrown if the currency cannot be found.
     /// </remarks>
-    CurrencyCode GetAssetCurrency(Ticker asset);
+    CurrencyCode GetAssetCurrency(Asset asset);
 
     /// <summary>
     /// Calculates the total value of the portfolio.

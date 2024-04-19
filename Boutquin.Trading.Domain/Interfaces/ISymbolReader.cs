@@ -33,5 +33,5 @@ public interface ISymbolReader
     /// <exception cref="SymbolReaderException">
     /// Thrown when an error occurs while reading symbols from the data source.
     /// </exception>
-    Task<IEnumerable<Ticker>> ReadSymbolsAsync();
+    Task<IEnumerable<Asset>> ReadSymbolsAsync();
 }

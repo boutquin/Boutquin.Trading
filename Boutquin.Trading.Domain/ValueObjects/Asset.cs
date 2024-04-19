@@ -24,18 +24,18 @@ namespace Boutquin.Trading.Domain.ValueObjects;
 /// 
 /// <code>
 /// // Example usage:
-/// var ticker = new Ticker("AAPL");
-/// Console.WriteLine(ticker);  // Outputs: AAPL
+/// var asset = new Asset(new Asset("AAPL"));
+/// Console.WriteLine(asset);  // Outputs: AAPL
 /// </code>
 /// </remarks>
-public readonly record struct Ticker(string Value)
+public readonly record struct Asset(string Ticker)
 {
     /// <summary>
     /// Returns a string that represents the current object.
     /// </summary>
     /// <returns>A string that represents the current object.</returns>
     /// <remarks>
-    /// This method overrides the base implementation to return the Value of the Ticker.
+    /// This method overrides the base implementation to return the Value of the Asset.
     /// </remarks>
-    public override string ToString() => Value;
+    public override string ToString() => Ticker;
 }

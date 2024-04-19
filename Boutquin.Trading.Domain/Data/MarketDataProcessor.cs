@@ -36,7 +36,7 @@ using ValueObjects;
 /// ILoggerFactory loggerFactory = new LoggerFactory();
 /// 
 /// MarketDataProcessor processor = new MarketDataProcessor(fetcher, storage, loggerFactory);
-/// await processor.ProcessAndStoreMarketDataAsync(new List&gt;string&lt; { "AAPL", "MSFT" });
+/// await processor.ProcessAndStoreMarketDataAsync(new List&gt;string&lt; { new Asset("AAPL"), "MSFT" });
 /// </code>
 /// </example>
 public sealed class MarketDataProcessor(
@@ -54,7 +54,7 @@ public sealed class MarketDataProcessor(
     /// </summary>
     /// <param name="symbols">The symbols to fetch and store market data for.</param>
     /// <exception cref="ArgumentException">Thrown when no symbols are provided.</exception>
-    public async Task ProcessAndStoreMarketDataAsync(IEnumerable<Ticker> symbols)
+    public async Task ProcessAndStoreMarketDataAsync(IEnumerable<Asset> symbols)
     {
         if (symbols == null || !symbols.Any())
         {

@@ -34,12 +34,12 @@ public class TestStrategy : IStrategy
     /// <summary>
     /// Gets the positions held in the strategy.
     /// </summary>
-    public SortedDictionary<Ticker, int> Positions { get; init; } = [];
+    public SortedDictionary<Asset, int> Positions { get; init; } = [];
 
     /// <summary>
     /// Gets or sets the assets involved in the strategy.
     /// </summary>
-    public IReadOnlyDictionary<Ticker, CurrencyCode> Assets { get; set; } = new Dictionary<Ticker, CurrencyCode>();
+    public IReadOnlyDictionary<Asset, CurrencyCode> Assets { get; set; } = new Dictionary<Asset, CurrencyCode>();
 
     /// <summary>
     /// Gets the cash held in different currencies.
@@ -64,7 +64,7 @@ public class TestStrategy : IStrategy
     /// <param name="historicalMarketData">The historical market data.</param>
     /// <param name="historicalFxConversionRates">The historical foreign exchange conversion rates.</param>
     /// <returns>A signal event.</returns>
-    public SignalEvent GenerateSignals(DateOnly timestamp, CurrencyCode baseCurrency, IReadOnlyDictionary<DateOnly, SortedDictionary<Ticker, MarketData>?> historicalMarketData, IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
+    public SignalEvent GenerateSignals(DateOnly timestamp, CurrencyCode baseCurrency, IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>?> historicalMarketData, IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
     {
         throw new NotImplementedException();
     }

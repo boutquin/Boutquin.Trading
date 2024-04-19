@@ -55,7 +55,7 @@ using Interfaces;
 public sealed record Order(
     DateOnly Timestamp,
     string StrategyName,
-    Ticker Asset,
+    Asset Asset,
     TradeAction TradeAction,
     OrderType OrderType,
     int Quantity,

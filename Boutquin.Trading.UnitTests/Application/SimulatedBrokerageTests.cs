@@ -22,6 +22,7 @@ using Trading.Domain.Data;
 using Trading.Domain.Enums;
 using Trading.Domain.Events;
 using Trading.Domain.Interfaces;
+using Trading.Domain.ValueObjects;
 
 /// <summary>
 /// Represents a set of tests for the SimulatedBrokerage class.
@@ -67,14 +68,14 @@ public sealed class SimulatedBrokerageTests
         var order = new Order(
             Timestamp: today, 
             StrategyName: "Strategy1", 
-            Asset: "AAPL", 
+            Asset: new Asset("AAPL"), 
             TradeAction: TradeAction.Buy, 
             OrderType: OrderType.Market, 
             Quantity: 10);
-        var marketData = new SortedDictionary<string, MarketData>
+        var marketData = new SortedDictionary<Asset, MarketData>
         {
             {
-                "AAPL", 
+                new Asset("AAPL"), 
                 new MarketData(
                     Timestamp: today, 
                     Open: 100, 
@@ -87,9 +88,9 @@ public sealed class SimulatedBrokerageTests
                     SplitCoefficient: 1)
             }
         };
-        var marketDataKeyValuePair = new KeyValuePair<DateOnly, SortedDictionary<string, MarketData>>(today, marketData);
+        var marketDataKeyValuePair = new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(today, marketData);
 
-        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<string>>()))
+        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>()))
             .Returns(new[] { marketDataKeyValuePair }.ToAsyncEnumerable());
 
         // Act
@@ -109,12 +110,12 @@ public sealed class SimulatedBrokerageTests
         var order = new Order(
             Timestamp: DateOnly.FromDateTime(DateTime.Today), 
             StrategyName: "Strategy1", 
-            Asset: "AAPL", 
+            Asset: new Asset("AAPL"), 
             TradeAction: TradeAction.Buy, 
             OrderType: OrderType.Market, 
             Quantity: 10);
-        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<string>>()))
-            .Returns(Enumerable.Empty<KeyValuePair<DateOnly, SortedDictionary<string, MarketData>>>().ToAsyncEnumerable());
+        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>()))
+            .Returns(Enumerable.Empty<KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>>().ToAsyncEnumerable());
 
         // Act
         var result = await _simulatedBrokerage.SubmitOrderAsync(order);
@@ -134,15 +135,15 @@ public sealed class SimulatedBrokerageTests
         var order = new Order(
             Timestamp: today, 
             StrategyName: "Strategy1", 
-            Asset: "AAPL", 
+            Asset: new Asset("AAPL"), 
             TradeAction: TradeAction.Buy, 
             OrderType: OrderType.Limit, 
             Quantity: 10, 
             PrimaryPrice: 100);
-        var marketData = new SortedDictionary<string, MarketData>
+        var marketData = new SortedDictionary<Asset, MarketData>
         {
             {
-                "AAPL", 
+                new Asset("AAPL"), 
                 new MarketData(
                     Timestamp: today, 
                     Open: 100, 
@@ -155,9 +156,9 @@ public sealed class SimulatedBrokerageTests
                     SplitCoefficient: 1)
             }
         };
-        var marketDataKeyValuePair = new KeyValuePair<DateOnly, SortedDictionary<string, MarketData>>(today, marketData);
+        var marketDataKeyValuePair = new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(today, marketData);
 
-        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<string>>()))
+        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>()))
             .Returns(new[] { marketDataKeyValuePair }.ToAsyncEnumerable());
 
         // Act
@@ -178,15 +179,15 @@ public sealed class SimulatedBrokerageTests
         var order = new Order(
             Timestamp: today, 
             StrategyName: "Strategy1", 
-            Asset: "AAPL", 
+            Asset: new Asset("AAPL"), 
             TradeAction: TradeAction.Buy, 
             OrderType: OrderType.Limit, 
             Quantity: 10, 
             PrimaryPrice: 300);
-        var marketData = new SortedDictionary<string, MarketData>
+        var marketData = new SortedDictionary<Asset, MarketData>
         {
             {
-                "AAPL", 
+                new Asset("AAPL"), 
                 new MarketData(
                     Timestamp: today, 
                     Open: 100, 
@@ -199,9 +200,9 @@ public sealed class SimulatedBrokerageTests
                     SplitCoefficient: 1)
             }
         };
-        var marketDataKeyValuePair = new KeyValuePair<DateOnly, SortedDictionary<string, MarketData>>(today, marketData);
+        var marketDataKeyValuePair = new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(today, marketData);
 
-        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<string>>()))
+        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>()))
             .Returns(new[] { marketDataKeyValuePair }.ToAsyncEnumerable());
 
         // Act
@@ -222,15 +223,15 @@ public sealed class SimulatedBrokerageTests
         var order = new Order(
             Timestamp: today, 
             StrategyName: "Strategy1", 
-            Asset: "AAPL", 
+            Asset: new Asset("AAPL"), 
             TradeAction: TradeAction.Buy, 
             OrderType: OrderType.Limit, 
             Quantity: 10, 
             PrimaryPrice: 250);
-        var marketData = new SortedDictionary<string, MarketData>
+        var marketData = new SortedDictionary<Asset, MarketData>
         {
             {
-                "AAPL", 
+                new Asset("AAPL"), 
                 new MarketData(
                     Timestamp: today, 
                     Open: 100, 
@@ -243,9 +244,9 @@ public sealed class SimulatedBrokerageTests
                     SplitCoefficient: 1)
             }
         };
-        var marketDataKeyValuePair = new KeyValuePair<DateOnly, SortedDictionary<string, MarketData>>(today, marketData);
+        var marketDataKeyValuePair = new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(today, marketData);
 
-        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<string>>()))
+        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>()))
             .Returns(new[] { marketDataKeyValuePair }.ToAsyncEnumerable());
 
         var eventTriggered = false;
@@ -270,15 +271,15 @@ public sealed class SimulatedBrokerageTests
         var order = new Order(
             Timestamp: today,
             StrategyName: "Strategy1",
-            Asset: "AAPL",
+            Asset: new Asset("AAPL"),
             TradeAction: TradeAction.Buy,
             OrderType: OrderType.Stop,
             Quantity: 10,
             PrimaryPrice: 100);
-        var marketData = new SortedDictionary<string, MarketData>
+        var marketData = new SortedDictionary<Asset, MarketData>
         {
             {
-                "AAPL",
+                new Asset("AAPL"),
                 new MarketData(
                     Timestamp: today,
                     Open: 100,
@@ -291,9 +292,9 @@ public sealed class SimulatedBrokerageTests
                     SplitCoefficient: 1)
             }
         };
-        var marketDataKeyValuePair = new KeyValuePair<DateOnly, SortedDictionary<string, MarketData>>(today, marketData);
+        var marketDataKeyValuePair = new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(today, marketData);
 
-        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<string>>()))
+        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>()))
             .Returns(new[] { marketDataKeyValuePair }.ToAsyncEnumerable());
 
         var eventTriggered = false;
@@ -318,16 +319,16 @@ public sealed class SimulatedBrokerageTests
         var order = new Order(
             Timestamp: today, 
             StrategyName: "Strategy1", 
-            Asset: "AAPL", 
+            Asset: new Asset("AAPL"), 
             TradeAction: TradeAction.Buy, 
             OrderType: OrderType.StopLimit, 
             Quantity: 10, 
             PrimaryPrice: 160, 
             SecondaryPrice: 140);
-        var marketData = new SortedDictionary<string, MarketData>
+        var marketData = new SortedDictionary<Asset, MarketData>
         {
             {
-                "AAPL", 
+                new Asset("AAPL"), 
                 new MarketData(
                     Timestamp: today, 
                     Open: 100, 
@@ -340,9 +341,9 @@ public sealed class SimulatedBrokerageTests
                     SplitCoefficient: 1)
             }
         };
-        var marketDataKeyValuePair = new KeyValuePair<DateOnly, SortedDictionary<string, MarketData>>(today, marketData);
+        var marketDataKeyValuePair = new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(today, marketData);
 
-        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<string>>()))
+        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>()))
             .Returns(new[] { marketDataKeyValuePair }.ToAsyncEnumerable());
 
         var eventTriggered = false;
@@ -367,16 +368,16 @@ public sealed class SimulatedBrokerageTests
         var order = new Order(
             Timestamp: today, 
             StrategyName: "Strategy1", 
-            Asset: "AAPL", 
+            Asset: new Asset("AAPL"), 
             TradeAction: TradeAction.Buy, 
             OrderType: OrderType.StopLimit, 
             Quantity: 10, 
             PrimaryPrice: 160, 
             SecondaryPrice: 170);
-        var marketData = new SortedDictionary<string, MarketData>
+        var marketData = new SortedDictionary<Asset, MarketData>
         {
             {
-                "AAPL", 
+                new Asset("AAPL"), 
                 new MarketData(
                     Timestamp: today, 
                     Open: 100, 
@@ -389,9 +390,9 @@ public sealed class SimulatedBrokerageTests
                     SplitCoefficient: 1)
             }
         };
-        var marketDataKeyValuePair = new KeyValuePair<DateOnly, SortedDictionary<string, MarketData>>(today, marketData);
+        var marketDataKeyValuePair = new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(today, marketData);
 
-        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<string>>()))
+        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>()))
             .Returns(new[] { marketDataKeyValuePair }.ToAsyncEnumerable());
 
         var eventTriggered = false;

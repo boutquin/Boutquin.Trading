@@ -38,7 +38,7 @@ public sealed class RebalancingBuyAndHoldStrategy : IStrategy
     /// <exception cref="EmptyOrNullDictionaryException">Thrown when assets or cash dictionaries are empty or null.</exception>
     public RebalancingBuyAndHoldStrategy(
         string name,
-        IReadOnlyDictionary<Ticker, CurrencyCode> assets,
+        IReadOnlyDictionary<Asset, CurrencyCode> assets,
         SortedDictionary<CurrencyCode, decimal> cash,
         IOrderPriceCalculationStrategy orderPriceCalculationStrategy,
         IPositionSizer positionSizer,
@@ -61,8 +61,8 @@ public sealed class RebalancingBuyAndHoldStrategy : IStrategy
     }
 
     public string Name { get; }
-    public SortedDictionary<Ticker, int> Positions { get; }
-    public IReadOnlyDictionary<Ticker, CurrencyCode> Assets { get; }
+    public SortedDictionary<Asset, int> Positions { get; }
+    public IReadOnlyDictionary<Asset, CurrencyCode> Assets { get; }
     public SortedDictionary<CurrencyCode, decimal> Cash { get; }
     public IOrderPriceCalculationStrategy OrderPriceCalculationStrategy { get; }
     public IPositionSizer PositionSizer { get; }
@@ -83,7 +83,7 @@ public sealed class RebalancingBuyAndHoldStrategy : IStrategy
     public SignalEvent GenerateSignals(
         DateOnly timestamp,
         CurrencyCode baseCurrency,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<Ticker, MarketData>?> historicalMarketData,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>?> historicalMarketData,
         IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
     {
         // Validate parameters
@@ -92,7 +92,7 @@ public sealed class RebalancingBuyAndHoldStrategy : IStrategy
         Guard.AgainstEmptyOrNullReadOnlyDictionary(() => historicalFxConversionRates); // Throws EmptyOrNullDictionaryException
 
         // Create a new SignalEvent instance for the given timestamp
-        var signalEvents = new SortedDictionary<Ticker, SignalType>();
+        var signalEvents = new SortedDictionary<Asset, SignalType>();
 
         // If it's not a rebalancing date, return an empty SignalEvent
         if (_lastRebalancingDate != null && !IsRebalancingDate(timestamp))

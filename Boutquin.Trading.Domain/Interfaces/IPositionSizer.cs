@@ -40,10 +40,10 @@ public interface IPositionSizer
     /// <param name="historicalMarketData">A read-only dictionary containing the historical market data for the assets.</param>
     /// <param name="historicalFxConversionRates">A read-only dictionary containing the historical FX conversion rates.</param>
     /// <returns>A dictionary containing the position sizes for all assets in the strategy.</returns>
-    IReadOnlyDictionary<Ticker, int> ComputePositionSizes(
+    IReadOnlyDictionary<Asset, int> ComputePositionSizes(
         DateOnly timestamp,
-        IReadOnlyDictionary<Ticker, SignalType> signalType,
+        IReadOnlyDictionary<Asset, SignalType> signalType,
         IStrategy strategy,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<Ticker, MarketData>?> historicalMarketData,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>?> historicalMarketData,
         IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates);
 }
