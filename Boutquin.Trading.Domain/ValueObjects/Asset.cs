@@ -19,23 +19,39 @@ namespace Boutquin.Trading.Domain.ValueObjects;
 /// Represents a ticker symbol for a financial instrument.
 /// </summary>
 /// <remarks>
-/// A ticker symbol or stock symbol is an abbreviation used to uniquely identify publicly traded shares of a particular stock on a particular stock market. 
-/// A stock symbol may consist of letters, numbers or a combination of both.
-/// 
+/// A ticker symbol or stock symbol is an abbreviation used to uniquely identify publicly traded shares of a particular stock on a particular stock market.
+/// A stock symbol may consist of letters, numbers, or a combination of both.
 /// <code>
 /// // Example usage:
-/// var asset = new Asset(new Asset("AAPL"));
+/// var asset = new Asset("AAPL");
 /// Console.WriteLine(asset);  // Outputs: AAPL
 /// </code>
 /// </remarks>
-public readonly record struct Asset(string Ticker)
+public readonly record struct Asset(string Ticker) : IComparable<Asset>
 {
+    /// <summary>
+    /// Compares this instance with a specified Asset object and indicates whether this instance precedes, follows, or appears in the same position in the sort order as the specified Asset.
+    /// </summary>
+    /// <param name="other">The Asset to compare with this instance.</param>
+    /// <returns>
+    /// A value that indicates the relative order of the objects being compared.
+    /// The return value has these meanings:
+    /// Less than zero: This instance precedes other in the sort order.
+    /// Zero: This instance occurs in the same position in the sort order as other.
+    /// Greater than zero: This instance follows other in the sort order.
+    /// </returns>
+    public int CompareTo(Asset other)
+    {
+        return String.Compare(Ticker, other.Ticker, StringComparison.Ordinal);
+    }
+
     /// <summary>
     /// Returns a string that represents the current object.
     /// </summary>
     /// <returns>A string that represents the current object.</returns>
     /// <remarks>
-    /// This method overrides the base implementation to return the Value of the Asset.
+    /// This method overrides the base implementation to return the Ticker of the Asset.
     /// </remarks>
     public override string ToString() => Ticker;
 }
+

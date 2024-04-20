@@ -168,7 +168,7 @@ public class StrategyTests
 
         // Assert
         act.Should().Throw<ArgumentException>()
-            .WithMessage("Parameter 'asset' cannot be null, empty or contain only white-space characters. (Parameter 'asset')");
+            .WithMessage("Parameter 'Ticker' cannot be null, empty or contain only white-space characters. (Parameter 'Ticker')");
     }
 
     /// <summary>
