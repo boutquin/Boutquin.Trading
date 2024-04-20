@@ -30,6 +30,9 @@ public class SimulatedBrokerage : IBrokerage
     /// Initializes a new instance of the SimulatedBrokerage class, using the provided IMarketDataFetcher.
     /// </summary>
     /// <param name="marketDataFetcher">An instance of an object implementing the IMarketDataFetcher interface.</param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when the marketDataFetcher is null.
+    /// </exception>
     public SimulatedBrokerage(IMarketDataFetcher marketDataFetcher)
     {
         Guard.AgainstNull(() => marketDataFetcher); // Throws ArgumentNullException
