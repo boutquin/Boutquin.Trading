@@ -14,8 +14,6 @@
 //
 namespace Boutquin.Trading.Domain.Exceptions;
 
-using System.Runtime.Serialization;
-
 /// <summary>
 /// Represents errors that occur during the calculation of trading performance metrics.
 /// </summary>

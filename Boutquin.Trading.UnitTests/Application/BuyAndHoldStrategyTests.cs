@@ -14,16 +14,6 @@
 //
 namespace Boutquin.Trading.Tests.UnitTests.Application;
 
-using Boutquin.Domain.Exceptions;
-
-using Moq;
-
-using Trading.Application.Strategies;
-using Trading.Domain.Data;
-using Trading.Domain.Enums;
-using Trading.Domain.Interfaces;
-using Trading.Domain.ValueObjects;
-
 /// <summary>
 /// Represents a set of tests for the BuyAndHoldStrategy class.
 /// </summary>

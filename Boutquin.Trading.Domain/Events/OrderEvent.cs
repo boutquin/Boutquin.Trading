@@ -16,10 +16,6 @@ namespace Boutquin.Trading.Domain.Events;
 
 using ValueObjects;
 
-using Enums;
-
-using Interfaces;
-
 /// <summary>
 /// The OrderEvent record encapsulates the data points for an order
 /// created by a specific strategy for a specific financial asset at a specific point in time,

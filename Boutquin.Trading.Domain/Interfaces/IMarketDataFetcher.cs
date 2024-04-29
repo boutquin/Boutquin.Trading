@@ -16,10 +16,6 @@ namespace Boutquin.Trading.Domain.Interfaces;
 
 using ValueObjects;
 
-using Data;
-
-using Enums;
-
 /// <summary>
 /// The IMarketDataFetcher interface defines the contract for fetching historical
 /// market data for specified financial assets.

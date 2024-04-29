@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2023-2024 Pierre G. Boutquin. All rights reserved.
+// Copyright (c) 2023 Pierre G. Boutquin. All rights reserved.
 // 
 //  Licensed under the Apache License, Version 2.0 (the "License").
 //  You may not use this file except in compliance with the License.
@@ -11,23 +11,23 @@
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//
 
-global using System.Collections.Immutable;
-global using System.ComponentModel;
-global using System.Runtime.Serialization;
-global using System.Security;
+global using System.Collections.ObjectModel;
 
 global using Boutquin.Domain.Exceptions;
-global using Boutquin.Domain.Extensions;
-global using Boutquin.Domain.Helpers;
+global using Boutquin.Trading.Application;
+global using Boutquin.Trading.Application.Brokers;
+global using Boutquin.Trading.Application.EventHandlers;
+global using Boutquin.Trading.Application.PositionSizing;
+global using Boutquin.Trading.Application.Strategies;
+global using Boutquin.Trading.DataAccess.Entities;
+global using Boutquin.Trading.DataAccess.Extensions;
 global using Boutquin.Trading.Domain.Data;
 global using Boutquin.Trading.Domain.Enums;
 global using Boutquin.Trading.Domain.Events;
-global using Boutquin.Trading.Domain.Helpers;
+global using Boutquin.Trading.Domain.Extensions;
 global using Boutquin.Trading.Domain.Interfaces;
+global using Boutquin.Trading.Domain.ValueObjects;
+global using Boutquin.Trading.Tests.UnitTests.Helpers;
 
-global using Microsoft.Extensions.Logging;
-global using Microsoft.Extensions.Logging.Abstractions;
-
-global using ExceptionMessages = Boutquin.Domain.Exceptions.ExceptionMessages;
+global using Moq;

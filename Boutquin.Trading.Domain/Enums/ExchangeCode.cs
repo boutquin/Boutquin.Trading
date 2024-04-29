@@ -14,8 +14,6 @@
 //
 namespace Boutquin.Trading.Domain.Enums;
 
-using System.ComponentModel;
-
 /// <summary>
 /// Represents the ISO 10383 market identifier codes for the major exchanges.
 /// </summary>

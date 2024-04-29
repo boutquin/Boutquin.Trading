@@ -16,12 +16,6 @@ namespace Boutquin.Trading.Domain.Events;
 
 using ValueObjects;
 
-using Data;
-
-using Enums;
-
-using Interfaces;
-
 /// <summary>
 /// The MarketEvent record encapsulates the historical market data for multiple assets and historical foreign exchange (FX) conversion rates
 /// at a specific point in time, represented by the Timestamp property.

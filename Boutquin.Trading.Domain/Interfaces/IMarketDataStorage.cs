@@ -16,8 +16,6 @@ namespace Boutquin.Trading.Domain.Interfaces;
 
 using ValueObjects;
 
-using Data;
-
 /// <summary>
 /// The IMarketDataStorage interface provides a contract for storing market data.
 /// </summary>

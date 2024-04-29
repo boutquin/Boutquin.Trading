@@ -14,13 +14,6 @@
 //
 namespace Boutquin.Trading.Tests.UnitTests.Helpers;
 
-using Boutquin.Trading.Domain.ValueObjects;
-
-using Trading.Domain.Data;
-using Trading.Domain.Enums;
-using Trading.Domain.Events;
-using Trading.Domain.Interfaces;
-
 /// <summary>
 /// Represents a test strategy for trading.
 /// </summary>

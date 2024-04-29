@@ -14,9 +14,6 @@
 //
 namespace Boutquin.Trading.Tests.UnitTests.Domain;
 
-using DataAccess.Entities;
-using DataAccess.Extensions;
-
 /// <summary>
 /// Contains unit tests for the <see cref="ExchangeExtensions"/> methods.
 /// </summary>

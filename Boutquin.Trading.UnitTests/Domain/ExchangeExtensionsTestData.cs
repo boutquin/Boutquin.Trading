@@ -14,11 +14,6 @@
 //
 namespace Boutquin.Trading.Tests.UnitTests.Domain;
 
-using DataAccess.Entities;
-using DataAccess.Extensions;
-
-using Trading.Domain.Enums;
-
 /// <summary>
 /// Provides test data for the <see cref="ExchangeExtensions"/> class.
 /// </summary>

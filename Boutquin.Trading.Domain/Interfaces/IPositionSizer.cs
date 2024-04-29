@@ -14,10 +14,6 @@
 //
 namespace Boutquin.Trading.Domain.Interfaces;
 
-using Data;
-
-using Enums;
-
 using ValueObjects;
 
 /// <summary>

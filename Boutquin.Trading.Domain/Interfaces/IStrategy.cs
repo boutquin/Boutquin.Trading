@@ -16,12 +16,6 @@ namespace Boutquin.Trading.Domain.Interfaces;
 
 using ValueObjects;
 
-using Data;
-
-using Enums;
-
-using Events;
-
 /// <summary>
 /// The IStrategy interface defines the structure and behavior of a trading
 /// strategy, providing methods for generating trading signals, managing

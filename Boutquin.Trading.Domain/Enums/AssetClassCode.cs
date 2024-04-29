@@ -14,8 +14,6 @@
 //
 namespace Boutquin.Trading.Domain.Enums;
 
-using System.ComponentModel;
-
 /// <summary>
 /// Enumerates the asset classes used in the schema.
 /// </summary>

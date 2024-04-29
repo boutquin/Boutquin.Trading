@@ -14,8 +14,6 @@
 //
 namespace Boutquin.Trading.Domain.Enums;
 
-using System.ComponentModel;
-
 /// <summary>
 /// The OrderType enum represents the type of an order for executing a trade,
 /// either as a Market order, Limit order, Stop order, or StopLimit order.

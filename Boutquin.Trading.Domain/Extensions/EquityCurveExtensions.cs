@@ -14,8 +14,6 @@
 //
 namespace Boutquin.Trading.Domain.Extensions;
 
-using Boutquin.Domain.Exceptions;
-
 /// <summary>
 /// Provides extension methods for calculating drawdowns from an
 /// equity curve represented by a SortedDictionary&lt;DateTime, decimal&gt;.

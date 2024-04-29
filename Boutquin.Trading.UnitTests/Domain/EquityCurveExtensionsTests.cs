@@ -14,8 +14,6 @@
 //
 namespace Boutquin.Trading.Tests.UnitTests.Domain;
 
-using Trading.Domain.Extensions;
-
 /// <summary>
 /// Contains unit tests for the <see cref="EquityCurveExtensions"/> methods.
 /// </summary>

@@ -14,8 +14,6 @@
 //
 namespace Boutquin.Trading.Domain.Data;
 
-using Enums;
-
 /// <summary>
 /// The FxRateData record encapsulates the foreign exchange rate data points
 /// for a specific currency pair at a specific point in time, providing

@@ -14,11 +14,6 @@
 //
 namespace Boutquin.Trading.Domain.Data;
 
-using Interfaces;
-
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-
 using ValueObjects;
 
 /// <summary>

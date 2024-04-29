@@ -14,8 +14,6 @@
 //
 namespace Boutquin.Trading.Domain.Exceptions;
 
-using System.Runtime.Serialization;
-
 /// <summary>
 /// Custom exception for when the risk-free rate is negative.
 /// </summary>

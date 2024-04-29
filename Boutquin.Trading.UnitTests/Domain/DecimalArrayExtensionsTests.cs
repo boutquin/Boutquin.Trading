@@ -14,10 +14,6 @@
 //
 namespace Boutquin.Trading.Tests.UnitTests.Domain;
 
-using Boutquin.Domain.Exceptions;
-
-using Trading.Domain.Extensions;
-
 /// <summary>
 /// Contains unit tests for the <see cref="DecimalArrayExtensions"/> methods.
 /// </summary>

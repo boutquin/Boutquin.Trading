@@ -14,13 +14,9 @@
 //
 namespace Boutquin.Trading.Domain.Helpers;
 
-using System.Security;
-
 using ValueObjects;
 
 using Exceptions;
-
-using Interfaces;
 
 /// <summary>
 /// The CsvSymbolReader class is an implementation of the ISymbolReader interface that reads symbols from a CSV file.

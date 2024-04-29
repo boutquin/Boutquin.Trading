@@ -14,8 +14,6 @@
 //
 namespace Boutquin.Trading.Domain.Exceptions;
 
-using System.Runtime.Serialization;
-
 /// <summary>
 /// Represents errors that occur when an invalid daily return value is encountered in the input data.
 /// </summary>

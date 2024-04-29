@@ -16,10 +16,6 @@ namespace Boutquin.Trading.Domain.Events;
 
 using ValueObjects;
 
-using Enums;
-
-using Interfaces;
-
 /// <summary>
 /// The Order record represents a request to execute a trade for a specified
 /// asset, with information about the trade action, order type, quantity,

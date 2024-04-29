@@ -15,8 +15,6 @@
 //
 namespace Boutquin.Trading.Domain.Interfaces;
 
-using Enums;
-
 /// <summary>
 /// The ICurrencyConversionService interface defines the contract for a currency conversion
 /// service, which is responsible for converting an amount between two currencies at a specific

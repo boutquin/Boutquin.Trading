@@ -14,8 +14,6 @@
 //
 namespace Boutquin.Trading.Domain.Exceptions;
 
-using System.Runtime.Serialization;
-
 /// <summary>
 /// Custom exception for when the number of trading days per year is negative.
 /// </summary>

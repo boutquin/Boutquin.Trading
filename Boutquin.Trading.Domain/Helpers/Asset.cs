@@ -14,8 +14,6 @@
 //
 namespace Boutquin.Trading.Domain.Helpers;
 
-using Enums;
-
 /// <summary>
 /// The Asset record encapsulates the information about a financial asset, including its symbol and currency.
 /// This record can be used to uniquely identify an asset and its associated currency within a trading strategy or portfolio.

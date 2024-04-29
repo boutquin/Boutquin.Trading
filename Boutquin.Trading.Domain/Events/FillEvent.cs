@@ -16,8 +16,6 @@ namespace Boutquin.Trading.Domain.Events;
 
 using ValueObjects;
 
-using Interfaces;
-
 /// <summary>
 /// The FillEvent record encapsulates the data points for a fill
 /// event resulting from the execution of an order for a specific financial asset at a specific point in time,

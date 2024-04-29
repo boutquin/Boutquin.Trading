@@ -16,13 +16,7 @@ namespace Boutquin.Trading.Domain.Data;
 
 using ValueObjects;
 
-using Enums;
-
 using Exceptions;
-
-using Helpers;
-
-using Interfaces;
 
 /// <summary>
 /// Fetches market data from CSV files.

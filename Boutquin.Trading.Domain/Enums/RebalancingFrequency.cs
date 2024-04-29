@@ -14,8 +14,6 @@
 //
 namespace Boutquin.Trading.Domain.Enums;
 
-using System.ComponentModel;
-
 /// <summary>
 /// The RebalancingFrequency enum represents the frequency at which a
 /// strategy should rebalance its assets.

@@ -14,8 +14,6 @@
 //
 namespace Boutquin.Trading.Domain.Exceptions;
 
-using System.Runtime.Serialization;
-
 /// <summary>
 /// The MarketDataNotFoundException class represents an exception that is thrown when the requested
 /// market data is not found for a specified symbol and timestamp.

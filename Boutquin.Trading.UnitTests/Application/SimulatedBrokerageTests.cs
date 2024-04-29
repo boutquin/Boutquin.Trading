@@ -15,15 +15,6 @@
 // ReSharper disable ObjectCreationAsStatement
 namespace Boutquin.Trading.Tests.UnitTests.Application;
 
-using Moq;
-
-using Trading.Application.Brokers;
-using Trading.Domain.Data;
-using Trading.Domain.Enums;
-using Trading.Domain.Events;
-using Trading.Domain.Interfaces;
-using Trading.Domain.ValueObjects;
-
 /// <summary>
 /// Represents a set of tests for the SimulatedBrokerage class.
 /// </summary>

@@ -14,26 +14,11 @@
 //
 namespace Boutquin.Trading.Tests.UnitTests.Application;
 
-using System.Collections.ObjectModel;
-
-using Helpers;
-
-using Moq;
-
-using Trading.Application;
-using Trading.Application.EventHandlers;
-using Trading.Domain.Data;
-using Trading.Domain.Enums;
-using Trading.Domain.Events;
-using Trading.Domain.Interfaces;
-using Trading.Domain.ValueObjects;
-
 /// <summary>
 /// Represents a set of tests for the Portfolio class.
 /// </summary>
 public class PortfolioTests
 {
-    private readonly Mock<IEventProcessor> _mockEventProcessor = new();
     private readonly Mock<IBrokerage> _mockBroker = new();
     private readonly Dictionary<Type, IEventHandler> _handlers = new() 
     {

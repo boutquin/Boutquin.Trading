@@ -14,8 +14,6 @@
 //
 namespace Boutquin.Trading.Domain.Enums;
 
-using System.ComponentModel;
-
 /// <summary>
 /// The TradeAction enum represents the action to be performed in a trade,
 /// either as a Buy or Sell action.

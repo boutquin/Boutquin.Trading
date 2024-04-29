@@ -14,14 +14,6 @@
 //
 namespace Boutquin.Trading.Tests.UnitTests.Application;
 
-using Moq;
-
-using Trading.Application.PositionSizing;
-using Trading.Domain.Data;
-using Trading.Domain.Enums;
-using Trading.Domain.Interfaces;
-using Trading.Domain.ValueObjects;
-
 /// <summary>
 /// Represents a set of tests for the FixedWeightPositionSizer class.
 /// </summary>

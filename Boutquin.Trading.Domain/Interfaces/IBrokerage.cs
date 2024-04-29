@@ -14,8 +14,6 @@
 //
 namespace Boutquin.Trading.Domain.Interfaces;
 
-using Events;
-
 /// <summary>
 /// The IBrokerage interface represents the brokerage component in the
 /// trading platform, providing methods for managing orders and

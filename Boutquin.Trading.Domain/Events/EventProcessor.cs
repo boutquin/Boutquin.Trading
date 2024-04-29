@@ -14,8 +14,6 @@
 //
 namespace Boutquin.Trading.Domain.Events;
 
-using Interfaces;
-
 /// <summary>
 /// Processes financial events by delegating to the appropriate event handler.
 /// </summary>

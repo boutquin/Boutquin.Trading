@@ -16,10 +16,6 @@ namespace Boutquin.Trading.Domain.Interfaces;
 
 using ValueObjects;
 
-using Data;
-
-using Enums;
-
 /// <summary>
 /// Defines an interface for calculating order prices based on historical market data, given an asset and a trade action.
 /// </summary>

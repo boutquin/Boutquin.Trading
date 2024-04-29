@@ -14,15 +14,6 @@
 //
 namespace Boutquin.Trading.Tests.UnitTests.Domain;
 
-using Boutquin.Domain.Exceptions;
-
-using Helpers;
-
-using Trading.Domain.Data;
-using Trading.Domain.Enums;
-using Trading.Domain.Interfaces;
-using Trading.Domain.ValueObjects;
-
 /// <summary>
 /// Contains unit tests for the Strategy class.
 /// </summary>

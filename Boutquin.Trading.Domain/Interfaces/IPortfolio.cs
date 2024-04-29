@@ -16,12 +16,6 @@ namespace Boutquin.Trading.Domain.Interfaces;
 
 using ValueObjects;
 
-using Data;
-
-using Enums;
-
-using Events;
-
 /// <summary>
 /// The IPortfolio interface defines the structure and behavior of a portfolio in a trading system.
 /// It provides methods and properties to manage the portfolio's strategies, assets, historical data, 
