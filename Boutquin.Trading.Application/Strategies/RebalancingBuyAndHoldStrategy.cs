@@ -14,10 +14,7 @@
 //
 namespace Boutquin.Trading.Application.Strategies;
 
-using Boutquin.Domain.Exceptions;
 using Domain.ValueObjects;
-
-using Domain.Data;
 
 /// <summary>
 /// Rebalancing buy and hold strategy that periodically rebalances the portfolio to the initial weights.

@@ -14,8 +14,6 @@
 //
 namespace Boutquin.Trading.Application.EventHandlers;
 
-using Domain.Interfaces;
-
 /// <summary>
 /// The FillEventHandler class is an implementation of the IEventHandler interface that handles FillEvent objects.
 /// FillEvent objects represent the filling of an order in the trading system.

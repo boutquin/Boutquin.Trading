@@ -14,9 +14,6 @@
 //
 namespace Boutquin.Trading.Application.Brokers;
 
-using Domain.Interfaces;
-using Domain.Data;
-
 /// <summary>
 /// SimulatedBrokerage is an implementation of the IBrokerage interface that simulates the behavior
 /// of a real-world brokerage. It is intended to be used in backtesting trading strategies.

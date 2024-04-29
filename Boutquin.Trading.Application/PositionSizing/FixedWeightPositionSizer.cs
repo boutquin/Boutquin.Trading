@@ -16,8 +16,6 @@ namespace Boutquin.Trading.Application.PositionSizing;
 
 using Domain.ValueObjects;
 
-using Domain.Data;
-
 /// <summary>
 /// The FixedWeightPositionSizer class implements the IPositionSizer interface, using fixed asset weights to determine
 /// the desired positions. The weights are expressed as a percentage of the total strategy value in the base currency.

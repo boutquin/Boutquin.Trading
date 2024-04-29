@@ -14,10 +14,7 @@
 //
 namespace Boutquin.Trading.Application.Strategies;
 
-using Boutquin.Domain.Exceptions;
-
 using Domain.ValueObjects;
-using Domain.Data;
 
 /// <summary>
 /// Represents a simple buy and hold strategy that generates buy signals on the initial timestamp and holds the positions throughout.

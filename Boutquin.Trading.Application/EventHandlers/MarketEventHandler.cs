@@ -14,8 +14,6 @@
 //
 namespace Boutquin.Trading.Application.EventHandlers;
 
-using Domain.Interfaces;
-
 /// <summary>
 /// The MarketEventHandler class is an implementation of the IEventHandler interface that handles MarketEvent objects.
 /// MarketEvent objects represent the market data for a specific financial asset at a specific point in time.

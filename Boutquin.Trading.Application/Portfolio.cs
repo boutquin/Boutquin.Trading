@@ -16,8 +16,6 @@ namespace Boutquin.Trading.Application;
 
 using Domain.ValueObjects;
 
-using Domain.Data;
-
 public sealed class Portfolio : IPortfolio
 {
     /// <summary>

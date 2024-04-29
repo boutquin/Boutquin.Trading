@@ -14,7 +14,7 @@
 //
 global using Boutquin.Domain.Exceptions;
 global using Boutquin.Domain.Helpers;
-
+global using Boutquin.Trading.Domain.Data;
 global using Boutquin.Trading.Domain.Enums;
 global using Boutquin.Trading.Domain.Events;
 global using Boutquin.Trading.Domain.Exceptions;
