@@ -12,5 +12,19 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
+global using System.Collections.ObjectModel;
+
+global using Boutquin.Trading.Application;
 global using Boutquin.Trading.Application.Brokers;
+global using Boutquin.Trading.Application.EventHandlers;
+global using Boutquin.Trading.Application.PositionSizing;
+global using Boutquin.Trading.Application.Strategies;
 global using Boutquin.Trading.Data.AlphaVantage;
+global using Boutquin.Trading.Domain.Data;
+global using Boutquin.Trading.Domain.Enums;
+global using Boutquin.Trading.Domain.Events;
+global using Boutquin.Trading.Domain.Interfaces;
+global using Boutquin.Trading.Domain.ValueObjects;
+global using Boutquin.Trading.Sample;
+
+global using Microsoft.Extensions.Caching.Distributed;

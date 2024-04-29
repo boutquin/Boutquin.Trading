@@ -12,23 +12,8 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-
-using System.Collections.ObjectModel;
-
-using Boutquin.Trading.Application;
-using Boutquin.Trading.Application.EventHandlers;
-
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
-
-using Boutquin.Trading.Application.PositionSizing;
-using Boutquin.Trading.Application.Strategies;
-using Boutquin.Trading.Domain.Enums;
-using Boutquin.Trading.Domain.Events;
-using Boutquin.Trading.Domain.Interfaces;
-using Boutquin.Trading.Sample;
-using Boutquin.Trading.Domain.ValueObjects;
 
 const CurrencyCode BaseCurrency = CurrencyCode.USD;
 var fixedAssetWeights = new Dictionary<Asset, decimal> { { new Asset("SPX"), 1m } };
