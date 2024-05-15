@@ -20,4 +20,5 @@ namespace Boutquin.Trading.Domain.Exceptions;
 public static class ExceptionMessages
 {
     public const string NegativeTradingDaysPerYear = "The number of trading days per year must be positive.";
+    public const string InsufficientDataForSampleCalculation = "Insufficient data to calculate the sample mean and standard deviation.";
 }
