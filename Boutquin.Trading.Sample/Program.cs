@@ -12,18 +12,23 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
 
+// Define the base currency for the trading environment.
 const CurrencyCode BaseCurrency = CurrencyCode.USD;
+// Initialize fixed asset weights for the strategy. Here, 'SPX' is assigned a weight of 1.
 var fixedAssetWeights = new Dictionary<Asset, decimal> { { new Asset("SPX"), 1m } };
+// Map each asset to its corresponding currency. In this case, 'SPX' is traded in USD.
 var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { new Asset("SPX"), BaseCurrency } };
+// Create a position sizer that uses fixed weights for sizing positions.
 var positionSizer = new FixedWeightPositionSizer(fixedAssetWeights, BaseCurrency);
 
+// Setup the data fetcher for market data. Here, AlphaVantage is used with a memory cache.
 var options = Options.Create(new MemoryDistributedCacheOptions());
 var dataFetcher = new AlphaVantageFetcher(new MemoryDistributedCache(options));
+// Initialize a simulated brokerage for executing trades and fetching market data.
 var broker = new SimulatedBrokerage(dataFetcher);
 
+// Define event handlers for different types of events that the system can handle.
 var handlers = new Dictionary<Type, IEventHandler>
 {
     { typeof(OrderEvent), new OrderEventHandler() },
@@ -32,14 +37,16 @@ var handlers = new Dictionary<Type, IEventHandler>
     { typeof(SignalEvent), new SignalEventHandler() }
 };
 
+// Initialize the trading strategy. Here, a simple Buy and Hold strategy is used.
 var benchmarkStrategy = new BuyAndHoldStrategy(
     nameof(BuyAndHoldStrategy),
     assetCurrencies,
-        new SortedDictionary<CurrencyCode, decimal> { { BaseCurrency, 50000m } },
+    new SortedDictionary<CurrencyCode, decimal> { { BaseCurrency, 50000m } },
     new DateOnly(2023, 1, 1),
     new ClosePriceOrderPriceCalculationStrategy(),
     positionSizer
-    );
+);
+// Create a portfolio that uses the defined strategy, event handlers, and brokerage.
 var benchmarkPortfolio = new Portfolio(
     BaseCurrency,
     new ReadOnlyDictionary<string, IStrategy>(
@@ -49,3 +56,4 @@ var benchmarkPortfolio = new Portfolio(
     handlers,
     broker
 );
+

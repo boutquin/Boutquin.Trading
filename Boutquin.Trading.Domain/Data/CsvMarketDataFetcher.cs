@@ -14,8 +14,6 @@
 //
 namespace Boutquin.Trading.Domain.Data;
 
-using ValueObjects;
-
 using Exceptions;
 
 /// <summary>
