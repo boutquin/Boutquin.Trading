@@ -15,6 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		ARCHITECTURE.MD = ARCHITECTURE.MD
 		CommonAssemblyInfo.props = CommonAssemblyInfo.props
 		LICENSE.txt = LICENSE.txt
+		.github\workflows\pr-verify.yml = .github\workflows\pr-verify.yml
 		README.md = README.md
 	EndProjectSection
 EndProject
@@ -37,6 +38,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boutquin.Trading.Tests.ArchitectureTests", "Tests\Boutquin.Trading.Tests.ArchitectureTests\Boutquin.Trading.Tests.ArchitectureTests.csproj", "{E9F1E5B8-E222-49D1-B8DB-E5D4699A14C4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boutquin.Trading.Sample", "Boutquin.Trading.Sample\Boutquin.Trading.Sample.csproj", "{BB412560-3147-46B3-8211-DF4076A402C9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boutquin.Trading.Data.Polygon", "Boutquin.Trading.Data.Polygon\Boutquin.Trading.Data.Polygon.csproj", "{E10B0B1F-646D-41B5-A05F-4B10FE48105C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -88,6 +91,10 @@ Global
 		{BB412560-3147-46B3-8211-DF4076A402C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BB412560-3147-46B3-8211-DF4076A402C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BB412560-3147-46B3-8211-DF4076A402C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E10B0B1F-646D-41B5-A05F-4B10FE48105C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E10B0B1F-646D-41B5-A05F-4B10FE48105C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E10B0B1F-646D-41B5-A05F-4B10FE48105C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E10B0B1F-646D-41B5-A05F-4B10FE48105C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

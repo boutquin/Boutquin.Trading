@@ -35,7 +35,7 @@ public sealed class AlphaVantageFetcher : IMarketDataFetcher
 {
     private readonly HttpClient _httpClient;
     private readonly IDistributedCache _cache;
-    private readonly string _apiKey;
+    private readonly string? _apiKey;
     private readonly string _apiEndpoint;
     private readonly SemaphoreSlim _rateLimitSemaphore;
     private readonly TimeSpan _cacheExpiration;
@@ -53,7 +53,7 @@ public sealed class AlphaVantageFetcher : IMarketDataFetcher
     /// <param name="cacheExpiration">An optional TimeSpan for setting the cache expiration. If not provided, a default value of 6 hours will be used.</param>
     /// <exception cref="ArgumentNullException">Thrown when the provided API key or IDistributedCache is null or empty.</exception>
     public AlphaVantageFetcher(
-        string apiKey,
+        string? apiKey,
         IDistributedCache cache, 
         HttpClient httpClient = null,
         string apiEndpoint = "https://www.alphavantage.co/query",
