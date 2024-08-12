@@ -16,8 +16,6 @@ namespace Boutquin.Trading.Domain.Interfaces;
 
 using ValueObjects;
 
-using Exceptions;
-
 /// <summary>
 /// Represents an interface for reading symbols from a data source.
 /// </summary>

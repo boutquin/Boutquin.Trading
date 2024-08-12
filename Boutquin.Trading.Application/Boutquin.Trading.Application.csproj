@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="../CommonAssemblyInfo.props" />
 
@@ -7,12 +7,6 @@
     <PackageTags>CleanArchitecture,Domain,Entities,Shared,ApplicationLayer,SecurityMaster,TradingStrategy,Portfolio,BackTesting</PackageTags>
     <PackageReleaseNotes>Initial version.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-    <PackageIcon>icon.png</PackageIcon>
-    <RepositoryUrl>https://github.com/boutquin/Boutquin.Trading</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageProjectUrl>https://github.com/users/boutquin/projects/2/</PackageProjectUrl>
     <Title>An Application layer specific for trading.</Title>
   </PropertyGroup>
 
@@ -32,6 +26,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.7" />
+    <PackageReference Include="MinVer" Version="5.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
   </ItemGroup>
 

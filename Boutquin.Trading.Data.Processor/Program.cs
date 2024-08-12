@@ -14,15 +14,6 @@
 //
 namespace Boutquin.Trading.Data.Processor;
 
-using AlphaVantage;
-
-using Domain.Data;
-using Domain.Helpers;
-
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
-
 internal class Program
 {
     private static async Task Main(string[] args)
@@ -33,18 +24,15 @@ internal class Program
         var symbolReader = new CsvSymbolReader(filename);
         var assets = await symbolReader.ReadSymbolsAsync();
 
-        // Retrieve the API key from the environment
-        var apiKey = Environment.GetEnvironmentVariable("ALPHA_VANTAGE_API_KEY");
-
         // Create a distributed cache instance (e.g., MemoryDistributedCache)
         var cache = new MemoryDistributedCache(new OptionsWrapper<MemoryDistributedCacheOptions>(new MemoryDistributedCacheOptions()));
 
-        // Instantiate AlphaVantageFetcher with the required parameters
-        var apiFetcher = new AlphaVantageFetcher(apiKey, cache);
+        // Instantiate PolygonFetcher with the required parameters
+        var apiFetcher = new PolygonFetcher(cache);
         var writer = new CsvMarketDataStorage(dataDir);
         var marketDataProcessor = new MarketDataProcessor(apiFetcher, writer);
 
-        //await marketDataProcessor.ProcessAndStoreMarketDataAsync(assets);
+        await marketDataProcessor.ProcessAndStoreMarketDataAsync(assets);
 
         var fetcher = new CsvMarketDataFetcher(dataDir);
 

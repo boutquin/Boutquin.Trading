@@ -14,8 +14,6 @@
 //
 namespace Boutquin.Trading.Domain.Data;
 
-using Exceptions;
-
 /// <summary>
 /// Fetches market data from CSV files.
 /// </summary>

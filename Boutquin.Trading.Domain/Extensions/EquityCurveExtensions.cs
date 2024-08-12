@@ -12,6 +12,9 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
+
+using ExceptionMessages = Boutquin.Domain.Exceptions.ExceptionMessages;
+
 namespace Boutquin.Trading.Domain.Extensions;
 
 /// <summary>

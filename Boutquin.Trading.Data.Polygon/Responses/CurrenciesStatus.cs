@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024 Pierre G. Boutquin. All rights reserved.
+﻿// Copyright (c) 2024 Pierre G. Boutquin. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License").
 //  You may not use this file except in compliance with the License.
@@ -12,13 +12,16 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-namespace Boutquin.Trading.Domain.Exceptions;
+namespace Boutquin.Trading.Data.Polygon.Responses;
 
 /// <summary>
-/// Contains constants for exception messages.
+/// The CurrenciesStatus record encapsulates the status of cryptocurrency and foreign exchange markets.
 /// </summary>
-public static class ExceptionMessages
-{
-    public const string NegativeTradingDaysPerYear = "The number of trading days per year must be positive.";
-    //public const string InsufficientDataForSampleCalculation = "Insufficient data to calculate the sample mean and standard deviation.";
-}
+/// <param name="Crypto">The status of the cryptocurrency market, represented as a string value.</param>
+/// <param name="Fx">The status of the foreign exchange market, represented as a string value.</param>
+/// <example>
+/// var currenciesStatus = new CurrenciesStatus("open", "open");
+/// </example>
+public sealed record CurrenciesStatus(
+    string Crypto,
+    string Fx);

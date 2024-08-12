@@ -16,8 +16,6 @@ namespace Boutquin.Trading.Domain.Data;
 
 using ValueObjects;
 
-using Exceptions;
-
 /// <summary>
 /// The CsvMarketDataStorage class provides functionality to store market data in CSV format.
 /// It implements the IMarketDataStorage interface.
@@ -71,7 +69,7 @@ public sealed class CsvMarketDataStorage : IMarketDataStorage
     /// await storage.SaveMarketDataAsync(dataPoint);
     /// </code>
     /// </example>
-    public async Task SaveMarketDataAsync(KeyValuePair<DateOnly, SortedDictionary<ValueObjects.Asset, MarketData>?> dataPoint)
+    public async Task SaveMarketDataAsync(KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>?> dataPoint)
     {
         // Validate the input data point
         if (dataPoint.Value == null || dataPoint.Value.Count == 0)
@@ -128,7 +126,7 @@ public sealed class CsvMarketDataStorage : IMarketDataStorage
     /// await storage.SaveMarketDataAsync(dataPoints);
     /// </code>
     /// </example>
-    public async Task SaveMarketDataAsync(IEnumerable<KeyValuePair<DateOnly, SortedDictionary<ValueObjects.Asset, MarketData>>> dataPoints)
+    public async Task SaveMarketDataAsync(IEnumerable<KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>> dataPoints)
     {
         if (dataPoints == null)
         {

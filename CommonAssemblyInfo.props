@@ -8,12 +8,17 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Pierre G. Boutquin</Authors>
     <Company>Boutquin Computer Consulting</Company>
-    <PackageProjectUrl>file://C:/Users/pierre/source/repos/packages</PackageProjectUrl>
-    <RepositoryUrl>file://C:/Users/pierre/source/repos/packages</RepositoryUrl>
-    <RepositoryType>file</RepositoryType>
-    <Version>0.5.0.2-beta01</Version>
+    <RepositoryUrl>https://github.com/boutquin/Boutquin.Trading</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/users/boutquin/projects/2/</PackageProjectUrl>
     <Copyright>Copyright © 2023-2024, Boutquin Computer Consulting. All rights reserved.</Copyright>
     <NeutralLanguage>en</NeutralLanguage>
-    <PackageIconUrl>folder</PackageIconUrl>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <PackageVersion>$(PackageVersion)$(MinVerBuildMetadata)</PackageVersion>
+    <Version>$(PackageVersion)</Version>
+    <MinVerTagPrefix>v</MinVerTagPrefix>
+    <MinVerDefaultPreReleaseIdentifiers>beta</MinVerDefaultPreReleaseIdentifiers>
   </PropertyGroup>
 </Project>
