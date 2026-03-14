@@ -1,20 +1,22 @@
-﻿// Copyright (c) 2023-2024 Pierre G. Boutquin. All rights reserved.
+// Copyright (c) 2023-2026 Pierre G. Boutquin. All rights reserved.
 //
-//  Licensed under the Apache License, Version 2.0 (the "License").
-//  You may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
+//   Licensed under the Apache License, Version 2.0 (the "License").
+//   You may not use this file except in compliance with the License.
+//   You may obtain a copy of the License at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//       http://www.apache.org/licenses/LICENSE-2.0
 //
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
+//   Unless required by applicable law or agreed to in writing, software
+//   distributed under the License is distributed on an "AS IS" BASIS,
+//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //
+//   See the License for the specific language governing permissions and
+//   limitations under the License.
+//
+
 namespace Boutquin.Trading.Data.Processor;
 
-internal class Program
+internal sealed class Program
 {
     private static async Task Main(string[] args)
     {
@@ -22,7 +24,7 @@ internal class Program
         var dataDir = Path.Combine(new DirectoryInfo("./../../../.").FullName, "Data");
         var filename = Path.Combine(dataDir, "Symbols.csv");
         var symbolReader = new CsvSymbolReader(filename);
-        var assets = await symbolReader.ReadSymbolsAsync();
+        var assets = await symbolReader.ReadSymbolsAsync().ConfigureAwait(false);
 
         // Create a distributed cache instance (e.g., MemoryDistributedCache)
         var cache = new MemoryDistributedCache(new OptionsWrapper<MemoryDistributedCacheOptions>(new MemoryDistributedCacheOptions()));
@@ -32,13 +34,13 @@ internal class Program
         var writer = new CsvMarketDataStorage(dataDir);
         var marketDataProcessor = new MarketDataProcessor(apiFetcher, writer);
 
-        await marketDataProcessor.ProcessAndStoreMarketDataAsync(assets);
+        await marketDataProcessor.ProcessAndStoreMarketDataAsync(assets).ConfigureAwait(false);
 
         var fetcher = new CsvMarketDataFetcher(dataDir);
 
         try
         {
-            await foreach (var dataPoint in fetcher.FetchMarketDataAsync(assets))
+            await foreach (var dataPoint in fetcher.FetchMarketDataAsync(assets).ConfigureAwait(false))
             {
                 var date = dataPoint.Key;
                 var marketData = dataPoint.Value;

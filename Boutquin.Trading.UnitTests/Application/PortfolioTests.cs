@@ -1,17 +1,19 @@
-﻿// Copyright (c) 2023-2024 Pierre G. Boutquin. All rights reserved.
+// Copyright (c) 2023-2026 Pierre G. Boutquin. All rights reserved.
 //
-//  Licensed under the Apache License, Version 2.0 (the "License").
-//  You may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
+//   Licensed under the Apache License, Version 2.0 (the "License").
+//   You may not use this file except in compliance with the License.
+//   You may obtain a copy of the License at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//       http://www.apache.org/licenses/LICENSE-2.0
 //
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
+//   Unless required by applicable law or agreed to in writing, software
+//   distributed under the License is distributed on an "AS IS" BASIS,
+//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //
+//   See the License for the specific language governing permissions and
+//   limitations under the License.
+//
+
 namespace Boutquin.Trading.Tests.UnitTests.Application;
 
 /// <summary>
@@ -20,7 +22,7 @@ namespace Boutquin.Trading.Tests.UnitTests.Application;
 public class PortfolioTests
 {
     private readonly Mock<IBrokerage> _mockBroker = new();
-    private readonly Dictionary<Type, IEventHandler> _handlers = new() 
+    private readonly Dictionary<Type, IEventHandler> _handlers = new()
     {
         { typeof(OrderEvent), new OrderEventHandler() },
         { typeof(MarketEvent), new MarketEventHandler() },
@@ -71,7 +73,7 @@ public class PortfolioTests
         );
 
         // Act
-        await portfolio.HandleEventAsync(orderEvent);
+        await portfolio.HandleEventAsync(orderEvent).ConfigureAwait(false);
 
         // Assert
         mockOrderHandler.Verify(h => h.HandleEventAsync(It.IsAny<IPortfolio>(), orderEvent), Times.Once);
@@ -96,7 +98,7 @@ public class PortfolioTests
 
         var fillEvent = new FillEvent(
             DateOnly.FromDateTime(DateTime.Today),
-            new Asset("AAPL"), 
+            new Asset("AAPL"),
             "TestStrategy",
             150.0m,
             100,
@@ -120,7 +122,7 @@ public class PortfolioTests
         );
 
         // Act
-        await portfolio.HandleEventAsync(fillEvent);
+        await portfolio.HandleEventAsync(fillEvent).ConfigureAwait(false);
 
         // Assert
         mockFillHandler.Verify(h => h.HandleEventAsync(It.IsAny<IPortfolio>(), fillEvent), Times.Once);
@@ -171,7 +173,7 @@ public class PortfolioTests
         );
 
         // Act
-        await portfolio.HandleEventAsync(signalEvent);
+        await portfolio.HandleEventAsync(signalEvent).ConfigureAwait(false);
 
         // Assert
         mockSignalHandler.Verify(h => h.HandleEventAsync(It.IsAny<IPortfolio>(), signalEvent), Times.Once);
@@ -229,7 +231,7 @@ public class PortfolioTests
         );
 
         // Act
-        await portfolio.HandleEventAsync(marketEvent);
+        await portfolio.HandleEventAsync(marketEvent).ConfigureAwait(false);
 
         // Assert
         mockMarketHandler.Verify(h => h.HandleEventAsync(It.IsAny<IPortfolio>(), marketEvent), Times.Once);
@@ -335,7 +337,7 @@ public class PortfolioTests
 
         // Act
         portfolio.UpdateCashForDividend(asset, dividendPerShare);
-        
+
         // Assert
         testStrategy.Cash[CurrencyCode.USD].Should().Be(1020m);
     }
@@ -418,7 +420,7 @@ public class PortfolioTests
         );
 
         // Act
-        await portfolio.SubmitOrderAsync(orderEvent);
+        await portfolio.SubmitOrderAsync(orderEvent).ConfigureAwait(false);
 
         // Assert
         _mockBroker.Verify(x => x.SubmitOrderAsync(It.Is<Order>(o =>
@@ -654,7 +656,6 @@ public class PortfolioTests
         const CurrencyCode BaseCurrency = CurrencyCode.USD;
         IStrategy strategy = new TestStrategy();
         var timestamp = DateOnly.FromDateTime(DateTime.Today);
-        var baseCurrency = CurrencyCode.USD;
         var marketData = new SortedDictionary<Asset, MarketData>
         {
             { new Asset("AAPL"),
@@ -687,7 +688,7 @@ public class PortfolioTests
             _mockBroker.Object,
             isLive: false)
         {
-            HistoricalMarketData = { [timestamp] = marketData }, 
+            HistoricalMarketData = { [timestamp] = marketData },
             HistoricalFxConversionRates = { [timestamp] = fxRates }
         };
 

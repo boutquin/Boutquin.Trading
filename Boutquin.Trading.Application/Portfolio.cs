@@ -1,17 +1,19 @@
-﻿// Copyright (c) 2023-2024 Pierre G. Boutquin. All rights reserved.
+// Copyright (c) 2023-2026 Pierre G. Boutquin. All rights reserved.
 //
-//  Licensed under the Apache License, Version 2.0 (the "License").
-//  You may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
+//   Licensed under the Apache License, Version 2.0 (the "License").
+//   You may not use this file except in compliance with the License.
+//   You may obtain a copy of the License at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//       http://www.apache.org/licenses/LICENSE-2.0
 //
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
+//   Unless required by applicable law or agreed to in writing, software
+//   distributed under the License is distributed on an "AS IS" BASIS,
+//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //
+//   See the License for the specific language governing permissions and
+//   limitations under the License.
+//
+
 namespace Boutquin.Trading.Application;
 
 using Domain.ValueObjects;
@@ -122,7 +124,7 @@ public sealed class Portfolio : IPortfolio
     /// <summary>
     /// The HistoricalMarketData property represents a sorted dictionary of historical market data used by the portfolio.
     /// </summary>
-    public SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>?> HistoricalMarketData { get; } 
+    public SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>?> HistoricalMarketData { get; }
         = [];
 
     /// <summary>
@@ -134,7 +136,7 @@ public sealed class Portfolio : IPortfolio
     /// <summary>
     /// The EquityCurve property represents a sorted dictionary of equity values over time.
     /// </summary>
-    public SortedDictionary<DateOnly, decimal> EquityCurve { get; } 
+    public SortedDictionary<DateOnly, decimal> EquityCurve { get; }
         = [];
 
     /// <summary>
@@ -156,7 +158,7 @@ public sealed class Portfolio : IPortfolio
         // Ensure that the @event is not null.
         Guard.AgainstNull(() => @event); // Throws ArgumentNullException when the @event parameter is null
 
-        await EventProcessor.ProcessEventAsync(@event);
+        await EventProcessor.ProcessEventAsync(@event).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -240,7 +242,7 @@ public sealed class Portfolio : IPortfolio
             orderEvent.SecondaryPrice);
 
         // Submit the order to the brokerage.
-        return await _broker.SubmitOrderAsync(order);
+        return await _broker.SubmitOrderAsync(order).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -442,6 +444,6 @@ public sealed class Portfolio : IPortfolio
         // Ensure that the @event is not null.
         Guard.AgainstNull(() => fillEvent); // Throws ArgumentNullException when the fillEvent parameter is null
 
-        await EventProcessor.ProcessEventAsync(fillEvent);
+        await EventProcessor.ProcessEventAsync(fillEvent).ConfigureAwait(false);
     }
 }

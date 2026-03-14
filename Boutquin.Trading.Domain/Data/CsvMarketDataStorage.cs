@@ -1,17 +1,19 @@
-﻿// Copyright (c) 2023-2024 Pierre G. Boutquin. All rights reserved.
+// Copyright (c) 2023-2026 Pierre G. Boutquin. All rights reserved.
 //
-//  Licensed under the Apache License, Version 2.0 (the "License").
-//  You may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
+//   Licensed under the Apache License, Version 2.0 (the "License").
+//   You may not use this file except in compliance with the License.
+//   You may obtain a copy of the License at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//       http://www.apache.org/licenses/LICENSE-2.0
 //
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
+//   Unless required by applicable law or agreed to in writing, software
+//   distributed under the License is distributed on an "AS IS" BASIS,
+//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //
+//   See the License for the specific language governing permissions and
+//   limitations under the License.
+//
+
 namespace Boutquin.Trading.Domain.Data;
 
 using ValueObjects;
@@ -90,18 +92,22 @@ public sealed class CsvMarketDataStorage : IMarketDataStorage
                 // Check if the file exists, and create it with the header if not
                 if (!File.Exists(filePath))
                 {
+#pragma warning disable CA2007
                     await using var fileStream = File.Create(filePath);
                     await using var streamWriter = new StreamWriter(fileStream);
+#pragma warning restore CA2007
 
-                    await streamWriter.WriteLineAsync("Timestamp,Open,High,Low,Close,AdjustedClose,Volume,DividendPerShare,SplitCoefficient");
+                    await streamWriter.WriteLineAsync("Timestamp,Open,High,Low,Close,AdjustedClose,Volume,DividendPerShare,SplitCoefficient").ConfigureAwait(false);
                 }
 
                 // Append the data point to the file
+#pragma warning disable CA2007
                 await using var appendFileStream = File.Open(filePath, FileMode.Append, FileAccess.Write);
                 await using var appendStreamWriter = new StreamWriter(appendFileStream);
+#pragma warning restore CA2007
 
                 var line = $"{marketData.Timestamp},{marketData.Open},{marketData.High},{marketData.Low},{marketData.Close},{marketData.AdjustedClose},{marketData.Volume},{marketData.DividendPerShare},{marketData.SplitCoefficient}";
-                await appendStreamWriter.WriteLineAsync(line);
+                await appendStreamWriter.WriteLineAsync(line).ConfigureAwait(false);
             }
             catch (IOException ex)
             {
@@ -118,7 +124,6 @@ public sealed class CsvMarketDataStorage : IMarketDataStorage
         }
     }
 
-
     /// <inheritdoc/>
     /// <example>
     /// <code>
@@ -128,10 +133,7 @@ public sealed class CsvMarketDataStorage : IMarketDataStorage
     /// </example>
     public async Task SaveMarketDataAsync(IEnumerable<KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>> dataPoints)
     {
-        if (dataPoints == null)
-        {
-            throw new ArgumentNullException(nameof(dataPoints));
-        }
+        ArgumentNullException.ThrowIfNull(dataPoints);
 
         // Group the data points by symbol
         var groupedDataPoints = dataPoints.SelectMany(x => x.Value)
@@ -149,20 +151,24 @@ public sealed class CsvMarketDataStorage : IMarketDataStorage
                 // Check if the file exists, and create it with the header if not
                 if (!File.Exists(filePath))
                 {
+#pragma warning disable CA2007
                     await using var fileStream = File.Create(filePath);
                     await using var streamWriter = new StreamWriter(fileStream);
+#pragma warning restore CA2007
 
-                    await streamWriter.WriteLineAsync("Timestamp,Open,High,Low,Close,AdjustedClose,Volume,DividendPerShare,SplitCoefficient");
+                    await streamWriter.WriteLineAsync("Timestamp,Open,High,Low,Close,AdjustedClose,Volume,DividendPerShare,SplitCoefficient").ConfigureAwait(false);
                 }
 
                 // Append the data points to the file
+#pragma warning disable CA2007
                 await using var appendFileStream = File.Open(filePath, FileMode.Append, FileAccess.Write);
                 await using var appendStreamWriter = new StreamWriter(appendFileStream);
+#pragma warning restore CA2007
 
                 foreach (var dataPoint in symbolDataPoints.Value)
                 {
                     var line = $"{dataPoint.Timestamp},{dataPoint.Open},{dataPoint.High},{dataPoint.Low},{dataPoint.Close},{dataPoint.AdjustedClose},{dataPoint.Volume},{dataPoint.DividendPerShare},{dataPoint.SplitCoefficient}";
-                    await appendStreamWriter.WriteLineAsync(line);
+                    await appendStreamWriter.WriteLineAsync(line).ConfigureAwait(false);
                 }
             }
             catch (IOException ex)

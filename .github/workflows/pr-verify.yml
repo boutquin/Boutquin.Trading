@@ -2,29 +2,44 @@ name: PR Verify
 
 on:
   pull_request:
-    branches: ["master"]
+    branches: ["main"]
 
 jobs:
   build:
-    name: PR Verify
+    name: PR Review
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Set up .NET Core
+      - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 8.0
+          dotnet-version: 10.0.x
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', 'Directory.Build.props') }}
+          restore-keys: ${{ runner.os }}-nuget-
 
       - name: dotnet restore
-        run: dotnet restore --locked-mode
+        run: dotnet restore
 
       - name: Build with dotnet
         run: dotnet build --configuration Release --no-restore
 
       - name: dotnet test
-        run: dotnet test --configuration Release --no-build
+        run: dotnet test --configuration Release --no-build --collect:"XPlat Code Coverage"
 
-      - name: dotnet format
-        run: dotnet format -v detailed --verify-no-changes
+      - name: dotnet format (whitespace)
+        run: dotnet format whitespace --verify-no-changes
+
+      - name: dotnet format (style)
+        run: dotnet format style --verify-no-changes --exclude-diagnostics IDE1006 IDE0060
+
+      - name: dotnet format (analyzers)
+        run: dotnet format analyzers --verify-no-changes --exclude-diagnostics CA1305 CA2007 CA2208 xUnit1030

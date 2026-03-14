@@ -1,17 +1,19 @@
-﻿// Copyright (c) 2023-2024 Pierre G. Boutquin. All rights reserved.
+// Copyright (c) 2023-2026 Pierre G. Boutquin. All rights reserved.
 //
-//  Licensed under the Apache License, Version 2.0 (the "License").
-//  You may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
+//   Licensed under the Apache License, Version 2.0 (the "License").
+//   You may not use this file except in compliance with the License.
+//   You may obtain a copy of the License at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//       http://www.apache.org/licenses/LICENSE-2.0
 //
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
+//   Unless required by applicable law or agreed to in writing, software
+//   distributed under the License is distributed on an "AS IS" BASIS,
+//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //
+//   See the License for the specific language governing permissions and
+//   limitations under the License.
+//
+
 namespace Boutquin.Trading.DataAccess.Entities;
 
 /// <summary>
@@ -46,8 +48,8 @@ public sealed class Position
     /// <param name="quantity">The quantity of shares in the trading position.</param>
     /// <param name="bookValue">The book value of the trading position.</param>
     public Position(
-        string symbol, 
-        int quantity, 
+        string symbol,
+        int quantity,
         decimal bookValue)
     {
         Guard.AgainstNullOrWhiteSpace(() => symbol); // Throws ArgumentException
@@ -66,8 +68,8 @@ public sealed class Position
     /// <param name="transactionFee">The transaction fee.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown if shares, price, or transactionFee is negative.</exception>
     public void Buy(
-        int shares, 
-        decimal price, 
+        int shares,
+        decimal price,
         decimal transactionFee)
     {
         Guard.AgainstNegative(() => shares); // Throws ArgumentOutOfRangeException
@@ -93,7 +95,7 @@ public sealed class Position
         Guard.AgainstNegative(() => price); // Throws ArgumentOutOfRangeException
         Guard.AgainstNegative(() => transactionFee); // Throws ArgumentOutOfRangeException
         Guard.Against(shares > Quantity).With<ArgumentException>("Cannot sell more shares than the current quantity.");
-        
+
         Quantity -= shares;
         var proportion = (decimal)shares / Quantity;
         var soldBookValue = BookValue * proportion;

@@ -1,17 +1,19 @@
-﻿// Copyright (c) 2023-2024 Pierre G. Boutquin. All rights reserved.
+// Copyright (c) 2023-2026 Pierre G. Boutquin. All rights reserved.
 //
-//  Licensed under the Apache License, Version 2.0 (the "License").
-//  You may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
+//   Licensed under the Apache License, Version 2.0 (the "License").
+//   You may not use this file except in compliance with the License.
+//   You may obtain a copy of the License at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//       http://www.apache.org/licenses/LICENSE-2.0
 //
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
+//   Unless required by applicable law or agreed to in writing, software
+//   distributed under the License is distributed on an "AS IS" BASIS,
+//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //
+//   See the License for the specific language governing permissions and
+//   limitations under the License.
+//
+
 namespace Boutquin.Trading.DataAccess.Entities;
 
 using Domain.ValueObjects;
@@ -37,7 +39,7 @@ public sealed class Security
         )
     {
         // Validate parameters
-        Guard.AgainstNullOrWhiteSpaceAndOverflow(() => name, 
+        Guard.AgainstNullOrWhiteSpaceAndOverflow(() => name,
             ColumnConstants.Security_Name_Length); // Throws ArgumentException for null or empty and ArgumentOutOfRangeException for overflow
         Guard.AgainstUndefinedEnumValue(() => assetClassCode); // Throws ArgumentOutOfRangeException
         Guard.AgainstNull(() => exchange); // Throws ArgumentNullException
@@ -58,7 +60,7 @@ public sealed class Security
     /// <summary>
     /// The internal security ID value.
     /// </summary>
-    private int _id;
+    private readonly int _id;
 
     /// <summary>
     /// Gets the identifier of the security.

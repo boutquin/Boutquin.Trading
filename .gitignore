@@ -361,3 +361,13 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Claude Code
+sessions/
+CLAUDE.local.md
+
+# JetBrains Rider
+.idea/
+
+# macOS
+.DS_Store

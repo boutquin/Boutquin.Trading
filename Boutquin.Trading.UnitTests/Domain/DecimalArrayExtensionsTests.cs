@@ -1,17 +1,19 @@
-﻿// Copyright (c) 2023-2024 Pierre G. Boutquin. All rights reserved.
+// Copyright (c) 2023-2026 Pierre G. Boutquin. All rights reserved.
 //
-//  Licensed under the Apache License, Version 2.0 (the "License").
-//  You may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
+//   Licensed under the Apache License, Version 2.0 (the "License").
+//   You may not use this file except in compliance with the License.
+//   You may obtain a copy of the License at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//       http://www.apache.org/licenses/LICENSE-2.0
 //
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
+//   Unless required by applicable law or agreed to in writing, software
+//   distributed under the License is distributed on an "AS IS" BASIS,
+//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //
+//   See the License for the specific language governing permissions and
+//   limitations under the License.
+//
+
 namespace Boutquin.Trading.Tests.UnitTests.Domain;
 
 /// <summary>
@@ -250,7 +252,6 @@ public sealed class DecimalArrayExtensionsTests
         actualEquityCurve.Should().BeEquivalentTo(expectedEquityCurve, options => options.WithStrictOrdering());
     }
 
-
     /// <summary>
     /// Tests the <see cref="DecimalArrayExtensions.Beta(decimal[], decimal[])"/> method with various valid input data
     /// and verifies if the correct Beta value is returned.
@@ -271,7 +272,6 @@ public sealed class DecimalArrayExtensionsTests
         // Assert
         actualResult.Should().BeApproximately(expectedResult, Precision);
     }
-
 
     /// <summary>
     /// Tests the <see cref="DecimalArrayExtensions.Alpha(decimal[], decimal[], decimal, decimal)"/> method with various valid input data
@@ -359,7 +359,7 @@ public sealed class DecimalArrayExtensionsTests
         Assert.Throws(exceptionType, () => dailyReturns.AnnualizedSortinoRatio()).Message.Should().Be(ExceptionMessage);
         Assert.Throws(exceptionType, () => dailyReturns.CompoundAnnualGrowthRate()).Message.Should().Be(ExceptionMessage);
         Assert.Throws(exceptionType, () => dailyReturns.DownsideDeviation()).Message.Should().Be(ExceptionMessage);
-        Assert.Throws(exceptionType, () => dailyReturns.DailyReturns()).Message.Should().Be(ExceptionMessage);
+        Assert.Throws(exceptionType, dailyReturns.DailyReturns).Message.Should().Be(ExceptionMessage);
     }
 
     /// <summary>
