@@ -242,7 +242,7 @@ public sealed class SimulatedBrokerageTests
             .Returns(new[] { marketDataKeyValuePair }.ToAsyncEnumerable());
 
         var eventTriggered = false;
-        _simulatedBrokerage.FillOccurred += (sender, args) => eventTriggered = true;
+        _simulatedBrokerage.FillOccurred += (sender, args) => { eventTriggered = true; return Task.CompletedTask; };
 
         // Act
         var result = await _simulatedBrokerage.SubmitOrderAsync(order).ConfigureAwait(false);
@@ -290,7 +290,7 @@ public sealed class SimulatedBrokerageTests
             .Returns(new[] { marketDataKeyValuePair }.ToAsyncEnumerable());
 
         var eventTriggered = false;
-        _simulatedBrokerage.FillOccurred += (sender, args) => eventTriggered = true;
+        _simulatedBrokerage.FillOccurred += (sender, args) => { eventTriggered = true; return Task.CompletedTask; };
 
         // Act
         var result = await _simulatedBrokerage.SubmitOrderAsync(order).ConfigureAwait(false);
@@ -339,7 +339,7 @@ public sealed class SimulatedBrokerageTests
             .Returns(new[] { marketDataKeyValuePair }.ToAsyncEnumerable());
 
         var eventTriggered = false;
-        _simulatedBrokerage.FillOccurred += (sender, args) => eventTriggered = true;
+        _simulatedBrokerage.FillOccurred += (sender, args) => { eventTriggered = true; return Task.CompletedTask; };
 
         // Act
         var result = await _simulatedBrokerage.SubmitOrderAsync(order).ConfigureAwait(false);
@@ -388,7 +388,7 @@ public sealed class SimulatedBrokerageTests
             .Returns(new[] { marketDataKeyValuePair }.ToAsyncEnumerable());
 
         var eventTriggered = false;
-        _simulatedBrokerage.FillOccurred += (sender, args) => eventTriggered = true;
+        _simulatedBrokerage.FillOccurred += (sender, args) => { eventTriggered = true; return Task.CompletedTask; };
 
         // Act
         var result = await _simulatedBrokerage.SubmitOrderAsync(order).ConfigureAwait(false);

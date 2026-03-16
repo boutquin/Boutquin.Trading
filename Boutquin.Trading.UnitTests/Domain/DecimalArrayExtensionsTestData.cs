@@ -77,8 +77,9 @@ public sealed class DecimalArrayExtensionsTestData
     /// </summary>
     public static IEnumerable<object[]> SortinoRatioData =>
         [
-            [new[] { 0.01m, -0.02m, 0.03m, -0.01m, 0.02m }, 0m, 0.6M],
-            [new[] { 0.01m, -0.02m, 0.03m, -0.01m, 0.02m}, 0.001m, 0.4716141736903387242187952006m]
+            // B2 fix: Updated expected values to match sample-based downside deviation
+            [new[] { 0.01m, -0.02m, 0.03m, -0.01m, 0.02m }, 0m, 0.53665631459994956m],
+            [new[] { 0.01m, -0.02m, 0.03m, -0.01m, 0.02m}, 0.001m, 0.42182454060959779m]
         ];
 
     /// <summary>
@@ -86,8 +87,9 @@ public sealed class DecimalArrayExtensionsTestData
     /// </summary>
     public static IEnumerable<object[]> AnnualizedSortinoRatioData =>
         [
-            [new[] { 0.01m, -0.02m, 0.03m, -0.01m, 0.02m }, 0m, 252, 9.52470471983250m],
-            [new[] { 0.01m, -0.02m, 0.03m, -0.01m, 0.02m }, 0.001m, 252, 7.4866429101471228181206753726m]
+            // B2 fix: Updated expected values to match sample-based downside deviation
+            [new[] { 0.01m, -0.02m, 0.03m, -0.01m, 0.02m }, 0m, 252, 8.51915488766345m],
+            [new[] { 0.01m, -0.02m, 0.03m, -0.01m, 0.02m }, 0.001m, 252, 6.69625698814237m]
         ];
 
     /// <summary>
@@ -104,8 +106,9 @@ public sealed class DecimalArrayExtensionsTestData
     /// </summary>
     public static IEnumerable<object[]> DownsideDeviationData =>
         [
-            [new[] { 0.01m, -0.02m, 0.03m, -0.01m, 0.02m }, 0, 0.01m],
-            [new[] { 0.01m, -0.02m, 0.03m, -0.01m, 0.02m }, 0.001m, 0.0106018866245589m]
+            // B2 fix: Updated expected values to match sample divisor (N-1)
+            [new[] { 0.01m, -0.02m, 0.03m, -0.01m, 0.02m }, 0, 0.01118033988749895m],
+            [new[] { 0.01m, -0.02m, 0.03m, -0.01m, 0.02m }, 0.001m, 0.01185326959112970m]
         ];
 
     /// <summary>

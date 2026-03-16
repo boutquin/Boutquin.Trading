@@ -96,8 +96,10 @@ public sealed class Position
         Guard.AgainstNegative(() => transactionFee); // Throws ArgumentOutOfRangeException
         Guard.Against(shares > Quantity).With<ArgumentException>("Cannot sell more shares than the current quantity.");
 
+        // D2 fix: Compute proportion from pre-sale quantity to avoid divide-by-zero and wrong arithmetic
+        var originalQuantity = Quantity;
         Quantity -= shares;
-        var proportion = (decimal)shares / Quantity;
+        var proportion = (decimal)shares / originalQuantity;
         var soldBookValue = BookValue * proportion;
         BookValue = BookValue - soldBookValue - transactionFee;
     }

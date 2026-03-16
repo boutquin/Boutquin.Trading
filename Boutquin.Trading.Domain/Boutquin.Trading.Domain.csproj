@@ -1,12 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-
   <PropertyGroup>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Title>Common abstractions specific to trading.</Title>
     <Description>Common abstractions (entities, enums, exceptions, interfaces, types and logic) specific to a Trading Domain layer.</Description>
     <PackageTags>CleanArchitecture,Domain,Entities,Shared,TradingStrategy,BackTesting</PackageTags>
     <PackageReleaseNotes>Initial version.</PackageReleaseNotes>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <Title>Common abstractions specific to trading.</Title>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,13 +21,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Boutquin.Domain" Version="0.6.0-beta.2" />
+    <PackageReference Include="Boutquin.Domain" Version="0.7.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.5" />
-    <PackageReference Include="MinVer" Version="7.0.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
+    <PackageReference Include="MinVer" Version="7.0.0" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

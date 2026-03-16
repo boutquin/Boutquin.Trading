@@ -24,7 +24,7 @@ using Domain.Extensions;
 /// Benchmark class to measure the performance of the DecimalArrayExtensions's AnnualizedSharpeRatio method.
 /// </summary>
 [MemoryDiagnoser]
-public sealed class CalculationBenchmark
+public class CalculationBenchmark
 {
     private decimal[] _dailyReturns = Array.Empty<decimal>();
     private decimal _riskFreeRate;

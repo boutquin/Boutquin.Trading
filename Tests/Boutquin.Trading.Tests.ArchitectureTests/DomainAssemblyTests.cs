@@ -43,7 +43,9 @@ public sealed class DomainAssemblyTests : BaseTest
             .BeSealed()
             .GetResult();
 
-        GetFailingTypes(result).Should().BeEmpty();
+        // E2 fix: Use IsSuccessful with descriptive because clause instead of opaque BeEmpty
+        result.IsSuccessful.Should().BeTrue(
+            because: $"the following types failed: [{GetFailingTypes(result)}]");
     }
 
     /// <summary>
@@ -60,7 +62,9 @@ public sealed class DomainAssemblyTests : BaseTest
             .Should().HaveNameEndingWith("DomainEvent")
             .GetResult();
 
-        GetFailingTypes(result).Should().BeEmpty();
+        // E2 fix: Use IsSuccessful with descriptive because clause instead of opaque BeEmpty
+        result.IsSuccessful.Should().BeTrue(
+            because: $"the following types failed: [{GetFailingTypes(result)}]");
     }
 
     /// <summary>
@@ -77,6 +81,8 @@ public sealed class DomainAssemblyTests : BaseTest
             .Should().HaveNameStartingWith("I")
             .GetResult();
 
-        GetFailingTypes(result).Should().BeEmpty();
+        // E2 fix: Use IsSuccessful with descriptive because clause instead of opaque BeEmpty
+        result.IsSuccessful.Should().BeTrue(
+            because: $"the following types failed: [{GetFailingTypes(result)}]");
     }
 }

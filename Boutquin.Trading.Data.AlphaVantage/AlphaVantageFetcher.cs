@@ -30,9 +30,10 @@ using Microsoft.Extensions.Caching.Distributed;
 /// <summary>
 /// A class for fetching market data from the Alpha Vantage API, with caching and rate limiting support.
 /// </summary>
-public sealed class AlphaVantageFetcher : IMarketDataFetcher
+public sealed class AlphaVantageFetcher : IMarketDataFetcher, IDisposable
 {
     private readonly HttpClient _httpClient;
+    private readonly bool _ownsClient; // D7 fix: Track ownership for disposal
     private readonly IDistributedCache _cache;
     private readonly string? _apiKey;
     private readonly string _apiEndpoint;
@@ -60,7 +61,7 @@ public sealed class AlphaVantageFetcher : IMarketDataFetcher
         int rateLimitDelay = 5,
         TimeSpan? cacheExpiration = null)
     {
-        _apiKey = Environment.GetEnvironmentVariable("ALPHA_VANTAGE_API_KEY");
+        // D1 fix: Remove dead env-var read — parameter takes precedence
         if (string.IsNullOrEmpty(apiKey))
         {
             throw new ArgumentNullException(nameof(apiKey), "API key cannot be null or empty.");
@@ -69,9 +70,10 @@ public sealed class AlphaVantageFetcher : IMarketDataFetcher
         _apiKey = apiKey;
         _cache = cache ?? throw new ArgumentNullException(nameof(cache), "IDistributedCache cannot be null.");
         _rateLimitDelay = rateLimitDelay;
+        _ownsClient = httpClient == null;
         _httpClient = httpClient ?? new HttpClient();
         _apiEndpoint = !string.IsNullOrEmpty(apiEndpoint) ? apiEndpoint : throw new ArgumentNullException(nameof(apiEndpoint), "API endpoint cannot be null or empty.");
-        _rateLimitSemaphore = rateLimiter ?? new SemaphoreSlim(5); // Adjust the number according to the allowed rate limit
+        _rateLimitSemaphore = rateLimiter ?? new SemaphoreSlim(5);
         _cacheExpiration = cacheExpiration ?? TimeSpan.FromHours(6);
     }
 
@@ -101,9 +103,10 @@ public sealed class AlphaVantageFetcher : IMarketDataFetcher
 
         _cache = cache ?? throw new ArgumentNullException(nameof(cache), "IDistributedCache cannot be null.");
         _rateLimitDelay = rateLimitDelay;
+        _ownsClient = httpClient == null;
         _httpClient = httpClient ?? new HttpClient();
         _apiEndpoint = !string.IsNullOrEmpty(apiEndpoint) ? apiEndpoint : throw new ArgumentNullException(nameof(apiEndpoint), "API endpoint cannot be null or empty.");
-        _rateLimitSemaphore = rateLimiter ?? new SemaphoreSlim(5); // Adjust the number according to the allowed rate limit
+        _rateLimitSemaphore = rateLimiter ?? new SemaphoreSlim(5);
         _cacheExpiration = cacheExpiration ?? TimeSpan.FromHours(6);
     }
 
@@ -134,7 +137,7 @@ public sealed class AlphaVantageFetcher : IMarketDataFetcher
     /// }
     /// </code>
     /// </example>
-    public async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>?>> FetchMarketDataAsync(IEnumerable<Asset> assets)
+    public async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>> FetchMarketDataAsync(IEnumerable<Asset> assets)
     {
         // Validate the input assets list
         Guard.AgainstEmptyOrNullEnumerable(() => assets); // Throws ArgumentException
@@ -170,8 +173,15 @@ public sealed class AlphaVantageFetcher : IMarketDataFetcher
                 // Make the API request with rate limiting
                 var response = await GetAsyncWithRateLimiting(requestUri).ConfigureAwait(false);
 
-                // Ensure the request was successful
-                response.EnsureSuccessStatusCode();
+                // D6 fix: Wrap EnsureSuccessStatusCode to throw domain exception
+                try
+                {
+                    response.EnsureSuccessStatusCode();
+                }
+                catch (HttpRequestException ex)
+                {
+                    throw new MarketDataRetrievalException($"Alpha Vantage API request failed for asset '{asset}'.", ex);
+                }
 
                 // Read the response content as a string
                 var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -187,7 +197,7 @@ public sealed class AlphaVantageFetcher : IMarketDataFetcher
                 }
 
                 // Deserialize, yield, and cache the JSON time series data
-                var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>?>();
+                var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>();
 
                 // Deserialize, accumulate, and cache the JSON time series data
                 var accumulatedMarketData = DeserializeAndYieldMarketDataFromApi(timeSeries, asset, options);
@@ -275,8 +285,15 @@ public sealed class AlphaVantageFetcher : IMarketDataFetcher
                 // Make the API request with rate limiting
                 var response = await GetAsyncWithRateLimiting(requestUri).ConfigureAwait(false);
 
-                // Ensure the request was successful
-                response.EnsureSuccessStatusCode();
+                // D6 fix: Wrap EnsureSuccessStatusCode to throw domain exception
+                try
+                {
+                    response.EnsureSuccessStatusCode();
+                }
+                catch (HttpRequestException ex)
+                {
+                    throw new MarketDataRetrievalException($"Alpha Vantage API request failed for currency pair '{pair}'.", ex);
+                }
 
                 // Read the response content as a string
                 var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -294,18 +311,24 @@ public sealed class AlphaVantageFetcher : IMarketDataFetcher
                 // Deserialize the time series data into a SortedDictionary with DateOnly keys and decimal values
                 var fxRates = JsonSerializer.Deserialize<SortedDictionary<DateOnly, decimal>>(timeSeries.GetRawText(), options);
 
-                // Convert SortedDictionary<DateOnly, decimal> to SortedDictionary<CurrencyCode, decimal>
-                var currencyCodeFxRates = new SortedDictionary<CurrencyCode, decimal>();
+                // D3+D4 fix: Null check after deserialization
+                if (fxRates == null)
+                {
+                    throw new MarketDataRetrievalException($"Failed to deserialize FX rate data for currency pair '{pair}'.");
+                }
+
+                // D3 fix: Yield per-date entries instead of overwriting single dict with duplicate key
                 foreach (var rate in fxRates)
                 {
-                    currencyCodeFxRates.Add(quoteCurrencyCode, rate.Value);
+                    var perDateRates = new SortedDictionary<CurrencyCode, decimal>
+                    {
+                        { quoteCurrencyCode, rate.Value }
+                    };
+                    yield return new KeyValuePair<DateOnly, SortedDictionary<CurrencyCode, decimal>>(rate.Key, perDateRates);
                 }
 
                 // Store the fx data in the cache for future use
-                await _cache.SetStringAsync($"FxRates_{pair}", JsonSerializer.Serialize(currencyCodeFxRates, options)).ConfigureAwait(false);
-
-                // Yield the data
-                yield return new KeyValuePair<DateOnly, SortedDictionary<CurrencyCode, decimal>>(DateOnly.FromDateTime(DateTime.Today), currencyCodeFxRates);
+                await _cache.SetStringAsync($"FxRates_{pair}", JsonSerializer.Serialize(fxRates, options)).ConfigureAwait(false);
             }
         }
     }
@@ -347,13 +370,14 @@ public sealed class AlphaVantageFetcher : IMarketDataFetcher
     /// The key is the date of the data point, and the value is a sorted dictionary containing the asset symbol and
     /// its corresponding market data.
     /// </returns>
-    private static async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>?>> DeserializeAndYieldCachedMarketData(
+    private static async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>> DeserializeAndYieldCachedMarketData(
         string cachedData, Asset asset, JsonSerializerOptions? options)
     {
-        var cachedMarketData = JsonSerializer.Deserialize<SortedDictionary<DateOnly, MarketData>>(cachedData, options);
+        var cachedMarketData = JsonSerializer.Deserialize<SortedDictionary<DateOnly, MarketData>>(cachedData, options)
+            ?? throw new MarketDataRetrievalException("Failed to deserialize cached market data.");
         foreach (var dataPoint in cachedMarketData)
         {
-            yield return new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>?>(dataPoint.Key, new SortedDictionary<Asset, MarketData> { { asset, dataPoint.Value } });
+            yield return new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(dataPoint.Key, new SortedDictionary<Asset, MarketData> { { asset, dataPoint.Value } });
         }
     }
 
@@ -372,20 +396,24 @@ public sealed class AlphaVantageFetcher : IMarketDataFetcher
     /// This method catches any FormatException or MarketDataRetrievalException and logs the error (if a logger is available)
     /// while continuing to process the remaining data points.
     /// </remarks>
-    private static IEnumerable<KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>?>> DeserializeAndYieldMarketDataFromApi(
+    private static IEnumerable<KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>> DeserializeAndYieldMarketDataFromApi(
         JsonElement timeSeries, Asset asset, JsonSerializerOptions? options)
     {
         var marketData = new SortedDictionary<DateOnly, MarketData>();
         foreach (var entry in timeSeries.EnumerateObject())
         {
-            var date = DateOnly.Parse(entry.Name);
+            // D5 fix: Use TryParseExact with invariant culture
+            if (!DateOnly.TryParseExact(entry.Name, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var date))
+            {
+                throw new MarketDataRetrievalException($"Failed to parse date '{entry.Name}' from Alpha Vantage API response.");
+            }
             var marketDataJson = entry.Value;
 
             var dataPoint = CreateMarketDataFromJson(date, marketDataJson);
             if (dataPoint != null)
             {
                 marketData.Add(date, dataPoint);
-                yield return new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>?>(date, new SortedDictionary<Asset, MarketData> { { asset, dataPoint } });
+                yield return new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(date, new SortedDictionary<Asset, MarketData> { { asset, dataPoint } });
             }
         }
     }
@@ -449,7 +477,9 @@ public sealed class AlphaVantageFetcher : IMarketDataFetcher
     private static async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<string, decimal>>> DeserializeAndYieldCachedFxRates(string cachedData, string pair, JsonSerializerOptions options)
     {
         // Deserialize the cached data
-        var fxRates = JsonSerializer.Deserialize<SortedDictionary<DateOnly, decimal>>(cachedData, options);
+        // D4 fix: Null check after deserialization
+        var fxRates = JsonSerializer.Deserialize<SortedDictionary<DateOnly, decimal>>(cachedData, options)
+            ?? throw new MarketDataRetrievalException("Failed to deserialize cached FX rate data.");
 
         // Yield the FX rates one by one
         foreach (var rate in fxRates)
@@ -514,5 +544,18 @@ public sealed class AlphaVantageFetcher : IMarketDataFetcher
     {
         // Adjust this method depending on the API's rate limiting response status codes
         return statusCode == HttpStatusCode.TooManyRequests;
+    }
+
+    /// <summary>
+    /// D7 fix: Disposes the HttpClient if this instance owns it.
+    /// </summary>
+    public void Dispose()
+    {
+        if (_ownsClient)
+        {
+            _httpClient.Dispose();
+        }
+
+        _rateLimitSemaphore.Dispose();
     }
 }

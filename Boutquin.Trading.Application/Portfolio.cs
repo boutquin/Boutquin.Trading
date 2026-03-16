@@ -439,7 +439,8 @@ public sealed class Portfolio : IPortfolio
             .Sum();
     }
 
-    private async void HandleFillEvent(object sender, FillEvent fillEvent)
+    // A1 fix: Changed from async void to async Task so exceptions propagate
+    private async Task HandleFillEvent(object sender, FillEvent fillEvent)
     {
         // Ensure that the @event is not null.
         Guard.AgainstNull(() => fillEvent); // Throws ArgumentNullException when the fillEvent parameter is null

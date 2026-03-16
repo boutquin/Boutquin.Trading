@@ -22,7 +22,7 @@ namespace Boutquin.Trading.Application.Strategies;
 /// <remarks>
 /// This strategy calculates order prices based on the closing price of the asset on the specified date. It supports Market, Limit, Stop, and StopLimit order types.
 /// </remarks>
-public class ClosePriceOrderPriceCalculationStrategy : IOrderPriceCalculationStrategy
+public sealed class ClosePriceOrderPriceCalculationStrategy : IOrderPriceCalculationStrategy
 {
     /// <summary>
     /// Calculates the order prices and the order type for a given asset, trade action, and historical market data.

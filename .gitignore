@@ -365,6 +365,7 @@ FodyWeavers.xsd
 # Claude Code
 sessions/
 CLAUDE.local.md
+specs/
 
 # JetBrains Rider
 .idea/

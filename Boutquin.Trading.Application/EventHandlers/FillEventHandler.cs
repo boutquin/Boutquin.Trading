@@ -59,8 +59,11 @@ public sealed class FillEventHandler : IEventHandler
         var strategy = portfolio.GetStrategy(fillEvent.StrategyName);
         strategy.UpdatePositions(fillEvent.Asset, fillEvent.Quantity);
 
+        // A3 fix: Branch on TradeAction — Buy deducts, Sell credits
         var tradeValue = fillEvent.FillPrice * fillEvent.Quantity;
-        var tradeCost = tradeValue + fillEvent.Commission;
-        strategy.UpdateCash(portfolio.GetAssetCurrency(fillEvent.Asset), -tradeCost);
+        var cashDelta = fillEvent.TradeAction == TradeAction.Buy
+            ? -(tradeValue + fillEvent.Commission)      // Buy: deduct cost + commission
+            : tradeValue - fillEvent.Commission;          // Sell: credit proceeds - commission
+        strategy.UpdateCash(portfolio.GetAssetCurrency(fillEvent.Asset), cashDelta);
     }
 }

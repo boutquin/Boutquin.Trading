@@ -37,5 +37,7 @@ public interface IBrokerage
     /// An event that is raised when an order is filled, providing the
     /// FillEvent data to the subscribers.
     /// </summary>
-    event EventHandler<FillEvent> FillOccurred;
+    // A1 fix: Changed from EventHandler<FillEvent> to Func<object, FillEvent, Task>
+    // so that async handlers can propagate exceptions instead of swallowing them via async void.
+    event Func<object, FillEvent, Task> FillOccurred;
 }

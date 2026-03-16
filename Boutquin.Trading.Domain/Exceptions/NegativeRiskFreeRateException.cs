@@ -19,7 +19,6 @@ namespace Boutquin.Trading.Domain.Exceptions;
 /// <summary>
 /// Custom exception for when the risk-free rate is negative.
 /// </summary>
-[Serializable]
 public sealed class NegativeRiskFreeRateException : Exception
 {
     /// <summary>
@@ -39,18 +38,6 @@ public sealed class NegativeRiskFreeRateException : Exception
     /// <param name="innerException">The exception that is the cause of the current exception, or a null reference if no inner exception is specified.</param>
     public NegativeRiskFreeRateException(string message, Exception innerException)
         : base(message, innerException)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="NegativeRiskFreeRateException"/> class with serialized data.
-    /// </summary>
-    /// <param name="info">The <see cref="SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
-    /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="info"/> parameter is null.</exception>
-    /// <exception cref="SerializationException">The class name is null or <see cref="Exception.HResult"/> is zero (0).</exception>
-    private NegativeRiskFreeRateException(SerializationInfo info, StreamingContext context)
-        : base(info, context)
     {
     }
 }

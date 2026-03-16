@@ -42,7 +42,7 @@ public readonly struct SecurityId : IEquatable<SecurityId>, IComparable<Security
     /// <returns>A string containing the security ID value.</returns>
     public override string ToString()
     {
-        return _id.ToString();
+        return _id.ToString(System.Globalization.CultureInfo.InvariantCulture);
     }
 
     /// <summary>
@@ -59,7 +59,7 @@ public readonly struct SecurityId : IEquatable<SecurityId>, IComparable<Security
     /// </summary>
     /// <param name="obj">The object to compare with the current instance.</param>
     /// <returns>true if the specified object is equal to the current instance; otherwise, false.</returns>
-    public override bool Equals(object obj) => obj is SecurityId other && Equals(other);
+    public override bool Equals(object? obj) => obj is SecurityId other && Equals(other);
 
     /// <summary>
     /// Determines whether the specified <see cref="SecurityId"/> is equal to the current <see cref="SecurityId"/> instance.

@@ -109,6 +109,13 @@ public static class DecimalArrayExtensions
 
         var averageReturn = dailyReturns.Average() - riskFreeRate;
         var standardDeviation = dailyReturns.StandardDeviation();
+
+        // B5 fix: Guard zero standard deviation to prevent division by zero
+        if (standardDeviation == 0m)
+        {
+            throw new CalculationException("Standard deviation is zero; cannot compute Sharpe ratio.");
+        }
+
         return averageReturn / standardDeviation;
     }
 
@@ -251,8 +258,17 @@ public static class DecimalArrayExtensions
 
         var downsideReturns = dailyReturns.Select(x => Math.Min(0, x - riskFreeRate)).ToArray();
         var squaredDownsideReturns = downsideReturns.Select(x => x * x).ToArray();
-        var averageSquaredDownsideReturn = squaredDownsideReturns.Average();
-        return (decimal)Math.Sqrt((double)averageSquaredDownsideReturn);
+        // B2 fix: Use sample divisor (N-1) to align with StandardDeviation (sample-based)
+        var averageSquaredDownsideReturn = squaredDownsideReturns.Sum() / (squaredDownsideReturns.Length - 1);
+        var result = (decimal)Math.Sqrt((double)averageSquaredDownsideReturn);
+
+        // B5 fix: Guard zero downside deviation to prevent division by zero in SortinoRatio
+        if (result == 0m)
+        {
+            throw new CalculationException("Downside deviation is zero; cannot compute Sortino ratio.");
+        }
+
+        return result;
     }
 
     /// <summary>
@@ -342,6 +358,12 @@ public static class DecimalArrayExtensions
         Guard.Against(benchmarkDailyReturns.Length == 1)
             .With<InsufficientDataException>(ExceptionMessages.InsufficientDataForSampleCalculation);
 
+        // B3 fix: Guard mismatched array lengths
+        if (portfolioDailyReturns.Length != benchmarkDailyReturns.Length)
+        {
+            throw new ArgumentException("Portfolio and benchmark daily returns arrays must have the same length.");
+        }
+
         var portfolioAverageReturn = portfolioDailyReturns.Average();
         var benchmarkAverageReturn = benchmarkDailyReturns.Average();
 
@@ -354,6 +376,12 @@ public static class DecimalArrayExtensions
         var benchmarkVariance = benchmarkDailyReturns
             .Select(bReturn => (bReturn - benchmarkAverageReturn) * (bReturn - benchmarkAverageReturn))
             .Sum() / (benchmarkDailyReturns.Length - 1);
+
+        // B5 fix: Guard zero benchmark variance to prevent division by zero
+        if (benchmarkVariance == 0m)
+        {
+            throw new CalculationException("Benchmark variance is zero; cannot compute Beta.");
+        }
 
         // Beta = Covariance(Portfolio Returns, Benchmark Returns) / Variance(Benchmark Returns)
         var beta = covariance / benchmarkVariance;
@@ -431,6 +459,12 @@ public static class DecimalArrayExtensions
 
         // Calculate the standard deviation of the active returns.
         var activeReturnStandardDeviation = activeReturns.StandardDeviation();
+
+        // B5 fix: Guard zero active return standard deviation to prevent division by zero
+        if (activeReturnStandardDeviation == 0m)
+        {
+            throw new CalculationException("Active return standard deviation is zero; cannot compute Information Ratio.");
+        }
 
         // Calculate the Information Ratio.
         return averageActiveReturn / activeReturnStandardDeviation;

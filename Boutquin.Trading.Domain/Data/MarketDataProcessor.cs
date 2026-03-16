@@ -39,7 +39,7 @@ using ValueObjects;
 public sealed class MarketDataProcessor(
     IMarketDataFetcher fetcher,
     IMarketDataStorage storage,
-    ILoggerFactory loggerFactory = null)
+    ILoggerFactory? loggerFactory = null)
     : IMarketDataProcessor
 {
     private readonly IMarketDataFetcher _fetcher = fetcher ?? throw new ArgumentNullException(nameof(fetcher));

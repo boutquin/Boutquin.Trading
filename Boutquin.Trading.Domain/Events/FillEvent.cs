@@ -38,10 +38,12 @@ using ValueObjects;
 /// </param>
 /// <param name="Commission">The commission associated with the fill event, represented as a decimal value.
 /// </param>
+// A2 fix: Added TradeAction parameter to distinguish buy vs sell fills
 public sealed record FillEvent(
     DateOnly Timestamp,
     Asset Asset,
     string StrategyName,
+    TradeAction TradeAction,
     decimal FillPrice,
     int Quantity,
     decimal Commission) : IFinancialEvent;

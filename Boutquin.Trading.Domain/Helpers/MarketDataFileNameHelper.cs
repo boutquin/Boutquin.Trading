@@ -42,13 +42,21 @@ public static class MarketDataFileNameHelper
     /// </summary>
     /// <param name="ticker">The ticker to sanitize.</param>
     /// <returns>A string representing the sanitized ticker.</returns>
+    // Cross-platform set of chars that are invalid in filenames (superset of all OS restrictions)
+    private static readonly HashSet<char> InvalidFileNameChars = new(
+        Path.GetInvalidFileNameChars()
+            .Concat(['<', '>', ':', '"', '|', '?', '*', '\\', '/'])
+            .Concat(['^']));
+
     private static string SanitizeTickerForFileName(string ticker)
     {
-        // Replace the caret symbol with an underscore
-        // return ticker.Replace('^', '_');
+        // C2 fix: Strip path separators, ".." traversal, and all invalid filename chars
+        var sanitized = new string(ticker.Where(c => !InvalidFileNameChars.Contains(c)).ToArray());
 
-        // Or remove the caret symbol
-        return ticker.Replace("^", "");
+        // Strip ".." sequences that survived char filtering
+        sanitized = sanitized.Replace("..", "");
+
+        return sanitized;
     }
 
     /// <summary>
