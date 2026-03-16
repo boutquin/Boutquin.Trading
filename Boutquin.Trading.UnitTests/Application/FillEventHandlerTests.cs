@@ -38,7 +38,7 @@ public sealed class FillEventHandlerTests
 
         // A2: FillEvent now includes TradeAction
         var sellFillEvent = new FillEvent(
-            DateOnly.FromDateTime(DateTime.Today),
+            new DateOnly(2024, 1, 15),
             asset,
             strategyName,
             TradeAction.Sell,
@@ -74,7 +74,7 @@ public sealed class FillEventHandlerTests
         mockPortfolio.Setup(p => p.GetAssetCurrency(asset)).Returns(CurrencyCode.USD);
 
         var buyFillEvent = new FillEvent(
-            DateOnly.FromDateTime(DateTime.Today),
+            new DateOnly(2024, 1, 15),
             asset,
             strategyName,
             TradeAction.Buy,

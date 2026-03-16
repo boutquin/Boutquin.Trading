@@ -70,7 +70,8 @@ public sealed class MarketEventHandler : IEventHandler
 
             // Detect and handle split events
             var splitCoefficient = marketData.SplitCoefficient;
-            if (splitCoefficient == 1)
+            // BUG-A06: Guard zero split coefficient and skip no-split case
+            if (splitCoefficient is 0 or 1)
             {
                 continue;
             }
@@ -81,8 +82,6 @@ public sealed class MarketEventHandler : IEventHandler
                 portfolio.AdjustHistoricalDataForSplit(asset, splitCoefficient);
             }
         }
-
-        //await _portfolio.AllocateCapitalAsync();
 
         // A4 fix: Capture GenerateSignals return value and feed each signal into the event processor
         var signals = portfolio.GenerateSignals(marketEvent);

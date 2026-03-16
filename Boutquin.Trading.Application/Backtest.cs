@@ -106,6 +106,12 @@ public sealed class BackTest
         // Iterate through the market data timeline and handle each event.
         await foreach (var marketData in marketDataTimeline.ConfigureAwait(false))
         {
+            // BUG-A07: Filter market data to startDate..endDate range
+            if (marketData.Key < startDate || marketData.Key > endDate)
+            {
+                continue;
+            }
+
             // Get the FX rates for the current date.
             var fxRates = fxRatesForDate.TryGetValue(marketData.Key, out var ratesForDate)
                           ? ratesForDate

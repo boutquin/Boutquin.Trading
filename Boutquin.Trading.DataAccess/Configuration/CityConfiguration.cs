@@ -75,7 +75,7 @@ public sealed class CityConfiguration : IEntityTypeConfiguration<City>
 
         // Seed the cities table with the major cities
         builder.HasData(
-            new { _id = IdLookup.GetCityId("New York"), Name = "New York", TimeZoneCode = TimeZoneCode.UTC, CountryCode = CountryCode.US },
+            new { _id = IdLookup.GetCityId("New York"), Name = "New York", TimeZoneCode = TimeZoneCode.EST, CountryCode = CountryCode.US },
             new { _id = IdLookup.GetCityId("Tokyo"), Name = "Tokyo", TimeZoneCode = TimeZoneCode.JST, CountryCode = CountryCode.JP },
             new { _id = IdLookup.GetCityId("Shanghai"), Name = "Shanghai", TimeZoneCode = TimeZoneCode.CST, CountryCode = CountryCode.CN },
             new { _id = IdLookup.GetCityId("Hong Kong"), Name = "Hong Kong", TimeZoneCode = TimeZoneCode.HKT, CountryCode = CountryCode.HK },

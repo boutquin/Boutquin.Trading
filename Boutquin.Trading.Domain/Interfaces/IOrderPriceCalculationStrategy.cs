@@ -38,7 +38,7 @@ public interface IOrderPriceCalculationStrategy
     /// <param name="tradeAction">The trade action (buy or sell) for which the order prices are to be calculated.</param>
     /// <param name="historicalData">The historical market data, organized as a dictionary with timestamps as keys and dictionaries of asset market data as values.</param>
     /// <returns>A tuple containing the order type, primary price, and secondary price for the calculated order.</returns>
-    (OrderType OrderType, decimal PrimaryPrice, decimal SecondaryPrice)
+    (OrderType OrderType, decimal PrimaryPrice, decimal? SecondaryPrice)
         CalculateOrderPrices(
             DateOnly timestamp,
             Asset asset,

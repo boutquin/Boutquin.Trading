@@ -65,14 +65,14 @@ public sealed class TimeZoneConfiguration : IEntityTypeConfiguration<TimeZone>
         // Seed the TimeZone table with the values from TimeZoneCode enum
         builder.HasData(
             CreateTimeZone(TimeZoneCode.UTC, "Coordinated Universal Time", false),
-            CreateTimeZone(TimeZoneCode.CET, "Central European Time", false),
+            CreateTimeZone(TimeZoneCode.CET, "Central European Time", true),
             CreateTimeZone(TimeZoneCode.GMT, "Greenwich Mean Time", false),
-            CreateTimeZone(TimeZoneCode.EST, "Eastern Standard Time", false),
+            CreateTimeZone(TimeZoneCode.EST, "Eastern Standard Time", true),
             CreateTimeZone(TimeZoneCode.CST, "China Standard Time", false),
             CreateTimeZone(TimeZoneCode.JST, "Japan Standard Time", false),
             CreateTimeZone(TimeZoneCode.HKT, "Hong Kong Time", false),
             CreateTimeZone(TimeZoneCode.MSK, "Moscow Standard Time", false),
-            CreateTimeZone(TimeZoneCode.AEST, "Australian Eastern Standard Time", false)
+            CreateTimeZone(TimeZoneCode.AEST, "Australian Eastern Standard Time", true)
         );
     }
 

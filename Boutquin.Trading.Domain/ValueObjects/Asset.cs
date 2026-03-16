@@ -28,8 +28,16 @@ namespace Boutquin.Trading.Domain.ValueObjects;
 /// Console.WriteLine(asset);  // Outputs: AAPL
 /// </code>
 /// </remarks>
-public readonly record struct Asset(string Ticker) : IComparable<Asset>
+public readonly record struct Asset : IComparable<Asset>
 {
+    public string Ticker { get; }
+
+    public Asset(string Ticker)
+    {
+        Guard.AgainstNullOrWhiteSpace(() => Ticker); // TYP-D03
+        this.Ticker = Ticker;
+    }
+
     /// <summary>
     /// Compares this instance with a specified Asset object and indicates whether this instance precedes, follows, or appears in the same position in the sort order as the specified Asset.
     /// </summary>

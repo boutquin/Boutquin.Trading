@@ -16,28 +16,62 @@
 
 namespace Boutquin.Trading.Data.Polygon;
 
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Caching.Distributed;
+
+/// <summary>
+/// BUG-I09 fix: Proper response DTO for Polygon.io FX conversion endpoint.
+/// </summary>
+internal sealed record PolygonFxConversionResponse(
+    [property: JsonPropertyName("converted")] decimal Converted,
+    [property: JsonPropertyName("from")] string From,
+    [property: JsonPropertyName("to")] string To,
+    [property: JsonPropertyName("initialAmount")] decimal InitialAmount,
+    [property: JsonPropertyName("last")] PolygonFxLastQuote Last
+);
+
+/// <summary>
+/// Nested quote from the Polygon FX conversion response.
+/// </summary>
+internal sealed record PolygonFxLastQuote(
+    [property: JsonPropertyName("ask")] decimal Ask,
+    [property: JsonPropertyName("bid")] decimal Bid,
+    [property: JsonPropertyName("exchange")] int Exchange,
+    [property: JsonPropertyName("timestamp")] long Timestamp
+);
 
 /// <summary>
 /// Fetches market data from Polygon.io API.
 /// </summary>
-public class PolygonFetcher : IMarketDataFetcher, IDisposable
+// TYP-I02 fix: Seal the class
+public sealed class PolygonFetcher : IMarketDataFetcher, IDisposable
 {
+    // PERF-I02 fix: Reuse JsonSerializerOptions
+    private static readonly JsonSerializerOptions s_marketDataJsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        Converters = { new DateOnlyConverter() }
+    };
+
+    private static readonly JsonSerializerOptions s_fxJsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
+
     private readonly HttpClient _httpClient;
-    private readonly bool _ownsClient; // D8 fix: Track ownership for disposal
+    private readonly bool _ownsClient;
     private readonly IDistributedCache _cache;
     private readonly string _apiKey;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PolygonFetcher"/> class.
     /// </summary>
-    /// <param name="cache">The IDistributedCache instance for caching the API responses.</param>
-    /// <param name="httpClient">An optional HttpClient instance to use for making API requests. If not provided, a new instance will be created.</param>
     public PolygonFetcher(
         IDistributedCache cache,
         HttpClient httpClient = null)
     {
-        _apiKey = Environment.GetEnvironmentVariable("POLYGON_API_KEY");
+        _apiKey = Environment.GetEnvironmentVariable("POLYGON_API_KEY")
+            ?? throw new ArgumentNullException(nameof(_apiKey), "API key cannot be null or empty.");
         if (string.IsNullOrEmpty(_apiKey))
         {
             throw new ArgumentNullException(nameof(_apiKey), "API key cannot be null or empty.");
@@ -48,15 +82,7 @@ public class PolygonFetcher : IMarketDataFetcher, IDisposable
         _httpClient = httpClient ?? new HttpClient();
     }
 
-    /// <summary>
-    /// Fetches historical market data for the specified financial assets and
-    /// returns an asynchronous stream of key-value pairs, where the key is a DateOnly object
-    /// representing the date and the value is a sorted dictionary of asset symbols and their
-    /// corresponding MarketData objects.
-    /// </summary>
-    /// <param name="symbols">A list of financial asset symbols for which to fetch historical market data.</param>
-    /// <returns>An IAsyncEnumerable of key-value pairs, where the key is a DateOnly object and the value is a SortedDictionary of string asset symbols and MarketData values.</returns>
-    /// <exception cref="MarketDataRetrievalException">Thrown when there is an error in fetching or parsing the market data.</exception>
+    /// <inheritdoc/>
     public async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<Domain.ValueObjects.Asset, MarketData>>> FetchMarketDataAsync(IEnumerable<Domain.ValueObjects.Asset> symbols)
     {
         var date = GetLastCloseDate();
@@ -65,16 +91,15 @@ public class PolygonFetcher : IMarketDataFetcher, IDisposable
             SortedDictionary<Domain.ValueObjects.Asset, MarketData> result = null!;
             try
             {
-                var url = $"https://api.polygon.io/v1/open-close/{symbol.Ticker}/{date:yyyy-MM-dd}?adjusted=true&apiKey={_apiKey}";
-                var response = await _httpClient.GetAsync(url).ConfigureAwait(false);
+                // SEC-I01 fix: Move API key to Authorization header
+                var url = $"https://api.polygon.io/v1/open-close/{Uri.EscapeDataString(symbol.Ticker)}/{date:yyyy-MM-dd}?adjusted=true";
+                using var request = new HttpRequestMessage(HttpMethod.Get, url);
+                request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _apiKey);
+                var response = await _httpClient.SendAsync(request).ConfigureAwait(false);
                 response.EnsureSuccessStatusCode();
 
                 var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                var marketData = JsonSerializer.Deserialize<MarketData>(responseBody, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true,
-                    Converters = { new DateOnlyConverter() }
-                });
+                var marketData = JsonSerializer.Deserialize<MarketData>(responseBody, s_marketDataJsonOptions);
 
                 if (marketData == null)
                 {
@@ -100,15 +125,7 @@ public class PolygonFetcher : IMarketDataFetcher, IDisposable
         }
     }
 
-    /// <summary>
-    /// Fetches historical foreign exchange rates for the specified currency pairs and
-    /// returns an asynchronous stream of key-value pairs, where the key is a DateOnly object
-    /// representing the date and the value is a sorted dictionary of currency pair symbols and their
-    /// corresponding exchange rates.
-    /// </summary>
-    /// <param name="currencyPairs">A list of currency pair symbols for which to fetch historical exchange rates.</param>
-    /// <returns>An IAsyncEnumerable of key-value pairs, where the key is a DateOnly object and the value is a SortedDictionary of string currency pair symbols and decimal exchange rates.</returns>
-    /// <exception cref="MarketDataRetrievalException">Thrown when there is an error in fetching or parsing the foreign exchange data.</exception>
+    /// <inheritdoc/>
     public async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<CurrencyCode, decimal>>> FetchFxRatesAsync(IEnumerable<string> currencyPairs)
     {
         var date = GetLastCloseDate();
@@ -117,22 +134,30 @@ public class PolygonFetcher : IMarketDataFetcher, IDisposable
             SortedDictionary<CurrencyCode, decimal>? result = null;
             try
             {
-                var url = $"https://api.polygon.io/v1/conversion/{pair}/{date:yyyy-MM-dd}?apiKey={_apiKey}";
-                var response = await _httpClient.GetAsync(url).ConfigureAwait(false);
+                // SEC-I01 fix: Move API key to Authorization header
+                var url = $"https://api.polygon.io/v1/conversion/{Uri.EscapeDataString(pair)}/{date:yyyy-MM-dd}";
+                using var request = new HttpRequestMessage(HttpMethod.Get, url);
+                request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _apiKey);
+                var response = await _httpClient.SendAsync(request).ConfigureAwait(false);
                 response.EnsureSuccessStatusCode();
 
                 var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                var fxRate = JsonSerializer.Deserialize<decimal>(responseBody, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                // BUG-I09 fix: Deserialize to proper DTO
+                var fxResponse = JsonSerializer.Deserialize<PolygonFxConversionResponse>(responseBody, s_fxJsonOptions);
 
-                if (fxRate == 0)
+                if (fxResponse == null || fxResponse.Converted == 0)
                 {
                     throw new MarketDataProcessingException("Failed to deserialize the FX rate data.");
                 }
 
-                result = new SortedDictionary<CurrencyCode, decimal> { [Enum.Parse<CurrencyCode>(pair)] = fxRate };
+                // BUG-I10 fix: Split pair and parse only quote currency
+                var pairParts = pair.Split('/');
+                if (pairParts.Length != 2 || !Enum.TryParse<CurrencyCode>(pairParts[1], out var quoteCurrency))
+                {
+                    throw new ArgumentException($"Invalid currency pair format: '{pair}'. Expected format: 'BASE/QUOTE'.");
+                }
+
+                result = new SortedDictionary<CurrencyCode, decimal> { [quoteCurrency] = fxResponse.Converted };
             }
             catch (HttpRequestException e)
             {
@@ -157,7 +182,6 @@ public class PolygonFetcher : IMarketDataFetcher, IDisposable
         var dayOfWeek = now.DayOfWeek;
         var timeOfDay = now.TimeOfDay;
 
-        // If it's a weekend, return the previous Friday
         if (dayOfWeek == DayOfWeek.Saturday)
         {
             return DateOnly.FromDateTime(now.AddDays(-1));
@@ -166,24 +190,18 @@ public class PolygonFetcher : IMarketDataFetcher, IDisposable
         {
             return DateOnly.FromDateTime(now.AddDays(-2));
         }
-        // If it's a weekday but before 5:00 PM, return the previous business day
-        else if (dayOfWeek == DayOfWeek.Monday && timeOfDay <= new TimeSpan(23, 0, 0))
+        // BUG-I11 fix: Use 17:00 instead of 23:00
+        else if (dayOfWeek == DayOfWeek.Monday && timeOfDay <= new TimeSpan(17, 0, 0))
         {
-            // If it's Monday before 5 PM, return the previous Friday
             return DateOnly.FromDateTime(now.AddDays(-3));
         }
         else if (timeOfDay <= new TimeSpan(17, 0, 0))
         {
-            // If it's a weekday before 5 PM, return the previous day
             return DateOnly.FromDateTime(now.AddDays(-1));
         }
-        // Otherwise, return today
         return DateOnly.FromDateTime(now);
     }
 
-    /// <summary>
-    /// D8 fix: Disposes the HttpClient if this instance owns it.
-    /// </summary>
     public void Dispose()
     {
         if (_ownsClient)

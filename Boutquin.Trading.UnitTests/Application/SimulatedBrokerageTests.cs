@@ -56,7 +56,7 @@ public sealed class SimulatedBrokerageTests
     public async Task SubmitOrderAsync_WithValidMarketOrder_ShouldReturnTrue()
     {
         // Arrange
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var today = new DateOnly(2024, 1, 15);
         var order = new Order(
             Timestamp: today,
             StrategyName: "Strategy1",
@@ -100,7 +100,7 @@ public sealed class SimulatedBrokerageTests
     {
         // Arrange
         var order = new Order(
-            Timestamp: DateOnly.FromDateTime(DateTime.Today),
+            Timestamp: new DateOnly(2024, 1, 15),
             StrategyName: "Strategy1",
             Asset: new Asset("AAPL"),
             TradeAction: TradeAction.Buy,
@@ -123,7 +123,7 @@ public sealed class SimulatedBrokerageTests
     public async Task SubmitOrderAsync_WithValidLimitOrder_ShouldReturnTrue()
     {
         // Arrange
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var today = new DateOnly(2024, 1, 15);
         var order = new Order(
             Timestamp: today,
             StrategyName: "Strategy1",
@@ -167,7 +167,7 @@ public sealed class SimulatedBrokerageTests
     public async Task SubmitOrderAsync_WithInValidLimitOrder_ShouldReturnFalse()
     {
         // Arrange
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var today = new DateOnly(2024, 1, 15);
         var order = new Order(
             Timestamp: today,
             StrategyName: "Strategy1",
@@ -175,7 +175,7 @@ public sealed class SimulatedBrokerageTests
             TradeAction: TradeAction.Buy,
             OrderType: OrderType.Limit,
             Quantity: 10,
-            PrimaryPrice: 300);
+            PrimaryPrice: 40);
         var marketData = new SortedDictionary<Asset, MarketData>
         {
             {
@@ -211,7 +211,7 @@ public sealed class SimulatedBrokerageTests
     public async Task SubmitOrderAsync_LimitOrderNotBetterThanClose_ShouldNotTriggerFillEvent()
     {
         // Arrange
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var today = new DateOnly(2024, 1, 15);
         var order = new Order(
             Timestamp: today,
             StrategyName: "Strategy1",
@@ -219,7 +219,7 @@ public sealed class SimulatedBrokerageTests
             TradeAction: TradeAction.Buy,
             OrderType: OrderType.Limit,
             Quantity: 10,
-            PrimaryPrice: 250);
+            PrimaryPrice: 40);
         var marketData = new SortedDictionary<Asset, MarketData>
         {
             {
@@ -259,7 +259,7 @@ public sealed class SimulatedBrokerageTests
     public async Task SubmitOrderAsync_StopOrderNotWorseThanClose_ShouldTriggerFillEvent()
     {
         // Arrange
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var today = new DateOnly(2024, 1, 15);
         var order = new Order(
             Timestamp: today,
             StrategyName: "Strategy1",
@@ -307,7 +307,7 @@ public sealed class SimulatedBrokerageTests
     public async Task SubmitOrderAsync_StopLimitOrderNotMeetingConditions_ShouldNotTriggerFillEvent()
     {
         // Arrange
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var today = new DateOnly(2024, 1, 15);
         var order = new Order(
             Timestamp: today,
             StrategyName: "Strategy1",
@@ -356,7 +356,7 @@ public sealed class SimulatedBrokerageTests
     public async Task SubmitOrderAsync_StopLimitOrderMeetingConditions_ShouldTriggerFillEvent()
     {
         // Arrange
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var today = new DateOnly(2024, 1, 15);
         var order = new Order(
             Timestamp: today,
             StrategyName: "Strategy1",

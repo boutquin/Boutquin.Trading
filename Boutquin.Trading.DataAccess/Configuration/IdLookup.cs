@@ -22,23 +22,6 @@ namespace Boutquin.Trading.DataAccess.Configuration;
 public static class IdLookup
 {
     /// <summary>
-    /// The dictionary containing the exchange IDs as values and exchange codes as keys.
-    /// </summary>
-    private static readonly Dictionary<ExchangeCode, int> _exchangeLookup = new()
-    {
-        { ExchangeCode.XNYS, 1 },
-        { ExchangeCode.XNAS, 2 },
-        { ExchangeCode.XTSE, 3 },
-        { ExchangeCode.XSHG, 4 },
-        { ExchangeCode.XHKG, 5 },
-        { ExchangeCode.XPAR, 6 },
-        { ExchangeCode.XLON, 7 },
-        { ExchangeCode.XETR, 8 },
-        { ExchangeCode.XMOS, 9 },
-        { ExchangeCode.XTOR, 10 }
-    };
-
-    /// <summary>
     /// The dictionary containing the city IDs as values and city names as keys.
     /// </summary>
     private static readonly Dictionary<string, int> _cityLookup = new()
@@ -53,22 +36,6 @@ public static class IdLookup
         { "Moscow", 8 },
         { "Toronto", 9 },
     };
-
-    /// <summary>
-    /// Gets the exchange ID by exchange code.
-    /// </summary>
-    /// <param name="exchangeCode">The exchange code.</param>
-    /// <returns>The exchange ID.</returns>
-    /// <exception cref="ArgumentException">Thrown when the given exchange code is not found in the dictionary.</exception>
-    public static int GetExchangeId(ExchangeCode exchangeCode)
-    {
-        if (_exchangeLookup.TryGetValue(exchangeCode, out var exchangeId))
-        {
-            return exchangeId;
-        }
-
-        throw new ArgumentException($"The given exchange code ({exchangeCode}) is not found in the lookup dictionary.");
-    }
 
     /// <summary>
     /// Gets the city ID by city name.

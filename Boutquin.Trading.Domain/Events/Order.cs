@@ -19,6 +19,7 @@ namespace Boutquin.Trading.Domain.Events;
 using ValueObjects;
 
 /// <summary>
+/// Order represents a request submitted to the broker for execution.
 /// The Order record represents a request to execute a trade for a specified
 /// asset, with information about the trade action, order type, quantity,
 /// and other relevant details.

@@ -2,9 +2,14 @@
 
   <PropertyGroup>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Title>Boutquin.Trading.Data.CSV</Title>
+    <Description>CSV market data storage and retrieval for the Boutquin.Trading quantitative trading framework. Reads and writes daily OHLCV and FX rate data in CSV format.</Description>
+    <PackageTags>trading;market-data;csv;backtesting;quantitative-finance;ohlcv;storage</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="..\README.md" Pack="True" PackagePath="\" />
     <None Include="..\Resources\icon.png" Link="icon.png">
       <PackagePath>\</PackagePath>
       <Pack>True</Pack>

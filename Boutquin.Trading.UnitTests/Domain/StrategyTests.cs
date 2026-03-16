@@ -19,7 +19,7 @@ namespace Boutquin.Trading.Tests.UnitTests.Domain;
 /// <summary>
 /// Contains unit tests for the Strategy class.
 /// </summary>
-public class StrategyTests
+public sealed class StrategyTests
 {
     /// <summary>
     /// Tests that the ComputeTotalValue method correctly computes the total value.
@@ -29,7 +29,7 @@ public class StrategyTests
     {
         // Arrange
         IStrategy strategy = new TestStrategy();
-        var timestamp = DateOnly.FromDateTime(DateTime.Today);
+        var timestamp = new DateOnly(2024, 1, 15);
         var baseCurrency = CurrencyCode.USD;
         var marketData = new SortedDictionary<Asset, MarketData>
         {
@@ -73,7 +73,7 @@ public class StrategyTests
     {
         // Arrange
         IStrategy strategy = new TestStrategy();
-        var date = DateOnly.FromDateTime(DateTime.Today);
+        var date = new DateOnly(2024, 1, 15);
         var baseCurrency = CurrencyCode.USD;
         var fxRates = new SortedDictionary<CurrencyCode, decimal>
         {
@@ -154,10 +154,9 @@ public class StrategyTests
     {
         // Arrange
         IStrategy strategy = new TestStrategy();
-        var asset = new Asset("   ");
 
-        // Act
-        var act = () => strategy.UpdatePositions(asset, 10);
+        // Act — Asset guard now throws at construction
+        var act = () => strategy.UpdatePositions(new Asset("   "), 10);
 
         // Assert
         act.Should().Throw<ArgumentException>()

@@ -73,8 +73,11 @@ public sealed class SignalEventHandler : IEventHandler
         // Iterate through the assets and generate OrderEvents for each asset.
         foreach (var asset in signalEvent.Signals.Keys)
         {
-            // Get the desired position size for the current asset.
-            var desiredPositionSize = positionSizes[asset];
+            // ERR-A03: Use TryGetValue with meaningful error
+            if (!positionSizes.TryGetValue(asset, out var desiredPositionSize))
+            {
+                throw new InvalidOperationException($"Position size not computed for asset \'{asset}\' in strategy \'{signalEvent.StrategyName}\'.");
+            }
 
             // Get the current position size for the current asset.
             var currentPositionSize = strategy.Positions.GetValueOrDefault(asset, 0);

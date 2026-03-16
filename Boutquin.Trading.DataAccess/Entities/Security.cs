@@ -53,7 +53,7 @@ public sealed class Security
     /// <summary>
     /// Initializes a new instance of the <see cref="Security"/> class.
     /// </summary>
-    public Security()
+    private Security()
     {
     }
 

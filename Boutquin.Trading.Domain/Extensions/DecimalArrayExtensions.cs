@@ -202,7 +202,7 @@ public static class DecimalArrayExtensions
     /// <exception cref ="ArgumentOutOfRangeException">Thrown when the <paramref name="tradingDaysPerYear"/> is non-positive.</exception>
     public static decimal CompoundAnnualGrowthRate(
         this decimal[] dailyReturns,
-        double tradingDaysPerYear = DefaultTradingDaysInYear)
+        int tradingDaysPerYear = DefaultTradingDaysInYear)
     {
         // Ensure that the input daily returns array is not null or empty.
         Guard.AgainstNullOrEmptyArray(() => dailyReturns); // Throws EmptyOrNullArrayException
@@ -217,7 +217,7 @@ public static class DecimalArrayExtensions
             .Aggregate(1m, (current, dailyReturn) => current * (1 + dailyReturn));
 
         var totalTradingDays = dailyReturns.Length;
-        var totalYears = totalTradingDays / tradingDaysPerYear;
+        var totalYears = (double)totalTradingDays / tradingDaysPerYear;
 
         // Check if the totalYears is zero, and if so, throw an exception
         if (totalYears == 0)

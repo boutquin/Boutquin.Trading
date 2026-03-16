@@ -46,9 +46,18 @@ public sealed class CsvMarketDataFetcher : IMarketDataFetcher
     {
         _dataDirectory = directory ?? throw new ArgumentNullException(nameof(directory));
 
+        // ERR-D02: Wrap Directory.CreateDirectory in try-catch to surface OS errors.
         if (!Directory.Exists(_dataDirectory))
         {
-            Directory.CreateDirectory(_dataDirectory);
+            try
+            {
+                Directory.CreateDirectory(_dataDirectory);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                throw new MarketDataStorageException(
+                    $"Failed to create data directory '{_dataDirectory}'.", ex);
+            }
         }
     }
 
@@ -56,12 +65,14 @@ public sealed class CsvMarketDataFetcher : IMarketDataFetcher
     public async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<ValueObjects.Asset, MarketData>>> FetchMarketDataAsync(
         IEnumerable<ValueObjects.Asset> symbols)
     {
-        if (symbols == null || !symbols.Any())
+        // PERF-D01: Materialize to avoid double enumeration of IEnumerable.
+        var symbolList = (symbols ?? throw new ArgumentNullException(nameof(symbols))).ToList();
+        if (symbolList.Count == 0)
         {
             throw new ArgumentException("At least one symbol must be provided.", nameof(symbols));
         }
 
-        foreach (var symbol in symbols)
+        foreach (var symbol in symbolList)
         {
             var fileName = MarketDataFileNameHelper.GetCsvFileNameForMarketData(_dataDirectory, symbol.Ticker);
 
@@ -80,16 +91,16 @@ public sealed class CsvMarketDataFetcher : IMarketDataFetcher
             // Skip the header row
             await streamReader.ReadLineAsync().ConfigureAwait(false);
 
+            // ERR-D03: Throw directly from catch instead of deferred-exception pattern.
             while (await streamReader.ReadLineAsync().ConfigureAwait(false) is { } line)
             {
-                KeyValuePair<DateOnly, SortedDictionary<ValueObjects.Asset, MarketData>>? dataPoint = null;
-                Exception? dataException = null;
+                var columns = line.Split(',');
 
+                DateOnly date;
+                MarketData marketDataPoint;
                 try
                 {
-                    var columns = line.Split(',');
-
-                    var date = DateOnly.Parse(columns[0], System.Globalization.CultureInfo.InvariantCulture);
+                    date = DateOnly.Parse(columns[0], System.Globalization.CultureInfo.InvariantCulture);
                     var open = decimal.Parse(columns[1], System.Globalization.CultureInfo.InvariantCulture);
                     var high = decimal.Parse(columns[2], System.Globalization.CultureInfo.InvariantCulture);
                     var low = decimal.Parse(columns[3], System.Globalization.CultureInfo.InvariantCulture);
@@ -99,42 +110,31 @@ public sealed class CsvMarketDataFetcher : IMarketDataFetcher
                     var dividendPerShare = decimal.Parse(columns[7], System.Globalization.CultureInfo.InvariantCulture);
                     var splitCoefficient = decimal.Parse(columns[8], System.Globalization.CultureInfo.InvariantCulture);
 
-                    var marketDataPoint = new MarketData(date, open, high, low, close, adjustedClose, volume,
+                    marketDataPoint = new MarketData(date, open, high, low, close, adjustedClose, volume,
                         dividendPerShare, splitCoefficient);
                     marketData[date] = marketDataPoint;
-
-                    dataPoint = new KeyValuePair<DateOnly, SortedDictionary<ValueObjects.Asset, MarketData>>(date,
-                        new SortedDictionary<ValueObjects.Asset, MarketData> { { symbol, marketDataPoint } });
                 }
                 catch (FormatException ex)
                 {
-                    dataException =
-                        new InvalidDataException($"Invalid data format in CSV file '{fileName}' for symbol '{symbol}'",
-                            ex);
+                    throw new MarketDataRetrievalException(
+                        $"Error reading CSV file '{fileName}' for symbol '{symbol}'",
+                        new InvalidDataException($"Invalid data format in CSV file '{fileName}' for symbol '{symbol}'", ex));
                 }
                 catch (OverflowException ex)
                 {
-                    dataException =
-                        new InvalidDataException(
-                            $"Numeric value out of range in CSV file '{fileName}' for symbol '{symbol}'", ex);
+                    throw new MarketDataRetrievalException(
+                        $"Error reading CSV file '{fileName}' for symbol '{symbol}'",
+                        new InvalidDataException($"Numeric value out of range in CSV file '{fileName}' for symbol '{symbol}'", ex));
                 }
                 catch (IndexOutOfRangeException ex)
                 {
-                    dataException =
-                        new InvalidDataException($"Invalid column count in CSV file '{fileName}' for symbol '{symbol}'",
-                            ex);
+                    throw new MarketDataRetrievalException(
+                        $"Error reading CSV file '{fileName}' for symbol '{symbol}'",
+                        new InvalidDataException($"Invalid column count in CSV file '{fileName}' for symbol '{symbol}'", ex));
                 }
 
-                if (dataException != null)
-                {
-                    throw new MarketDataRetrievalException($"Error reading CSV file '{fileName}' for symbol '{symbol}'",
-                        dataException);
-                }
-
-                if (dataPoint.HasValue)
-                {
-                    yield return dataPoint.Value;
-                }
+                yield return new KeyValuePair<DateOnly, SortedDictionary<ValueObjects.Asset, MarketData>>(date,
+                    new SortedDictionary<ValueObjects.Asset, MarketData> { { symbol, marketDataPoint } });
             }
         }
 
@@ -143,16 +143,20 @@ public sealed class CsvMarketDataFetcher : IMarketDataFetcher
     public async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<CurrencyCode, decimal>>> FetchFxRatesAsync(
         IEnumerable<string> currencyPairs)
     {
-        if (currencyPairs == null || !currencyPairs.Any())
+        // PERF-D01: Materialize to avoid double enumeration of IEnumerable.
+        var pairList = (currencyPairs ?? throw new ArgumentNullException(nameof(currencyPairs))).ToList();
+        if (pairList.Count == 0)
         {
             throw new ArgumentException("At least one currency pair must be provided.", nameof(currencyPairs));
         }
 
-        foreach (var pair in currencyPairs)
+        foreach (var pair in pairList)
         {
-            // Split the pair into base and quote currency codes
+            // ROB-D02: Validate both base and quote currency parts of the pair.
             var splitPair = pair.Split('_');
-            if (splitPair.Length != 2 || !Enum.TryParse<CurrencyCode>(splitPair[1], out var quoteCurrencyCode))
+            if (splitPair.Length != 2
+                || !Enum.TryParse<CurrencyCode>(splitPair[0], out _)
+                || !Enum.TryParse<CurrencyCode>(splitPair[1], out var quoteCurrencyCode))
             {
                 throw new ArgumentException($"Invalid currency pair: {pair}", nameof(currencyPairs));
             }
@@ -174,52 +178,40 @@ public sealed class CsvMarketDataFetcher : IMarketDataFetcher
             // Skip the header row
             await streamReader.ReadLineAsync().ConfigureAwait(false);
 
+            // ERR-D03: Throw directly from catch instead of deferred-exception pattern.
             while (await streamReader.ReadLineAsync().ConfigureAwait(false) is { } line)
             {
-                KeyValuePair<DateOnly, SortedDictionary<CurrencyCode, decimal>>? dataPoint = null;
-                Exception? dataException = null;
+                var columns = line.Split(',');
 
+                DateOnly date;
+                decimal rate;
                 try
                 {
-                    var columns = line.Split(',');
-
-                    var date = DateOnly.Parse(columns[0], System.Globalization.CultureInfo.InvariantCulture);
-                    var rate = decimal.Parse(columns[1], System.Globalization.CultureInfo.InvariantCulture);
-
+                    date = DateOnly.Parse(columns[0], System.Globalization.CultureInfo.InvariantCulture);
+                    rate = decimal.Parse(columns[1], System.Globalization.CultureInfo.InvariantCulture);
                     fxRates[date] = rate;
-
-                    dataPoint = new KeyValuePair<DateOnly, SortedDictionary<CurrencyCode, decimal>>(date,
-                        new SortedDictionary<CurrencyCode, decimal> { { quoteCurrencyCode, rate } });
                 }
                 catch (FormatException ex)
                 {
-                    dataException =
-                        new InvalidDataException(
-                            $"Invalid data format in CSV file '{fileName}' for currency pair '{pair}'", ex);
+                    throw new MarketDataRetrievalException(
+                        $"Error reading CSV file '{fileName}' for currency pair '{pair}'",
+                        new InvalidDataException($"Invalid data format in CSV file '{fileName}' for currency pair '{pair}'", ex));
                 }
                 catch (OverflowException ex)
                 {
-                    dataException =
-                        new InvalidDataException(
-                            $"Numeric value out of range in CSV file '{fileName}' for currency pair '{pair}'", ex);
+                    throw new MarketDataRetrievalException(
+                        $"Error reading CSV file '{fileName}' for currency pair '{pair}'",
+                        new InvalidDataException($"Numeric value out of range in CSV file '{fileName}' for currency pair '{pair}'", ex));
                 }
                 catch (IndexOutOfRangeException ex)
                 {
-                    dataException =
-                        new InvalidDataException(
-                            $"Invalid column count in CSV file '{fileName}' for currency pair '{pair}'", ex);
-                }
-
-                if (dataException != null)
-                {
                     throw new MarketDataRetrievalException(
-                        $"Error reading CSV file '{fileName}' for currency pair '{pair}'", dataException);
+                        $"Error reading CSV file '{fileName}' for currency pair '{pair}'",
+                        new InvalidDataException($"Invalid column count in CSV file '{fileName}' for currency pair '{pair}'", ex));
                 }
 
-                if (dataPoint.HasValue)
-                {
-                    yield return dataPoint.Value;
-                }
+                yield return new KeyValuePair<DateOnly, SortedDictionary<CurrencyCode, decimal>>(date,
+                    new SortedDictionary<CurrencyCode, decimal> { { quoteCurrencyCode, rate } });
             }
         }
     }

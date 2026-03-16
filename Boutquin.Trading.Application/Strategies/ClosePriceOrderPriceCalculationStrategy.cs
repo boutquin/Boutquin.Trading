@@ -33,7 +33,7 @@ public sealed class ClosePriceOrderPriceCalculationStrategy : IOrderPriceCalcula
     /// <param name="historicalData">The historical market data, organized as a dictionary with timestamps as keys and dictionaries of asset market data as values.</param>
     /// <returns>A tuple containing the order type, primary price, and secondary price for the calculated order.</returns>
     /// <exception cref="ArgumentException">Thrown when no market data is found for the specified date and asset.</exception>
-    public (OrderType OrderType, decimal PrimaryPrice, decimal SecondaryPrice)
+    public (OrderType OrderType, decimal PrimaryPrice, decimal? SecondaryPrice)
         CalculateOrderPrices(
             DateOnly timestamp,
             Domain.ValueObjects.Asset asset,
@@ -54,9 +54,8 @@ public sealed class ClosePriceOrderPriceCalculationStrategy : IOrderPriceCalcula
 
         const OrderType OrderType = OrderType.Market; // Default to Market order for simplicity.
         var primaryPrice = marketData.Close; // For Market orders, use the closing price directly.
-        const decimal SecondaryPrice = 0m; // Default secondary price, used only for StopLimit orders.
 
-        // Return the order details as a tuple.
-        return (OrderType, primaryPrice, SecondaryPrice);
+        // TYP-A02: Return null for SecondaryPrice when not applicable
+        return (OrderType, primaryPrice, null);
     }
 }

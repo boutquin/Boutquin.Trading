@@ -24,19 +24,26 @@ namespace Boutquin.Trading.Application.Brokers;
 public sealed class SimulatedBrokerage : IBrokerage
 {
     private readonly IMarketDataFetcher _marketDataFetcher;
+    private readonly decimal _commissionRate;
 
     /// <summary>
     /// Initializes a new instance of the SimulatedBrokerage class, using the provided IMarketDataFetcher.
     /// </summary>
     /// <param name="marketDataFetcher">An instance of an object implementing the IMarketDataFetcher interface.</param>
+    /// <param name="commissionRate">The commission rate to apply to trades (default: 0.1%).</param>
     /// <exception cref="ArgumentNullException">
     /// Thrown when the marketDataFetcher is null.
     /// </exception>
-    public SimulatedBrokerage(IMarketDataFetcher marketDataFetcher)
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when the commissionRate is negative or zero.
+    /// </exception>
+    public SimulatedBrokerage(IMarketDataFetcher marketDataFetcher, decimal commissionRate = 0.001m)
     {
         Guard.AgainstNull(() => marketDataFetcher); // Throws ArgumentNullException
+        Guard.AgainstNegativeOrZero(() => commissionRate); // Throws ArgumentOutOfRangeException
 
         _marketDataFetcher = marketDataFetcher;
+        _commissionRate = commissionRate;
     }
 
     /// <summary>
@@ -115,10 +122,10 @@ public sealed class SimulatedBrokerage : IBrokerage
             throw new InvalidOperationException("Limit price must be set for a limit order.");
         }
 
-        // For simplicity, we fill limit orders if the limit price is better or equal to the close price
+        // BUG-A05: Check High/Low instead of Close for limit order fill
         var limitPrice = order.PrimaryPrice.Value;
-        if ((order.TradeAction == TradeAction.Buy && limitPrice > marketData.Close) ||
-            (order.TradeAction == TradeAction.Sell && limitPrice < marketData.Close))
+        if ((order.TradeAction == TradeAction.Buy && marketData.Low > limitPrice) ||
+            (order.TradeAction == TradeAction.Sell && marketData.High < limitPrice))
         {
             return false;
         }
@@ -210,7 +217,7 @@ public sealed class SimulatedBrokerage : IBrokerage
         return true;
     }
 
-    private static decimal CalculateCommission(Order order, decimal fillPrice) =>
-        // Simulate a commission of 0.1%
-        fillPrice * order.Quantity * 0.001m;
+    // ROB-A01: Commission rate extracted to constructor parameter
+    private decimal CalculateCommission(Order order, decimal fillPrice) =>
+        fillPrice * order.Quantity * _commissionRate;
 }

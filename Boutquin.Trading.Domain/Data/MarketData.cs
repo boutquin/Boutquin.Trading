@@ -76,6 +76,8 @@ public sealed record MarketData(
     /// </remarks>
     public MarketData AdjustForSplit(decimal splitEventSplitRatio)
     {
+        Guard.AgainstNegativeOrZero(() => splitEventSplitRatio);
+
         return new MarketData(
             Timestamp,
             Open / splitEventSplitRatio,

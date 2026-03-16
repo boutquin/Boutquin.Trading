@@ -56,7 +56,7 @@ public sealed class Exchange
     /// <summary>
     /// Initializes a new instance of the <see cref="Exchange"/> class.
     /// </summary>
-    public Exchange()
+    private Exchange()
     {
     }
 

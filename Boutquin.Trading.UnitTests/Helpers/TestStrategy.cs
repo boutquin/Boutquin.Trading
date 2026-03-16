@@ -19,7 +19,7 @@ namespace Boutquin.Trading.Tests.UnitTests.Helpers;
 /// <summary>
 /// Represents a test strategy for trading.
 /// </summary>
-public class TestStrategy : IStrategy
+public sealed class TestStrategy : IStrategy
 {
     /// <summary>
     /// Gets or sets the name of the strategy.
@@ -61,6 +61,6 @@ public class TestStrategy : IStrategy
     /// <returns>A signal event.</returns>
     public SignalEvent GenerateSignals(DateOnly timestamp, CurrencyCode baseCurrency, IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>?> historicalMarketData, IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
     {
-        throw new NotImplementedException();
+        return new SignalEvent(timestamp, Name ?? string.Empty, new Dictionary<Asset, SignalType>());
     }
 }

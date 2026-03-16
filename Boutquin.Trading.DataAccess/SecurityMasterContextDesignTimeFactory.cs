@@ -22,7 +22,7 @@ using Microsoft.Extensions.Configuration;
 /// <summary>
 /// A factory for creating instances of SecurityMasterContext at design-time.
 /// </summary>
-public sealed class SecurityMasterContextDesignTimeFactory : IDesignTimeDbContextFactory<SecurityMasterContext>
+internal sealed class SecurityMasterContextDesignTimeFactory : IDesignTimeDbContextFactory<SecurityMasterContext>
 {
     /// <summary>
     /// Creates a new instance of the SecurityMasterContext.
@@ -47,7 +47,10 @@ public sealed class SecurityMasterContextDesignTimeFactory : IDesignTimeDbContex
         var configuration = configurationBuilder.Build();
 
         // Get the connection string for the SQL Server database provider from the configuration
-        var connectionString = configuration.GetConnectionString("SecurityMasterContext");
+        var connectionString = configuration.GetConnectionString("SecurityMasterContext")
+            ?? throw new InvalidOperationException(
+                "Connection string 'SecurityMasterContext' not found. "
+                + "Ensure appsettings.json exists in the current directory and contains a valid ConnectionStrings section.");
 
         // Configure the DbContextOptionsBuilder for the SecurityMasterContext
         var optionsBuilder = new DbContextOptionsBuilder<SecurityMasterContext>();

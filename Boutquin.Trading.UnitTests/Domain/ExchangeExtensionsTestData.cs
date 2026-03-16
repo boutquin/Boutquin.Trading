@@ -28,7 +28,8 @@ public static class ExchangeExtensionsTestData
     {
         get
         {
-            var exchange = new Exchange();
+            var city = new City("New York", TimeZoneCode.EST, CountryCode.US);
+            var exchange = new Exchange(ExchangeCode.XNYS, "New York Stock Exchange", city);
             exchange.ExchangeSchedules.Add(new ExchangeSchedule(ExchangeCode.XNYS, DayOfWeek.Monday, new TimeSpan(9, 0, 0), new TimeSpan(17, 0, 0)));
             exchange.ExchangeHolidays.Add(new ExchangeHoliday(ExchangeCode.XNYS, DateOnly.FromDateTime(new DateTime(2023, 1, 1)), "New Year's Day"));
 
@@ -59,7 +60,8 @@ public static class ExchangeExtensionsTestData
     {
         get
         {
-            var exchange = new Exchange();
+            var city = new City("New York", TimeZoneCode.EST, CountryCode.US);
+            var exchange = new Exchange(ExchangeCode.XNYS, "New York Stock Exchange", city);
             exchange.ExchangeSchedules.Add(new ExchangeSchedule(ExchangeCode.XNYS, DayOfWeek.Monday, new TimeSpan(9, 0, 0), new TimeSpan(17, 0, 0)));
             exchange.ExchangeHolidays.Add(new ExchangeHoliday(ExchangeCode.XNYS, DateOnly.FromDateTime(new DateTime(2023, 1, 1)), "New Year's Day"));
 

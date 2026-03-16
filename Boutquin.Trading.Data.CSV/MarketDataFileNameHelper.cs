@@ -53,11 +53,12 @@ public static class MarketDataFileNameHelper
     /// </remarks>
     private static string SanitizeTickerForFileName(string ticker)
     {
-        // Replace the caret symbol with an underscore
-        // return ticker.Replace('^', '_');
-
-        // Or remove the caret symbol
-        return ticker.Replace("^", "");
+        // ROB-I02 fix: Strip all invalid filename chars, not just '^'
+        foreach (var c in Path.GetInvalidFileNameChars())
+        {
+            ticker = ticker.Replace(c.ToString(), "");
+        }
+        return ticker;
     }
 
     /// <summary>

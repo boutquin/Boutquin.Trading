@@ -44,6 +44,15 @@ public sealed class FixedWeightPositionSizer : IPositionSizer
         Guard.AgainstEmptyOrNullReadOnlyDictionary(() => fixedAssetWeights); // Throws EmptyOrNullDictionaryException
         Guard.AgainstUndefinedEnumValue(() => baseCurrency); // Throws ArgumentOutOfRangeException
 
+        // ROB-A03: Validate weights are non-negative
+        foreach (var (_, weight) in fixedAssetWeights)
+        {
+            if (weight < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(fixedAssetWeights), "Asset weights must be non-negative.");
+            }
+        }
+
         _fixedAssetWeights = fixedAssetWeights;
         _baseCurrency = baseCurrency;
     }
@@ -88,17 +97,26 @@ public sealed class FixedWeightPositionSizer : IPositionSizer
         // Calculate the desired position size for each asset based on the fixed asset weights
         foreach (var asset in strategy.Assets.Keys)
         {
-            if (!_fixedAssetWeights.ContainsKey(asset))
+            // ROB-A02: Single lookup with TryGetValue
+            if (!_fixedAssetWeights.TryGetValue(asset, out var assetWeight))
             {
-                throw new InvalidOperationException($"Fixed asset weight not found for asset '{asset}'.");
+                throw new InvalidOperationException($"Fixed asset weight not found for asset \'{asset}\'.");
             }
 
-            var assetWeight = _fixedAssetWeights[asset];
             var desiredAssetValue = totalStrategyValue * assetWeight;
 
-            if (!historicalMarketData[timestamp].TryGetValue(asset, out var marketData))
+            // BUG-A08: Null-check inner dictionary before access
+            if (!historicalMarketData.TryGetValue(timestamp, out var marketDataForDate) ||
+                marketDataForDate == null ||
+                !marketDataForDate.TryGetValue(asset, out var marketData))
             {
-                throw new InvalidOperationException($"Market data not found for asset '{asset}' on {timestamp}.");
+                throw new InvalidOperationException($"Market data not found for asset \'{asset}\' on {timestamp}.");
+            }
+
+            // BUG-A09: Guard against division by zero on AdjustedClose
+            if (marketData.AdjustedClose == 0)
+            {
+                throw new InvalidOperationException($"AdjustedClose is zero for asset \'{asset}\' on {timestamp}.");
             }
 
             var positionSize = (int)(desiredAssetValue / marketData.AdjustedClose);

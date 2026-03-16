@@ -89,25 +89,17 @@ public sealed class CsvMarketDataStorage : IMarketDataStorage
 
             try
             {
-                // Check if the file exists, and create it with the header if not
-                if (!File.Exists(filePath))
+                // ROB-D03: Use FileMode.OpenOrCreate to avoid TOCTOU race
+                await using var fileStream = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None);
+                if (fileStream.Length == 0)
                 {
-#pragma warning disable CA2007
-                    await using var fileStream = File.Create(filePath);
-                    await using var streamWriter = new StreamWriter(fileStream);
-#pragma warning restore CA2007
-
-                    await streamWriter.WriteLineAsync("Timestamp,Open,High,Low,Close,AdjustedClose,Volume,DividendPerShare,SplitCoefficient").ConfigureAwait(false);
+                    await using var writer = new StreamWriter(fileStream, leaveOpen: true);
+                    await writer.WriteLineAsync("Timestamp,Open,High,Low,Close,AdjustedClose,Volume,DividendPerShare,SplitCoefficient").ConfigureAwait(false);
                 }
-
-                // Append the data point to the file
-#pragma warning disable CA2007
-                await using var appendFileStream = File.Open(filePath, FileMode.Append, FileAccess.Write);
-                await using var appendStreamWriter = new StreamWriter(appendFileStream);
-#pragma warning restore CA2007
-
+                fileStream.Seek(0, SeekOrigin.End);
+                await using var appendWriter = new StreamWriter(fileStream);
                 var line = $"{marketData.Timestamp},{marketData.Open},{marketData.High},{marketData.Low},{marketData.Close},{marketData.AdjustedClose},{marketData.Volume},{marketData.DividendPerShare},{marketData.SplitCoefficient}";
-                await appendStreamWriter.WriteLineAsync(line).ConfigureAwait(false);
+                await appendWriter.WriteLineAsync(line).ConfigureAwait(false);
             }
             catch (IOException ex)
             {
@@ -148,27 +140,20 @@ public sealed class CsvMarketDataStorage : IMarketDataStorage
 
             try
             {
-                // Check if the file exists, and create it with the header if not
-                if (!File.Exists(filePath))
+                // ROB-D03 + PERF-D02: Use FileMode.OpenOrCreate to avoid TOCTOU race; single file open for all data points
+                await using var fileStream = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None);
+                if (fileStream.Length == 0)
                 {
-#pragma warning disable CA2007
-                    await using var fileStream = File.Create(filePath);
-                    await using var streamWriter = new StreamWriter(fileStream);
-#pragma warning restore CA2007
-
-                    await streamWriter.WriteLineAsync("Timestamp,Open,High,Low,Close,AdjustedClose,Volume,DividendPerShare,SplitCoefficient").ConfigureAwait(false);
+                    await using var writer = new StreamWriter(fileStream, leaveOpen: true);
+                    await writer.WriteLineAsync("Timestamp,Open,High,Low,Close,AdjustedClose,Volume,DividendPerShare,SplitCoefficient").ConfigureAwait(false);
                 }
-
-                // Append the data points to the file
-#pragma warning disable CA2007
-                await using var appendFileStream = File.Open(filePath, FileMode.Append, FileAccess.Write);
-                await using var appendStreamWriter = new StreamWriter(appendFileStream);
-#pragma warning restore CA2007
+                fileStream.Seek(0, SeekOrigin.End);
+                await using var appendWriter = new StreamWriter(fileStream);
 
                 foreach (var dataPoint in symbolDataPoints.Value)
                 {
                     var line = $"{dataPoint.Timestamp},{dataPoint.Open},{dataPoint.High},{dataPoint.Low},{dataPoint.Close},{dataPoint.AdjustedClose},{dataPoint.Volume},{dataPoint.DividendPerShare},{dataPoint.SplitCoefficient}";
-                    await appendStreamWriter.WriteLineAsync(line).ConfigureAwait(false);
+                    await appendWriter.WriteLineAsync(line).ConfigureAwait(false);
                 }
             }
             catch (IOException ex)

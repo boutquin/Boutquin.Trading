@@ -71,10 +71,11 @@ public sealed class MarketDataProcessor(
                     // Save the market data using the provided storage.
                     await _storage.SaveMarketDataAsync(dataPoint).ConfigureAwait(false);
                 }
-                catch (Exception ex)
+                catch (MarketDataStorageException ex)
                 {
-                    // Log the error and continue with the next data point.
-                    _logger.LogError(ex, $"Error saving market data for {dataPoint.Key}");
+                    // ERR-D04: Log and propagate storage exceptions instead of silently swallowing
+                    _logger.LogError(ex, "Error saving market data for {Date}", dataPoint.Key);
+                    throw;
                 }
             }
         }

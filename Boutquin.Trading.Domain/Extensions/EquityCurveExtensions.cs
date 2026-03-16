@@ -55,8 +55,8 @@ public static class EquityCurveExtensions
         // Initialize a SortedDictionary to store the drawdowns.
         var drawdowns = new SortedDictionary<DateOnly, decimal>();
 
-        // Initialize variables for peak equity, maximum drawdown, drawdown duration, and maximum drawdown duration.
-        decimal peakEquity = 0;
+        // BUG-D06: Initialize peak equity to first value, not 0 (avoids inflated drawdown).
+        decimal peakEquity = equityCurve.First().Value;
         decimal maxDrawdown = 0;
         var maxDrawdownDuration = 0;
 
@@ -72,7 +72,7 @@ public static class EquityCurveExtensions
 
             // If a new highest equity value is encountered, update the peak equity and reset the drawdown duration.
             var drawdownDuration = 0;
-            if (equity > peakEquity)
+            if (equity >= peakEquity)
             {
                 peakEquity = equity;
                 startDrawdownDate = date;
@@ -88,8 +88,8 @@ public static class EquityCurveExtensions
                 }
             }
 
-            // Calculate the drawdown by dividing the current equity value by the peak value and subtracting 1.
-            var drawdown = equity > peakEquity ? 0 : (equity / peakEquity) - 1;
+            // BUG-D07: Guard against division by zero when peakEquity is 0.
+            var drawdown = equity >= peakEquity ? 0 : peakEquity == 0 ? 0 : (equity / peakEquity) - 1;
 
             // Update the maximum drawdown if the current drawdown is greater than the previous maximum drawdown.
             if (drawdown < maxDrawdown)

@@ -61,7 +61,7 @@ public sealed class FxRateConfiguration : IEntityTypeConfiguration<FxRate>
         // Configure RateDate property with required constraint and scale & precision
         builder.Property(c => c.Rate)
             .IsRequired()
-            .HasPrecision(ColumnConstants.SecurityPrice_Price_Precision, ColumnConstants.SecurityPrice_Price_Scale);
+            .HasPrecision(ColumnConstants.FxRate_Rate_Precision, ColumnConstants.FxRate_Rate_Scale);
 
         // Configure BaseCurrencyCode navigation property
         builder.HasOne<Currency>()

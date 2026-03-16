@@ -19,7 +19,7 @@ namespace Boutquin.Trading.Tests.UnitTests.Application;
 /// <summary>
 /// Represents a set of tests for the Portfolio class.
 /// </summary>
-public class PortfolioTests
+public sealed class PortfolioTests
 {
     private readonly Mock<IBrokerage> _mockBroker = new();
     private readonly Dictionary<Type, IEventHandler> _handlers = new()
@@ -48,7 +48,7 @@ public class PortfolioTests
         var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { new Asset("AAPL"), BaseCurrency } };
 
         var orderEvent = new OrderEvent(
-            DateOnly.FromDateTime(DateTime.Today),
+            new DateOnly(2024, 1, 15),
             "TestStrategy",
             new Asset("AAPL"),
             TradeAction.Buy,
@@ -97,7 +97,7 @@ public class PortfolioTests
         var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { new Asset("AAPL"), BaseCurrency } };
 
         var fillEvent = new FillEvent(
-            DateOnly.FromDateTime(DateTime.Today),
+            new DateOnly(2024, 1, 15),
             new Asset("AAPL"),
             "TestStrategy",
             TradeAction.Buy,
@@ -142,7 +142,7 @@ public class PortfolioTests
     {
         // Arrange
         var signalEvent = new SignalEvent(
-            DateOnly.FromDateTime(DateTime.Today),
+            new DateOnly(2024, 1, 15),
             "TestStrategy",
             new Dictionary<Asset, SignalType>
             {
@@ -194,8 +194,8 @@ public class PortfolioTests
         // Arrange
         var historicalMarketData = new SortedDictionary<Asset, MarketData>
         {
-            { new Asset("AAPL"), new MarketData(DateOnly.FromDateTime(DateTime.Today), 150.0m, 150.0m, 150.0m, 150.0m, 150.0m, 1000, 10.0m) },
-            { new Asset("GOOG"), new MarketData(DateOnly.FromDateTime(DateTime.Today), 1200.0m, 1200.0m, 1200.0m, 1200.0m, 1200.0m, 800, 8.0m) }
+            { new Asset("AAPL"), new MarketData(new DateOnly(2024, 1, 15), 150.0m, 150.0m, 150.0m, 150.0m, 150.0m, 1000, 10.0m) },
+            { new Asset("GOOG"), new MarketData(new DateOnly(2024, 1, 15), 1200.0m, 1200.0m, 1200.0m, 1200.0m, 1200.0m, 800, 8.0m) }
         };
         var historicalFxConversionRates = new SortedDictionary<CurrencyCode, decimal>
         {
@@ -204,7 +204,7 @@ public class PortfolioTests
         };
 
         var marketEvent = new MarketEvent(
-            DateOnly.FromDateTime(DateTime.Today),
+            new DateOnly(2024, 1, 15),
             historicalMarketData,
             historicalFxConversionRates
         );
@@ -246,7 +246,7 @@ public class PortfolioTests
     {
         // Arrange
         const CurrencyCode BaseCurrency = CurrencyCode.USD;
-        var timestamp = DateOnly.FromDateTime(DateTime.Today);
+        var timestamp = new DateOnly(2024, 1, 15);
         var marketEvent = new MarketEvent(Timestamp: timestamp,
                                             HistoricalMarketData: [],
                                             HistoricalFxConversionRates: []);
@@ -351,7 +351,7 @@ public class PortfolioTests
     {
         // Arrange
         const CurrencyCode BaseCurrency = CurrencyCode.USD;
-        var timestamp = DateOnly.FromDateTime(DateTime.Today);
+        var timestamp = new DateOnly(2024, 1, 15);
         var marketEvent = new MarketEvent(Timestamp: timestamp,
             HistoricalMarketData: [],
             HistoricalFxConversionRates: []);
@@ -385,7 +385,7 @@ public class PortfolioTests
         // Act
         var signals = portfolio.GenerateSignals(marketEvent).ToList();
 
-        // Assert  
+        // Assert
         signals.Should().HaveCount(1);
         signals[0].Should().BeEquivalentTo(expectedSignal);
     }
@@ -399,7 +399,7 @@ public class PortfolioTests
         // Arrange
         const CurrencyCode BaseCurrency = CurrencyCode.USD;
         var orderEvent = new OrderEvent(
-            DateOnly.FromDateTime(DateTime.Today),
+            new DateOnly(2024, 1, 15),
             "TestStrategy",
             new Asset("AAPL"),
             TradeAction.Buy,
@@ -541,7 +541,7 @@ public class PortfolioTests
         // Arrange
         const CurrencyCode BaseCurrency = CurrencyCode.USD;
         var asset = new Asset("AAPL");
-        var timestamp = DateOnly.FromDateTime(DateTime.Today);
+        var timestamp = new DateOnly(2024, 1, 15);
         var splitRatio = 2m;
         var marketData = new SortedDictionary<Asset, MarketData>
         {
@@ -656,7 +656,7 @@ public class PortfolioTests
         // Arrange
         const CurrencyCode BaseCurrency = CurrencyCode.USD;
         IStrategy strategy = new TestStrategy();
-        var timestamp = DateOnly.FromDateTime(DateTime.Today);
+        var timestamp = new DateOnly(2024, 1, 15);
         var marketData = new SortedDictionary<Asset, MarketData>
         {
             { new Asset("AAPL"),
@@ -708,7 +708,7 @@ public class PortfolioTests
     {
         // Arrange
         const CurrencyCode BaseCurrency = CurrencyCode.USD;
-        var timestamp = DateOnly.FromDateTime(DateTime.Today);
+        var timestamp = new DateOnly(2024, 1, 15);
 
         var mockStrategy = new Mock<IStrategy>();
         mockStrategy.Setup(s => s.ComputeTotalValue(

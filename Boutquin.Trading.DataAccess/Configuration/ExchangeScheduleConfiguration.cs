@@ -82,7 +82,7 @@ public sealed class ExchangeScheduleConfiguration : IEntityTypeConfiguration<Exc
 
         // Construct the data to seed the ExchangeSchedule table
         var scheduleId = 1;
-        foreach (ExchangeCode exchangeCode in Enum.GetValues(typeof(ExchangeCode)))
+        foreach (var exchangeCode in exchangeTradingHours.Keys)
         {
             for (var day = FirstTradingDay; day <= LastTradingDay; day++)
             {

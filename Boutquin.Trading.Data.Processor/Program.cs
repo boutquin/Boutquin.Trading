@@ -21,7 +21,11 @@ internal sealed class Program
     private static async Task Main(string[] args)
     {
         // Retrieve the list of symbols from the Symbols file
-        var dataDir = Path.Combine(new DirectoryInfo("./../../../.").FullName, "Data");
+        var dataDir = Path.Combine(AppContext.BaseDirectory, "Data");
+        if (!Directory.Exists(dataDir))
+        {
+            throw new DirectoryNotFoundException($"Data directory not found at '{dataDir}'. Ensure the Data folder is copied to the output directory.");
+        }
         var filename = Path.Combine(dataDir, "Symbols.csv");
         var symbolReader = new CsvSymbolReader(filename);
         var assets = await symbolReader.ReadSymbolsAsync().ConfigureAwait(false);

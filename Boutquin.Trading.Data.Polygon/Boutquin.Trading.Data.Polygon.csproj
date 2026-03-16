@@ -2,9 +2,14 @@
 
   <PropertyGroup>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Title>Boutquin.Trading.Data.Polygon</Title>
+    <Description>Polygon.io market data fetcher for the Boutquin.Trading quantitative trading framework. Provides daily OHLCV and FX conversion rates via the Polygon REST API.</Description>
+    <PackageTags>trading;market-data;polygon;backtesting;quantitative-finance;ohlcv;fx-rates</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="..\README.md" Pack="True" PackagePath="\" />
     <None Include="..\Resources\icon.png" Link="icon.png">
       <PackagePath>\</PackagePath>
       <Pack>True</Pack>

@@ -19,6 +19,7 @@ namespace Boutquin.Trading.Domain.Events;
 using ValueObjects;
 
 /// <summary>
+/// OrderEvent represents a portfolio-internal event that triggers order creation.
 /// The OrderEvent record encapsulates the data points for an order
 /// created by a specific strategy for a specific financial asset at a specific point in time,
 /// providing information about the order type, trade action, quantity, asset name, timestamp, and strategy name.

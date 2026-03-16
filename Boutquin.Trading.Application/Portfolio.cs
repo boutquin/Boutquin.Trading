@@ -258,14 +258,18 @@ public sealed class Portfolio : IPortfolio
     public IEnumerable<SignalEvent> GenerateSignals(
         MarketEvent marketEvent)
     {
-        // Iterate through each strategy and generate signals based on the updated market data
+        // ROB-A04: Null guard for MarketEvent parameter
+        Guard.AgainstNull(() => marketEvent); // Throws ArgumentNullException
+
+        // TYP-A03: Materialize to List to prevent deferred execution issues
         return Strategies
             .Select(strategyPair => strategyPair.Value)
             .Select(strategy => strategy.GenerateSignals(
                                             marketEvent.Timestamp,
                                             BaseCurrency,
                                             HistoricalMarketData,
-                                            HistoricalFxConversionRates));
+                                            HistoricalFxConversionRates))
+            .ToList();
     }
 
     /// <summary>

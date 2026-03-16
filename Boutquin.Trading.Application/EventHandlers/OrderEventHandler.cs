@@ -55,11 +55,11 @@ public sealed class OrderEventHandler : IEventHandler
         var orderEvent = eventObj as OrderEvent
             ?? throw new ArgumentException("Event must be of type OrderEvent.", nameof(eventObj));
 
-        // Call methods on the Portfolio class to perform the necessary actions
-        if (await portfolio.SubmitOrderAsync(orderEvent).ConfigureAwait(false))
+        // ERR-A06: Throw on failed order submission instead of silently ignoring
+        var orderSubmitted = await portfolio.SubmitOrderAsync(orderEvent).ConfigureAwait(false);
+        if (!orderSubmitted)
         {
-            // Log success
+            throw new InvalidOperationException($"Order submission failed for {orderEvent.Asset} ({orderEvent.TradeAction} {orderEvent.Quantity} @ {orderEvent.OrderType}).");
         }
-        // Log failure
     }
 }

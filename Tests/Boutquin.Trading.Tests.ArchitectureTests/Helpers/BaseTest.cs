@@ -51,7 +51,7 @@ public class BaseTest
     ///     GetFailingTypes(result).Should().BeEmpty();
     /// }
     /// </example>
-    protected string GetFailingTypes(TestResult result)
+    protected static string GetFailingTypes(TestResult result)
     {
         return result.FailingTypes != null ?
             string.Join(", ", result.FailingTypes.Select(type => type.Name)) :

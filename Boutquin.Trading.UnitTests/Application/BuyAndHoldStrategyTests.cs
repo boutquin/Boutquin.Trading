@@ -26,7 +26,7 @@ public sealed class BuyAndHoldStrategyTests
     private readonly SortedDictionary<CurrencyCode, decimal> _cash = new() { { CurrencyCode.USD, 10000m } };
     private readonly IReadOnlyDictionary<Asset, CurrencyCode> _assets = new Dictionary<Asset, CurrencyCode> { { new Asset("AAPL"), CurrencyCode.USD } };
     private readonly string _name = "TestStrategy";
-    private readonly DateOnly _initialTimestamp = DateOnly.FromDateTime(DateTime.Today);
+    private readonly DateOnly _initialTimestamp = new DateOnly(2024, 1, 15);
 
     /// <summary>
     /// Tests that the BuyAndHoldStrategy constructor creates an instance when given valid parameters.
