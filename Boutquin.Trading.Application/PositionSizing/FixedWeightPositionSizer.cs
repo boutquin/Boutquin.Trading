@@ -22,7 +22,7 @@ using Domain.ValueObjects;
 /// The FixedWeightPositionSizer class implements the IPositionSizer interface, using fixed asset weights to determine
 /// the desired positions. The weights are expressed as a percentage of the total strategy value in the base currency.
 /// </summary>
-public class FixedWeightPositionSizer : IPositionSizer
+public sealed class FixedWeightPositionSizer : IPositionSizer
 {
     private readonly IReadOnlyDictionary<Asset, decimal> _fixedAssetWeights;
     private readonly CurrencyCode _baseCurrency;

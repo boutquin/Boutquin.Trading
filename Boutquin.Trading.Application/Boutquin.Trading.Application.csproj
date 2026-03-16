@@ -1,17 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-
   <PropertyGroup>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Title>An Application layer specific for trading.</Title>
     <Description>Common abstractions (Strategy, Portfolio, BackTest) specific to a Trading Application layer.</Description>
     <PackageTags>CleanArchitecture,Domain,Entities,Shared,ApplicationLayer,SecurityMaster,TradingStrategy,Portfolio,BackTesting</PackageTags>
     <PackageReleaseNotes>Initial version.</PackageReleaseNotes>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <Title>An Application layer specific for trading.</Title>
   </PropertyGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Boutquin.Trading.Domain\Boutquin.Trading.Domain.csproj" />
-  </ItemGroup>
 
   <ItemGroup>
     <None Include="..\Resources\icon.png">
@@ -26,11 +22,12 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.5" />
-    <PackageReference Include="MinVer" Version="7.0.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
+    <PackageReference Include="MinVer" Version="7.0.0" PrivateAssets="All" />
     <PackageReference Include="System.Linq.Async" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Boutquin.Trading.Domain\Boutquin.Trading.Domain.csproj" />
   </ItemGroup>
 
 </Project>

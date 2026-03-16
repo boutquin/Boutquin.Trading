@@ -137,6 +137,12 @@ public sealed class BackTest
     /// <returns>A Tearsheet object containing various performance metrics for the backtested portfolio and benchmark portfolio.</returns>
     public Tearsheet AnalyzePerformanceMetrics()
     {
+        // D9 fix: Guard empty equity curve to prevent divide-by-zero
+        if (_portfolio.EquityCurve.Count < 2)
+        {
+            throw new InvalidOperationException("Equity curve must contain at least 2 data points. Run the backtest first.");
+        }
+
         // Calculate the required performance metrics for the entire portfolio
         var dailyReturns = _portfolio.EquityCurve.Values.ToArray().DailyReturns().ToArray();
 

@@ -16,11 +16,26 @@
 
 namespace Boutquin.Trading.Tests.ArchitectureTests;
 
-public class ApplicationAssemblyTests
+// E1 fix: Replaced vacuous empty Test1() with a real architecture test
+public class ApplicationAssemblyTests : BaseTest
 {
+    /// <summary>
+    /// Verifies that all non-static classes in the Application assembly are sealed.
+    /// </summary>
     [Fact]
-    public void Test1()
+    public void Classes_In_Application_Assembly_Should_Be_Sealed()
     {
+        var result = Types
+            .InAssembly(ApplicationAssembly)
+            .That()
+            .AreClasses()
+            .And()
+            .AreNotStatic()
+            .Should()
+            .BeSealed()
+            .GetResult();
 
+        result.IsSuccessful.Should().BeTrue(
+            because: $"the following types are not sealed: [{GetFailingTypes(result)}]");
     }
 }

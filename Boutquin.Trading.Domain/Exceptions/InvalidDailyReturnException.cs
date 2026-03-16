@@ -24,7 +24,6 @@ namespace Boutquin.Trading.Domain.Exceptions;
 /// which would result in a negative investment value. This exception provides a clear indication
 /// of the specific issue with the input data.
 /// </remarks>
-[Serializable]
 public sealed class InvalidDailyReturnException : Exception
 {
     /// <summary>
@@ -33,18 +32,6 @@ public sealed class InvalidDailyReturnException : Exception
     /// </summary>
     /// <param name="message">A message that describes the error.</param>
     public InvalidDailyReturnException(string message) : base(message)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="InvalidDailyReturnException"/> class with serialized data.
-    /// </summary>
-    /// <param name="info">The <see cref="SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
-    /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="info"/> parameter is null.</exception>
-    /// <exception cref="SerializationException">The class name is null or <see cref="Exception.HResult"/> is zero (0).</exception>
-    private InvalidDailyReturnException(SerializationInfo info, StreamingContext context)
-        : base(info, context)
     {
     }
 }

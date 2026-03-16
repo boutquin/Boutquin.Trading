@@ -133,7 +133,7 @@ public interface IStrategy
 
             // Get the historical market data for the asset
             if (historicalMarketData.TryGetValue(timestamp, out var assetMarketData) &&
-                assetMarketData.TryGetValue(asset, out var marketData))
+                assetMarketData is not null && assetMarketData.TryGetValue(asset, out var marketData))
             {
                 // Calculate the asset's value in its native currency
                 var assetValue = positionSize * marketData.AdjustedClose;

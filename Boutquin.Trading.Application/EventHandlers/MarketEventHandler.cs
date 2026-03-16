@@ -84,6 +84,11 @@ public sealed class MarketEventHandler : IEventHandler
 
         //await _portfolio.AllocateCapitalAsync();
 
-        portfolio.GenerateSignals(marketEvent);
+        // A4 fix: Capture GenerateSignals return value and feed each signal into the event processor
+        var signals = portfolio.GenerateSignals(marketEvent);
+        foreach (var signal in signals)
+        {
+            await portfolio.HandleEventAsync(signal).ConfigureAwait(false);
+        }
     }
 }

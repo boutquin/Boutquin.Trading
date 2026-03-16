@@ -100,6 +100,7 @@ public class PortfolioTests
             DateOnly.FromDateTime(DateTime.Today),
             new Asset("AAPL"),
             "TestStrategy",
+            TradeAction.Buy,
             150.0m,
             100,
             10.0m

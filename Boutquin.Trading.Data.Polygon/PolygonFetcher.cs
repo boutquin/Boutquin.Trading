@@ -21,9 +21,10 @@ using Microsoft.Extensions.Caching.Distributed;
 /// <summary>
 /// Fetches market data from Polygon.io API.
 /// </summary>
-public class PolygonFetcher : IMarketDataFetcher
+public class PolygonFetcher : IMarketDataFetcher, IDisposable
 {
     private readonly HttpClient _httpClient;
+    private readonly bool _ownsClient; // D8 fix: Track ownership for disposal
     private readonly IDistributedCache _cache;
     private readonly string _apiKey;
 
@@ -43,6 +44,7 @@ public class PolygonFetcher : IMarketDataFetcher
         }
 
         _cache = cache ?? throw new ArgumentNullException(nameof(cache), "IDistributedCache cannot be null.");
+        _ownsClient = httpClient == null;
         _httpClient = httpClient ?? new HttpClient();
     }
 
@@ -55,12 +57,12 @@ public class PolygonFetcher : IMarketDataFetcher
     /// <param name="symbols">A list of financial asset symbols for which to fetch historical market data.</param>
     /// <returns>An IAsyncEnumerable of key-value pairs, where the key is a DateOnly object and the value is a SortedDictionary of string asset symbols and MarketData values.</returns>
     /// <exception cref="MarketDataRetrievalException">Thrown when there is an error in fetching or parsing the market data.</exception>
-    public async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<Domain.ValueObjects.Asset, MarketData>?>> FetchMarketDataAsync(IEnumerable<Domain.ValueObjects.Asset> symbols)
+    public async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<Domain.ValueObjects.Asset, MarketData>>> FetchMarketDataAsync(IEnumerable<Domain.ValueObjects.Asset> symbols)
     {
         var date = GetLastCloseDate();
         foreach (var symbol in symbols)
         {
-            SortedDictionary<Domain.ValueObjects.Asset, MarketData>? result = null;
+            SortedDictionary<Domain.ValueObjects.Asset, MarketData> result = null!;
             try
             {
                 var url = $"https://api.polygon.io/v1/open-close/{symbol.Ticker}/{date:yyyy-MM-dd}?adjusted=true&apiKey={_apiKey}";
@@ -94,7 +96,7 @@ public class PolygonFetcher : IMarketDataFetcher
                 throw new MarketDataStorageException("Unexpected error occurred while storing market data from Polygon.io.", e);
             }
 
-            yield return new KeyValuePair<DateOnly, SortedDictionary<Domain.ValueObjects.Asset, MarketData>?>(date, result);
+            yield return new KeyValuePair<DateOnly, SortedDictionary<Domain.ValueObjects.Asset, MarketData>>(date, result);
         }
     }
 
@@ -177,5 +179,16 @@ public class PolygonFetcher : IMarketDataFetcher
         }
         // Otherwise, return today
         return DateOnly.FromDateTime(now);
+    }
+
+    /// <summary>
+    /// D8 fix: Disposes the HttpClient if this instance owns it.
+    /// </summary>
+    public void Dispose()
+    {
+        if (_ownsClient)
+        {
+            _httpClient.Dispose();
+        }
     }
 }

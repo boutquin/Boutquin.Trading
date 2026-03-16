@@ -21,7 +21,7 @@ namespace Boutquin.Trading.Application.Brokers;
 /// of a real-world brokerage. It is intended to be used in backtesting trading strategies.
 /// It uses an IMarketDataFetcher to retrieve market data which is used to simulate the execution of trades.
 /// </summary>
-public class SimulatedBrokerage : IBrokerage
+public sealed class SimulatedBrokerage : IBrokerage
 {
     private readonly IMarketDataFetcher _marketDataFetcher;
 
@@ -42,7 +42,9 @@ public class SimulatedBrokerage : IBrokerage
     /// <summary>
     /// Occurs when an order is filled. This can be subscribed to in order to receive fill events.
     /// </summary>
-    public event EventHandler<FillEvent> FillOccurred;
+    // A1 fix: Changed from EventHandler<FillEvent> to Func<object, FillEvent, Task>
+    // so that async handlers can propagate exceptions.
+    public event Func<object, FillEvent, Task> FillOccurred;
 
     /// <summary>
     /// Submits an order for execution. The order is processed based on the available market data.
@@ -50,8 +52,8 @@ public class SimulatedBrokerage : IBrokerage
     /// For Limit, Stop, and StopLimit orders, additional checks are performed.
     /// </summary>
     /// <param name="order">The order to be executed.</param>
-    /// <returns>A task that represents the asynchronous operation. 
-    /// The task result contains a boolean value that is true if the 
+    /// <returns>A task that represents the asynchronous operation.
+    /// The task result contains a boolean value that is true if the
     /// order was successfully processed; otherwise, false.</returns>
     /// <exception cref="ArgumentNullException">
     /// Thrown when the order is null.
@@ -63,25 +65,28 @@ public class SimulatedBrokerage : IBrokerage
     {
         Guard.AgainstNull(() => order); // Throws ArgumentNullException
 
-        var marketData = await _marketDataFetcher.FetchMarketDataAsync([order.Asset]).FirstOrDefaultAsync().ConfigureAwait(false);
+        // A5 fix: Filter market data to match the order's timestamp instead of using whatever date the fetcher returns
+        var marketData = await _marketDataFetcher.FetchMarketDataAsync([order.Asset])
+            .FirstOrDefaultAsync(kvp => kvp.Key == order.Timestamp).ConfigureAwait(false);
 
         if (marketData.Value == null || !marketData.Value.TryGetValue(order.Asset, out var assetMarketData))
         {
             return false;
         }
 
+        // A1 fix: Handle*Order methods are now async to await FillOccurred
         var isOrderFilled = order.OrderType switch
         {
-            OrderType.Market => HandleMarketOrder(order, assetMarketData),
-            OrderType.Limit => HandleLimitOrder(order, assetMarketData),
-            OrderType.Stop => HandleStopOrder(order, assetMarketData),
-            OrderType.StopLimit => HandleStopLimitOrder(order, assetMarketData),
+            OrderType.Market => await HandleMarketOrder(order, assetMarketData).ConfigureAwait(false),
+            OrderType.Limit => await HandleLimitOrder(order, assetMarketData).ConfigureAwait(false),
+            OrderType.Stop => await HandleStopOrder(order, assetMarketData).ConfigureAwait(false),
+            OrderType.StopLimit => await HandleStopLimitOrder(order, assetMarketData).ConfigureAwait(false),
             _ => throw new ArgumentOutOfRangeException(nameof(order.OrderType), order.OrderType, "OrderType is out of range"),
         };
         return isOrderFilled;
     }
 
-    private bool HandleMarketOrder(Order order, MarketData marketData)
+    private async Task<bool> HandleMarketOrder(Order order, MarketData marketData)
     {
         var fillPrice = marketData.Close;
         var commission = CalculateCommission(order, fillPrice);
@@ -90,15 +95,20 @@ public class SimulatedBrokerage : IBrokerage
             order.Timestamp,
             order.Asset,
             order.StrategyName,
+            order.TradeAction,
             fillPrice,
             order.Quantity,
             commission);
 
-        FillOccurred?.Invoke(this, fillEvent);
+        // A1 fix: Await the async event handler so exceptions propagate
+        if (FillOccurred != null)
+        {
+            await FillOccurred(this, fillEvent).ConfigureAwait(false);
+        }
         return true;
     }
 
-    private bool HandleLimitOrder(Order order, MarketData marketData)
+    private async Task<bool> HandleLimitOrder(Order order, MarketData marketData)
     {
         if (order.PrimaryPrice == null)
         {
@@ -119,15 +129,19 @@ public class SimulatedBrokerage : IBrokerage
             order.Timestamp,
             order.Asset,
             order.StrategyName,
+            order.TradeAction,
             limitPrice,
             order.Quantity,
             commission);
 
-        FillOccurred?.Invoke(this, fillEvent);
+        if (FillOccurred != null)
+        {
+            await FillOccurred(this, fillEvent).ConfigureAwait(false);
+        }
         return true;
     }
 
-    private bool HandleStopOrder(Order order, MarketData marketData)
+    private async Task<bool> HandleStopOrder(Order order, MarketData marketData)
     {
         if (order.PrimaryPrice == null)
         {
@@ -148,15 +162,19 @@ public class SimulatedBrokerage : IBrokerage
             order.Timestamp,
             order.Asset,
             order.StrategyName,
+            order.TradeAction,
             stopPrice,
             order.Quantity,
             commission);
 
-        FillOccurred?.Invoke(this, fillEvent);
+        if (FillOccurred != null)
+        {
+            await FillOccurred(this, fillEvent).ConfigureAwait(false);
+        }
         return true;
     }
 
-    private bool HandleStopLimitOrder(Order order, MarketData marketData)
+    private async Task<bool> HandleStopLimitOrder(Order order, MarketData marketData)
     {
         if (order.PrimaryPrice == null || order.SecondaryPrice == null)
         {
@@ -180,11 +198,15 @@ public class SimulatedBrokerage : IBrokerage
             order.Timestamp,
             order.Asset,
             order.StrategyName,
+            order.TradeAction,
             limitPrice,
             order.Quantity,
             commission);
 
-        FillOccurred?.Invoke(this, fillEvent);
+        if (FillOccurred != null)
+        {
+            await FillOccurred(this, fillEvent).ConfigureAwait(false);
+        }
         return true;
     }
 

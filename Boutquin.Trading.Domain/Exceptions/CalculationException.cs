@@ -19,7 +19,6 @@ namespace Boutquin.Trading.Domain.Exceptions;
 /// <summary>
 /// Represents errors that occur during the calculation of trading performance metrics.
 /// </summary>
-[Serializable]
 public sealed class CalculationException : Exception
 {
     /// <summary>
@@ -47,18 +46,6 @@ public sealed class CalculationException : Exception
     /// <param name="innerException">The exception that is the cause of the current exception, or a null reference if no inner exception is specified.</param>
     public CalculationException(string message, Exception innerException)
         : base(message, innerException)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="CalculationException"/> class with serialized data.
-    /// </summary>
-    /// <param name="info">The <see cref="SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
-    /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="info"/> parameter is null.</exception>
-    /// <exception cref="SerializationException">The class name is null or <see cref="Exception.HResult"/> is zero (0).</exception>
-    private CalculationException(SerializationInfo info, StreamingContext context)
-        : base(info, context)
     {
     }
 }

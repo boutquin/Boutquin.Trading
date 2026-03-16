@@ -53,7 +53,7 @@ public sealed class CsvMarketDataFetcher : IMarketDataFetcher
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<ValueObjects.Asset, MarketData>?>> FetchMarketDataAsync(
+    public async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<ValueObjects.Asset, MarketData>>> FetchMarketDataAsync(
         IEnumerable<ValueObjects.Asset> symbols)
     {
         if (symbols == null || !symbols.Any())
@@ -82,22 +82,22 @@ public sealed class CsvMarketDataFetcher : IMarketDataFetcher
 
             while (await streamReader.ReadLineAsync().ConfigureAwait(false) is { } line)
             {
-                KeyValuePair<DateOnly, SortedDictionary<ValueObjects.Asset, MarketData>?>? dataPoint = null;
+                KeyValuePair<DateOnly, SortedDictionary<ValueObjects.Asset, MarketData>>? dataPoint = null;
                 Exception? dataException = null;
 
                 try
                 {
                     var columns = line.Split(',');
 
-                    var date = DateOnly.Parse(columns[0]);
-                    var open = decimal.Parse(columns[1]);
-                    var high = decimal.Parse(columns[2]);
-                    var low = decimal.Parse(columns[3]);
-                    var close = decimal.Parse(columns[4]);
-                    var adjustedClose = decimal.Parse(columns[5]);
-                    var volume = long.Parse(columns[6]);
-                    var dividendPerShare = decimal.Parse(columns[7]);
-                    var splitCoefficient = decimal.Parse(columns[8]);
+                    var date = DateOnly.Parse(columns[0], System.Globalization.CultureInfo.InvariantCulture);
+                    var open = decimal.Parse(columns[1], System.Globalization.CultureInfo.InvariantCulture);
+                    var high = decimal.Parse(columns[2], System.Globalization.CultureInfo.InvariantCulture);
+                    var low = decimal.Parse(columns[3], System.Globalization.CultureInfo.InvariantCulture);
+                    var close = decimal.Parse(columns[4], System.Globalization.CultureInfo.InvariantCulture);
+                    var adjustedClose = decimal.Parse(columns[5], System.Globalization.CultureInfo.InvariantCulture);
+                    var volume = long.Parse(columns[6], System.Globalization.CultureInfo.InvariantCulture);
+                    var dividendPerShare = decimal.Parse(columns[7], System.Globalization.CultureInfo.InvariantCulture);
+                    var splitCoefficient = decimal.Parse(columns[8], System.Globalization.CultureInfo.InvariantCulture);
 
                     var marketDataPoint = new MarketData(date, open, high, low, close, adjustedClose, volume,
                         dividendPerShare, splitCoefficient);
@@ -183,8 +183,8 @@ public sealed class CsvMarketDataFetcher : IMarketDataFetcher
                 {
                     var columns = line.Split(',');
 
-                    var date = DateOnly.Parse(columns[0]);
-                    var rate = decimal.Parse(columns[1]);
+                    var date = DateOnly.Parse(columns[0], System.Globalization.CultureInfo.InvariantCulture);
+                    var rate = decimal.Parse(columns[1], System.Globalization.CultureInfo.InvariantCulture);
 
                     fxRates[date] = rate;
 

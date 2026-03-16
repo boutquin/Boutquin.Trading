@@ -316,8 +316,109 @@ public sealed class DecimalArrayExtensionsTests
         actualResult.Should().BeApproximately(expectedResult, Precision);
     }
 
+    // ==================== Cluster B: High-severity bug tests ====================
+
     /// <summary>
-    /// Tests the <see cref="ArgumentOutOfRangeException" /> for all extension methods 
+    /// B2: DownsideDeviation should use sample divisor (N-1), not population (N).
+    /// Known input: { -0.01, -0.02, 0.03, -0.01, 0.02 } with riskFreeRate=0
+    /// Downside returns: { -0.01, -0.02, 0, -0.01, 0 }
+    /// Squared: { 0.0001, 0.0004, 0, 0.0001, 0 }
+    /// Sum = 0.0006, sample mean = 0.0006 / (5-1) = 0.00015
+    /// Expected = sqrt(0.00015) = 0.01224744871391589...
+    /// </summary>
+    [Fact]
+    public void DownsideDeviation_UsesSampleDivisor()
+    {
+        // Arrange
+        var dailyReturns = new[] { -0.01m, -0.02m, 0.03m, -0.01m, 0.02m };
+        // Sum of squared downside returns = 0.0001 + 0.0004 + 0 + 0.0001 + 0 = 0.0006
+        // Sample divisor (N-1) = 4, so mean = 0.00015
+        var expected = (decimal)Math.Sqrt(0.00015); // 0.012247448713...
+
+        // Act
+        var actual = dailyReturns.DownsideDeviation(0m);
+
+        // Assert
+        actual.Should().BeApproximately(expected, 1e-10m);
+    }
+
+    /// <summary>
+    /// B3: Beta with mismatched array lengths should throw ArgumentException.
+    /// </summary>
+    [Fact]
+    public void Beta_MismatchedArrayLengths_ThrowsArgumentException()
+    {
+        // Arrange
+        var portfolio = new[] { 0.01m, 0.02m, -0.01m };
+        var benchmark = new[] { 0.02m, 0.03m, -0.01m, 0.04m, -0.03m };
+
+        // Act & Assert
+        var act = () => portfolio.Beta(benchmark);
+        act.Should().Throw<ArgumentException>();
+    }
+
+    /// <summary>
+    /// B5: SharpeRatio with zero standard deviation (constant returns) should throw CalculationException.
+    /// </summary>
+    [Fact]
+    public void SharpeRatio_ZeroStdDev_ThrowsCalculationException()
+    {
+        // Arrange — constant returns → zero stddev
+        var dailyReturns = new[] { 0.01m, 0.01m, 0.01m, 0.01m, 0.01m };
+
+        // Act & Assert
+        var act = () => dailyReturns.SharpeRatio();
+        act.Should().Throw<Boutquin.Trading.Domain.Exceptions.CalculationException>();
+    }
+
+    /// <summary>
+    /// B5: SortinoRatio with all positive returns → zero downside deviation → should throw.
+    /// </summary>
+    [Fact]
+    public void SortinoRatio_ZeroDownsideDev_ThrowsCalculationException()
+    {
+        // Arrange — all positive returns, no downside
+        var dailyReturns = new[] { 0.01m, 0.02m, 0.03m, 0.04m, 0.05m };
+
+        // Act & Assert
+        var act = () => dailyReturns.SortinoRatio();
+        act.Should().Throw<Boutquin.Trading.Domain.Exceptions.CalculationException>();
+    }
+
+    /// <summary>
+    /// B5: Beta with constant benchmark → zero variance → should throw.
+    /// </summary>
+    [Fact]
+    public void Beta_ZeroBenchmarkVariance_ThrowsCalculationException()
+    {
+        // Arrange
+        var portfolio = new[] { 0.01m, 0.02m, -0.01m, 0.03m, -0.02m };
+        var benchmark = new[] { 0.01m, 0.01m, 0.01m, 0.01m, 0.01m };
+
+        // Act & Assert
+        var act = () => portfolio.Beta(benchmark);
+        act.Should().Throw<Boutquin.Trading.Domain.Exceptions.CalculationException>();
+    }
+
+    /// <summary>
+    /// B5: InformationRatio with identical returns → zero active stddev → should throw.
+    /// </summary>
+    [Fact]
+    public void InformationRatio_ZeroActiveStdDev_ThrowsCalculationException()
+    {
+        // Arrange — identical returns → zero active return stddev
+        var dailyReturns = new[] { 0.01m, 0.02m, -0.01m, 0.03m, -0.02m };
+        var benchmark = new[] { 0.01m, 0.02m, -0.01m, 0.03m, -0.02m };
+
+        // Act & Assert
+        var act = () => dailyReturns.InformationRatio(benchmark);
+        act.Should().Throw<Boutquin.Trading.Domain.Exceptions.CalculationException>();
+    }
+
+    // ==================== End Cluster B tests ====================
+
+    /// <summary>
+    /// Tests the <see cref="ArgumentOutOfRangeException" /> for all extension methods
     /// with negative trading days per year.
     /// </summary>
     [Fact]
