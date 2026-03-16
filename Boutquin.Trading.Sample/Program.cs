@@ -23,9 +23,12 @@ var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { new Asset("SPX"), 
 // Create a position sizer that uses fixed weights for sizing positions.
 var positionSizer = new FixedWeightPositionSizer(fixedAssetWeights, BaseCurrency);
 
-// Setup the data fetcher for market data. Here, AlphaVantage is used with a memory cache.
-var options = Options.Create(new MemoryDistributedCacheOptions());
-var dataFetcher = new AlphaVantageFetcher(new MemoryDistributedCache(options));
+// Setup the data fetcher for market data using Tiingo (equities) + Frankfurter (FX).
+var tiingoApiKey = Environment.GetEnvironmentVariable("TIINGO_API_KEY")
+    ?? throw new InvalidOperationException("TIINGO_API_KEY environment variable is not set.");
+using var equityFetcher = new TiingoFetcher(tiingoApiKey);
+using var fxFetcher = new FrankfurterFetcher();
+using var dataFetcher = new CompositeMarketDataFetcher(equityFetcher, fxFetcher);
 // Initialize a simulated brokerage for executing trades and fetching market data.
 var broker = new SimulatedBrokerage(dataFetcher);
 

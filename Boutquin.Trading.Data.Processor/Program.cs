@@ -30,11 +30,12 @@ internal sealed class Program
         var symbolReader = new CsvSymbolReader(filename);
         var assets = await symbolReader.ReadSymbolsAsync().ConfigureAwait(false);
 
-        // Create a distributed cache instance (e.g., MemoryDistributedCache)
-        var cache = new MemoryDistributedCache(new OptionsWrapper<MemoryDistributedCacheOptions>(new MemoryDistributedCacheOptions()));
-
-        // Instantiate PolygonFetcher with the required parameters
-        var apiFetcher = new PolygonFetcher(cache);
+        // Instantiate the composite market data fetcher (Tiingo for equities, Frankfurter for FX)
+        var tiingoApiKey = Environment.GetEnvironmentVariable("TIINGO_API_KEY")
+            ?? throw new InvalidOperationException("TIINGO_API_KEY environment variable is not set.");
+        using var equityFetcher = new TiingoFetcher(tiingoApiKey);
+        using var fxFetcher = new FrankfurterFetcher();
+        using var apiFetcher = new CompositeMarketDataFetcher(equityFetcher, fxFetcher);
         var writer = new CsvMarketDataStorage(dataDir);
         var marketDataProcessor = new MarketDataProcessor(apiFetcher, writer);
 

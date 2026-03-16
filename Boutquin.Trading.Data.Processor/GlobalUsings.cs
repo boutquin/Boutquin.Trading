@@ -14,10 +14,8 @@
 //   limitations under the License.
 //
 
-global using Boutquin.Trading.Data.Polygon;
+global using Boutquin.Trading.Application;
+global using Boutquin.Trading.Data.Frankfurter;
+global using Boutquin.Trading.Data.Tiingo;
 global using Boutquin.Trading.Domain.Data;
 global using Boutquin.Trading.Domain.Helpers;
-
-global using Microsoft.Extensions.Caching.Distributed;
-global using Microsoft.Extensions.Caching.Memory;
-global using Microsoft.Extensions.Options;

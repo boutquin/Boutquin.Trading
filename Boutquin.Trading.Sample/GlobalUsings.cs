@@ -21,12 +21,9 @@ global using Boutquin.Trading.Application.Brokers;
 global using Boutquin.Trading.Application.EventHandlers;
 global using Boutquin.Trading.Application.PositionSizing;
 global using Boutquin.Trading.Application.Strategies;
-global using Boutquin.Trading.Data.AlphaVantage;
+global using Boutquin.Trading.Data.Frankfurter;
+global using Boutquin.Trading.Data.Tiingo;
 global using Boutquin.Trading.Domain.Enums;
 global using Boutquin.Trading.Domain.Events;
 global using Boutquin.Trading.Domain.Interfaces;
 global using Boutquin.Trading.Domain.ValueObjects;
-
-global using Microsoft.Extensions.Caching.Distributed;
-global using Microsoft.Extensions.Caching.Memory;
-global using Microsoft.Extensions.Options;

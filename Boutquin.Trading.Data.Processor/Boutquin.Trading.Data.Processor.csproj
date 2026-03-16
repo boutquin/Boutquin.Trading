@@ -11,13 +11,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.5" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.5" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Boutquin.Trading.Data.AlphaVantage\Boutquin.Trading.Data.AlphaVantage.csproj" />
-    <ProjectReference Include="..\Boutquin.Trading.Data.Polygon\Boutquin.Trading.Data.Polygon.csproj" />
+    <ProjectReference Include="..\Boutquin.Trading.Application\Boutquin.Trading.Application.csproj" />
+    <ProjectReference Include="..\Boutquin.Trading.Data.Frankfurter\Boutquin.Trading.Data.Frankfurter.csproj" />
+    <ProjectReference Include="..\Boutquin.Trading.Data.Tiingo\Boutquin.Trading.Data.Tiingo.csproj" />
     <ProjectReference Include="..\Boutquin.Trading.Domain\Boutquin.Trading.Domain.csproj" />
   </ItemGroup>
 
