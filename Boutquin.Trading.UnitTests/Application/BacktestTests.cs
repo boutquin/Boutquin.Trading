@@ -42,7 +42,7 @@ public sealed class BacktestTests
         var backtest = new BackTest(portfolio.Object, benchmarkPortfolio.Object, fetcher.Object, CurrencyCode.USD);
 
         // Act & Assert — should throw, not divide by zero
-        var act = () => backtest.AnalyzePerformanceMetrics();
+        var act = backtest.AnalyzePerformanceMetrics;
         act.Should().Throw<InvalidOperationException>();
     }
 }

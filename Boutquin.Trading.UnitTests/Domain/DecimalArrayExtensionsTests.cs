@@ -410,7 +410,7 @@ public sealed class DecimalArrayExtensionsTests
     public void ProfitFactor_AllPositiveReturns_ThrowsCalculationException()
     {
         var dailyReturns = new[] { 0.01m, 0.02m, 0.03m };
-        var act = () => dailyReturns.ProfitFactor();
+        var act = dailyReturns.ProfitFactor;
         act.Should().Throw<Boutquin.Trading.Domain.Exceptions.CalculationException>();
     }
 
@@ -418,7 +418,7 @@ public sealed class DecimalArrayExtensionsTests
     public void Skewness_InsufficientData_ThrowsException()
     {
         var dailyReturns = new[] { 0.01m, 0.02m };
-        var act = () => dailyReturns.Skewness();
+        var act = dailyReturns.Skewness;
         act.Should().Throw<InsufficientDataException>();
     }
 
@@ -426,7 +426,7 @@ public sealed class DecimalArrayExtensionsTests
     public void Kurtosis_InsufficientData_ThrowsException()
     {
         var dailyReturns = new[] { 0.01m, 0.02m, 0.03m };
-        var act = () => dailyReturns.Kurtosis();
+        var act = dailyReturns.Kurtosis;
         act.Should().Throw<InsufficientDataException>();
     }
 

@@ -21,7 +21,7 @@ namespace Boutquin.Trading.Tests.UnitTests.Application;
 /// </summary>
 public sealed class MediumSeverityApplicationTests
 {
-    private static readonly DateOnly TestDate = new(2024, 1, 15);
+    private static readonly DateOnly s_testDate = new(2024, 1, 15);
 
     // ── BUG-A05: Limit buy order checks Low price, not Close ──────────
     [Fact]
@@ -89,12 +89,12 @@ public sealed class MediumSeverityApplicationTests
 
         var asset = new Asset("AAPL");
         var marketData = new MarketData(
-            Timestamp: TestDate, Open: 100, High: 110, Low: 90, Close: 105,
+            Timestamp: s_testDate, Open: 100, High: 110, Low: 90, Close: 105,
             AdjustedClose: 105, Volume: 1_000_000,
             DividendPerShare: 0, SplitCoefficient: 0);
 
         var marketEvent = new MarketEvent(
-            TestDate,
+            s_testDate,
             new SortedDictionary<Asset, MarketData> { { asset, marketData } },
             new SortedDictionary<CurrencyCode, decimal>());
 
@@ -120,12 +120,12 @@ public sealed class MediumSeverityApplicationTests
 
         var asset = new Asset("AAPL");
         var marketData = new MarketData(
-            Timestamp: TestDate, Open: 100, High: 110, Low: 90, Close: 105,
+            Timestamp: s_testDate, Open: 100, High: 110, Low: 90, Close: 105,
             AdjustedClose: 105, Volume: 1_000_000,
             DividendPerShare: 0, SplitCoefficient: 1);
 
         var marketEvent = new MarketEvent(
-            TestDate,
+            s_testDate,
             new SortedDictionary<Asset, MarketData> { { asset, marketData } },
             new SortedDictionary<CurrencyCode, decimal>());
 
@@ -158,16 +158,16 @@ public sealed class MediumSeverityApplicationTests
         // historicalMarketData has the date but null inner dictionary
         var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>?>
         {
-            { TestDate, null }
+            { s_testDate, null }
         };
         var historicalFx = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
         {
-            { TestDate, new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
+            { s_testDate, new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
         };
 
         // Act
         var act = () => sizer.ComputePositionSizes(
-            TestDate,
+            s_testDate,
             new Dictionary<Asset, SignalType> { { asset, SignalType.Overweight } },
             strategy,
             historicalMarketData,
@@ -195,22 +195,22 @@ public sealed class MediumSeverityApplicationTests
         };
 
         var zeroCloseData = new MarketData(
-            Timestamp: TestDate, Open: 100, High: 110, Low: 90, Close: 0,
+            Timestamp: s_testDate, Open: 100, High: 110, Low: 90, Close: 0,
             AdjustedClose: 0, Volume: 1_000_000,
             DividendPerShare: 0, SplitCoefficient: 1);
 
         var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>?>
         {
-            { TestDate, new SortedDictionary<Asset, MarketData> { { asset, zeroCloseData } } }
+            { s_testDate, new SortedDictionary<Asset, MarketData> { { asset, zeroCloseData } } }
         };
         var historicalFx = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
         {
-            { TestDate, new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
+            { s_testDate, new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
         };
 
         // Act
         var act = () => sizer.ComputePositionSizes(
-            TestDate,
+            s_testDate,
             new Dictionary<Asset, SignalType> { { asset, SignalType.Overweight } },
             strategy,
             historicalMarketData,
@@ -407,7 +407,7 @@ public sealed class MediumSeverityApplicationTests
         portfolioMock.Setup(p => p.HistoricalFxConversionRates)
             .Returns(new SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>());
 
-        var signalEvent = new SignalEvent(TestDate, "Test",
+        var signalEvent = new SignalEvent(s_testDate, "Test",
             new Dictionary<Asset, SignalType> { { asset, SignalType.Overweight } });
 
         // Act
@@ -425,7 +425,7 @@ public sealed class MediumSeverityApplicationTests
         // Arrange
         var handler = new OrderEventHandler();
         var portfolioMock = new Mock<IPortfolio>();
-        var orderEvent = new OrderEvent(TestDate, "Test", new Asset("AAPL"),
+        var orderEvent = new OrderEvent(s_testDate, "Test", new Asset("AAPL"),
             TradeAction.Buy, OrderType.Market, 10, null, null);
 
         portfolioMock.Setup(p => p.SubmitOrderAsync(orderEvent))
@@ -445,7 +445,7 @@ public sealed class MediumSeverityApplicationTests
         // Arrange
         var handler = new OrderEventHandler();
         var portfolioMock = new Mock<IPortfolio>();
-        var orderEvent = new OrderEvent(TestDate, "Test", new Asset("AAPL"),
+        var orderEvent = new OrderEvent(s_testDate, "Test", new Asset("AAPL"),
             TradeAction.Buy, OrderType.Market, 10, null, null);
 
         portfolioMock.Setup(p => p.SubmitOrderAsync(orderEvent))
@@ -479,19 +479,19 @@ public sealed class MediumSeverityApplicationTests
             Cash = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 100_000m } },
         };
 
-        var md = new MarketData(TestDate, 100, 110, 90, 105, 105, 1_000_000, 0, 1);
+        var md = new MarketData(s_testDate, 100, 110, 90, 105, 105, 1_000_000, 0, 1);
         var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>?>
         {
-            { TestDate, new SortedDictionary<Asset, MarketData> { { aapl, md }, { msft, md } } }
+            { s_testDate, new SortedDictionary<Asset, MarketData> { { aapl, md }, { msft, md } } }
         };
         var historicalFx = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
         {
-            { TestDate, new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
+            { s_testDate, new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
         };
 
         // Act
         var act = () => sizer.ComputePositionSizes(
-            TestDate,
+            s_testDate,
             new Dictionary<Asset, SignalType> { { aapl, SignalType.Overweight }, { msft, SignalType.Overweight } },
             strategy,
             historicalMarketData,
@@ -546,7 +546,7 @@ public sealed class MediumSeverityApplicationTests
             {
                 new Asset("AAPL"),
                 new MarketData(
-                    Timestamp: TestDate, Open: open, High: high, Low: low, Close: close,
+                    Timestamp: s_testDate, Open: open, High: high, Low: low, Close: close,
                     AdjustedClose: close, Volume: 1_000_000,
                     DividendPerShare: 0, SplitCoefficient: 1)
             }
@@ -557,7 +557,7 @@ public sealed class MediumSeverityApplicationTests
         Mock<IMarketDataFetcher> mock,
         SortedDictionary<Asset, MarketData> marketData)
     {
-        var kvp = new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(TestDate, marketData);
+        var kvp = new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(s_testDate, marketData);
         mock.Setup(f => f.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>()))
             .Returns(new[] { kvp }.ToAsyncEnumerable());
     }
@@ -567,7 +567,7 @@ public sealed class MediumSeverityApplicationTests
         decimal? primaryPrice = null, int quantity = 10)
     {
         return new Order(
-            Timestamp: TestDate,
+            Timestamp: s_testDate,
             StrategyName: "TestStrategy",
             Asset: new Asset("AAPL"),
             TradeAction: action,

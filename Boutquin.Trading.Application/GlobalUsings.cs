@@ -22,4 +22,3 @@ global using Boutquin.Trading.Domain.Events;
 global using Boutquin.Trading.Domain.Extensions;
 global using Boutquin.Trading.Domain.Helpers;
 global using Boutquin.Trading.Domain.Interfaces;
-global using Boutquin.Trading.Domain.ValueObjects;

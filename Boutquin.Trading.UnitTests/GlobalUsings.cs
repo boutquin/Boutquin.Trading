@@ -15,7 +15,6 @@
 //
 
 global using System.Collections.ObjectModel;
-
 global using Boutquin.Domain.Exceptions;
 global using Boutquin.Domain.Helpers;
 global using Boutquin.Trading.Application;
@@ -32,5 +31,4 @@ global using Boutquin.Trading.Domain.Extensions;
 global using Boutquin.Trading.Domain.Interfaces;
 global using Boutquin.Trading.Domain.ValueObjects;
 global using Boutquin.Trading.Tests.UnitTests.Helpers;
-
 global using Moq;

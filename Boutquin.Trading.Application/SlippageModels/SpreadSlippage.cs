@@ -65,7 +65,7 @@ public sealed class SpreadSlippage : ISlippageModel
         return CalculateFillPriceForAsset(theoreticalPrice, quantity, tradeAction, halfSpread);
     }
 
-    private static decimal CalculateFillPriceForAsset(decimal theoreticalPrice, int quantity, TradeAction tradeAction, decimal halfSpread) =>
+    private static decimal CalculateFillPriceForAsset(decimal theoreticalPrice, int _, TradeAction tradeAction, decimal halfSpread) =>
         tradeAction == TradeAction.Buy
             ? theoreticalPrice * (1m + halfSpread)
             : theoreticalPrice * (1m - halfSpread);

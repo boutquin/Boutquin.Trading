@@ -18,7 +18,7 @@ namespace Boutquin.Trading.Data.Processor;
 
 internal sealed class Program
 {
-    private static async Task Main(string[] args)
+    private static async Task Main(string[] _)
     {
         // Retrieve the list of symbols from the Symbols file
         var dataDir = Path.Combine(AppContext.BaseDirectory, "Data");

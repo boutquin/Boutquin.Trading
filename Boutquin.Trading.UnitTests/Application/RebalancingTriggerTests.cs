@@ -16,19 +16,18 @@
 
 namespace Boutquin.Trading.Tests.UnitTests.Application;
 
-using FluentAssertions;
-
 using Boutquin.Trading.Application.Rebalancing;
 using Boutquin.Trading.Domain.ValueObjects;
+using FluentAssertions;
 
 /// <summary>
 /// Tests for rebalancing trigger implementations.
 /// </summary>
 public sealed class RebalancingTriggerTests
 {
-    private static readonly Asset Vti = new("VTI");
-    private static readonly Asset Tlt = new("TLT");
-    private static readonly Asset Gld = new("GLD");
+    private static readonly Asset s_vti = new("VTI");
+    private static readonly Asset s_tlt = new("TLT");
+    private static readonly Asset s_gld = new("GLD");
 
     // --- ThresholdRebalancingTrigger Tests ---
 
@@ -36,8 +35,8 @@ public sealed class RebalancingTriggerTests
     public void Threshold_AllWithinBand_ShouldNotRebalance()
     {
         var trigger = new ThresholdRebalancingTrigger(0.05m);
-        var target = new Dictionary<Asset, decimal> { [Vti] = 0.50m, [Tlt] = 0.30m, [Gld] = 0.20m };
-        var current = new Dictionary<Asset, decimal> { [Vti] = 0.52m, [Tlt] = 0.28m, [Gld] = 0.20m };
+        var target = new Dictionary<Asset, decimal> { [s_vti] = 0.50m, [s_tlt] = 0.30m, [s_gld] = 0.20m };
+        var current = new Dictionary<Asset, decimal> { [s_vti] = 0.52m, [s_tlt] = 0.28m, [s_gld] = 0.20m };
 
         var result = trigger.ShouldRebalance(current, target);
 
@@ -48,8 +47,8 @@ public sealed class RebalancingTriggerTests
     public void Threshold_SingleAssetBeyondBand_ShouldRebalance()
     {
         var trigger = new ThresholdRebalancingTrigger(0.05m);
-        var target = new Dictionary<Asset, decimal> { [Vti] = 0.50m, [Tlt] = 0.30m, [Gld] = 0.20m };
-        var current = new Dictionary<Asset, decimal> { [Vti] = 0.56m, [Tlt] = 0.26m, [Gld] = 0.18m };
+        var target = new Dictionary<Asset, decimal> { [s_vti] = 0.50m, [s_tlt] = 0.30m, [s_gld] = 0.20m };
+        var current = new Dictionary<Asset, decimal> { [s_vti] = 0.56m, [s_tlt] = 0.26m, [s_gld] = 0.18m };
 
         var result = trigger.ShouldRebalance(current, target);
 
@@ -60,8 +59,8 @@ public sealed class RebalancingTriggerTests
     public void Threshold_ExactlyAtBand_ShouldNotRebalance()
     {
         var trigger = new ThresholdRebalancingTrigger(0.05m);
-        var target = new Dictionary<Asset, decimal> { [Vti] = 0.50m };
-        var current = new Dictionary<Asset, decimal> { [Vti] = 0.55m };
+        var target = new Dictionary<Asset, decimal> { [s_vti] = 0.50m };
+        var current = new Dictionary<Asset, decimal> { [s_vti] = 0.55m };
 
         var result = trigger.ShouldRebalance(current, target);
 
@@ -72,8 +71,8 @@ public sealed class RebalancingTriggerTests
     public void Threshold_AfterRebalance_DriftIsZero()
     {
         var trigger = new ThresholdRebalancingTrigger(0.05m);
-        var target = new Dictionary<Asset, decimal> { [Vti] = 0.50m, [Tlt] = 0.50m };
-        var current = new Dictionary<Asset, decimal> { [Vti] = 0.50m, [Tlt] = 0.50m };
+        var target = new Dictionary<Asset, decimal> { [s_vti] = 0.50m, [s_tlt] = 0.50m };
+        var current = new Dictionary<Asset, decimal> { [s_vti] = 0.50m, [s_tlt] = 0.50m };
 
         var result = trigger.ShouldRebalance(current, target);
 
@@ -94,8 +93,8 @@ public sealed class RebalancingTriggerTests
     public void Threshold_MissingAssetInCurrent_ShouldTreatAsZero()
     {
         var trigger = new ThresholdRebalancingTrigger(0.05m);
-        var target = new Dictionary<Asset, decimal> { [Vti] = 0.50m, [Tlt] = 0.50m };
-        var current = new Dictionary<Asset, decimal> { [Vti] = 1.00m };
+        var target = new Dictionary<Asset, decimal> { [s_vti] = 0.50m, [s_tlt] = 0.50m };
+        var current = new Dictionary<Asset, decimal> { [s_vti] = 1.00m };
 
         var result = trigger.ShouldRebalance(current, target);
 
@@ -106,8 +105,8 @@ public sealed class RebalancingTriggerTests
     public void Threshold_ExtraAssetInCurrent_ShouldTriggerIfSignificant()
     {
         var trigger = new ThresholdRebalancingTrigger(0.05m);
-        var target = new Dictionary<Asset, decimal> { [Vti] = 0.50m, [Tlt] = 0.50m };
-        var current = new Dictionary<Asset, decimal> { [Vti] = 0.40m, [Tlt] = 0.40m, [Gld] = 0.20m };
+        var target = new Dictionary<Asset, decimal> { [s_vti] = 0.50m, [s_tlt] = 0.50m };
+        var current = new Dictionary<Asset, decimal> { [s_vti] = 0.40m, [s_tlt] = 0.40m, [s_gld] = 0.20m };
 
         var result = trigger.ShouldRebalance(current, target);
 
@@ -120,8 +119,8 @@ public sealed class RebalancingTriggerTests
     public void Calendar_AlwaysReturnsTrue()
     {
         var trigger = new CalendarRebalancingTrigger();
-        var target = new Dictionary<Asset, decimal> { [Vti] = 0.50m };
-        var current = new Dictionary<Asset, decimal> { [Vti] = 0.50m };
+        var target = new Dictionary<Asset, decimal> { [s_vti] = 0.50m };
+        var current = new Dictionary<Asset, decimal> { [s_vti] = 0.50m };
 
         trigger.ShouldRebalance(current, target).Should().BeTrue();
     }

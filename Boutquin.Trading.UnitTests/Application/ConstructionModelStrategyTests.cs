@@ -16,27 +16,26 @@
 
 namespace Boutquin.Trading.Tests.UnitTests.Application;
 
-using FluentAssertions;
-
 using Boutquin.Trading.Application.PortfolioConstruction;
 using Boutquin.Trading.Application.PositionSizing;
 using Boutquin.Trading.Application.Rebalancing;
 using Boutquin.Trading.Application.Strategies;
 using Boutquin.Trading.Domain.ValueObjects;
+using FluentAssertions;
 
 /// <summary>
 /// Tests for <see cref="ConstructionModelStrategy"/> and the pipeline wiring.
 /// </summary>
 public sealed class ConstructionModelStrategyTests
 {
-    private static readonly Asset Vti = new("VTI");
-    private static readonly Asset Tlt = new("TLT");
+    private static readonly Asset s_vti = new("VTI");
+    private static readonly Asset s_tlt = new("TLT");
 
     private static IReadOnlyDictionary<Asset, CurrencyCode> TestAssets =>
         new Dictionary<Asset, CurrencyCode>
         {
-            [Vti] = CurrencyCode.USD,
-            [Tlt] = CurrencyCode.USD
+            [s_vti] = CurrencyCode.USD,
+            [s_tlt] = CurrencyCode.USD
         };
 
     private static SortedDictionary<CurrencyCode, decimal> TestCash =>
@@ -61,8 +60,8 @@ public sealed class ConstructionModelStrategyTests
 
             data[date] = new SortedDictionary<Asset, MarketData>
             {
-                [Vti] = new(date, vtiPrice, vtiPrice + 1, vtiPrice - 1, vtiPrice, vtiPrice, 1_000_000, 0m),
-                [Tlt] = new(date, tltPrice, tltPrice + 0.5m, tltPrice - 0.5m, tltPrice, tltPrice, 500_000, 0m)
+                [s_vti] = new(date, vtiPrice, vtiPrice + 1, vtiPrice - 1, vtiPrice, vtiPrice, 1_000_000, 0m),
+                [s_tlt] = new(date, tltPrice, tltPrice + 0.5m, tltPrice - 0.5m, tltPrice, tltPrice, 500_000, 0m)
             };
         }
 
@@ -144,8 +143,8 @@ public sealed class ConstructionModelStrategyTests
 
         if (strategy.LastComputedWeights is not null)
         {
-            strategy.LastComputedWeights[Vti].Should().BeApproximately(0.5m, 1e-10m);
-            strategy.LastComputedWeights[Tlt].Should().BeApproximately(0.5m, 1e-10m);
+            strategy.LastComputedWeights[s_vti].Should().BeApproximately(0.5m, 1e-10m);
+            strategy.LastComputedWeights[s_tlt].Should().BeApproximately(0.5m, 1e-10m);
         }
     }
 

@@ -36,7 +36,7 @@ public sealed class TiingoFetcher : IMarketDataFetcher, IDisposable
     private readonly bool _ownsClient;
     private readonly string _apiEndpoint;
 
-    private static readonly JsonSerializerOptions JsonOptions = new()
+    private static readonly JsonSerializerOptions s_jsonOptions = new()
     {
         PropertyNameCaseInsensitive = true
     };
@@ -86,7 +86,7 @@ public sealed class TiingoFetcher : IMarketDataFetcher, IDisposable
 
                 var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-                prices = JsonSerializer.Deserialize<TiingoDailyPrice[]>(json, JsonOptions);
+                prices = JsonSerializer.Deserialize<TiingoDailyPrice[]>(json, s_jsonOptions);
             }
             catch (MarketDataRetrievalException)
             {

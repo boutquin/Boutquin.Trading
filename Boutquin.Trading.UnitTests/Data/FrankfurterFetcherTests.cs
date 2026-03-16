@@ -17,7 +17,6 @@
 using System.Net;
 using Boutquin.Trading.Data.Frankfurter;
 using Boutquin.Trading.Domain.Exceptions;
-using FluentAssertions;
 
 namespace Boutquin.Trading.Tests.UnitTests.Data;
 
@@ -207,7 +206,7 @@ public sealed class FrankfurterFetcherTests
         // When no HttpClient is injected, FrankfurterFetcher creates and owns one.
         // Construction and disposal should not throw.
         var fetcher = new FrankfurterFetcher();
-        var act = () => fetcher.Dispose();
+        var act = fetcher.Dispose;
 
         act.Should().NotThrow();
     }

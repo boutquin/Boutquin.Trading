@@ -34,12 +34,12 @@ public sealed class FrankfurterFetcher : IMarketDataFetcher, IDisposable
     private readonly bool _ownsClient;
     private readonly string _apiEndpoint;
 
-    private static readonly JsonSerializerOptions JsonOptions = new()
+    private static readonly JsonSerializerOptions s_jsonOptions = new()
     {
         PropertyNameCaseInsensitive = true
     };
 
-    private static readonly HashSet<string> SupportedCurrencies = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly HashSet<string> s_supportedCurrencies = new(StringComparer.OrdinalIgnoreCase)
     {
         "AUD", "BGN", "BRL", "CAD", "CHF", "CNY", "CZK", "DKK", "EUR",
         "GBP", "HKD", "HUF", "IDR", "ILS", "INR", "ISK", "JPY", "KRW",
@@ -90,14 +90,14 @@ public sealed class FrankfurterFetcher : IMarketDataFetcher, IDisposable
             var baseCurrency = parts[0].Trim().ToUpperInvariant();
             var quoteCurrency = parts[1].Trim().ToUpperInvariant();
 
-            if (!SupportedCurrencies.Contains(baseCurrency))
+            if (!s_supportedCurrencies.Contains(baseCurrency))
             {
                 throw new NotSupportedException(
                     $"Currency '{baseCurrency}' is not supported by ECB/Frankfurter." +
                     (baseCurrency == "RUB" ? " RUB was removed after 2022 EU sanctions." : ""));
             }
 
-            if (!SupportedCurrencies.Contains(quoteCurrency))
+            if (!s_supportedCurrencies.Contains(quoteCurrency))
             {
                 throw new NotSupportedException(
                     $"Currency '{quoteCurrency}' is not supported by ECB/Frankfurter." +
@@ -131,7 +131,7 @@ public sealed class FrankfurterFetcher : IMarketDataFetcher, IDisposable
 
                 var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-                rangeResponse = JsonSerializer.Deserialize<FrankfurterRangeResponse>(json, JsonOptions);
+                rangeResponse = JsonSerializer.Deserialize<FrankfurterRangeResponse>(json, s_jsonOptions);
             }
             catch (MarketDataRetrievalException)
             {

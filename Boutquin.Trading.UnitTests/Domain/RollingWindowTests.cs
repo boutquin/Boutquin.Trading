@@ -16,9 +16,8 @@
 
 namespace Boutquin.Trading.Tests.UnitTests.Domain;
 
-using FluentAssertions;
-
 using Boutquin.Trading.Domain.Helpers;
+using FluentAssertions;
 
 /// <summary>
 /// Tests for the <see cref="RollingWindow{T}"/> class.

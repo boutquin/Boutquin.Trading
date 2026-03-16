@@ -16,10 +16,9 @@
 
 namespace Boutquin.Trading.Tests.UnitTests.Application;
 
-using FluentAssertions;
-
 using Boutquin.Trading.Application.PortfolioConstruction;
 using Boutquin.Trading.Domain.ValueObjects;
+using FluentAssertions;
 
 /// <summary>
 /// Tests for all IPortfolioConstructionModel implementations.
@@ -28,10 +27,10 @@ public sealed class PortfolioConstructionModelTests
 {
     private const decimal Precision = 1e-10m;
 
-    private static readonly Asset Vti = new("VTI");
-    private static readonly Asset Tlt = new("TLT");
-    private static readonly Asset Gld = new("GLD");
-    private static readonly Asset Vnq = new("VNQ");
+    private static readonly Asset s_vti = new("VTI");
+    private static readonly Asset s_tlt = new("TLT");
+    private static readonly Asset s_gld = new("GLD");
+    private static readonly Asset s_vnq = new("VNQ");
 
     // Return series with different volatilities:
     // VTI: high vol, TLT: low vol, GLD: medium vol, VNQ: high vol
@@ -43,7 +42,7 @@ public sealed class PortfolioConstructionModelTests
         [0.03m, -0.04m, 0.05m, -0.02m, 0.04m, -0.03m, 0.02m, 0.06m, -0.05m, 0.03m]  // VNQ
     ];
 
-    private static IReadOnlyList<Asset> FourAssets => [Vti, Tlt, Gld, Vnq];
+    private static IReadOnlyList<Asset> FourAssets => [s_vti, s_tlt, s_gld, s_vnq];
 
     // --- Helper ---
 
@@ -82,11 +81,11 @@ public sealed class PortfolioConstructionModelTests
     public void EqualWeight_SingleETF_ShouldReturn100Percent()
     {
         var model = new EqualWeightConstruction();
-        var assets = new List<Asset> { Vti };
+        var assets = new List<Asset> { s_vti };
 
         var weights = model.ComputeTargetWeights(assets, [FourAssetReturns[0]]);
 
-        weights[Vti].Should().BeApproximately(1.0m, Precision);
+        weights[s_vti].Should().BeApproximately(1.0m, Precision);
     }
 
     [Fact]
@@ -109,8 +108,8 @@ public sealed class PortfolioConstructionModelTests
         var weights = model.ComputeTargetWeights(FourAssets, FourAssetReturns);
 
         // TLT has lowest volatility, should get highest weight
-        weights[Tlt].Should().BeGreaterThan(weights[Vti], "Lower-vol TLT should have higher weight than higher-vol VTI");
-        weights[Tlt].Should().BeGreaterThan(weights[Vnq], "Lower-vol TLT should have higher weight than higher-vol VNQ");
+        weights[s_tlt].Should().BeGreaterThan(weights[s_vti], "Lower-vol TLT should have higher weight than higher-vol VTI");
+        weights[s_tlt].Should().BeGreaterThan(weights[s_vnq], "Lower-vol TLT should have higher weight than higher-vol VNQ");
         AssertWeightsSumToOne(weights);
         AssertAllWeightsNonNegative(weights);
     }
@@ -386,7 +385,7 @@ public sealed class PortfolioConstructionModelTests
         var weightsNoView = modelNoView.ComputeTargetWeights(FourAssets, FourAssetReturns);
 
         // The view should shift weight toward VTI
-        weightsWithView[Vti].Should().BeGreaterThan(weightsNoView[Vti] - 0.01m,
+        weightsWithView[s_vti].Should().BeGreaterThan(weightsNoView[s_vti] - 0.01m,
             "Positive view on VTI should increase its weight");
         AssertWeightsSumToOne(weightsWithView);
     }
@@ -416,8 +415,8 @@ public sealed class PortfolioConstructionModelTests
         var lowConfWeights = lowConfModel.ComputeTargetWeights(FourAssets, FourAssetReturns);
 
         // High confidence should shift VTI weight more
-        var highDelta = highConfWeights[Vti] - 0.25m;
-        var lowDelta = lowConfWeights[Vti] - 0.25m;
+        var highDelta = highConfWeights[s_vti] - 0.25m;
+        var lowDelta = lowConfWeights[s_vti] - 0.25m;
         Math.Abs(highDelta).Should().BeGreaterThanOrEqualTo(Math.Abs(lowDelta) - 0.01m,
             "Higher confidence should produce a larger weight shift");
     }

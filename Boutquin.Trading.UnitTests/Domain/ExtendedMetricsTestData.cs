@@ -21,30 +21,30 @@ public sealed class ExtendedMetricsTestData
     /// <summary>
     /// Standard test daily returns with a mix of positive and negative values.
     /// </summary>
-    private static readonly decimal[] StandardReturns =
+    private static readonly decimal[] s_standardReturns =
         [0.01m, 0.02m, -0.01m, 0.03m, -0.02m, 0.015m, -0.005m, 0.025m, -0.015m, 0.01m];
 
     /// <summary>
     /// OmegaRatio test data: dailyReturns, threshold, expected.
     /// Omega = sum(max(r-threshold, 0)) / sum(max(threshold-r, 0))
-    /// For StandardReturns with threshold=0:
+    /// For s_standardReturns with threshold=0:
     /// Gains: 0.01+0.02+0.03+0.015+0.025+0.01 = 0.11
     /// Losses: 0.01+0.02+0.005+0.015 = 0.05
     /// Omega = 0.11 / 0.05 = 2.2
     /// </summary>
     public static IEnumerable<object[]> OmegaRatioData =>
     [
-        [StandardReturns, 0m, 2.2m]
+        [s_standardReturns, 0m, 2.2m]
     ];
 
     /// <summary>
     /// WinRate test data: dailyReturns, expected.
-    /// Positive returns in StandardReturns: 0.01, 0.02, 0.03, 0.015, 0.025, 0.01 = 6 out of 10
+    /// Positive returns in s_standardReturns: 0.01, 0.02, 0.03, 0.015, 0.025, 0.01 = 6 out of 10
     /// WinRate = 6/10 = 0.6
     /// </summary>
     public static IEnumerable<object[]> WinRateData =>
     [
-        [StandardReturns, 0.6m],
+        [s_standardReturns, 0.6m],
         [new[] { 0.01m, 0.02m, 0.03m }, 1.0m],
         [new[] { -0.01m, -0.02m, -0.03m }, 0.0m]
     ];
@@ -57,13 +57,13 @@ public sealed class ExtendedMetricsTestData
     /// </summary>
     public static IEnumerable<object[]> ProfitFactorData =>
     [
-        [StandardReturns, 2.2m]
+        [s_standardReturns, 2.2m]
     ];
 
     /// <summary>
     /// Skewness test data: dailyReturns, expected.
     /// For a symmetric distribution, skewness ≈ 0.
-    /// Using StandardReturns, we compute manually or verify the sign/magnitude.
+    /// Using s_standardReturns, we compute manually or verify the sign/magnitude.
     /// </summary>
     public static IEnumerable<object[]> SkewnessData =>
     [
@@ -83,14 +83,14 @@ public sealed class ExtendedMetricsTestData
 
     /// <summary>
     /// HistoricalVaR test data: dailyReturns, confidenceLevel, expected.
-    /// Sorted StandardReturns: -0.02, -0.015, -0.01, -0.005, 0.01, 0.01, 0.015, 0.02, 0.025, 0.03
+    /// Sorted s_standardReturns: -0.02, -0.015, -0.01, -0.005, 0.01, 0.01, 0.015, 0.02, 0.025, 0.03
     /// VaR at 95%: index = (1-0.95)*(10-1) = 0.45
     /// lower=0 (value=-0.02), upper=1 (value=-0.015)
     /// VaR = -0.02 + 0.45*(-0.015 - (-0.02)) = -0.02 + 0.45*0.005 = -0.02 + 0.00225 = -0.01775
     /// </summary>
     public static IEnumerable<object[]> HistoricalVaRData =>
     [
-        [StandardReturns, 0.95m, -0.01775m]
+        [s_standardReturns, 0.95m, -0.01775m]
     ];
 
     /// <summary>

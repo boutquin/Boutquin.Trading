@@ -50,7 +50,7 @@ public sealed class MarketEventHandlerTests
         // Track calls to HandleEventAsync to verify signals are processed
         var processedEvents = new List<IFinancialEvent>();
         mockPortfolio.Setup(p => p.HandleEventAsync(It.IsAny<IFinancialEvent>()))
-            .Callback<IFinancialEvent>(e => processedEvents.Add(e))
+            .Callback<IFinancialEvent>(processedEvents.Add)
             .Returns(Task.CompletedTask);
 
         var handler = new MarketEventHandler();

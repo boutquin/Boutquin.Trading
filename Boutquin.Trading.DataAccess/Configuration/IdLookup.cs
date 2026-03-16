@@ -24,7 +24,7 @@ public static class IdLookup
     /// <summary>
     /// The dictionary containing the city IDs as values and city names as keys.
     /// </summary>
-    private static readonly Dictionary<string, int> _cityLookup = new()
+    private static readonly Dictionary<string, int> s_cityLookup = new()
     {
         { "New York", 1 },
         { "Tokyo", 2 },
@@ -45,7 +45,7 @@ public static class IdLookup
     /// <exception cref="ArgumentException">Thrown when the given city name is not found in the dictionary.</exception>
     public static int GetCityId(string cityName)
     {
-        if (_cityLookup.TryGetValue(cityName, out var cityId))
+        if (s_cityLookup.TryGetValue(cityName, out var cityId))
         {
             return cityId;
         }

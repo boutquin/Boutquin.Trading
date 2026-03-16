@@ -16,7 +16,6 @@
 
 global using System.Collections.Immutable;
 global using System.ComponentModel;
-global using System.Runtime.Serialization;
 global using System.Security;
 
 global using Boutquin.Domain.Exceptions;

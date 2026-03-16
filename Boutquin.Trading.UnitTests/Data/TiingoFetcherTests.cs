@@ -17,7 +17,6 @@
 using System.Net;
 using Boutquin.Trading.Data.Tiingo;
 using Boutquin.Trading.Domain.Exceptions;
-using FluentAssertions;
 
 namespace Boutquin.Trading.Tests.UnitTests.Data;
 
@@ -183,7 +182,7 @@ public sealed class TiingoFetcherTests
         // When no HttpClient is injected, TiingoFetcher creates and owns one.
         // Calling Dispose should not throw.
         var fetcher = new TiingoFetcher(ValidApiKey);
-        var act = () => fetcher.Dispose();
+        var act = fetcher.Dispose;
 
         act.Should().NotThrow();
     }

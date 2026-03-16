@@ -16,9 +16,8 @@
 
 namespace Boutquin.Trading.Tests.UnitTests.Application;
 
-using FluentAssertions;
-
 using Boutquin.Trading.Application.CovarianceEstimators;
+using FluentAssertions;
 
 /// <summary>
 /// Tests for covariance estimator implementations.

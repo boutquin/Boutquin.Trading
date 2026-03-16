@@ -43,7 +43,7 @@ public static class MarketDataFileNameHelper
     /// <param name="ticker">The ticker to sanitize.</param>
     /// <returns>A string representing the sanitized ticker.</returns>
     // Cross-platform set of chars that are invalid in filenames (superset of all OS restrictions)
-    private static readonly HashSet<char> InvalidFileNameChars = new(
+    private static readonly HashSet<char> s_invalidFileNameChars = new(
         Path.GetInvalidFileNameChars()
             .Concat(['<', '>', ':', '"', '|', '?', '*', '\\', '/'])
             .Concat(['^']));
@@ -51,7 +51,7 @@ public static class MarketDataFileNameHelper
     private static string SanitizeTickerForFileName(string ticker)
     {
         // C2 fix: Strip path separators, ".." traversal, and all invalid filename chars
-        var sanitized = new string(ticker.Where(c => !InvalidFileNameChars.Contains(c)).ToArray());
+        var sanitized = new string(ticker.Where(c => !s_invalidFileNameChars.Contains(c)).ToArray());
 
         // Strip ".." sequences that survived char filtering
         sanitized = sanitized.Replace("..", "");

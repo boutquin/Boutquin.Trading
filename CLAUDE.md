@@ -38,6 +38,16 @@ Quantitative trading framework in C# .NET. Pre-release.
 - **`DynamicWeightPositionSizer`** — Reads `LastComputedWeights` from `ConstructionModelStrategy` to compute position sizes. Falls back to equal weight if no computed weights available.
 - **Optimization approach** — `MeanVarianceConstruction` and `MinimumVarianceConstruction` use projected gradient descent with line search and simplex projection. `RiskParityConstruction` uses iterative inverse-MRC algorithm.
 
+## Analytics & Attribution Architecture (Phase 3)
+
+- **`BrinsonFachlerAttributor`** — Static class implementing Brinson-Fachler single-period performance attribution. Decomposes active return into allocation effect `(Wp-Wb)(Rb_sector-Rb_total)`, selection effect `Wb(Rp_sector-Rb_sector)`, and interaction effect `(Wp-Wb)(Rp_sector-Rb_sector)`. Returns per-asset and total effects. Effects sum to total active return.
+- **`FactorRegressor`** — Multi-factor OLS regression via normal equations with Gaussian elimination + partial pivoting. Regresses portfolio returns against Fama-French (or custom) factors. Returns alpha, per-factor betas, R², and residual standard error.
+- **`CorrelationAnalyzer`** — Computes full N×N correlation matrix from return series (sample covariance, N-1 divisor). Computes diversification ratio = weighted avg vol / portfolio vol. Also provides rolling pairwise correlation time series.
+- **`DrawdownAnalyzer`** — Identifies discrete drawdown periods from an equity curve: tracks peak → trough → recovery transitions. Each `DrawdownPeriod` record includes start date, trough date, recovery date (nullable if ongoing), depth, duration days, and recovery days.
+- **`HtmlReportGenerator`** — Generates self-contained HTML tearsheet with embedded SVG charts (equity curve, drawdown area), metrics table, and monthly returns heatmap. No external JS dependencies.
+- **`BenchmarkComparisonReport`** — Generates side-by-side HTML comparison of portfolio vs benchmark. Includes dual equity curve SVG (normalized to 100), metrics comparison table, and annualized tracking error calculation.
+- **Domain records** in `Domain/Analytics/`: `BrinsonFachlerResult`, `FactorRegressionResult`, `CorrelationAnalysisResult`, `DrawdownPeriod` — all `sealed record` types.
+
 ## Codebase Map
 
 ### Project Structure
@@ -89,6 +99,13 @@ Quantitative trading framework in C# .NET. Pre-release.
 | Rebalancing triggers (Calendar, Threshold) | `Application/Rebalancing/` |
 | ConstructionModelStrategy | `Application/Strategies/ConstructionModelStrategy.cs` |
 | DynamicWeightPositionSizer | `Application/PositionSizing/DynamicWeightPositionSizer.cs` |
+| Analytics domain records (4) | `Domain/Analytics/` |
+| BrinsonFachlerAttributor | `Application/Analytics/BrinsonFachlerAttributor.cs` |
+| FactorRegressor | `Application/Analytics/FactorRegressor.cs` |
+| CorrelationAnalyzer | `Application/Analytics/CorrelationAnalyzer.cs` |
+| DrawdownAnalyzer | `Application/Analytics/DrawdownAnalyzer.cs` |
+| HtmlReportGenerator | `Application/Reporting/HtmlReportGenerator.cs` |
+| BenchmarkComparisonReport | `Application/Reporting/BenchmarkComparisonReport.cs` |
 
 ### Domain Interfaces (17)
 

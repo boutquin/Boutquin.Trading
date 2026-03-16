@@ -14,8 +14,6 @@
 //   limitations under the License.
 //
 
-using FluentAssertions;
-
 namespace Boutquin.Trading.Tests.UnitTests.Data;
 
 public static class AsyncEnumerableExtensions
