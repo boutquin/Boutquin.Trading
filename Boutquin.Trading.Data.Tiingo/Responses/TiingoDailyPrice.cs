@@ -14,12 +14,23 @@
 //   limitations under the License.
 //
 
-global using Boutquin.Domain.Exceptions;
-global using Boutquin.Domain.Helpers;
-global using Boutquin.Trading.Domain.Data;
-global using Boutquin.Trading.Domain.Enums;
-global using Boutquin.Trading.Domain.Events;
-global using Boutquin.Trading.Domain.Extensions;
-global using Boutquin.Trading.Domain.Helpers;
-global using Boutquin.Trading.Domain.Interfaces;
-global using Boutquin.Trading.Domain.ValueObjects;
+namespace Boutquin.Trading.Data.Tiingo.Responses;
+
+/// <summary>
+/// DTO for a single day's price data from the Tiingo EOD endpoint.
+/// All 13 fields are always present in the response.
+/// </summary>
+public sealed record TiingoDailyPrice(
+    DateTimeOffset Date,
+    decimal Open,
+    decimal High,
+    decimal Low,
+    decimal Close,
+    long Volume,
+    decimal AdjOpen,
+    decimal AdjHigh,
+    decimal AdjLow,
+    decimal AdjClose,
+    long AdjVolume,
+    decimal DivCash,
+    decimal SplitFactor);

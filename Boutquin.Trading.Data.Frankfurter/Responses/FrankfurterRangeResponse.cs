@@ -14,12 +14,16 @@
 //   limitations under the License.
 //
 
-global using Boutquin.Domain.Exceptions;
-global using Boutquin.Domain.Helpers;
-global using Boutquin.Trading.Domain.Data;
-global using Boutquin.Trading.Domain.Enums;
-global using Boutquin.Trading.Domain.Events;
-global using Boutquin.Trading.Domain.Extensions;
-global using Boutquin.Trading.Domain.Helpers;
-global using Boutquin.Trading.Domain.Interfaces;
-global using Boutquin.Trading.Domain.ValueObjects;
+using System.Text.Json.Serialization;
+
+namespace Boutquin.Trading.Data.Frankfurter.Responses;
+
+/// <summary>
+/// DTO for Frankfurter date-range response.
+/// </summary>
+public sealed record FrankfurterRangeResponse(
+    [property: JsonPropertyName("amount")] decimal Amount,
+    [property: JsonPropertyName("base")] string Base,
+    [property: JsonPropertyName("start_date")] string StartDate,
+    [property: JsonPropertyName("end_date")] string EndDate,
+    [property: JsonPropertyName("rates")] Dictionary<string, Dictionary<string, decimal>> Rates);

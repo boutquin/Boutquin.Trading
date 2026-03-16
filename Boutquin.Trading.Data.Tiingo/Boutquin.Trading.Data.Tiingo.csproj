@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Title>Boutquin.Trading.Data.Tiingo</Title>
+    <Description>Tiingo market data fetcher for the Boutquin.Trading quantitative trading framework. Provides OHLCV, adjusted prices, dividends, and splits via the Tiingo REST API free tier.</Description>
+    <PackageTags>trading;market-data;tiingo;backtesting;quantitative-finance;ohlcv</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\Resources\icon.png" Link="icon.png" Pack="True" PackagePath="\" />
+    <None Include="..\README.md" Pack="True" PackagePath="\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MinVer" Version="7.0.0" PrivateAssets="All" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Boutquin.Trading.Domain\Boutquin.Trading.Domain.csproj" />
+  </ItemGroup>
+</Project>

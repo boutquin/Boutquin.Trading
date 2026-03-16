@@ -25,6 +25,8 @@
     <ProjectReference Include="..\Boutquin.Trading.Application\Boutquin.Trading.Application.csproj" />
     <ProjectReference Include="..\Boutquin.Trading.DataAccess\Boutquin.Trading.DataAccess.csproj" />
     <ProjectReference Include="..\Boutquin.Trading.Domain\Boutquin.Trading.Domain.csproj" />
+    <ProjectReference Include="..\Boutquin.Trading.Data.Tiingo\Boutquin.Trading.Data.Tiingo.csproj" />
+    <ProjectReference Include="..\Boutquin.Trading.Data.Frankfurter\Boutquin.Trading.Data.Frankfurter.csproj" />
   </ItemGroup>
 
   <ItemGroup>
