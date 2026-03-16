@@ -511,7 +511,7 @@ public sealed class PortfolioTests
         var splitRatio = 2m;
 
         IStrategy strategy = new TestStrategy();
-        strategy.Positions[asset] = 10;
+        strategy.SetPosition(asset, 10);
 
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
         var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { new Asset("AAPL"), CurrencyCode.USD } };
@@ -674,9 +674,9 @@ public sealed class PortfolioTests
         };
         var fxRates = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.EUR, 0.85m } };
 
-        strategy.Positions[new Asset("AAPL")] = 10;
+        strategy.SetPosition(new Asset("AAPL"), 10);
         ((TestStrategy)strategy).Assets = new Dictionary<Asset, CurrencyCode> { { new Asset("AAPL"), CurrencyCode.USD } };
-        strategy.Cash[CurrencyCode.USD] = 1000;
+        strategy.UpdateCash(CurrencyCode.USD, 1000);
 
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
         var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { new Asset("AAPL"), CurrencyCode.USD } };

@@ -21,8 +21,10 @@ using Domain.ValueObjects;
 /// <summary>
 /// Represents a simple buy and hold strategy that generates buy signals on the initial timestamp and holds the positions throughout.
 /// </summary>
-public sealed class BuyAndHoldStrategy : IStrategy
+public sealed class BuyAndHoldStrategy : StrategyBase
 {
+    private readonly DateOnly _initialTimestamp;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="BuyAndHoldStrategy"/> class with the provided parameters.
     /// </summary>
@@ -32,10 +34,6 @@ public sealed class BuyAndHoldStrategy : IStrategy
     /// <param name="initialTimestamp">The initial timestamp when the strategy starts.</param>
     /// <param name="orderPriceCalculationStrategy">An instance of IOrderPriceCalculationStrategy to calculate order prices.</param>
     /// <param name="positionSizer">An instance of IPositionSizer to compute position sizes.</param>
-    /// <exception cref="ArgumentException">When <paramref name="name"/> is null or whitespace.</exception>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="orderPriceCalculationStrategy"/> or <paramref name="positionSizer"/> is null.</exception>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when the baseCurrency is not defined.</exception>
-    /// <exception cref="EmptyOrNullDictionaryException">Thrown when assets or cash dictionaries are empty or null.</exception>
     public BuyAndHoldStrategy(
         string name,
         IReadOnlyDictionary<Asset, CurrencyCode> assets,
@@ -43,63 +41,31 @@ public sealed class BuyAndHoldStrategy : IStrategy
         DateOnly initialTimestamp,
         IOrderPriceCalculationStrategy orderPriceCalculationStrategy,
         IPositionSizer positionSizer)
+        : base(name, assets, cash, orderPriceCalculationStrategy, positionSizer)
     {
-        // Validate parameters
-        Guard.AgainstNullOrWhiteSpace(() => name); // Throws ArgumentException
-        Guard.AgainstEmptyOrNullReadOnlyDictionary(() => assets); // Throws EmptyOrNullDictionaryException
-        Guard.AgainstEmptyOrNullDictionary(() => cash); // Throws EmptyOrNullDictionaryException
-        Guard.AgainstNull(() => orderPriceCalculationStrategy); // Throws ArgumentNullException
-        Guard.AgainstNull(() => positionSizer); // Throws ArgumentNullException
-
-        Name = name;
-        Assets = assets;
-        Cash = cash;
-        InitialTimestamp = initialTimestamp;
-        OrderPriceCalculationStrategy = orderPriceCalculationStrategy;
-        PositionSizer = positionSizer;
-        Positions = [];
+        _initialTimestamp = initialTimestamp;
     }
-
-    public string Name { get; }
-    public SortedDictionary<Asset, int> Positions { get; }
-    public IReadOnlyDictionary<Asset, CurrencyCode> Assets { get; }
-    public SortedDictionary<CurrencyCode, decimal> Cash { get; }
-    public IOrderPriceCalculationStrategy OrderPriceCalculationStrategy { get; }
-    public IPositionSizer PositionSizer { get; }
-
-    private DateOnly InitialTimestamp { get; }
 
     /// <summary>
     /// Generates buy signals for all assets on the initial timestamp, and no-op signals afterwards.
     /// </summary>
-    /// <param name="timestamp">The timestamp for which to generate signals.</param>
-    /// <param name="historicalMarketData">The historical market data.</param>
-    /// <param name="baseCurrency">The base currency used for converting asset values.</param>
-    /// <param name="historicalFxConversionRates">The historical foreign exchange conversion rates.</param>
-    /// <returns>A SignalEvent containing the generated signals.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when the baseCurrency is not defined.</exception>
-    /// <exception cref="EmptyOrNullDictionaryException">Thrown when historicalMarketData or historicalFxConversionRates dictionaries are empty or null.</exception>
-    public SignalEvent GenerateSignals(
+    public override SignalEvent GenerateSignals(
         DateOnly timestamp,
         CurrencyCode baseCurrency,
         IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>?> historicalMarketData,
         IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
     {
-        // Validate parameters
-        Guard.AgainstUndefinedEnumValue(() => baseCurrency); // Throws ArgumentOutOfRangeException
-        Guard.AgainstEmptyOrNullReadOnlyDictionary(() => historicalMarketData); // Throws EmptyOrNullDictionaryException
-        Guard.AgainstEmptyOrNullReadOnlyDictionary(() => historicalFxConversionRates); // Throws EmptyOrNullDictionaryException
+        Guard.AgainstUndefinedEnumValue(() => baseCurrency);
+        Guard.AgainstEmptyOrNullReadOnlyDictionary(() => historicalMarketData);
+        Guard.AgainstEmptyOrNullReadOnlyDictionary(() => historicalFxConversionRates);
 
-        // Create a new SignalEvent instance for the given timestamp
         var signalEvents = new SortedDictionary<Asset, SignalType>();
 
-        // Check if it's the initial timestamp
-        if (timestamp != InitialTimestamp)
+        if (timestamp != _initialTimestamp)
         {
             return new SignalEvent(timestamp, Name, signalEvents);
         }
 
-        // If it's the initial timestamp, generate buy signals for all assets
         foreach (var asset in Assets.Keys)
         {
             signalEvents.Add(asset, SignalType.Underweight);

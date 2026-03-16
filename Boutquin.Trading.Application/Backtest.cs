@@ -165,6 +165,16 @@ public sealed class BackTest
 
         var (drawdowns, maxDrawdown, maxDrawdownDuration) = _portfolio.EquityCurve.CalculateDrawdownsAndMaxDrawdownInfo();
 
+        var calmarRatio = dailyReturns.CalmarRatio();
+        var omegaRatio = dailyReturns.OmegaRatio();
+        var historicalVaR = dailyReturns.HistoricalVaR();
+        var conditionalVaR = dailyReturns.ConditionalVaR();
+        var skewness = dailyReturns.Skewness();
+        var kurtosis = dailyReturns.Kurtosis();
+        var winRate = dailyReturns.WinRate();
+        var profitFactor = dailyReturns.ProfitFactor();
+        var recoveryFactor = dailyReturns.RecoveryFactor();
+
         // Create a Tearsheet object for the entire portfolio
         return new Tearsheet(
             annualizedReturn,
@@ -178,7 +188,16 @@ public sealed class BackTest
             informationRatio,
             _portfolio.EquityCurve,
             drawdowns,
-            maxDrawdownDuration
+            maxDrawdownDuration,
+            calmarRatio,
+            omegaRatio,
+            historicalVaR,
+            conditionalVaR,
+            skewness,
+            kurtosis,
+            winRate,
+            profitFactor,
+            recoveryFactor
         );
     }
 }

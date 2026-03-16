@@ -51,9 +51,9 @@ public sealed class StrategyTests
             { CurrencyCode.EUR, 0.85m }
         };
 
-        strategy.Positions[new Asset("AAPL")] = 10;
+        strategy.SetPosition(new Asset("AAPL"), 10);
         ((TestStrategy)strategy).Assets = new Dictionary<Asset, CurrencyCode> { { new Asset("AAPL"), CurrencyCode.USD } };
-        strategy.Cash[CurrencyCode.USD] = 1000;
+        strategy.UpdateCash(CurrencyCode.USD, 1000);
 
         var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>> { { timestamp, marketData } };
         var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> { { timestamp, fxRates } };
@@ -80,7 +80,7 @@ public sealed class StrategyTests
             { CurrencyCode.EUR, 0.85m }
         };
 
-        strategy.Positions[new Asset("AAPL")] = 10;
+        strategy.SetPosition(new Asset("AAPL"), 10);
         ((TestStrategy)strategy).Assets = new Dictionary<Asset, CurrencyCode> { { new Asset("AAPL"), CurrencyCode.USD } };
 
         var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>();
@@ -172,7 +172,7 @@ public sealed class StrategyTests
         // Arrange
         IStrategy strategy = new TestStrategy();
         var asset = new Asset("AAPL");
-        strategy.Positions[asset] = 10;
+        strategy.SetPosition(asset, 10);
 
         // Act
         var quantity = strategy.GetPositionQuantity(asset);

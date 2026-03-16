@@ -26,3 +26,65 @@ Quantitative trading framework in C# .NET. Pre-release.
 
 - **Composite pattern for `IMarketDataFetcher`** — `CompositeMarketDataFetcher` delegates `FetchMarketDataAsync` → `TiingoFetcher` (equities) and `FetchFxRatesAsync` → `FrankfurterFetcher` (FX rates). Single-responsibility fetchers that each throw `NotSupportedException` for the method they don't handle. Consumers use the composite.
 - **Deprecating a data provider project** — Checklist: (1) delete project directory, (2) `dotnet sln remove`, (3) remove `ProjectReference` entries from all consuming `.csproj` files, (4) update `GlobalUsings.cs` and source code to use replacement, (5) add new `ProjectReference` entries for replacement projects, (6) grep for old namespace to catch stragglers.
+
+## Codebase Map
+
+### Project Structure
+
+| Project | Purpose | Key Dependencies |
+|---------|---------|-----------------|
+| `Boutquin.Trading.Domain` | Core domain: interfaces, events, value objects, enums, extensions | Boutquin.Domain 0.7.0, EF Core Relational 10.0.5, Logging.Abstractions 10.0.5 |
+| `Boutquin.Trading.Application` | Backtest engine, portfolio, strategies, event handlers, brokers | Domain, System.Linq.Async 7.0.0 |
+| `Boutquin.Trading.Data.Tiingo` | Equity data fetcher (Tiingo API) | Domain |
+| `Boutquin.Trading.Data.Frankfurter` | FX rate fetcher (Frankfurter API, ECB-sourced) | Domain |
+| `Boutquin.Trading.Data.CSV` | CSV data reader | Domain |
+| `Boutquin.Trading.Data.Processor` | Data processing pipeline | Domain |
+| `Boutquin.Trading.DataAccess` | EF Core data access (SecurityMaster) | Domain |
+| `Boutquin.Trading.BackTest` | Backtest runner entry point | Application |
+| `Boutquin.Trading.BenchMark` | BenchmarkDotNet performance benchmarks | Domain |
+| `Boutquin.Trading.Sample` | Sample usage | Application |
+| `Boutquin.Trading.UnitTests` | xUnit tests | xUnit 2.9.3, FluentAssertions 8.8.0, Moq 4.20.70 |
+| `Tests/ArchitectureTests` | Architecture fitness functions (NetArchTest) | Domain, Application |
+
+### Key File Locations
+
+| What | Path |
+|------|------|
+| Financial metrics (extension methods on `decimal[]`) | `Domain/Extensions/DecimalArrayExtensions.cs` |
+| Equity curve drawdown analysis | `Domain/Extensions/EquityCurveExtensions.cs` |
+| Tearsheet record (performance summary) | `Domain/Helpers/TearSheet.cs` |
+| IStrategy interface (with default impls) | `Domain/Interfaces/IStrategy.cs` |
+| IPortfolio interface (14 methods) | `Domain/Interfaces/IPortfolio.cs` |
+| IPositionSizer interface | `Domain/Interfaces/IPositionSizer.cs` |
+| IBrokerage interface | `Domain/Interfaces/IBrokerage.cs` |
+| ICapitalAllocationStrategy (no impls yet) | `Domain/Interfaces/ICapitalAllocationStrategy.cs` |
+| MarketData record | `Domain/Data/MarketData.cs` |
+| Event records (Market/Signal/Order/Fill) | `Domain/Events/` |
+| CalculationException | `Domain/Exceptions/CalculationException.cs` |
+| Portfolio implementation | `Application/Portfolio.cs` |
+| Backtest engine | `Application/Backtest.cs` |
+| SimulatedBrokerage | `Application/Brokers/SimulatedBrokerage.cs` |
+| BuyAndHoldStrategy | `Application/Strategies/BuyAndHoldStrategy.cs` |
+| RebalancingBuyAndHoldStrategy | `Application/Strategies/RebalancingBuyAndHoldStrategy.cs` |
+| FixedWeightPositionSizer | `Application/PositionSizing/FixedWeightPositionSizer.cs` |
+| Event handlers | `Application/EventHandlers/` |
+| CompositeMarketDataFetcher | `Application/CompositeMarketDataFetcher.cs` |
+
+### Domain Interfaces (14)
+
+`IBrokerage`, `ICapitalAllocationStrategy`, `ICurrencyConversionService`, `IEventHandler`, `IEventProcessor`, `IFinancialEvent`, `IMarketDataFetcher`, `IMarketDataProcessor`, `IMarketDataStorage`, `IOrderPriceCalculationStrategy`, `IPortfolio`, `IPositionSizer`, `IStrategy`, `ISymbolReader`
+
+### Domain Enums (12)
+
+`AssetClassCode`, `AssetType`, `ContinentCode`, `CountryCode`, `CurrencyCode`, `ExchangeCode`, `OrderType`, `RebalancingFrequency`, `SecuritySymbolStandard`, `SignalType`, `TimeZoneCode`, `TradeAction`
+
+### Test Patterns
+
+- **Framework:** xUnit + FluentAssertions + Moq
+- **Precision:** `private const decimal Precision = 1e-12m;` for financial metric comparisons
+- **Data pattern:** `[Theory]` + `[MemberData(nameof(TestDataClass.Prop), MemberType = typeof(TestDataClass))]`
+- **Data classes:** Separate `*TestData.cs` files with `public static IEnumerable<object[]>` properties using collection initializer `[...]`
+- **Naming:** `MethodName_Scenario_ExpectedBehavior` or `MethodName_ShouldReturnCorrectResult`
+- **Namespace:** `Boutquin.Trading.Tests.UnitTests.{Layer}` (Domain, Application, Data, DataAccess)
+- **All test classes are `public sealed`**
+- **CalculationException:** Always use fully qualified `Boutquin.Trading.Domain.Exceptions.CalculationException` in test assertions (not in GlobalUsings)

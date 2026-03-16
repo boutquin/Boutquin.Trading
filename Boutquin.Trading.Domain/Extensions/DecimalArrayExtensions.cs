@@ -469,4 +469,353 @@ public static class DecimalArrayExtensions
         // Calculate the Information Ratio.
         return averageActiveReturn / activeReturnStandardDeviation;
     }
+
+    /// <summary>
+    /// Calculates the Calmar Ratio: CAGR divided by the absolute value of the maximum drawdown.
+    /// </summary>
+    /// <param name="dailyReturns">An array of daily returns.</param>
+    /// <param name="tradingDaysPerYear">The number of trading days per year, by default 252.</param>
+    /// <returns>The Calmar Ratio.</returns>
+    /// <exception cref="EmptyOrNullArrayException">Thrown when the <paramref name="dailyReturns"/> array is null or empty.</exception>
+    /// <exception cref="InsufficientDataException">Thrown when the array contains fewer than two elements.</exception>
+    /// <exception cref="CalculationException">Thrown when the maximum drawdown is zero (no drawdown occurred).</exception>
+    public static decimal CalmarRatio(
+        this decimal[] dailyReturns,
+        int tradingDaysPerYear = DefaultTradingDaysInYear)
+    {
+        Guard.AgainstNullOrEmptyArray(() => dailyReturns);
+        Guard.Against(dailyReturns.Length == 1)
+            .With<InsufficientDataException>(ExceptionMessages.InsufficientDataForSampleCalculation);
+
+        var cagr = dailyReturns.CompoundAnnualGrowthRate(tradingDaysPerYear);
+        var equityCurve = dailyReturns.EquityCurve();
+        var maxDrawdown = MaxDrawdownFromEquityCurve(equityCurve);
+
+        if (maxDrawdown == 0m)
+        {
+            throw new CalculationException("Maximum drawdown is zero; cannot compute Calmar Ratio.");
+        }
+
+        return cagr / Math.Abs(maxDrawdown);
+    }
+
+    /// <summary>
+    /// Calculates the Omega Ratio: the ratio of gains above a threshold to losses below it.
+    /// </summary>
+    /// <param name="dailyReturns">An array of daily returns.</param>
+    /// <param name="threshold">The threshold return (default 0).</param>
+    /// <returns>The Omega Ratio.</returns>
+    /// <exception cref="EmptyOrNullArrayException">Thrown when the <paramref name="dailyReturns"/> array is null or empty.</exception>
+    /// <exception cref="CalculationException">Thrown when there are no returns below the threshold.</exception>
+    public static decimal OmegaRatio(
+        this decimal[] dailyReturns,
+        decimal threshold = 0m)
+    {
+        Guard.AgainstNullOrEmptyArray(() => dailyReturns);
+
+        var gains = dailyReturns.Sum(r => Math.Max(r - threshold, 0m));
+        var losses = dailyReturns.Sum(r => Math.Max(threshold - r, 0m));
+
+        if (losses == 0m)
+        {
+            throw new CalculationException("Sum of losses below threshold is zero; cannot compute Omega Ratio.");
+        }
+
+        return gains / losses;
+    }
+
+    /// <summary>
+    /// Calculates the Historical Value at Risk (VaR) at a given confidence level using the percentile method.
+    /// </summary>
+    /// <param name="dailyReturns">An array of daily returns.</param>
+    /// <param name="confidenceLevel">The confidence level (e.g., 0.95 for 95%).</param>
+    /// <returns>The VaR as a negative number representing the loss threshold.</returns>
+    /// <exception cref="EmptyOrNullArrayException">Thrown when the <paramref name="dailyReturns"/> array is null or empty.</exception>
+    public static decimal HistoricalVaR(
+        this decimal[] dailyReturns,
+        decimal confidenceLevel = 0.95m)
+    {
+        Guard.AgainstNullOrEmptyArray(() => dailyReturns);
+
+        var sorted = dailyReturns.OrderBy(r => r).ToArray();
+        var index = (double)(1m - confidenceLevel) * (sorted.Length - 1);
+        var lower = (int)Math.Floor(index);
+        var upper = Math.Min(lower + 1, sorted.Length - 1);
+        var fraction = (decimal)(index - lower);
+
+        return sorted[lower] + fraction * (sorted[upper] - sorted[lower]);
+    }
+
+    /// <summary>
+    /// Calculates the Parametric Value at Risk (VaR) assuming normally distributed returns.
+    /// </summary>
+    /// <param name="dailyReturns">An array of daily returns.</param>
+    /// <param name="confidenceLevel">The confidence level (e.g., 0.95 for 95%).</param>
+    /// <returns>The VaR as a negative number representing the loss threshold.</returns>
+    /// <exception cref="EmptyOrNullArrayException">Thrown when the <paramref name="dailyReturns"/> array is null or empty.</exception>
+    /// <exception cref="InsufficientDataException">Thrown when the array contains fewer than two elements.</exception>
+    public static decimal ParametricVaR(
+        this decimal[] dailyReturns,
+        decimal confidenceLevel = 0.95m)
+    {
+        Guard.AgainstNullOrEmptyArray(() => dailyReturns);
+        Guard.Against(dailyReturns.Length == 1)
+            .With<InsufficientDataException>(ExceptionMessages.InsufficientDataForSampleCalculation);
+
+        var mean = dailyReturns.Average();
+        var stdDev = dailyReturns.StandardDeviation();
+        var zScore = (decimal)NormalInverseCdf((double)confidenceLevel);
+
+        return mean - zScore * stdDev;
+    }
+
+    /// <summary>
+    /// Calculates the Conditional Value at Risk (CVaR), also known as Expected Shortfall.
+    /// This is the expected loss given that the loss exceeds the VaR threshold.
+    /// CVaR is always less than or equal to VaR (more negative = worse).
+    /// </summary>
+    /// <param name="dailyReturns">An array of daily returns.</param>
+    /// <param name="confidenceLevel">The confidence level (e.g., 0.95 for 95%).</param>
+    /// <returns>The CVaR value.</returns>
+    /// <exception cref="EmptyOrNullArrayException">Thrown when the <paramref name="dailyReturns"/> array is null or empty.</exception>
+    /// <exception cref="CalculationException">Thrown when no returns fall at or below the VaR threshold.</exception>
+    public static decimal ConditionalVaR(
+        this decimal[] dailyReturns,
+        decimal confidenceLevel = 0.95m)
+    {
+        Guard.AgainstNullOrEmptyArray(() => dailyReturns);
+
+        var var = dailyReturns.HistoricalVaR(confidenceLevel);
+        var tailReturns = dailyReturns.Where(r => r <= var).ToArray();
+
+        if (tailReturns.Length == 0)
+        {
+            throw new CalculationException("No returns at or below VaR threshold; cannot compute CVaR.");
+        }
+
+        return tailReturns.Average();
+    }
+
+    /// <summary>
+    /// Calculates the sample skewness of the return distribution.
+    /// Positive skew indicates a longer right tail; negative skew indicates a longer left tail.
+    /// Uses the adjusted Fisher-Pearson standardized moment coefficient.
+    /// </summary>
+    /// <param name="dailyReturns">An array of daily returns.</param>
+    /// <returns>The sample skewness.</returns>
+    /// <exception cref="EmptyOrNullArrayException">Thrown when the <paramref name="dailyReturns"/> array is null or empty.</exception>
+    /// <exception cref="InsufficientDataException">Thrown when the array contains fewer than three elements.</exception>
+    /// <exception cref="CalculationException">Thrown when the standard deviation is zero.</exception>
+    public static decimal Skewness(this decimal[] dailyReturns)
+    {
+        Guard.AgainstNullOrEmptyArray(() => dailyReturns);
+        if (dailyReturns.Length < 3)
+        {
+            throw new InsufficientDataException("At least three data points are required to compute skewness.");
+        }
+
+        var n = dailyReturns.Length;
+        var mean = dailyReturns.Average();
+        var stdDev = dailyReturns.StandardDeviation();
+
+        if (stdDev == 0m)
+        {
+            throw new CalculationException("Standard deviation is zero; cannot compute skewness.");
+        }
+
+        var sumCubed = dailyReturns.Sum(r =>
+        {
+            var deviation = (r - mean) / stdDev;
+            return deviation * deviation * deviation;
+        });
+
+        // Adjusted Fisher-Pearson: n / ((n-1)(n-2)) * Σ((xi - mean)/s)^3
+        return (decimal)n / ((n - 1) * (n - 2)) * sumCubed;
+    }
+
+    /// <summary>
+    /// Calculates the excess kurtosis (Fisher) of the return distribution.
+    /// A value of 0 indicates a normal distribution; positive indicates heavier tails.
+    /// </summary>
+    /// <param name="dailyReturns">An array of daily returns.</param>
+    /// <returns>The excess kurtosis.</returns>
+    /// <exception cref="EmptyOrNullArrayException">Thrown when the <paramref name="dailyReturns"/> array is null or empty.</exception>
+    /// <exception cref="InsufficientDataException">Thrown when the array contains fewer than four elements.</exception>
+    /// <exception cref="CalculationException">Thrown when the standard deviation is zero.</exception>
+    public static decimal Kurtosis(this decimal[] dailyReturns)
+    {
+        Guard.AgainstNullOrEmptyArray(() => dailyReturns);
+        if (dailyReturns.Length < 4)
+        {
+            throw new InsufficientDataException("At least four data points are required to compute kurtosis.");
+        }
+
+        var n = dailyReturns.Length;
+        var mean = dailyReturns.Average();
+        var stdDev = dailyReturns.StandardDeviation();
+
+        if (stdDev == 0m)
+        {
+            throw new CalculationException("Standard deviation is zero; cannot compute kurtosis.");
+        }
+
+        var sumFourth = dailyReturns.Sum(r =>
+        {
+            var deviation = (r - mean) / stdDev;
+            var squared = deviation * deviation;
+            return squared * squared;
+        });
+
+        // Sample excess kurtosis formula
+        var term1 = (decimal)(n * (n + 1)) / ((n - 1) * (n - 2) * (n - 3)) * sumFourth;
+        var term2 = 3m * (decimal)((n - 1) * (n - 1)) / ((n - 2) * (n - 3));
+
+        return term1 - term2;
+    }
+
+    /// <summary>
+    /// Calculates the win rate: the proportion of positive daily returns.
+    /// </summary>
+    /// <param name="dailyReturns">An array of daily returns.</param>
+    /// <returns>A value between 0 and 1 representing the fraction of winning days.</returns>
+    /// <exception cref="EmptyOrNullArrayException">Thrown when the <paramref name="dailyReturns"/> array is null or empty.</exception>
+    public static decimal WinRate(this decimal[] dailyReturns)
+    {
+        Guard.AgainstNullOrEmptyArray(() => dailyReturns);
+
+        return (decimal)dailyReturns.Count(r => r > 0m) / dailyReturns.Length;
+    }
+
+    /// <summary>
+    /// Calculates the Profit Factor: the ratio of gross profits to gross losses.
+    /// </summary>
+    /// <param name="dailyReturns">An array of daily returns.</param>
+    /// <returns>The Profit Factor.</returns>
+    /// <exception cref="EmptyOrNullArrayException">Thrown when the <paramref name="dailyReturns"/> array is null or empty.</exception>
+    /// <exception cref="CalculationException">Thrown when there are no negative returns (no losses to divide by).</exception>
+    public static decimal ProfitFactor(this decimal[] dailyReturns)
+    {
+        Guard.AgainstNullOrEmptyArray(() => dailyReturns);
+
+        var grossProfit = dailyReturns.Where(r => r > 0m).Sum();
+        var grossLoss = Math.Abs(dailyReturns.Where(r => r < 0m).Sum());
+
+        if (grossLoss == 0m)
+        {
+            throw new CalculationException("Gross loss is zero; cannot compute Profit Factor.");
+        }
+
+        return grossProfit / grossLoss;
+    }
+
+    /// <summary>
+    /// Calculates the Recovery Factor: cumulative return divided by the absolute maximum drawdown.
+    /// </summary>
+    /// <param name="dailyReturns">An array of daily returns.</param>
+    /// <returns>The Recovery Factor.</returns>
+    /// <exception cref="EmptyOrNullArrayException">Thrown when the <paramref name="dailyReturns"/> array is null or empty.</exception>
+    /// <exception cref="InsufficientDataException">Thrown when the array contains fewer than two elements.</exception>
+    /// <exception cref="CalculationException">Thrown when the maximum drawdown is zero.</exception>
+    public static decimal RecoveryFactor(this decimal[] dailyReturns)
+    {
+        Guard.AgainstNullOrEmptyArray(() => dailyReturns);
+        Guard.Against(dailyReturns.Length == 1)
+            .With<InsufficientDataException>(ExceptionMessages.InsufficientDataForSampleCalculation);
+
+        var cumulativeReturn = dailyReturns.Aggregate(1m, (acc, r) => acc * (r + 1m)) - 1m;
+        var equityCurve = dailyReturns.EquityCurve();
+        var maxDrawdown = MaxDrawdownFromEquityCurve(equityCurve);
+
+        if (maxDrawdown == 0m)
+        {
+            throw new CalculationException("Maximum drawdown is zero; cannot compute Recovery Factor.");
+        }
+
+        return cumulativeReturn / Math.Abs(maxDrawdown);
+    }
+
+    /// <summary>
+    /// Computes the maximum drawdown from an equity curve array (not date-indexed).
+    /// </summary>
+    private static decimal MaxDrawdownFromEquityCurve(decimal[] equityCurve)
+    {
+        var peak = equityCurve[0];
+        var maxDrawdown = 0m;
+
+        foreach (var value in equityCurve)
+        {
+            if (value > peak)
+            {
+                peak = value;
+            }
+
+            if (peak > 0m)
+            {
+                var drawdown = (value - peak) / peak;
+                if (drawdown < maxDrawdown)
+                {
+                    maxDrawdown = drawdown;
+                }
+            }
+        }
+
+        return maxDrawdown;
+    }
+
+    /// <summary>
+    /// Approximation of the inverse CDF (quantile function) for the standard normal distribution.
+    /// Uses the rational approximation from Abramowitz and Stegun.
+    /// </summary>
+    private static double NormalInverseCdf(double p)
+    {
+        // Coefficients for the rational approximation
+        const double a1 = -3.969683028665376e+01;
+        const double a2 = 2.209460984245205e+02;
+        const double a3 = -2.759285104469687e+02;
+        const double a4 = 1.383577518672690e+02;
+        const double a5 = -3.066479806614716e+01;
+        const double a6 = 2.506628277459239e+00;
+
+        const double b1 = -5.447609879822406e+01;
+        const double b2 = 1.615858368580409e+02;
+        const double b3 = -1.556989798598866e+02;
+        const double b4 = 6.680131188771972e+01;
+        const double b5 = -1.328068155288572e+01;
+
+        const double c1 = -7.784894002430293e-03;
+        const double c2 = -3.223964580411365e-01;
+        const double c3 = -2.400758277161838e+00;
+        const double c4 = -2.549732539343734e+00;
+        const double c5 = 4.374664141464968e+00;
+        const double c6 = 2.938163982698783e+00;
+
+        const double d1 = 7.784695709041462e-03;
+        const double d2 = 3.224671290700398e-01;
+        const double d3 = 2.445134137142996e+00;
+        const double d4 = 3.754408661907416e+00;
+
+        const double pLow = 0.02425;
+        const double pHigh = 1 - pLow;
+
+        double q, r;
+
+        if (p < pLow)
+        {
+            q = Math.Sqrt(-2 * Math.Log(p));
+            return (((((c1 * q + c2) * q + c3) * q + c4) * q + c5) * q + c6) /
+                   ((((d1 * q + d2) * q + d3) * q + d4) * q + 1);
+        }
+
+        if (p <= pHigh)
+        {
+            q = p - 0.5;
+            r = q * q;
+            return (((((a1 * r + a2) * r + a3) * r + a4) * r + a5) * r + a6) * q /
+                   (((((b1 * r + b2) * r + b3) * r + b4) * r + b5) * r + 1);
+        }
+
+        q = Math.Sqrt(-2 * Math.Log(1 - p));
+        return -(((((c1 * q + c2) * q + c3) * q + c4) * q + c5) * q + c6) /
+               ((((d1 * q + d2) * q + d3) * q + d4) * q + 1);
+    }
 }

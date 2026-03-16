@@ -349,7 +349,7 @@ public sealed class Portfolio : IPortfolio
         {
             if (strategy.Positions.TryGetValue(asset, out var position))
             {
-                strategy.Positions[asset] = (int)(position * splitRatio);
+                strategy.SetPosition(asset, (int)(position * splitRatio));
             }
         }
     }

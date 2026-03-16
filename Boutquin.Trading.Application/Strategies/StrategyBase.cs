@@ -14,72 +14,89 @@
 //   limitations under the License.
 //
 
-namespace Boutquin.Trading.Tests.UnitTests.Helpers;
+namespace Boutquin.Trading.Application.Strategies;
+
+using Domain.ValueObjects;
 
 /// <summary>
-/// Represents a test strategy for trading.
+/// Abstract base class for trading strategies that provides common functionality
+/// for position management, cash management, and total value computation.
 /// </summary>
-public sealed class TestStrategy : IStrategy
+/// <remarks>
+/// Concrete strategies should inherit from this class and implement
+/// <see cref="GenerateSignals"/> to define their signal generation logic.
+/// The <see cref="Positions"/> and <see cref="Cash"/> properties are exposed
+/// as <see cref="IReadOnlyDictionary{TKey,TValue}"/> through the
+/// <see cref="IStrategy"/> interface, preventing external mutation while
+/// allowing internal state management through dedicated methods.
+/// </remarks>
+public abstract class StrategyBase : IStrategy
 {
     private readonly SortedDictionary<Asset, int> _positions = [];
-    private readonly SortedDictionary<CurrencyCode, decimal> _cash = [];
+    private readonly SortedDictionary<CurrencyCode, decimal> _cash;
 
     /// <summary>
-    /// Gets or sets the name of the strategy.
+    /// Initializes a new instance of the <see cref="StrategyBase"/> class.
     /// </summary>
-    public string Name { get; set; } = string.Empty;
-
-    /// <inheritdoc />
-    public IReadOnlyDictionary<Asset, int> Positions
+    /// <param name="name">The name of the strategy.</param>
+    /// <param name="assets">A dictionary of assets and their corresponding currency codes.</param>
+    /// <param name="cash">A sorted dictionary of cash amounts per currency code.</param>
+    /// <param name="orderPriceCalculationStrategy">An instance of IOrderPriceCalculationStrategy to calculate order prices.</param>
+    /// <param name="positionSizer">An instance of IPositionSizer to compute position sizes.</param>
+    /// <exception cref="ArgumentException">When <paramref name="name"/> is null or whitespace.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="orderPriceCalculationStrategy"/> or <paramref name="positionSizer"/> is null.</exception>
+    /// <exception cref="EmptyOrNullDictionaryException">Thrown when assets or cash dictionaries are empty or null.</exception>
+    protected StrategyBase(
+        string name,
+        IReadOnlyDictionary<Asset, CurrencyCode> assets,
+        SortedDictionary<CurrencyCode, decimal> cash,
+        IOrderPriceCalculationStrategy orderPriceCalculationStrategy,
+        IPositionSizer positionSizer)
     {
-        get => _positions;
-        set
-        {
-            _positions.Clear();
-            foreach (var kvp in value)
-            {
-                _positions[kvp.Key] = kvp.Value;
-            }
-        }
-    }
+        Guard.AgainstNullOrWhiteSpace(() => name);
+        Guard.AgainstEmptyOrNullReadOnlyDictionary(() => assets);
+        Guard.AgainstEmptyOrNullDictionary(() => cash);
+        Guard.AgainstNull(() => orderPriceCalculationStrategy);
+        Guard.AgainstNull(() => positionSizer);
 
-    /// <summary>
-    /// Gets or sets the assets involved in the strategy.
-    /// </summary>
-    public IReadOnlyDictionary<Asset, CurrencyCode> Assets { get; set; } = new Dictionary<Asset, CurrencyCode>();
-
-    /// <inheritdoc />
-    public IReadOnlyDictionary<CurrencyCode, decimal> Cash
-    {
-        get => _cash;
-        set
-        {
-            _cash.Clear();
-            foreach (var kvp in value)
-            {
-                _cash[kvp.Key] = kvp.Value;
-            }
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets the strategy for calculating order prices.
-    /// </summary>
-    public IOrderPriceCalculationStrategy OrderPriceCalculationStrategy { get; set; } = null!;
-
-    /// <summary>
-    /// Gets or sets the position sizer.
-    /// </summary>
-    public IPositionSizer PositionSizer { get; set; } = null!;
-
-    /// <inheritdoc />
-    public SignalEvent GenerateSignals(DateOnly timestamp, CurrencyCode baseCurrency, IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>?> historicalMarketData, IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
-    {
-        return new SignalEvent(timestamp, Name, new Dictionary<Asset, SignalType>());
+        Name = name;
+        Assets = assets;
+        _cash = cash;
+        OrderPriceCalculationStrategy = orderPriceCalculationStrategy;
+        PositionSizer = positionSizer;
     }
 
     /// <inheritdoc />
-    public decimal ComputeTotalValue(DateOnly timestamp, CurrencyCode baseCurrency, IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>?> historicalMarketData, IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
+    public string Name { get; }
+
+    /// <inheritdoc />
+    public IReadOnlyDictionary<Asset, int> Positions => _positions;
+
+    /// <inheritdoc />
+    public IReadOnlyDictionary<Asset, CurrencyCode> Assets { get; }
+
+    /// <inheritdoc />
+    public IReadOnlyDictionary<CurrencyCode, decimal> Cash => _cash;
+
+    /// <inheritdoc />
+    public IOrderPriceCalculationStrategy OrderPriceCalculationStrategy { get; }
+
+    /// <inheritdoc />
+    public IPositionSizer PositionSizer { get; }
+
+    /// <inheritdoc />
+    public abstract SignalEvent GenerateSignals(
+        DateOnly timestamp,
+        CurrencyCode baseCurrency,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>?> historicalMarketData,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates);
+
+    /// <inheritdoc />
+    public virtual decimal ComputeTotalValue(
+        DateOnly timestamp,
+        CurrencyCode baseCurrency,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>?> historicalMarketData,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
     {
         Guard.AgainstUndefinedEnumValue(() => baseCurrency);
         Guard.AgainstEmptyOrNullReadOnlyDictionary(() => historicalMarketData);
@@ -155,6 +172,8 @@ public sealed class TestStrategy : IStrategy
     /// <inheritdoc />
     public void UpdatePositions(Asset asset, int quantity)
     {
+        Guard.AgainstNullOrWhiteSpace(() => asset.Ticker);
+
         if (!_positions.TryAdd(asset, quantity))
         {
             _positions[asset] += quantity;
@@ -164,12 +183,16 @@ public sealed class TestStrategy : IStrategy
     /// <inheritdoc />
     public void SetPosition(Asset asset, int quantity)
     {
+        Guard.AgainstNullOrWhiteSpace(() => asset.Ticker);
+
         _positions[asset] = quantity;
     }
 
     /// <inheritdoc />
     public int GetPositionQuantity(Asset asset)
     {
+        Guard.AgainstNullOrWhiteSpace(() => asset.Ticker);
+
         return _positions.GetValueOrDefault(asset, 0);
     }
 }

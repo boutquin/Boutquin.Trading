@@ -31,6 +31,8 @@ public class ApplicationAssemblyTests : BaseTest
             .AreClasses()
             .And()
             .AreNotStatic()
+            .And()
+            .AreNotAbstract()
             .Should()
             .BeSealed()
             .GetResult();

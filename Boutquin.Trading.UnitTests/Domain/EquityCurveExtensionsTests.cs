@@ -47,5 +47,58 @@ public sealed class EquityCurveExtensionsTests
         actualMaxDrawdown.Should().BeApproximately(expectedMaxDrawdown, Precision);
         actualMaxDrawdownDuration.Should().Be(expectedMaxDrawdownDuration);
     }
+
+    [Theory]
+    [MemberData(nameof(ExtendedMetricsTestData.MonthlyReturnsData), MemberType = typeof(ExtendedMetricsTestData))]
+    public void MonthlyReturns_ShouldReturnCorrectValues(
+        SortedDictionary<DateOnly, decimal> equityCurve,
+        SortedDictionary<(int, int), decimal> expectedReturns)
+    {
+        var actual = equityCurve.MonthlyReturns();
+        actual.Should().HaveCount(expectedReturns.Count);
+        foreach (var (key, value) in expectedReturns)
+        {
+            actual.Should().ContainKey(key);
+            actual[key].Should().BeApproximately(value, Precision);
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(ExtendedMetricsTestData.AnnualReturnsData), MemberType = typeof(ExtendedMetricsTestData))]
+    public void AnnualReturns_ShouldReturnCorrectValues(
+        SortedDictionary<DateOnly, decimal> equityCurve,
+        SortedDictionary<int, decimal> expectedReturns)
+    {
+        var actual = equityCurve.AnnualReturns();
+        actual.Should().HaveCount(expectedReturns.Count);
+        foreach (var (key, value) in expectedReturns)
+        {
+            actual.Should().ContainKey(key);
+            actual[key].Should().BeApproximately(value, Precision);
+        }
+    }
+
+    [Fact]
+    public void MonthlyReturns_SingleDay_ReturnsEmpty()
+    {
+        var equityCurve = new SortedDictionary<DateOnly, decimal>
+        {
+            { new DateOnly(2023, 1, 15), 1000m }
+        };
+        var result = equityCurve.MonthlyReturns();
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void AnnualReturns_SingleYear_ReturnsEmpty()
+    {
+        var equityCurve = new SortedDictionary<DateOnly, decimal>
+        {
+            { new DateOnly(2023, 1, 1), 1000m },
+            { new DateOnly(2023, 12, 31), 1100m }
+        };
+        var result = equityCurve.AnnualReturns();
+        result.Should().BeEmpty();
+    }
 }
 

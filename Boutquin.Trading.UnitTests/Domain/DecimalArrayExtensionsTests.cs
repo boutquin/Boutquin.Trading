@@ -316,6 +316,122 @@ public sealed class DecimalArrayExtensionsTests
         actualResult.Should().BeApproximately(expectedResult, Precision);
     }
 
+    // ==================== Extended Metrics (RP1-04) ====================
+
+    [Theory]
+    [MemberData(nameof(ExtendedMetricsTestData.OmegaRatioData), MemberType = typeof(ExtendedMetricsTestData))]
+    public void OmegaRatio_ShouldReturnCorrectResult(
+        decimal[] dailyReturns, decimal threshold, decimal expectedResult)
+    {
+        var actualResult = dailyReturns.OmegaRatio(threshold);
+        actualResult.Should().BeApproximately(expectedResult, Precision);
+    }
+
+    [Theory]
+    [MemberData(nameof(ExtendedMetricsTestData.HistoricalVaRData), MemberType = typeof(ExtendedMetricsTestData))]
+    public void HistoricalVaR_ShouldReturnCorrectResult(
+        decimal[] dailyReturns, decimal confidenceLevel, decimal expectedResult)
+    {
+        var actualResult = dailyReturns.HistoricalVaR(confidenceLevel);
+        actualResult.Should().BeApproximately(expectedResult, Precision);
+    }
+
+    [Fact]
+    public void ConditionalVaR_ShouldBeLessThanOrEqualToVaR()
+    {
+        var dailyReturns = new[] { 0.01m, 0.02m, -0.01m, 0.03m, -0.02m, 0.015m, -0.005m, 0.025m, -0.015m, 0.01m };
+        var var95 = dailyReturns.HistoricalVaR(0.95m);
+        var cvar95 = dailyReturns.ConditionalVaR(0.95m);
+        cvar95.Should().BeLessThanOrEqualTo(var95);
+    }
+
+    [Theory]
+    [MemberData(nameof(ExtendedMetricsTestData.SkewnessData), MemberType = typeof(ExtendedMetricsTestData))]
+    public void Skewness_ShouldReturnCorrectResult(
+        decimal[] dailyReturns, decimal expectedResult)
+    {
+        var actualResult = dailyReturns.Skewness();
+        actualResult.Should().BeApproximately(expectedResult, 1e-10m);
+    }
+
+    [Theory]
+    [MemberData(nameof(ExtendedMetricsTestData.KurtosisData), MemberType = typeof(ExtendedMetricsTestData))]
+    public void Kurtosis_ShouldReturnCorrectResult(
+        decimal[] dailyReturns, decimal expectedResult)
+    {
+        var actualResult = dailyReturns.Kurtosis();
+        actualResult.Should().BeApproximately(expectedResult, 1e-6m);
+    }
+
+    [Theory]
+    [MemberData(nameof(ExtendedMetricsTestData.WinRateData), MemberType = typeof(ExtendedMetricsTestData))]
+    public void WinRate_ShouldReturnCorrectResult(
+        decimal[] dailyReturns, decimal expectedResult)
+    {
+        var actualResult = dailyReturns.WinRate();
+        actualResult.Should().BeApproximately(expectedResult, Precision);
+    }
+
+    [Theory]
+    [MemberData(nameof(ExtendedMetricsTestData.ProfitFactorData), MemberType = typeof(ExtendedMetricsTestData))]
+    public void ProfitFactor_ShouldReturnCorrectResult(
+        decimal[] dailyReturns, decimal expectedResult)
+    {
+        var actualResult = dailyReturns.ProfitFactor();
+        actualResult.Should().BeApproximately(expectedResult, Precision);
+    }
+
+    [Fact]
+    public void CalmarRatio_ShouldReturnPositiveForGrowingReturns()
+    {
+        // Mix of gains and losses where net is positive
+        var dailyReturns = new[] { 0.01m, 0.02m, -0.01m, 0.03m, -0.005m, 0.015m, -0.01m, 0.02m, 0.01m, -0.005m };
+        var result = dailyReturns.CalmarRatio();
+        result.Should().BeGreaterThan(0m);
+    }
+
+    [Fact]
+    public void RecoveryFactor_ShouldReturnPositiveForGrowingReturns()
+    {
+        var dailyReturns = new[] { 0.01m, 0.02m, -0.01m, 0.03m, -0.005m, 0.015m, -0.01m, 0.02m, 0.01m, -0.005m };
+        var result = dailyReturns.RecoveryFactor();
+        result.Should().BeGreaterThan(0m);
+    }
+
+    [Fact]
+    public void OmegaRatio_AllPositiveReturns_ThrowsCalculationException()
+    {
+        var dailyReturns = new[] { 0.01m, 0.02m, 0.03m };
+        var act = () => dailyReturns.OmegaRatio(0m);
+        act.Should().Throw<Boutquin.Trading.Domain.Exceptions.CalculationException>();
+    }
+
+    [Fact]
+    public void ProfitFactor_AllPositiveReturns_ThrowsCalculationException()
+    {
+        var dailyReturns = new[] { 0.01m, 0.02m, 0.03m };
+        var act = () => dailyReturns.ProfitFactor();
+        act.Should().Throw<Boutquin.Trading.Domain.Exceptions.CalculationException>();
+    }
+
+    [Fact]
+    public void Skewness_InsufficientData_ThrowsException()
+    {
+        var dailyReturns = new[] { 0.01m, 0.02m };
+        var act = () => dailyReturns.Skewness();
+        act.Should().Throw<InsufficientDataException>();
+    }
+
+    [Fact]
+    public void Kurtosis_InsufficientData_ThrowsException()
+    {
+        var dailyReturns = new[] { 0.01m, 0.02m, 0.03m };
+        var act = () => dailyReturns.Kurtosis();
+        act.Should().Throw<InsufficientDataException>();
+    }
+
+    // ==================== End Extended Metrics ====================
+
     // ==================== Cluster B: High-severity bug tests ====================
 
     /// <summary>

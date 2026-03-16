@@ -17,6 +17,7 @@
 global using System.Collections.ObjectModel;
 
 global using Boutquin.Domain.Exceptions;
+global using Boutquin.Domain.Helpers;
 global using Boutquin.Trading.Application;
 global using Boutquin.Trading.Application.Brokers;
 global using Boutquin.Trading.Application.EventHandlers;

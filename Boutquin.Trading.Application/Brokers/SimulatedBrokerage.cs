@@ -16,6 +16,9 @@
 
 namespace Boutquin.Trading.Application.Brokers;
 
+using CostModels;
+using SlippageModels;
+
 /// <summary>
 /// SimulatedBrokerage is an implementation of the IBrokerage interface that simulates the behavior
 /// of a real-world brokerage. It is intended to be used in backtesting trading strategies.
@@ -24,55 +27,56 @@ namespace Boutquin.Trading.Application.Brokers;
 public sealed class SimulatedBrokerage : IBrokerage
 {
     private readonly IMarketDataFetcher _marketDataFetcher;
-    private readonly decimal _commissionRate;
+    private readonly ITransactionCostModel _costModel;
+    private readonly ISlippageModel _slippageModel;
 
     /// <summary>
-    /// Initializes a new instance of the SimulatedBrokerage class, using the provided IMarketDataFetcher.
+    /// Initializes a new instance of the SimulatedBrokerage class with explicit cost and slippage models.
+    /// </summary>
+    /// <param name="marketDataFetcher">An instance of an object implementing the IMarketDataFetcher interface.</param>
+    /// <param name="costModel">The transaction cost model for calculating commissions.</param>
+    /// <param name="slippageModel">The slippage model for adjusting fill prices. Defaults to no slippage.</param>
+    public SimulatedBrokerage(
+        IMarketDataFetcher marketDataFetcher,
+        ITransactionCostModel costModel,
+        ISlippageModel? slippageModel = null)
+    {
+        Guard.AgainstNull(() => marketDataFetcher);
+        Guard.AgainstNull(() => costModel);
+
+        _marketDataFetcher = marketDataFetcher;
+        _costModel = costModel;
+        _slippageModel = slippageModel ?? new NoSlippage();
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the SimulatedBrokerage class with a flat commission rate.
+    /// Backward-compatible constructor that wraps the rate in a <see cref="PercentageOfValueCostModel"/>.
     /// </summary>
     /// <param name="marketDataFetcher">An instance of an object implementing the IMarketDataFetcher interface.</param>
     /// <param name="commissionRate">The commission rate to apply to trades (default: 0.1%).</param>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown when the marketDataFetcher is null.
-    /// </exception>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown when the commissionRate is negative or zero.
-    /// </exception>
     public SimulatedBrokerage(IMarketDataFetcher marketDataFetcher, decimal commissionRate = 0.001m)
+        : this(marketDataFetcher, new PercentageOfValueCostModel(commissionRate))
     {
-        Guard.AgainstNull(() => marketDataFetcher); // Throws ArgumentNullException
-        Guard.AgainstNegativeOrZero(() => commissionRate); // Throws ArgumentOutOfRangeException
-
-        _marketDataFetcher = marketDataFetcher;
-        _commissionRate = commissionRate;
     }
 
     /// <summary>
     /// Occurs when an order is filled. This can be subscribed to in order to receive fill events.
     /// </summary>
-    // A1 fix: Changed from EventHandler<FillEvent> to Func<object, FillEvent, Task>
-    // so that async handlers can propagate exceptions.
-    public event Func<object, FillEvent, Task> FillOccurred;
+    public event Func<object, FillEvent, Task>? FillOccurred;
 
     /// <summary>
     /// Submits an order for execution. The order is processed based on the available market data.
-    /// In case of a Market order, it is immediately filled at the current market price.
-    /// For Limit, Stop, and StopLimit orders, additional checks are performed.
     /// </summary>
     /// <param name="order">The order to be executed.</param>
     /// <returns>A task that represents the asynchronous operation.
     /// The task result contains a boolean value that is true if the
     /// order was successfully processed; otherwise, false.</returns>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown when the order is null.
-    /// </exception>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown when the order type is not recognized.
-    /// </exception>
     public async Task<bool> SubmitOrderAsync(Order order)
     {
-        Guard.AgainstNull(() => order); // Throws ArgumentNullException
+        Guard.AgainstNull(() => order);
 
-        // A5 fix: Filter market data to match the order's timestamp instead of using whatever date the fetcher returns
+        // A5 fix: Filter market data to match the order's timestamp
         var marketData = await _marketDataFetcher.FetchMarketDataAsync([order.Asset])
             .FirstOrDefaultAsync(kvp => kvp.Key == order.Timestamp).ConfigureAwait(false);
 
@@ -81,7 +85,6 @@ public sealed class SimulatedBrokerage : IBrokerage
             return false;
         }
 
-        // A1 fix: Handle*Order methods are now async to await FillOccurred
         var isOrderFilled = order.OrderType switch
         {
             OrderType.Market => await HandleMarketOrder(order, assetMarketData).ConfigureAwait(false),
@@ -95,8 +98,9 @@ public sealed class SimulatedBrokerage : IBrokerage
 
     private async Task<bool> HandleMarketOrder(Order order, MarketData marketData)
     {
-        var fillPrice = marketData.Close;
-        var commission = CalculateCommission(order, fillPrice);
+        var theoreticalPrice = marketData.Close;
+        var fillPrice = _slippageModel.CalculateFillPrice(theoreticalPrice, order.Quantity, order.TradeAction);
+        var commission = _costModel.CalculateCommission(fillPrice, order.Quantity, order.TradeAction);
 
         var fillEvent = new FillEvent(
             order.Timestamp,
@@ -107,7 +111,6 @@ public sealed class SimulatedBrokerage : IBrokerage
             order.Quantity,
             commission);
 
-        // A1 fix: Await the async event handler so exceptions propagate
         if (FillOccurred != null)
         {
             await FillOccurred(this, fillEvent).ConfigureAwait(false);
@@ -122,7 +125,6 @@ public sealed class SimulatedBrokerage : IBrokerage
             throw new InvalidOperationException("Limit price must be set for a limit order.");
         }
 
-        // BUG-A05: Check High/Low instead of Close for limit order fill
         var limitPrice = order.PrimaryPrice.Value;
         if ((order.TradeAction == TradeAction.Buy && marketData.Low > limitPrice) ||
             (order.TradeAction == TradeAction.Sell && marketData.High < limitPrice))
@@ -130,14 +132,15 @@ public sealed class SimulatedBrokerage : IBrokerage
             return false;
         }
 
-        var commission = CalculateCommission(order, limitPrice);
+        var fillPrice = _slippageModel.CalculateFillPrice(limitPrice, order.Quantity, order.TradeAction);
+        var commission = _costModel.CalculateCommission(fillPrice, order.Quantity, order.TradeAction);
 
         var fillEvent = new FillEvent(
             order.Timestamp,
             order.Asset,
             order.StrategyName,
             order.TradeAction,
-            limitPrice,
+            fillPrice,
             order.Quantity,
             commission);
 
@@ -155,7 +158,6 @@ public sealed class SimulatedBrokerage : IBrokerage
             throw new InvalidOperationException("Stop price must be set for a stop order.");
         }
 
-        // For simplicity, we fill stop orders if the stop price is worse or equal to the close price
         var stopPrice = order.PrimaryPrice.Value;
         if ((order.TradeAction == TradeAction.Buy && stopPrice > marketData.Close) ||
             (order.TradeAction == TradeAction.Sell && stopPrice < marketData.Close))
@@ -163,14 +165,15 @@ public sealed class SimulatedBrokerage : IBrokerage
             return false;
         }
 
-        var commission = CalculateCommission(order, stopPrice);
+        var fillPrice = _slippageModel.CalculateFillPrice(stopPrice, order.Quantity, order.TradeAction);
+        var commission = _costModel.CalculateCommission(fillPrice, order.Quantity, order.TradeAction);
 
         var fillEvent = new FillEvent(
             order.Timestamp,
             order.Asset,
             order.StrategyName,
             order.TradeAction,
-            stopPrice,
+            fillPrice,
             order.Quantity,
             commission);
 
@@ -191,22 +194,21 @@ public sealed class SimulatedBrokerage : IBrokerage
         var stopPrice = order.PrimaryPrice.Value;
         var limitPrice = order.SecondaryPrice.Value;
 
-        // For simplicity, we fill stop-limit orders if the stop price is worse or equal to the close price
-        // and the limit price is better or equal to the close price
         if ((order.TradeAction == TradeAction.Buy && (stopPrice > marketData.Close || limitPrice < marketData.Close)) ||
             (order.TradeAction == TradeAction.Sell && (stopPrice < marketData.Close || limitPrice > marketData.Close)))
         {
             return false;
         }
 
-        var commission = CalculateCommission(order, limitPrice);
+        var fillPrice = _slippageModel.CalculateFillPrice(limitPrice, order.Quantity, order.TradeAction);
+        var commission = _costModel.CalculateCommission(fillPrice, order.Quantity, order.TradeAction);
 
         var fillEvent = new FillEvent(
             order.Timestamp,
             order.Asset,
             order.StrategyName,
             order.TradeAction,
-            limitPrice,
+            fillPrice,
             order.Quantity,
             commission);
 
@@ -216,8 +218,4 @@ public sealed class SimulatedBrokerage : IBrokerage
         }
         return true;
     }
-
-    // ROB-A01: Commission rate extracted to constructor parameter
-    private decimal CalculateCommission(Order order, decimal fillPrice) =>
-        fillPrice * order.Quantity * _commissionRate;
 }

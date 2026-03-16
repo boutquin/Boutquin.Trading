@@ -104,4 +104,70 @@ public static class EquityCurveExtensions
         // Return the calculated drawdowns, maximum drawdown, and maximum drawdown duration.
         return (drawdowns, maxDrawdown, maxDrawdownDuration);
     }
+
+    /// <summary>
+    /// Computes monthly returns from an equity curve.
+    /// Each monthly return is calculated as (lastValueInMonth / lastValueInPriorMonth) - 1.
+    /// </summary>
+    /// <param name="equityCurve">The equity curve keyed by date.</param>
+    /// <returns>A sorted dictionary keyed by (Year, Month) with the corresponding monthly return.</returns>
+    /// <exception cref="EmptyOrNullDictionaryException">Thrown when the equity curve is null or empty.</exception>
+    public static SortedDictionary<(int Year, int Month), decimal> MonthlyReturns(
+        this IReadOnlyDictionary<DateOnly, decimal> equityCurve)
+    {
+        Guard.AgainstEmptyOrNullReadOnlyDictionary(() => equityCurve);
+
+        var result = new SortedDictionary<(int Year, int Month), decimal>();
+
+        // Group entries by (year, month) and take the last value in each month
+        var monthlyLastValues = new SortedDictionary<(int Year, int Month), decimal>();
+        foreach (var (date, value) in equityCurve)
+        {
+            monthlyLastValues[(date.Year, date.Month)] = value;
+        }
+
+        // Compute returns between consecutive months
+        var months = monthlyLastValues.Keys.ToArray();
+        for (var i = 1; i < months.Length; i++)
+        {
+            var prevValue = monthlyLastValues[months[i - 1]];
+            var currValue = monthlyLastValues[months[i]];
+            result[months[i]] = prevValue == 0 ? 0 : (currValue / prevValue) - 1;
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Computes annual returns from an equity curve.
+    /// Each annual return is calculated as (lastValueInYear / lastValueInPriorYear) - 1.
+    /// </summary>
+    /// <param name="equityCurve">The equity curve keyed by date.</param>
+    /// <returns>A sorted dictionary keyed by year with the corresponding annual return.</returns>
+    /// <exception cref="EmptyOrNullDictionaryException">Thrown when the equity curve is null or empty.</exception>
+    public static SortedDictionary<int, decimal> AnnualReturns(
+        this IReadOnlyDictionary<DateOnly, decimal> equityCurve)
+    {
+        Guard.AgainstEmptyOrNullReadOnlyDictionary(() => equityCurve);
+
+        var result = new SortedDictionary<int, decimal>();
+
+        // Group entries by year and take the last value in each year
+        var yearlyLastValues = new SortedDictionary<int, decimal>();
+        foreach (var (date, value) in equityCurve)
+        {
+            yearlyLastValues[date.Year] = value;
+        }
+
+        // Compute returns between consecutive years
+        var years = yearlyLastValues.Keys.ToArray();
+        for (var i = 1; i < years.Length; i++)
+        {
+            var prevValue = yearlyLastValues[years[i - 1]];
+            var currValue = yearlyLastValues[years[i]];
+            result[years[i]] = prevValue == 0 ? 0 : (currValue / prevValue) - 1;
+        }
+
+        return result;
+    }
 }

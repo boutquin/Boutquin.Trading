@@ -1,0 +1,40 @@
+// Copyright (c) 2023-2026 Pierre G. Boutquin. All rights reserved.
+//
+//   Licensed under the Apache License, Version 2.0 (the "License").
+//   You may not use this file except in compliance with the License.
+//   You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//   Unless required by applicable law or agreed to in writing, software
+//   distributed under the License is distributed on an "AS IS" BASIS,
+//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+//   See the License for the specific language governing permissions and
+//   limitations under the License.
+//
+
+namespace Boutquin.Trading.Application.CostModels;
+
+/// <summary>
+/// Calculates commission as a fixed amount per trade, regardless of trade size.
+/// </summary>
+public sealed class FixedPerTradeCostModel : ITransactionCostModel
+{
+    private readonly decimal _fixedAmount;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FixedPerTradeCostModel"/> class.
+    /// </summary>
+    /// <param name="fixedAmount">The fixed commission amount per trade.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="fixedAmount"/> is negative or zero.</exception>
+    public FixedPerTradeCostModel(decimal fixedAmount)
+    {
+        Guard.AgainstNegativeOrZero(() => fixedAmount);
+        _fixedAmount = fixedAmount;
+    }
+
+    /// <inheritdoc />
+    public decimal CalculateCommission(decimal fillPrice, int quantity, TradeAction tradeAction) =>
+        _fixedAmount;
+}

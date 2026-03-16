@@ -20,74 +20,28 @@ namespace Boutquin.Trading.Domain.Helpers;
 /// The Tearsheet record encapsulates the performance metrics and statistics
 /// for a backtested trading strategy, providing an overview of the strategy's
 /// risk and return characteristics.
-/// The Tearsheet record includes multiple performance indicators such as
-/// annualized return, Sharpe ratio, Sortino ratio, maximum drawdown, compound
-/// annual growth rate (CAGR), volatility, alpha, beta, information ratio,
-/// equity curve, drawdowns, and maximum drawdown duration.
 /// </summary>
-/// <param name="AnnualizedReturn">The annualized return of the strategy,
-/// expressed as a percentage. It represents the average yearly return of
-/// the strategy over the entire backtesting period.
-/// </param>
-/// <param name="SharpeRatio">The Sharpe ratio of the strategy, a widely
-/// used risk-adjusted performance measure. It is calculated by dividing
-/// the strategy's excess return (return above the risk-free rate) by its
-/// volatility (standard deviation of returns).
-/// </param>
-/// <param name="SortinoRatio">The Sortino ratio of the strategy, a
-/// risk-adjusted performance measure similar to the Sharpe ratio,
-/// but it only considers the downside volatility. It is calculated by
-/// dividing the strategy's excess return (return above the risk-free rate)
-/// by its downside deviation (standard deviation of negative returns).
-/// </param>
-/// <param name="MaxDrawdown">The maximum drawdown of the strategy, expressed
-/// as a percentage. It represents the largest peak-to-trough decline in the
-/// value of the strategy during the backtesting period.
-/// </param>
-/// <param name="CAGR">The compound annual growth rate
-/// (CAGR) of the strategy,
-/// expressed as a percentage. It represents the geometric average annual
-/// return of the strategy over the entire backtesting period, assuming
-/// the returns are reinvested.
-/// </param>
-/// <param name="Volatility">The volatility of the strategy, expressed as
-/// a percentage. It represents the annualized standard deviation of the
-/// strategy's returns and measures the degree of fluctuation in the
-/// strategy's value over time.
-/// </param>
-/// <param name="Alpha">The alpha of the strategy, a risk-adjusted
-/// performance measure that represents the strategy's excess return
-/// relative to a benchmark index or another reference portfolio,
-/// after accounting for the strategy's beta (market risk).
-/// </param>
-/// <param name="Beta">The beta of the strategy, a measure of the
-/// strategy's sensitivity to market movements. A beta of 1 indicates
-/// that the strategy's returns move in line with the market, while
-/// a beta greater (less) than 1 indicates that the strategy is
-/// more (less) volatile than the market.
-/// </param>
-/// <param name="InformationRatio">The information ratio of the
-/// strategy, a risk-adjusted performance measure that compares the
-/// strategy's excess return (return above a benchmark index) to its
-/// tracking error (standard deviation of the strategy's excess returns).
-/// A higher information ratio indicates better risk-adjusted performance.
-/// </param>
-/// <param name="EquityCurve">The equity curve of the strategy,
-/// represented as a dictionary with DateTime keys and equity values.
-/// The equity curve illustrates the growth of the strategy's value over
-/// time, providing a visual representation of the strategy's performance
-/// during the backtesting period.
-/// </param>
-/// <param name="Drawdowns">The drawdowns of the strategy, represented
-/// as a dictionary with DateTime keys and drawdown values. Each entry
-/// in the dictionary represents a peak-to-trough decline in the value
-/// of the strategy during the backtesting period.
-/// </param>
-/// <param name="MaxDrawdownDuration">The maximum drawdown duration
-/// of the strategy, in days. It represents the longest period
-/// between the peak and the subsequent recovery to a new peak
-/// in the strategy's value during the backtesting period.
-/// </param>
+/// <param name="AnnualizedReturn">The annualized return of the strategy, expressed as a percentage.</param>
+/// <param name="SharpeRatio">The Sharpe ratio of the strategy.</param>
+/// <param name="SortinoRatio">The Sortino ratio of the strategy.</param>
+/// <param name="MaxDrawdown">The maximum drawdown of the strategy, expressed as a percentage.</param>
+/// <param name="CAGR">The compound annual growth rate (CAGR) of the strategy.</param>
+/// <param name="Volatility">The annualized volatility of the strategy.</param>
+/// <param name="Alpha">The alpha of the strategy relative to a benchmark.</param>
+/// <param name="Beta">The beta of the strategy relative to a benchmark.</param>
+/// <param name="InformationRatio">The information ratio of the strategy.</param>
+/// <param name="EquityCurve">The equity curve of the strategy over time.</param>
+/// <param name="Drawdowns">The drawdowns of the strategy over time.</param>
+/// <param name="MaxDrawdownDuration">The maximum drawdown duration in days.</param>
+/// <param name="CalmarRatio">The Calmar Ratio: CAGR / |MaxDrawdown|.</param>
+/// <param name="OmegaRatio">The Omega Ratio: gains above threshold / losses below threshold.</param>
+/// <param name="HistoricalVaR">The Historical Value at Risk at 95% confidence.</param>
+/// <param name="ConditionalVaR">The Conditional VaR (Expected Shortfall) at 95% confidence.</param>
+/// <param name="Skewness">The sample skewness of the return distribution.</param>
+/// <param name="Kurtosis">The excess kurtosis of the return distribution.</param>
+/// <param name="WinRate">The proportion of positive return days (0-1).</param>
+/// <param name="ProfitFactor">The ratio of gross profits to gross losses.</param>
+/// <param name="RecoveryFactor">The cumulative return divided by |MaxDrawdown|.</param>
 public sealed record Tearsheet(
     decimal AnnualizedReturn,
     decimal SharpeRatio,
@@ -101,7 +55,16 @@ public sealed record Tearsheet(
     decimal InformationRatio,
     SortedDictionary<DateOnly, decimal> EquityCurve,
     SortedDictionary<DateOnly, decimal> Drawdowns,
-    int MaxDrawdownDuration)
+    int MaxDrawdownDuration,
+    decimal CalmarRatio,
+    decimal OmegaRatio,
+    decimal HistoricalVaR,
+    decimal ConditionalVaR,
+    decimal Skewness,
+    decimal Kurtosis,
+    decimal WinRate,
+    decimal ProfitFactor,
+    decimal RecoveryFactor)
 {
     /// <summary>
     /// Returns a string representation of the tearsheet, displaying key performance metrics and statistics.
@@ -118,6 +81,15 @@ public sealed record Tearsheet(
                $"Alpha: {Alpha:F2}\n" +
                $"Beta: {Beta:F2}\n" +
                $"Information Ratio: {InformationRatio:F2}\n" +
+               $"Calmar Ratio: {CalmarRatio:F2}\n" +
+               $"Omega Ratio: {OmegaRatio:F2}\n" +
+               $"Historical VaR (95%): {HistoricalVaR:P2}\n" +
+               $"Conditional VaR (95%): {ConditionalVaR:P2}\n" +
+               $"Skewness: {Skewness:F4}\n" +
+               $"Kurtosis: {Kurtosis:F4}\n" +
+               $"Win Rate: {WinRate:P2}\n" +
+               $"Profit Factor: {ProfitFactor:F2}\n" +
+               $"Recovery Factor: {RecoveryFactor:F2}\n" +
                $"Max Drawdown Duration: {MaxDrawdownDuration} days";
     }
 }
