@@ -27,6 +27,17 @@ Quantitative trading framework in C# .NET. Pre-release.
 - **Composite pattern for `IMarketDataFetcher`** — `CompositeMarketDataFetcher` delegates `FetchMarketDataAsync` → `TiingoFetcher` (equities) and `FetchFxRatesAsync` → `FrankfurterFetcher` (FX rates). Single-responsibility fetchers that each throw `NotSupportedException` for the method they don't handle. Consumers use the composite.
 - **Deprecating a data provider project** — Checklist: (1) delete project directory, (2) `dotnet sln remove`, (3) remove `ProjectReference` entries from all consuming `.csproj` files, (4) update `GlobalUsings.cs` and source code to use replacement, (5) add new `ProjectReference` entries for replacement projects, (6) grep for old namespace to catch stragglers.
 
+## Portfolio Construction Architecture (Phase 2)
+
+- **`IPortfolioConstructionModel`** — Core interface: `ComputeTargetWeights(assets, returns) → Dictionary<Asset, decimal>`. All models guarantee: weights ≥ 0, weights sum to 1.0, empty assets → empty weights.
+- **Six construction models** in `Application/PortfolioConstruction/`: `EqualWeightConstruction`, `InverseVolatilityConstruction`, `RiskParityConstruction`, `MeanVarianceConstruction`, `MinimumVarianceConstruction`, `BlackLittermanConstruction`. The folder name `PortfolioConstruction` matches the roadmap naming convention.
+- **`ICovarianceEstimator`** — Three implementations: `SampleCovarianceEstimator` (N-1 divisor), `ExponentiallyWeightedCovarianceEstimator` (EWMA with configurable lambda), `LedoitWolfShrinkageEstimator` (shrinkage toward scaled identity). All use `SampleCovarianceEstimator.ValidateReturns()` for input validation.
+- **`RollingWindow<T>`** — Generic circular buffer in `Domain/Helpers/`. Fixed capacity, drops oldest on add, chronological iteration. Used for windowed return series.
+- **`IRebalancingTrigger`** — Two implementations: `CalendarRebalancingTrigger` (always true, calendar logic in strategy), `ThresholdRebalancingTrigger` (fires when any asset drifts beyond band).
+- **`ConstructionModelStrategy`** — Wires `IPortfolioConstructionModel` + `IRebalancingTrigger` + `RebalancingFrequency` into the strategy pipeline. Extracts rolling returns from `historicalMarketData`, computes target weights dynamically at each rebalance. Stores `LastComputedWeights` for `DynamicWeightPositionSizer` to read.
+- **`DynamicWeightPositionSizer`** — Reads `LastComputedWeights` from `ConstructionModelStrategy` to compute position sizes. Falls back to equal weight if no computed weights available.
+- **Optimization approach** — `MeanVarianceConstruction` and `MinimumVarianceConstruction` use projected gradient descent with line search and simplex projection. `RiskParityConstruction` uses iterative inverse-MRC algorithm.
+
 ## Codebase Map
 
 ### Project Structure
@@ -53,7 +64,7 @@ Quantitative trading framework in C# .NET. Pre-release.
 | Financial metrics (extension methods on `decimal[]`) | `Domain/Extensions/DecimalArrayExtensions.cs` |
 | Equity curve drawdown analysis | `Domain/Extensions/EquityCurveExtensions.cs` |
 | Tearsheet record (performance summary) | `Domain/Helpers/TearSheet.cs` |
-| IStrategy interface (with default impls) | `Domain/Interfaces/IStrategy.cs` |
+| IStrategy interface | `Domain/Interfaces/IStrategy.cs` |
 | IPortfolio interface (14 methods) | `Domain/Interfaces/IPortfolio.cs` |
 | IPositionSizer interface | `Domain/Interfaces/IPositionSizer.cs` |
 | IBrokerage interface | `Domain/Interfaces/IBrokerage.cs` |
@@ -69,10 +80,19 @@ Quantitative trading framework in C# .NET. Pre-release.
 | FixedWeightPositionSizer | `Application/PositionSizing/FixedWeightPositionSizer.cs` |
 | Event handlers | `Application/EventHandlers/` |
 | CompositeMarketDataFetcher | `Application/CompositeMarketDataFetcher.cs` |
+| RollingWindow\<T\> (circular buffer) | `Domain/Helpers/RollingWindow.cs` |
+| ICovarianceEstimator interface | `Domain/Interfaces/ICovarianceEstimator.cs` |
+| IPortfolioConstructionModel interface | `Domain/Interfaces/IPortfolioConstructionModel.cs` |
+| IRebalancingTrigger interface | `Domain/Interfaces/IRebalancingTrigger.cs` |
+| Covariance estimators (Sample, EWMA, Ledoit-Wolf) | `Application/CovarianceEstimators/` |
+| Portfolio construction models (6 models) | `Application/PortfolioConstruction/` |
+| Rebalancing triggers (Calendar, Threshold) | `Application/Rebalancing/` |
+| ConstructionModelStrategy | `Application/Strategies/ConstructionModelStrategy.cs` |
+| DynamicWeightPositionSizer | `Application/PositionSizing/DynamicWeightPositionSizer.cs` |
 
-### Domain Interfaces (14)
+### Domain Interfaces (17)
 
-`IBrokerage`, `ICapitalAllocationStrategy`, `ICurrencyConversionService`, `IEventHandler`, `IEventProcessor`, `IFinancialEvent`, `IMarketDataFetcher`, `IMarketDataProcessor`, `IMarketDataStorage`, `IOrderPriceCalculationStrategy`, `IPortfolio`, `IPositionSizer`, `IStrategy`, `ISymbolReader`
+`IBrokerage`, `ICapitalAllocationStrategy`, `ICovarianceEstimator`, `ICurrencyConversionService`, `IEventHandler`, `IEventProcessor`, `IFinancialEvent`, `IMarketDataFetcher`, `IMarketDataProcessor`, `IMarketDataStorage`, `IOrderPriceCalculationStrategy`, `IPortfolio`, `IPortfolioConstructionModel`, `IPositionSizer`, `IRebalancingTrigger`, `IStrategy`, `ISymbolReader`
 
 ### Domain Enums (12)
 
