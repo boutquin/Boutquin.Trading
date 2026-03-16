@@ -487,7 +487,7 @@ public sealed class DecimalArrayExtensionsTests
         Assert.Throws(exceptionType, () => dailyReturns.AnnualizedSortinoRatio()).Message.Should().Be(ExceptionMessage);
         Assert.Throws(exceptionType, () => dailyReturns.CompoundAnnualGrowthRate()).Message.Should().Be(ExceptionMessage);
         Assert.Throws(exceptionType, () => dailyReturns.DownsideDeviation()).Message.Should().Be(ExceptionMessage);
-        //Assert.Throws(exceptionType, () => dailyReturns.DailyReturns()).Message.Should().Be(ExceptionMessage);
+        Assert.Throws(exceptionType, dailyReturns.DailyReturns);
         Assert.Throws(exceptionType, () => dailyReturns.EquityCurve()).Message.Should().Be(ExceptionMessage);
 #pragma warning restore CS8604 // Possible null reference argument.
     }
@@ -513,7 +513,7 @@ public sealed class DecimalArrayExtensionsTests
         Assert.Throws(exceptionType, () => dailyReturns.AnnualizedSortinoRatio()).Message.Should().Be(ExceptionMessage);
         Assert.Throws(exceptionType, () => dailyReturns.CompoundAnnualGrowthRate()).Message.Should().Be(ExceptionMessage);
         Assert.Throws(exceptionType, () => dailyReturns.DownsideDeviation()).Message.Should().Be(ExceptionMessage);
-        //Assert.Throws(exceptionType, () => dailyReturns.DailyReturns()).Message.Should().Be(ExceptionMessage);
+        Assert.Throws(exceptionType, dailyReturns.DailyReturns);
         Assert.Throws(exceptionType, () => dailyReturns.EquityCurve()).Message.Should().Be(ExceptionMessage);
     }
 }

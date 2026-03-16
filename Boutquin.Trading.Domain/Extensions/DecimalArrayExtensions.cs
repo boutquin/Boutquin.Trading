@@ -361,7 +361,7 @@ public static class DecimalArrayExtensions
         // B3 fix: Guard mismatched array lengths
         if (portfolioDailyReturns.Length != benchmarkDailyReturns.Length)
         {
-            throw new ArgumentException("Portfolio and benchmark daily returns arrays must have the same length.");
+            throw new ArgumentException("Portfolio and benchmark daily returns arrays must have the same length.", nameof(benchmarkDailyReturns));
         }
 
         var portfolioAverageReturn = portfolioDailyReturns.Average();
@@ -448,7 +448,7 @@ public static class DecimalArrayExtensions
         // Ensure that the input daily returns array and benchmark daily returns array have the same length.
         if (dailyReturns.Length != benchmarkDailyReturns.Length)
         {
-            throw new ArgumentException("The daily returns and benchmark daily returns arrays must have the same length.");
+            throw new ArgumentException("The daily returns and benchmark daily returns arrays must have the same length.", nameof(benchmarkDailyReturns));
         }
 
         // Calculate the active returns, which is the difference between daily returns and benchmark daily returns.

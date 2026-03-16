@@ -5,8 +5,7 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <Title>Common abstractions specific to trading.</Title>
     <Description>Common abstractions (entities, enums, exceptions, interfaces, types and logic) specific to a Trading Domain layer.</Description>
-    <PackageTags>CleanArchitecture,Domain,Entities,Shared,TradingStrategy,BackTesting</PackageTags>
-    <PackageReleaseNotes>Initial version.</PackageReleaseNotes>
+    <PackageTags>CleanArchitecture;Domain;Entities;Shared;TradingStrategy;BackTesting</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

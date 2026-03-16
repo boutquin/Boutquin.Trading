@@ -59,19 +59,18 @@ public sealed class PositionTests
     }
 
     /// <summary>
-    /// D2: Selling 0 shares should throw ArgumentOutOfRangeException (nonsensical).
+    /// BUG-I13: Selling 0 shares should throw ArgumentOutOfRangeException.
     /// </summary>
     [Fact]
-    public void Position_Sell_ZeroShares_NoChange()
+    public void Position_Sell_ZeroShares_ThrowsArgumentOutOfRangeException()
     {
         // Arrange
         var position = new Position("AAPL", 100, 1000m);
 
-        // Act — sell 0 shares (edge case, allowed by Guard.AgainstNegative)
-        position.Sell(0, 10m, 0m);
+        // Act
+        var act = () => position.Sell(0, 10m, 0m);
 
-        // Assert — no change
-        position.Quantity.Should().Be(100);
-        position.BookValue.Should().Be(1000m);
+        // Assert
+        act.Should().Throw<ArgumentOutOfRangeException>();
     }
 }

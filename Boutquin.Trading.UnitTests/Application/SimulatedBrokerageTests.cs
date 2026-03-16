@@ -41,9 +41,7 @@ public sealed class SimulatedBrokerageTests
     public void Constructor_WithNullMarketDataFetcher_ShouldThrowArgumentNullException()
     {
         // Act
-#pragma warning disable CA1806
         Action act = () => new SimulatedBrokerage(null);
-#pragma warning restore CA1806
 
         // Assert
         act.Should().Throw<ArgumentNullException>();

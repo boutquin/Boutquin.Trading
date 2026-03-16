@@ -37,6 +37,14 @@ internal sealed class SecurityMasterContextDesignTimeFactory : IDesignTimeDbCont
         // Combine the current directory with the name of the configuration file
         var configurationFilePath = Path.Combine(currentDirectory, "appsettings.json");
 
+        if (!File.Exists(configurationFilePath))
+        {
+            throw new FileNotFoundException(
+                $"Configuration file not found at '{configurationFilePath}'. "
+                + "Ensure appsettings.json exists in the current working directory.",
+                configurationFilePath);
+        }
+
         // Create a new instance of the ConfigurationBuilder class
         var configurationBuilder = new ConfigurationBuilder();
 

@@ -44,6 +44,6 @@ public interface IMarketDataFetcher
     /// </summary>
     /// <param name="currencyPairs">A list of currency pair symbols for which to fetch historical exchange rates.</param>
     /// <returns>An IAsyncEnumerable of key-value pairs, where the key is a DateOnly object and the value is a SortedDictionary of string currency pair symbols and decimal exchange rates.</returns>
-    /// <exception cref="FxDataRetrievalException">Thrown when there is an error in fetching or parsing the foreign exchange data.</exception>
+    /// <exception cref="MarketDataRetrievalException">Thrown when there is an error in fetching or parsing the foreign exchange data.</exception>
     IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<CurrencyCode, decimal>>> FetchFxRatesAsync(IEnumerable<string> currencyPairs);
 }

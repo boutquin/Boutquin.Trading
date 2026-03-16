@@ -51,7 +51,7 @@ public sealed class ContinentConfiguration : IEntityTypeConfiguration<Continent>
         builder.HasIndex(c => c.Name)
             .IsUnique();
 
-        // Seed the currencies table with the major currencies
+        // Seed the continents table with the major continents
         builder.HasData(
             new Continent(ContinentCode.AF),
             new Continent(ContinentCode.AN),

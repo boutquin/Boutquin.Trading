@@ -90,7 +90,7 @@ public interface IPortfolio
     /// <param name="event">The event to handle. This represents an occurrence in the system that may affect the state of the portfolio.</param>
     /// <returns>A <see cref="Task"/> that represents the asynchronous operation. The task result contains no value.</returns>
     /// <exception cref="ArgumentNullException">Thrown if the provided event is null.</exception>
-    /// <exception cref="EventProcessingException">Thrown if an error occurs while processing the event.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if an error occurs while processing the event.</exception>
     /// <remarks>
     /// This method processes the given event using the portfolio's event processor. The event represents something that has happened in the system,
     /// such as a change in the market, a change in the portfolio's assets, or a change in the portfolio's strategy.

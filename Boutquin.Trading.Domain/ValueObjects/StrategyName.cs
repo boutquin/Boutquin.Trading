@@ -29,14 +29,27 @@ namespace Boutquin.Trading.Domain.ValueObjects;
 /// Console.WriteLine(strategyName);  // Outputs: TestStrategy
 /// </code>
 /// </remarks>
-public readonly record struct StrategyName(string Value)
+public readonly record struct StrategyName
 {
+    /// <summary>
+    /// Gets the strategy name value.
+    /// </summary>
+    public string Value { get; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="StrategyName"/> struct.
+    /// </summary>
+    /// <param name="value">The strategy name value.</param>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="value"/> is null, empty, or whitespace.</exception>
+    public StrategyName(string value)
+    {
+        Guard.AgainstNullOrWhiteSpace(() => value);
+        Value = value;
+    }
+
     /// <summary>
     /// Returns a string that represents the current object.
     /// </summary>
     /// <returns>A string that represents the current object.</returns>
-    /// <remarks>
-    /// This method overrides the base implementation to return the Value of the StrategyName.
-    /// </remarks>
     public override string ToString() => Value;
 }

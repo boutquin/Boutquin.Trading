@@ -16,6 +16,9 @@
 
 namespace Boutquin.Trading.DataAccess.Entities;
 
+/// <summary>
+/// Represents a mapping between a security and its symbol under a specific standard (e.g., CUSIP, ISIN, SEDOL).
+/// </summary>
 public sealed class SecuritySymbol
 {
     /// <summary>

@@ -58,7 +58,7 @@ public sealed class FxRateConfiguration : IEntityTypeConfiguration<FxRate>
             .HasMaxLength(ColumnConstants.FxRate_QuoteCurrencyCode_Length)
             .HasConversion<string>();
 
-        // Configure RateDate property with required constraint and scale & precision
+        // Configure Rate property with required constraint and scale & precision
         builder.Property(c => c.Rate)
             .IsRequired()
             .HasPrecision(ColumnConstants.FxRate_Rate_Precision, ColumnConstants.FxRate_Rate_Scale);

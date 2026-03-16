@@ -60,9 +60,5 @@ public sealed class ExchangeHolidayConfiguration : IEntityTypeConfiguration<Exch
         // Configure Unique Index on ExchangeCode & HolidayDate
         builder.HasIndex(eh => new { eh.ExchangeCode, eh.HolidayDate })
             .IsUnique();
-
-        // Configure Unique Index on Description
-        builder.HasIndex(eh => eh.Description)
-            .IsUnique();
     }
 }

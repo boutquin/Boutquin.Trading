@@ -91,7 +91,7 @@ public sealed class Position
 
     public void Sell(int shares, decimal price, decimal transactionFee)
     {
-        Guard.AgainstNegative(() => shares); // Throws ArgumentOutOfRangeException
+        Guard.AgainstNegativeOrZero(() => shares); // Throws ArgumentOutOfRangeException
         Guard.AgainstNegative(() => price); // Throws ArgumentOutOfRangeException
         Guard.AgainstNegative(() => transactionFee); // Throws ArgumentOutOfRangeException
         Guard.Against(shares > Quantity).With<ArgumentException>("Cannot sell more shares than the current quantity.");

@@ -36,7 +36,7 @@ public sealed class SymbolStandardConfiguration : IEntityTypeConfiguration<Symbo
         // Configure the primary key
         builder.HasKey(ac => ac.Id);
 
-        // Configure Id property with required constrain and enum conversion
+        // Configure Id property with required constraint and enum conversion
         builder.Property(ac => ac.Id)
             .IsRequired()
             .HasConversion<int>();
