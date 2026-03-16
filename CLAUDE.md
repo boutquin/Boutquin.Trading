@@ -30,7 +30,7 @@ Quantitative trading framework in C# .NET. Pre-release.
 ## Portfolio Construction Architecture (Phase 2)
 
 - **`IPortfolioConstructionModel`** — Core interface: `ComputeTargetWeights(assets, returns) → Dictionary<Asset, decimal>`. All models guarantee: weights ≥ 0, weights sum to 1.0, empty assets → empty weights.
-- **Six construction models** in `Application/PortfolioConstruction/`: `EqualWeightConstruction`, `InverseVolatilityConstruction`, `RiskParityConstruction`, `MeanVarianceConstruction`, `MinimumVarianceConstruction`, `BlackLittermanConstruction`. The folder name `PortfolioConstruction` matches the roadmap naming convention.
+- **Six base construction models** in `Application/PortfolioConstruction/`: `EqualWeightConstruction`, `InverseVolatilityConstruction`, `RiskParityConstruction`, `MeanVarianceConstruction`, `MinimumVarianceConstruction`, `BlackLittermanConstruction`. The folder name `PortfolioConstruction` matches the roadmap naming convention.
 - **`ICovarianceEstimator`** — Three implementations: `SampleCovarianceEstimator` (N-1 divisor), `ExponentiallyWeightedCovarianceEstimator` (EWMA with configurable lambda), `LedoitWolfShrinkageEstimator` (shrinkage toward scaled identity). All use `SampleCovarianceEstimator.ValidateReturns()` for input validation.
 - **`RollingWindow<T>`** — Generic circular buffer in `Domain/Helpers/`. Fixed capacity, drops oldest on add, chronological iteration. Used for windowed return series.
 - **`IRebalancingTrigger`** — Two implementations: `CalendarRebalancingTrigger` (always true, calendar logic in strategy), `ThresholdRebalancingTrigger` (fires when any asset drifts beyond band).
@@ -47,6 +47,23 @@ Quantitative trading framework in C# .NET. Pre-release.
 - **`HtmlReportGenerator`** — Generates self-contained HTML tearsheet with embedded SVG charts (equity curve, drawdown area), metrics table, and monthly returns heatmap. No external JS dependencies.
 - **`BenchmarkComparisonReport`** — Generates side-by-side HTML comparison of portfolio vs benchmark. Includes dual equity curve SVG (normalized to 100), metrics comparison table, and annualized tracking error calculation.
 - **Domain records** in `Domain/Analytics/`: `BrinsonFachlerResult`, `FactorRegressionResult`, `CorrelationAnalysisResult`, `DrawdownPeriod` — all `sealed record` types.
+
+## Tactical Enhancements Architecture (Phase 4)
+
+- **`IIndicator`** — Core interface: `Compute(decimal[] values) → decimal`. Single indicator value from a time series. Implementations: `SimpleMovingAverage` (last N values), `ExponentialMovingAverage` (α = 2/(period+1), SMA seed), `RealizedVolatility` (rolling annualized std dev), `MomentumScore` (12-1 month cumulative return, excludes most recent month).
+- **`IMacroIndicator`** — Dual-series interface: `Compute(series1, series2) → decimal`. Implementations: `SpreadIndicator` (latest difference), `RateOfChangeIndicator` (spread momentum with lookback).
+- **`EconomicRegime` enum** — Four quadrants: `RisingGrowthRisingInflation`, `RisingGrowthFallingInflation`, `FallingGrowthRisingInflation`, `FallingGrowthFallingInflation`.
+- **`IRegimeClassifier`** — `Classify(growthSignal, inflationSignal) → EconomicRegime`. Implementation: `GrowthInflationRegimeClassifier` with configurable deadband for hysteresis (ambiguous signals within deadband use prior regime).
+- **`TacticalOverlayConstruction`** — `IPortfolioConstructionModel` that wraps a base model and applies regime-specific tilts (additive) plus optional momentum scoring. Re-normalizes weights to sum to 1.0. Floors negative weights at zero.
+- **`VolatilityTargetingConstruction`** — `IPortfolioConstructionModel` that scales base model weights by `targetVol / realizedVol`, capped at `maxLeverage`. Computes realized portfolio vol from weighted return series. Falls back to base weights if insufficient data.
+- **`WalkForwardOptimizer`** — Rolling in-sample/out-of-sample validation. Selects best parameter set in-sample (by Sharpe), evaluates out-of-sample. Returns `WalkForwardResult` per fold. No look-ahead bias (OOS start always after IS end).
+- **`MonteCarloSimulator`** — Bootstrap resampling of daily returns. Produces distribution of Sharpe ratios across N simulations. Reports median, 5th/95th percentile, and mean. Supports deterministic seed for reproducibility.
+- **`IUniverseSelector`** — `Select(candidates) → filtered list`. Implementations: `MinAumFilter`, `MinAgeFilter` (inception date), `LiquidityFilter` (average daily volume). `CompositeUniverseSelector` composes with AND logic.
+- **`AssetMetadata`** — Domain record in `Domain/Analytics/` with `Asset`, `AumMillions`, `InceptionDate`, `AverageDailyVolume`. Used by universe filters.
+- **Domain records** in `Domain/Analytics/`: `WalkForwardResult` (per-fold IS/OOS results), `MonteCarloResult` (simulation distribution) — both `sealed record` types.
+- **Indicators** in `Application/Indicators/`: `SimpleMovingAverage`, `ExponentialMovingAverage`, `RealizedVolatility`, `MomentumScore`, `SpreadIndicator`, `RateOfChangeIndicator`.
+- **Regime** in `Application/Regime/`: `GrowthInflationRegimeClassifier`.
+- **Universe** in `Application/Universe/`: `MinAumFilter`, `MinAgeFilter`, `LiquidityFilter`, `CompositeUniverseSelector`.
 
 ## Codebase Map
 
@@ -99,21 +116,34 @@ Quantitative trading framework in C# .NET. Pre-release.
 | Rebalancing triggers (Calendar, Threshold) | `Application/Rebalancing/` |
 | ConstructionModelStrategy | `Application/Strategies/ConstructionModelStrategy.cs` |
 | DynamicWeightPositionSizer | `Application/PositionSizing/DynamicWeightPositionSizer.cs` |
-| Analytics domain records (4) | `Domain/Analytics/` |
+| Analytics domain records (Phase 3) | `Domain/Analytics/` |
 | BrinsonFachlerAttributor | `Application/Analytics/BrinsonFachlerAttributor.cs` |
 | FactorRegressor | `Application/Analytics/FactorRegressor.cs` |
 | CorrelationAnalyzer | `Application/Analytics/CorrelationAnalyzer.cs` |
 | DrawdownAnalyzer | `Application/Analytics/DrawdownAnalyzer.cs` |
 | HtmlReportGenerator | `Application/Reporting/HtmlReportGenerator.cs` |
 | BenchmarkComparisonReport | `Application/Reporting/BenchmarkComparisonReport.cs` |
+| IIndicator interface | `Domain/Interfaces/IIndicator.cs` |
+| IMacroIndicator interface | `Domain/Interfaces/IMacroIndicator.cs` |
+| IRegimeClassifier interface | `Domain/Interfaces/IRegimeClassifier.cs` |
+| IUniverseSelector interface | `Domain/Interfaces/IUniverseSelector.cs` |
+| Core indicators (SMA, EMA, RealizedVol, Momentum) | `Application/Indicators/` |
+| Macro indicators (Spread, RateOfChange) | `Application/Indicators/` |
+| GrowthInflationRegimeClassifier | `Application/Regime/GrowthInflationRegimeClassifier.cs` |
+| TacticalOverlayConstruction | `Application/PortfolioConstruction/TacticalOverlayConstruction.cs` |
+| VolatilityTargetingConstruction | `Application/PortfolioConstruction/VolatilityTargetingConstruction.cs` |
+| WalkForwardOptimizer | `Application/Analytics/WalkForwardOptimizer.cs` |
+| MonteCarloSimulator | `Application/Analytics/MonteCarloSimulator.cs` |
+| Universe filters (MinAum, MinAge, Liquidity, Composite) | `Application/Universe/` |
+| Analytics domain records (7) | `Domain/Analytics/` |
 
-### Domain Interfaces (17)
+### Domain Interfaces (21)
 
-`IBrokerage`, `ICapitalAllocationStrategy`, `ICovarianceEstimator`, `ICurrencyConversionService`, `IEventHandler`, `IEventProcessor`, `IFinancialEvent`, `IMarketDataFetcher`, `IMarketDataProcessor`, `IMarketDataStorage`, `IOrderPriceCalculationStrategy`, `IPortfolio`, `IPortfolioConstructionModel`, `IPositionSizer`, `IRebalancingTrigger`, `IStrategy`, `ISymbolReader`
+`IBrokerage`, `ICapitalAllocationStrategy`, `ICovarianceEstimator`, `ICurrencyConversionService`, `IEventHandler`, `IEventProcessor`, `IFinancialEvent`, `IIndicator`, `IMacroIndicator`, `IMarketDataFetcher`, `IMarketDataProcessor`, `IMarketDataStorage`, `IOrderPriceCalculationStrategy`, `IPortfolio`, `IPortfolioConstructionModel`, `IPositionSizer`, `IRebalancingTrigger`, `IRegimeClassifier`, `IStrategy`, `ISymbolReader`, `IUniverseSelector`
 
-### Domain Enums (12)
+### Domain Enums (13)
 
-`AssetClassCode`, `AssetType`, `ContinentCode`, `CountryCode`, `CurrencyCode`, `ExchangeCode`, `OrderType`, `RebalancingFrequency`, `SecuritySymbolStandard`, `SignalType`, `TimeZoneCode`, `TradeAction`
+`AssetClassCode`, `ContinentCode`, `CountryCode`, `CurrencyCode`, `EconomicRegime`, `ExchangeCode`, `OrderType`, `RebalancingFrequency`, `SecuritySymbolStandard`, `SignalType`, `TimeZoneCode`, `TradeAction`
 
 ### Test Patterns
 
