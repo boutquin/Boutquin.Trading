@@ -31,6 +31,7 @@ public sealed class ConstructionModelStrategy : StrategyBase
     private readonly IRebalancingTrigger _rebalancingTrigger;
     private readonly RebalancingFrequency _rebalancingFrequency;
     private readonly int _lookbackWindow;
+    private readonly ILogger<ConstructionModelStrategy> _logger;
     private DateOnly? _lastRebalancingDate;
 
     /// <summary>
@@ -45,6 +46,9 @@ public sealed class ConstructionModelStrategy : StrategyBase
     /// <param name="rebalancingFrequency">How often to check for rebalancing.</param>
     /// <param name="rebalancingTrigger">The trigger to determine if rebalancing is needed. Defaults to <see cref="CalendarRebalancingTrigger"/>.</param>
     /// <param name="lookbackWindow">Number of historical observations to feed to the construction model. Default 60.</param>
+    /// <summary>
+    /// Initializes a new instance (backward-compatible overload).
+    /// </summary>
     public ConstructionModelStrategy(
         string name,
         IReadOnlyDictionary<Asset, CurrencyCode> assets,
@@ -55,6 +59,25 @@ public sealed class ConstructionModelStrategy : StrategyBase
         RebalancingFrequency rebalancingFrequency,
         IRebalancingTrigger? rebalancingTrigger = null,
         int lookbackWindow = 60)
+        : this(name, assets, cash, orderPriceCalculationStrategy, positionSizer, constructionModel,
+               rebalancingFrequency, NullLogger<ConstructionModelStrategy>.Instance, rebalancingTrigger, lookbackWindow)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance with structured logging.
+    /// </summary>
+    public ConstructionModelStrategy(
+        string name,
+        IReadOnlyDictionary<Asset, CurrencyCode> assets,
+        SortedDictionary<CurrencyCode, decimal> cash,
+        IOrderPriceCalculationStrategy orderPriceCalculationStrategy,
+        IPositionSizer positionSizer,
+        IPortfolioConstructionModel constructionModel,
+        RebalancingFrequency rebalancingFrequency,
+        ILogger<ConstructionModelStrategy> logger,
+        IRebalancingTrigger? rebalancingTrigger = null,
+        int lookbackWindow = 60)
         : base(name, assets, cash, orderPriceCalculationStrategy, positionSizer)
     {
         Guard.AgainstNull(() => constructionModel);
@@ -62,6 +85,7 @@ public sealed class ConstructionModelStrategy : StrategyBase
         _constructionModel = constructionModel;
         _rebalancingTrigger = rebalancingTrigger ?? new CalendarRebalancingTrigger();
         _rebalancingFrequency = rebalancingFrequency;
+        _logger = logger ?? NullLogger<ConstructionModelStrategy>.Instance;
         _lookbackWindow = lookbackWindow;
     }
 
@@ -98,6 +122,8 @@ public sealed class ConstructionModelStrategy : StrategyBase
         {
             var targetWeights = _constructionModel.ComputeTargetWeights(assetList, returns);
             LastComputedWeights = targetWeights;
+            _logger.LogInformation("Computed target weights on {Date}: {Weights}",
+                timestamp, string.Join(", ", targetWeights.Select(kv => $"{kv.Key}={kv.Value:P2}")));
 
             // Compute current weights
             var currentWeights = ComputeCurrentWeights(timestamp, baseCurrency, historicalMarketData, historicalFxConversionRates);
@@ -105,6 +131,8 @@ public sealed class ConstructionModelStrategy : StrategyBase
             // Check if rebalancing trigger fires
             if (_lastRebalancingDate == null || _rebalancingTrigger.ShouldRebalance(currentWeights, targetWeights))
             {
+                _logger.LogDebug("Rebalancing triggered on {Date}", timestamp);
+
                 foreach (var asset in Assets.Keys)
                 {
                     signalEvents.Add(asset, SignalType.Rebalance);

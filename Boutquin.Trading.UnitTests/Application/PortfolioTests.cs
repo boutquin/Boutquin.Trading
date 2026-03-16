@@ -56,7 +56,7 @@ public sealed class PortfolioTests
             100
         );
         var mockOrderHandler = new Mock<IEventHandler>();
-        mockOrderHandler.Setup(h => h.HandleEventAsync(It.IsAny<IPortfolio>(), orderEvent)).Returns(Task.CompletedTask);
+        mockOrderHandler.Setup(h => h.HandleEventAsync(It.IsAny<IPortfolio>(), orderEvent, It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
 
         var handlers = new Dictionary<Type, IEventHandler>
         {
@@ -73,7 +73,7 @@ public sealed class PortfolioTests
         );
 
         // Act
-        await portfolio.HandleEventAsync(orderEvent).ConfigureAwait(false);
+        await portfolio.HandleEventAsync(orderEvent, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         mockOrderHandler.Verify(h => h.HandleEventAsync(It.IsAny<IPortfolio>(), orderEvent), Times.Once);
@@ -106,7 +106,7 @@ public sealed class PortfolioTests
             10.0m
         );
         var mockFillHandler = new Mock<IEventHandler>();
-        mockFillHandler.Setup(h => h.HandleEventAsync(It.IsAny<IPortfolio>(), fillEvent)).Returns(Task.CompletedTask);
+        mockFillHandler.Setup(h => h.HandleEventAsync(It.IsAny<IPortfolio>(), fillEvent, It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
 
         var handlers = new Dictionary<Type, IEventHandler>
         {
@@ -123,7 +123,7 @@ public sealed class PortfolioTests
         );
 
         // Act
-        await portfolio.HandleEventAsync(fillEvent).ConfigureAwait(false);
+        await portfolio.HandleEventAsync(fillEvent, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         mockFillHandler.Verify(h => h.HandleEventAsync(It.IsAny<IPortfolio>(), fillEvent), Times.Once);
@@ -152,7 +152,7 @@ public sealed class PortfolioTests
         );
 
         var mockSignalHandler = new Mock<IEventHandler>();
-        mockSignalHandler.Setup(h => h.HandleEventAsync(It.IsAny<IPortfolio>(), signalEvent)).Returns(Task.CompletedTask);
+        mockSignalHandler.Setup(h => h.HandleEventAsync(It.IsAny<IPortfolio>(), signalEvent, It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
 
         var handlers = new Dictionary<Type, IEventHandler>
         {
@@ -174,7 +174,7 @@ public sealed class PortfolioTests
         );
 
         // Act
-        await portfolio.HandleEventAsync(signalEvent).ConfigureAwait(false);
+        await portfolio.HandleEventAsync(signalEvent, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         mockSignalHandler.Verify(h => h.HandleEventAsync(It.IsAny<IPortfolio>(), signalEvent), Times.Once);
@@ -210,7 +210,7 @@ public sealed class PortfolioTests
         );
 
         var mockMarketHandler = new Mock<IEventHandler>();
-        mockMarketHandler.Setup(h => h.HandleEventAsync(It.IsAny<IPortfolio>(), marketEvent)).Returns(Task.CompletedTask);
+        mockMarketHandler.Setup(h => h.HandleEventAsync(It.IsAny<IPortfolio>(), marketEvent, It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
 
         var handlers = new Dictionary<Type, IEventHandler>
         {
@@ -232,7 +232,7 @@ public sealed class PortfolioTests
         );
 
         // Act
-        await portfolio.HandleEventAsync(marketEvent).ConfigureAwait(false);
+        await portfolio.HandleEventAsync(marketEvent, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         mockMarketHandler.Verify(h => h.HandleEventAsync(It.IsAny<IPortfolio>(), marketEvent), Times.Once);
@@ -421,7 +421,7 @@ public sealed class PortfolioTests
         );
 
         // Act
-        await portfolio.SubmitOrderAsync(orderEvent).ConfigureAwait(false);
+        await portfolio.SubmitOrderAsync(orderEvent, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         _mockBroker.Verify(x => x.SubmitOrderAsync(It.Is<Order>(o =>
@@ -432,7 +432,7 @@ public sealed class PortfolioTests
             o.OrderType == orderEvent.OrderType &&
             o.Quantity == orderEvent.Quantity &&
             o.PrimaryPrice == orderEvent.PrimaryPrice &&
-            o.SecondaryPrice == orderEvent.SecondaryPrice)), Times.Once);
+            o.SecondaryPrice == orderEvent.SecondaryPrice), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     /// <summary>

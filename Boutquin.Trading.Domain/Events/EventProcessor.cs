@@ -49,11 +49,13 @@ public sealed class EventProcessor(IPortfolio portfolio, IReadOnlyDictionary<Typ
     /// Thrown when there is no handler for the provided event type.
     /// </exception>
     /// <returns>A Task representing the asynchronous operation.</returns>
-    public async Task ProcessEventAsync(IFinancialEvent eventObj)
+    public async Task ProcessEventAsync(IFinancialEvent eventObj, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         if (handlers.TryGetValue(eventObj.GetType(), out var handler))
         {
-            await handler.HandleEventAsync(portfolio, eventObj).ConfigureAwait(false);
+            await handler.HandleEventAsync(portfolio, eventObj, cancellationToken).ConfigureAwait(false);
         }
         else
         {

@@ -48,15 +48,17 @@ public sealed class OrderEventHandler : IEventHandler
     /// The HandleEventAsync method submits the order represented by the OrderEvent object to the portfolio.
     /// The portfolio is retrieved from the portfolio that was passed to the OrderEventHandler constructor.
     /// </remarks>
-    public async Task HandleEventAsync(IPortfolio portfolio, IFinancialEvent eventObj)
+    public async Task HandleEventAsync(IPortfolio portfolio, IFinancialEvent eventObj, CancellationToken cancellationToken)
     {
         Guard.AgainstNull(() => portfolio); // Throws ArgumentNullException
 
         var orderEvent = eventObj as OrderEvent
             ?? throw new ArgumentException("Event must be of type OrderEvent.", nameof(eventObj));
 
+        cancellationToken.ThrowIfCancellationRequested();
+
         // ERR-A06: Throw on failed order submission instead of silently ignoring
-        var orderSubmitted = await portfolio.SubmitOrderAsync(orderEvent).ConfigureAwait(false);
+        var orderSubmitted = await portfolio.SubmitOrderAsync(orderEvent, cancellationToken).ConfigureAwait(false);
         if (!orderSubmitted)
         {
             throw new InvalidOperationException($"Order submission failed for {orderEvent.Asset} ({orderEvent.TradeAction} {orderEvent.Quantity} @ {orderEvent.OrderType}).");

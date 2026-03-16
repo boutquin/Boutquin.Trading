@@ -72,13 +72,15 @@ public sealed class SimulatedBrokerage : IBrokerage
     /// <returns>A task that represents the asynchronous operation.
     /// The task result contains a boolean value that is true if the
     /// order was successfully processed; otherwise, false.</returns>
-    public async Task<bool> SubmitOrderAsync(Order order)
+    public async Task<bool> SubmitOrderAsync(Order order, CancellationToken cancellationToken)
     {
         Guard.AgainstNull(() => order);
 
+        cancellationToken.ThrowIfCancellationRequested();
+
         // A5 fix: Filter market data to match the order's timestamp
-        var marketData = await _marketDataFetcher.FetchMarketDataAsync([order.Asset])
-            .FirstOrDefaultAsync(kvp => kvp.Key == order.Timestamp).ConfigureAwait(false);
+        var marketData = await _marketDataFetcher.FetchMarketDataAsync([order.Asset], cancellationToken)
+            .FirstOrDefaultAsync(kvp => kvp.Key == order.Timestamp, cancellationToken).ConfigureAwait(false);
 
         if (marketData.Value == null || !marketData.Value.TryGetValue(order.Asset, out var assetMarketData))
         {

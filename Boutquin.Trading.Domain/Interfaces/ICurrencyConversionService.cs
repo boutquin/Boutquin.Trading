@@ -49,5 +49,5 @@ public interface ICurrencyConversionService
     /// Console.WriteLine($"Converted amount: {convertedAmount}");
     /// </code>
     /// </example>
-    Task<decimal> ConvertAsync(DateOnly timestamp, decimal amount, CurrencyCode fromCurrency, CurrencyCode toCurrency);
+    Task<decimal> ConvertAsync(DateOnly timestamp, decimal amount, CurrencyCode fromCurrency, CurrencyCode toCurrency, CancellationToken cancellationToken = default);
 }

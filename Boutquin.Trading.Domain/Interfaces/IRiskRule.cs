@@ -19,16 +19,21 @@ namespace Boutquin.Trading.Domain.Interfaces;
 using ValueObjects;
 
 /// <summary>
-/// The IMarketDataProcessor interface provides a contract for processing and storing market data.
+/// Represents a single risk management rule that evaluates whether an order
+/// should be allowed given the current portfolio state.
 /// </summary>
-public interface IMarketDataProcessor
+public interface IRiskRule
 {
     /// <summary>
-    /// Asynchronously processes and stores market data for a list of symbols.
+    /// Gets the name of this risk rule for logging and diagnostics.
     /// </summary>
-    /// <param name="symbols">A list of symbols representing the assets to fetch and store market data for.</param>
-    /// <returns>A Task representing the asynchronous operation.</returns>
-    /// <exception cref="System.ArgumentNullException">Thrown if symbols is null or empty.</exception>
-    /// <exception cref="MarketDataProcessingException">Thrown if an error occurs while processing the market data.</exception>
-    Task ProcessAndStoreMarketDataAsync(IEnumerable<Asset> symbols, CancellationToken cancellationToken = default);
+    string Name { get; }
+
+    /// <summary>
+    /// Evaluates whether the proposed order is acceptable under this rule.
+    /// </summary>
+    /// <param name="order">The proposed order to evaluate.</param>
+    /// <param name="portfolio">The current portfolio state.</param>
+    /// <returns>A risk evaluation result indicating whether the order is allowed.</returns>
+    RiskEvaluation Evaluate(Order order, IPortfolio portfolio);
 }

@@ -44,7 +44,7 @@ public sealed class CompositeMarketDataFetcherTests
 
         var mockEquity = new Mock<IMarketDataFetcher>();
         mockEquity
-            .Setup(f => f.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>()))
+            .Setup(f => f.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>(), It.IsAny<CancellationToken>()))
             .Returns(new[] { expectedData }.ToAsyncEnumerable());
 
         var mockFx = new Mock<IMarketDataFetcher>();
@@ -52,7 +52,7 @@ public sealed class CompositeMarketDataFetcherTests
         var composite = new CompositeMarketDataFetcher(mockEquity.Object, mockFx.Object);
 
         var results = new List<KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>>();
-        await foreach (var item in composite.FetchMarketDataAsync(new[] { new Asset("AAPL") }))
+        await foreach (var item in composite.FetchMarketDataAsync(new[] { new Asset("AAPL") }, CancellationToken.None))
         {
             results.Add(item);
         }
@@ -76,13 +76,13 @@ public sealed class CompositeMarketDataFetcherTests
 
         var mockFx = new Mock<IMarketDataFetcher>();
         mockFx
-            .Setup(f => f.FetchFxRatesAsync(It.IsAny<IEnumerable<string>>()))
+            .Setup(f => f.FetchFxRatesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
             .Returns(new[] { expectedData }.ToAsyncEnumerable());
 
         var composite = new CompositeMarketDataFetcher(mockEquity.Object, mockFx.Object);
 
         var results = new List<KeyValuePair<DateOnly, SortedDictionary<CurrencyCode, decimal>>>();
-        await foreach (var item in composite.FetchFxRatesAsync(new[] { "USD_EUR" }))
+        await foreach (var item in composite.FetchFxRatesAsync(new[] { "USD_EUR" }, CancellationToken.None))
         {
             results.Add(item);
         }

@@ -37,13 +37,13 @@ public sealed class CompositeMarketDataFetcher : IMarketDataFetcher, IDisposable
 
     /// <inheritdoc/>
     public IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>> FetchMarketDataAsync(
-        IEnumerable<Asset> symbols) =>
-        _equityFetcher.FetchMarketDataAsync(symbols);
+        IEnumerable<Asset> symbols, CancellationToken cancellationToken) =>
+        _equityFetcher.FetchMarketDataAsync(symbols, cancellationToken);
 
     /// <inheritdoc/>
     public IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<CurrencyCode, decimal>>> FetchFxRatesAsync(
-        IEnumerable<string> currencyPairs) =>
-        _fxFetcher.FetchFxRatesAsync(currencyPairs);
+        IEnumerable<string> currencyPairs, CancellationToken cancellationToken) =>
+        _fxFetcher.FetchFxRatesAsync(currencyPairs, cancellationToken);
 
     public void Dispose()
     {

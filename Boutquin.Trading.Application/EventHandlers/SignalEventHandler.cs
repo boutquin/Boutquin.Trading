@@ -52,12 +52,14 @@ public sealed class SignalEventHandler : IEventHandler
     /// and generates OrderEvent objects for each asset. The OrderEvent objects are then passed to the EventProcessor for further processing.
     /// The portfolio is retrieved from the portfolio that was passed to the SignalEventHandler constructor.
     /// </remarks>
-    public async Task HandleEventAsync(IPortfolio portfolio, IFinancialEvent eventObj)
+    public async Task HandleEventAsync(IPortfolio portfolio, IFinancialEvent eventObj, CancellationToken cancellationToken)
     {
         Guard.AgainstNull(() => portfolio); // Throws ArgumentNullException
 
         var signalEvent = eventObj as SignalEvent
             ?? throw new ArgumentException("Event must be of type SignalEvent.", nameof(eventObj));
+
+        cancellationToken.ThrowIfCancellationRequested();
 
         // Call methods on the Portfolio class to perform the necessary actions
         var strategy = portfolio.GetStrategy(signalEvent.StrategyName);
@@ -114,7 +116,7 @@ public sealed class SignalEventHandler : IEventHandler
                 secondaryPrice);
 
             // Pass the OrderEvent to the EventProcessor for further processing.
-            await portfolio.EventProcessor.ProcessEventAsync(orderEvent).ConfigureAwait(false);
+            await portfolio.EventProcessor.ProcessEventAsync(orderEvent, cancellationToken).ConfigureAwait(false);
         }
     }
 }

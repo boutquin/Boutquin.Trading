@@ -71,13 +71,15 @@ public sealed class CsvMarketDataStorage : IMarketDataStorage
     /// await storage.SaveMarketDataAsync(dataPoint);
     /// </code>
     /// </example>
-    public async Task SaveMarketDataAsync(KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>?> dataPoint)
+    public async Task SaveMarketDataAsync(KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>?> dataPoint, CancellationToken cancellationToken)
     {
         // Validate the input data point
         if (dataPoint.Value == null || dataPoint.Value.Count == 0)
         {
             throw new ArgumentException("The data point must contain at least one symbol and its market data.", nameof(dataPoint));
         }
+
+        cancellationToken.ThrowIfCancellationRequested();
 
         // Iterate through each symbol and its corresponding market data
         foreach (var symbolData in dataPoint.Value)
@@ -123,9 +125,11 @@ public sealed class CsvMarketDataStorage : IMarketDataStorage
     /// await storage.SaveMarketDataAsync(dataPoints);
     /// </code>
     /// </example>
-    public async Task SaveMarketDataAsync(IEnumerable<KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>> dataPoints)
+    public async Task SaveMarketDataAsync(IEnumerable<KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>> dataPoints, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(dataPoints);
+
+        cancellationToken.ThrowIfCancellationRequested();
 
         // Group the data points by symbol
         var groupedDataPoints = dataPoints.SelectMany(x => x.Value)

@@ -48,12 +48,14 @@ public sealed class FillEventHandler : IEventHandler
     /// The HandleEventAsync method updates the positions and cash of the strategy that created the order represented by the FillEvent object.
     /// The strategy is retrieved from the portfolio that was passed to the FillEventHandler constructor.
     /// </remarks>
-    public async Task HandleEventAsync(IPortfolio portfolio, IFinancialEvent eventObj)
+    public async Task HandleEventAsync(IPortfolio portfolio, IFinancialEvent eventObj, CancellationToken cancellationToken)
     {
         Guard.AgainstNull(() => portfolio); // Throws ArgumentNullException
 
         var fillEvent = eventObj as FillEvent
             ?? throw new ArgumentException("Event must be of type FillEvent.", nameof(eventObj));
+
+        cancellationToken.ThrowIfCancellationRequested();
 
         // Call methods on the Portfolio class to perform the necessary actions
         var strategy = portfolio.GetStrategy(fillEvent.StrategyName);

@@ -25,7 +25,7 @@ public sealed class Portfolio : IPortfolio
     /// </summary>
     /// <value>True if the portfolio is being run in live mode, false otherwise.</value>
     /// <remarks>
-    /// This property is used to differentiate between a live trading environment and a backtest or simulation environment. 
+    /// This property is used to differentiate between a live trading environment and a backtest or simulation environment.
     /// In live mode, the portfolio operates in real-time and is subject to live market data. In a backtest or simulation mode, the portfolio operates on historical data.
     /// </remarks>
     public bool IsLive { get; }
@@ -49,6 +49,8 @@ public sealed class Portfolio : IPortfolio
     /// The Broker property represents the brokerage that executes trades for the portfolio.
     /// </summary>
     private readonly IBrokerage _broker;
+
+    private readonly ILogger<Portfolio> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Portfolio"/> class.
@@ -86,12 +88,30 @@ public sealed class Portfolio : IPortfolio
     /// When an instance of this class is created, it subscribes to the FillOccurred event of the provided brokerage. 
     /// This event is triggered when an order is filled by the brokerage.
     /// </remarks>
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Portfolio"/> class (backward-compatible overload).
+    /// </summary>
     public Portfolio(
         CurrencyCode baseCurrency,
         IReadOnlyDictionary<string, IStrategy> strategies,
         IReadOnlyDictionary<Asset, CurrencyCode> assetCurrencies,
         IReadOnlyDictionary<Type, IEventHandler> handlers,
         IBrokerage broker,
+        bool isLive = false)
+        : this(baseCurrency, strategies, assetCurrencies, handlers, broker, NullLogger<Portfolio>.Instance, isLive)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Portfolio"/> class with structured logging.
+    /// </summary>
+    public Portfolio(
+        CurrencyCode baseCurrency,
+        IReadOnlyDictionary<string, IStrategy> strategies,
+        IReadOnlyDictionary<Asset, CurrencyCode> assetCurrencies,
+        IReadOnlyDictionary<Type, IEventHandler> handlers,
+        IBrokerage broker,
+        ILogger<Portfolio> logger,
         bool isLive = false)
     {
         // Validate parameters
@@ -106,6 +126,7 @@ public sealed class Portfolio : IPortfolio
         Strategies = strategies;
         AssetCurrencies = assetCurrencies;
         IsLive = isLive;
+        _logger = logger ?? NullLogger<Portfolio>.Instance;
 
         _broker = broker;
         _broker.FillOccurred += HandleFillEvent;
@@ -153,12 +174,15 @@ public sealed class Portfolio : IPortfolio
     /// Note that the event is processed asynchronously, so the method may return before the event processing has completed.
     /// Any errors that occur during the event processing are thrown as exceptions.
     /// </remarks>
-    public async Task HandleEventAsync(IFinancialEvent @event)
+    public async Task HandleEventAsync(IFinancialEvent @event, CancellationToken cancellationToken)
     {
         // Ensure that the @event is not null.
         Guard.AgainstNull(() => @event); // Throws ArgumentNullException when the @event parameter is null
 
-        await EventProcessor.ProcessEventAsync(@event).ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        _logger.LogDebug("Processing {EventType} event", @event.GetType().Name);
+        await EventProcessor.ProcessEventAsync(@event, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -225,10 +249,12 @@ public sealed class Portfolio : IPortfolio
     /// The method implementation should ensure that the necessary checks and validations are performed on the order event data 
     /// before creating and submitting the order to the brokerage.
     /// </remarks>
-    public async Task<bool> SubmitOrderAsync(OrderEvent orderEvent)
+    public async Task<bool> SubmitOrderAsync(OrderEvent orderEvent, CancellationToken cancellationToken)
     {
         // Ensure that the orderEvent is not null.
         Guard.AgainstNull(() => orderEvent); // Throws ArgumentNullException when the orderEvent parameter is null
+
+        cancellationToken.ThrowIfCancellationRequested();
 
         // Create an Order object from the OrderEvent data.
         var order = new Order(
@@ -242,7 +268,7 @@ public sealed class Portfolio : IPortfolio
             orderEvent.SecondaryPrice);
 
         // Submit the order to the brokerage.
-        return await _broker.SubmitOrderAsync(order).ConfigureAwait(false);
+        return await _broker.SubmitOrderAsync(order, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -325,7 +351,9 @@ public sealed class Portfolio : IPortfolio
     public void UpdateEquityCurve(
         DateOnly timestamp)
     {
-        EquityCurve[timestamp] = CalculateTotalPortfolioValue(timestamp);
+        var value = CalculateTotalPortfolioValue(timestamp);
+        EquityCurve[timestamp] = value;
+        _logger.LogDebug("Equity curve updated: {Date} = {Value:N2}", timestamp, value);
     }
 
     /// <summary>
@@ -449,6 +477,6 @@ public sealed class Portfolio : IPortfolio
         // Ensure that the @event is not null.
         Guard.AgainstNull(() => fillEvent); // Throws ArgumentNullException when the fillEvent parameter is null
 
-        await EventProcessor.ProcessEventAsync(fillEvent).ConfigureAwait(false);
+        await EventProcessor.ProcessEventAsync(fillEvent, CancellationToken.None).ConfigureAwait(false);
     }
 }

@@ -49,7 +49,7 @@ public sealed class FillEventHandlerTests
         var handler = new FillEventHandler();
 
         // Act
-        await handler.HandleEventAsync(mockPortfolio.Object, sellFillEvent).ConfigureAwait(true);
+        await handler.HandleEventAsync(mockPortfolio.Object, sellFillEvent, CancellationToken.None).ConfigureAwait(true);
 
         // Assert — sell should credit cash: tradeValue - commission
         // tradeValue = 100 * 10 = 1000, credit = 1000 - 5 = 995
@@ -85,7 +85,7 @@ public sealed class FillEventHandlerTests
         var handler = new FillEventHandler();
 
         // Act
-        await handler.HandleEventAsync(mockPortfolio.Object, buyFillEvent).ConfigureAwait(true);
+        await handler.HandleEventAsync(mockPortfolio.Object, buyFillEvent, CancellationToken.None).ConfigureAwait(true);
 
         // Assert — buy should deduct cash: -(tradeValue + commission)
         // tradeValue = 100 * 10 = 1000, deduct = -(1000 + 5) = -1005

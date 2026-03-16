@@ -48,12 +48,14 @@ public sealed class MarketEventHandler : IEventHandler
     /// The HandleEventAsync method updates the historical data, positions, and cash of the portfolio based on the MarketEvent object.
     /// The portfolio is retrieved from the portfolio that was passed to the MarketEventHandler constructor.
     /// </remarks>
-    public async Task HandleEventAsync(IPortfolio portfolio, IFinancialEvent eventObj)
+    public async Task HandleEventAsync(IPortfolio portfolio, IFinancialEvent eventObj, CancellationToken cancellationToken)
     {
         Guard.AgainstNull(() => portfolio); // Throws ArgumentNullException
 
         var marketEvent = eventObj as MarketEvent
             ?? throw new ArgumentException("Event must be of type MarketEvent.", nameof(eventObj));
+
+        cancellationToken.ThrowIfCancellationRequested();
 
         // Call methods on the Portfolio class to perform the necessary actions
         portfolio.UpdateHistoricalData(marketEvent);
@@ -87,7 +89,7 @@ public sealed class MarketEventHandler : IEventHandler
         var signals = portfolio.GenerateSignals(marketEvent);
         foreach (var signal in signals)
         {
-            await portfolio.HandleEventAsync(signal).ConfigureAwait(false);
+            await portfolio.HandleEventAsync(signal, cancellationToken).ConfigureAwait(false);
         }
     }
 }

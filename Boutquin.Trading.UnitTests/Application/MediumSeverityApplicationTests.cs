@@ -36,7 +36,7 @@ public sealed class MediumSeverityApplicationTests
         var order = CreateOrder(TradeAction.Buy, OrderType.Limit, primaryPrice: 60);
 
         // Act
-        var filled = await brokerage.SubmitOrderAsync(order).ConfigureAwait(false);
+        var filled = await brokerage.SubmitOrderAsync(order, CancellationToken.None).ConfigureAwait(false);
 
         // Assert — fills because Low (50) <= limit (60)
         filled.Should().BeTrue();
@@ -54,7 +54,7 @@ public sealed class MediumSeverityApplicationTests
         var order = CreateOrder(TradeAction.Buy, OrderType.Limit, primaryPrice: 40);
 
         // Act
-        var filled = await brokerage.SubmitOrderAsync(order).ConfigureAwait(false);
+        var filled = await brokerage.SubmitOrderAsync(order, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         filled.Should().BeFalse();
@@ -72,7 +72,7 @@ public sealed class MediumSeverityApplicationTests
         var order = CreateOrder(TradeAction.Sell, OrderType.Limit, primaryPrice: 180);
 
         // Act
-        var filled = await brokerage.SubmitOrderAsync(order).ConfigureAwait(false);
+        var filled = await brokerage.SubmitOrderAsync(order, CancellationToken.None).ConfigureAwait(false);
 
         // Assert — fills because High (200) >= limit (180)
         filled.Should().BeTrue();
@@ -102,7 +102,7 @@ public sealed class MediumSeverityApplicationTests
             .Returns([]);
 
         // Act — should not throw
-        var act = async () => await handler.HandleEventAsync(portfolioMock.Object, marketEvent).ConfigureAwait(false);
+        var act = async () => await handler.HandleEventAsync(portfolioMock.Object, marketEvent, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         await act.Should().NotThrowAsync();
@@ -133,7 +133,7 @@ public sealed class MediumSeverityApplicationTests
             .Returns([]);
 
         // Act
-        await handler.HandleEventAsync(portfolioMock.Object, marketEvent).ConfigureAwait(false);
+        await handler.HandleEventAsync(portfolioMock.Object, marketEvent, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         portfolioMock.Verify(p => p.AdjustPositionForSplit(It.IsAny<Asset>(), It.IsAny<decimal>()), Times.Never);
@@ -272,7 +272,7 @@ public sealed class MediumSeverityApplicationTests
         var order = CreateOrder(TradeAction.Buy, OrderType.Market, quantity: 100);
 
         // Act
-        await brokerage.SubmitOrderAsync(order).ConfigureAwait(false);
+        await brokerage.SubmitOrderAsync(order, CancellationToken.None).ConfigureAwait(false);
 
         // Assert — commission = fillPrice * quantity * rate = 150 * 100 * 0.005 = 75
         capturedFill.Should().NotBeNull();
@@ -299,7 +299,7 @@ public sealed class MediumSeverityApplicationTests
         var order = CreateOrder(TradeAction.Buy, OrderType.Market, quantity: 100);
 
         // Act
-        await brokerage.SubmitOrderAsync(order).ConfigureAwait(false);
+        await brokerage.SubmitOrderAsync(order, CancellationToken.None).ConfigureAwait(false);
 
         // Assert — commission = 150 * 100 * 0.001 = 15
         capturedFill.Should().NotBeNull();
@@ -353,14 +353,14 @@ public sealed class MediumSeverityApplicationTests
         var md = new MarketData(day2, 100, 110, 90, 105, 105, 1_000_000, 0, 1);
         var fetcher = new Mock<IMarketDataFetcher>();
         // Return 3 days of data
-        fetcher.Setup(f => f.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>()))
+        fetcher.Setup(f => f.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>(), It.IsAny<CancellationToken>()))
             .Returns(new[]
             {
                 new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(day1, new SortedDictionary<Asset, MarketData> { { asset, md } }),
                 new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(day2, new SortedDictionary<Asset, MarketData> { { asset, md } }),
                 new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(day3, new SortedDictionary<Asset, MarketData> { { asset, md } }),
             }.ToAsyncEnumerable());
-        fetcher.Setup(f => f.FetchFxRatesAsync(It.IsAny<IEnumerable<string>>()))
+        fetcher.Setup(f => f.FetchFxRatesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
             .Returns(AsyncEnumerable.Empty<KeyValuePair<DateOnly, SortedDictionary<CurrencyCode, decimal>>>());
 
         var backtest = new BackTest(portfolio.Object, benchmark.Object, fetcher.Object, CurrencyCode.USD);
@@ -369,9 +369,9 @@ public sealed class MediumSeverityApplicationTests
         await backtest.RunAsync(day2, day3).ConfigureAwait(false);
 
         // Assert — HandleEventAsync should be called for day2 and day3, but NOT day1
-        portfolio.Verify(p => p.HandleEventAsync(It.Is<MarketEvent>(e => e.Timestamp == day1)), Times.Never);
-        portfolio.Verify(p => p.HandleEventAsync(It.Is<MarketEvent>(e => e.Timestamp == day2)), Times.Once);
-        portfolio.Verify(p => p.HandleEventAsync(It.Is<MarketEvent>(e => e.Timestamp == day3)), Times.Once);
+        portfolio.Verify(p => p.HandleEventAsync(It.Is<MarketEvent>(e => e.Timestamp == day1), It.IsAny<CancellationToken>()), Times.Never);
+        portfolio.Verify(p => p.HandleEventAsync(It.Is<MarketEvent>(e => e.Timestamp == day2), It.IsAny<CancellationToken>()), Times.Once);
+        portfolio.Verify(p => p.HandleEventAsync(It.Is<MarketEvent>(e => e.Timestamp == day3), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     // ── ERR-A03: SignalEventHandler throws on missing position size ────
@@ -411,7 +411,7 @@ public sealed class MediumSeverityApplicationTests
             new Dictionary<Asset, SignalType> { { asset, SignalType.Overweight } });
 
         // Act
-        var act = async () => await handler.HandleEventAsync(portfolioMock.Object, signalEvent).ConfigureAwait(false);
+        var act = async () => await handler.HandleEventAsync(portfolioMock.Object, signalEvent, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         await act.Should().ThrowAsync<InvalidOperationException>()
@@ -428,11 +428,11 @@ public sealed class MediumSeverityApplicationTests
         var orderEvent = new OrderEvent(s_testDate, "Test", new Asset("AAPL"),
             TradeAction.Buy, OrderType.Market, 10, null, null);
 
-        portfolioMock.Setup(p => p.SubmitOrderAsync(orderEvent))
+        portfolioMock.Setup(p => p.SubmitOrderAsync(orderEvent, It.IsAny<CancellationToken>()))
             .ReturnsAsync(false); // Order fails
 
         // Act
-        var act = async () => await handler.HandleEventAsync(portfolioMock.Object, orderEvent).ConfigureAwait(false);
+        var act = async () => await handler.HandleEventAsync(portfolioMock.Object, orderEvent, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         await act.Should().ThrowAsync<InvalidOperationException>()
@@ -448,11 +448,11 @@ public sealed class MediumSeverityApplicationTests
         var orderEvent = new OrderEvent(s_testDate, "Test", new Asset("AAPL"),
             TradeAction.Buy, OrderType.Market, 10, null, null);
 
-        portfolioMock.Setup(p => p.SubmitOrderAsync(orderEvent))
+        portfolioMock.Setup(p => p.SubmitOrderAsync(orderEvent, It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
         // Act
-        var act = async () => await handler.HandleEventAsync(portfolioMock.Object, orderEvent).ConfigureAwait(false);
+        var act = async () => await handler.HandleEventAsync(portfolioMock.Object, orderEvent, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         await act.Should().NotThrowAsync();
@@ -558,7 +558,7 @@ public sealed class MediumSeverityApplicationTests
         SortedDictionary<Asset, MarketData> marketData)
     {
         var kvp = new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(s_testDate, marketData);
-        mock.Setup(f => f.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>()))
+        mock.Setup(f => f.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>(), It.IsAny<CancellationToken>()))
             .Returns(new[] { kvp }.ToAsyncEnumerable());
     }
 

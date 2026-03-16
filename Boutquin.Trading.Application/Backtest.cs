@@ -47,20 +47,32 @@ public sealed class BackTest
     /// </summary>
     private readonly CurrencyCode _baseCurrency;
 
+    private readonly ILogger<BackTest> _logger;
+
     /// <summary>
-    /// Initializes a new instance of the BackTest class with a trading portfolio, benchmark portfolio, and market data source.
+    /// Initializes a new instance of the BackTest class (backward-compatible overload).
+    /// </summary>
+    public BackTest(IPortfolio portfolio, IPortfolio benchmarkPortfolio, IMarketDataFetcher marketDataFetcher, CurrencyCode baseCurrency)
+        : this(portfolio, benchmarkPortfolio, marketDataFetcher, baseCurrency, NullLogger<BackTest>.Instance)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the BackTest class with structured logging.
     /// </summary>
     /// <param name="portfolio">A Portfolio object representing the trading portfolio.</param>
     /// <param name="benchmarkPortfolio">A Portfolio object representing the benchmark portfolio.</param>
     /// <param name="marketDataFetcher">An object implementing the IMarketDataFetcher interface, responsible for providing market data for the backtest.</param>
     /// <param name="baseCurrency">A CurrencyCode enum value representing the base currency for the backtest.</param>
+    /// <param name="logger">A logger for structured logging.</param>
     /// <exception cref="ArgumentNullException">Thrown when any of the provided arguments are null.</exception>
-    public BackTest(IPortfolio portfolio, IPortfolio benchmarkPortfolio, IMarketDataFetcher marketDataFetcher, CurrencyCode baseCurrency)
+    public BackTest(IPortfolio portfolio, IPortfolio benchmarkPortfolio, IMarketDataFetcher marketDataFetcher, CurrencyCode baseCurrency, ILogger<BackTest> logger)
     {
         _portfolio = portfolio ?? throw new ArgumentNullException(nameof(portfolio), "The provided portfolio cannot be null.");
         _benchmarkPortfolio = benchmarkPortfolio ?? throw new ArgumentNullException(nameof(benchmarkPortfolio), "The provided benchmark portfolio cannot be null.");
         _marketDataFetcher = marketDataFetcher ?? throw new ArgumentNullException(nameof(marketDataFetcher), "The provided market reader source cannot be null.");
         _baseCurrency = baseCurrency;
+        _logger = logger ?? NullLogger<BackTest>.Instance;
     }
 
     /// <summary>
@@ -70,7 +82,7 @@ public sealed class BackTest
     /// <param name="endDate">A DateOnly object representing the end date of the backtest simulation.</param>
     /// <returns>A Task that represents the asynchronous operation. The task result contains a Tearsheet object containing various performance metrics for the backtested portfolio and benchmark portfolio.</returns>
     /// <exception cref="ArgumentException">Thrown when the provided start date is greater than or equal to the end date.</exception>
-    public async Task<Tearsheet> RunAsync(DateOnly startDate, DateOnly endDate)
+    public async Task<Tearsheet> RunAsync(DateOnly startDate, DateOnly endDate, CancellationToken cancellationToken = default)
     {
         // Validate the start and end dates.
         if (startDate >= endDate)
@@ -78,12 +90,16 @@ public sealed class BackTest
             throw new ArgumentException("The start date must be earlier than the end date.");
         }
 
+        cancellationToken.ThrowIfCancellationRequested();
+
+        _logger.LogInformation("Backtest starting: {StartDate} to {EndDate}", startDate, endDate);
+
         // Fetch the historical market data for the backtest period for both the portfolio and the benchmark portfolio.
         var symbols = _portfolio.Strategies.Values.SelectMany(s => s.Assets.Keys)
                       .Union(_benchmarkPortfolio.Strategies.Values.SelectMany(s => s.Assets.Keys))
                       .Distinct();
 
-        var marketDataTimeline = _marketDataFetcher.FetchMarketDataAsync(symbols);
+        var marketDataTimeline = _marketDataFetcher.FetchMarketDataAsync(symbols, cancellationToken);
 
         // Get currency pairs by combining the base currency with the currencies of the assets in the portfolio strategies.
         var currencyPairs = _portfolio.Strategies.Values
@@ -92,20 +108,22 @@ public sealed class BackTest
                                       .Distinct();
 
         // Fetch the historical FX rates for the currency pairs.
-        var fxRatesTimeline = _marketDataFetcher.FetchFxRatesAsync(currencyPairs);
+        var fxRatesTimeline = _marketDataFetcher.FetchFxRatesAsync(currencyPairs, cancellationToken);
 
         // Create a dictionary to hold the FX rates for each date.
         var fxRatesForDate = new SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>();
 
         // Fill the dictionary with FX rates for each date.
-        await foreach (var fxRatesOnDate in fxRatesTimeline.ConfigureAwait(false))
+        await foreach (var fxRatesOnDate in fxRatesTimeline.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
             fxRatesForDate[fxRatesOnDate.Key] = fxRatesOnDate.Value;
         }
 
         // Iterate through the market data timeline and handle each event.
-        await foreach (var marketData in marketDataTimeline.ConfigureAwait(false))
+        await foreach (var marketData in marketDataTimeline.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             // BUG-A07: Filter market data to startDate..endDate range
             if (marketData.Key < startDate || marketData.Key > endDate)
             {
@@ -127,10 +145,12 @@ public sealed class BackTest
             // Handle the MarketEvent for each strategy in the portfolio.
             foreach (var portfolio in new[] { _portfolio, _benchmarkPortfolio })
             {
-                await portfolio.HandleEventAsync(marketEvent).ConfigureAwait(false);
+                await portfolio.HandleEventAsync(marketEvent, cancellationToken).ConfigureAwait(false);
                 portfolio.UpdateEquityCurve(marketData.Key);
             }
         }
+
+        _logger.LogInformation("Backtest complete: {DataPoints} equity curve points", _portfolio.EquityCurve.Count);
 
         // Calculate and analyze performance metrics for both the portfolio and the benchmark portfolio.
         return AnalyzePerformanceMetrics();

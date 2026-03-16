@@ -34,7 +34,7 @@ public interface IMarketDataFetcher
     /// <returns>An IAsyncEnumerable of key-value pairs, where the key is a DateOnly object and the value is a SortedDictionary of string asset symbols and MarketData values.</returns>
     /// <exception cref="MarketDataRetrievalException">Thrown when there is an error in fetching or parsing the market data.</exception>
     // C1 fix: Return type is non-nullable — implementations never yield null
-    IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>> FetchMarketDataAsync(IEnumerable<Asset> symbols);
+    IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>> FetchMarketDataAsync(IEnumerable<Asset> symbols, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Fetches historical foreign exchange rates for the specified currency pairs and
@@ -43,7 +43,8 @@ public interface IMarketDataFetcher
     /// corresponding exchange rates.
     /// </summary>
     /// <param name="currencyPairs">A list of currency pair symbols for which to fetch historical exchange rates.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>An IAsyncEnumerable of key-value pairs, where the key is a DateOnly object and the value is a SortedDictionary of string currency pair symbols and decimal exchange rates.</returns>
     /// <exception cref="MarketDataRetrievalException">Thrown when there is an error in fetching or parsing the foreign exchange data.</exception>
-    IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<CurrencyCode, decimal>>> FetchFxRatesAsync(IEnumerable<string> currencyPairs);
+    IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<CurrencyCode, decimal>>> FetchFxRatesAsync(IEnumerable<string> currencyPairs, CancellationToken cancellationToken = default);
 }

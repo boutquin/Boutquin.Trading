@@ -48,7 +48,7 @@ public sealed class FrankfurterFetcherTests
         using var fetcher = new FrankfurterFetcher(client, "https://api.frankfurter.dev");
 
         var results = new List<KeyValuePair<DateOnly, SortedDictionary<CurrencyCode, decimal>>>();
-        await foreach (var item in fetcher.FetchFxRatesAsync(new[] { "USD_EUR" }))
+        await foreach (var item in fetcher.FetchFxRatesAsync(new[] { "USD_EUR" }, CancellationToken.None))
         {
             results.Add(item);
         }
@@ -66,7 +66,7 @@ public sealed class FrankfurterFetcherTests
         using var fetcher = new FrankfurterFetcher(client, "https://api.frankfurter.dev");
 
         var results = new List<KeyValuePair<DateOnly, SortedDictionary<CurrencyCode, decimal>>>();
-        await foreach (var item in fetcher.FetchFxRatesAsync(new[] { "USD_EUR", "USD_GBP" }))
+        await foreach (var item in fetcher.FetchFxRatesAsync(new[] { "USD_EUR", "USD_GBP" }, CancellationToken.None))
         {
             results.Add(item);
         }
@@ -84,7 +84,7 @@ public sealed class FrankfurterFetcherTests
         using var fetcher = new FrankfurterFetcher(client, "https://api.frankfurter.dev");
 
         var results = new List<KeyValuePair<DateOnly, SortedDictionary<CurrencyCode, decimal>>>();
-        await foreach (var item in fetcher.FetchFxRatesAsync(new[] { "USD_EUR" }))
+        await foreach (var item in fetcher.FetchFxRatesAsync(new[] { "USD_EUR" }, CancellationToken.None))
         {
             results.Add(item);
         }
@@ -100,7 +100,7 @@ public sealed class FrankfurterFetcherTests
         using var fetcher = new FrankfurterFetcher(client, "https://api.frankfurter.dev");
 
         var results = new List<KeyValuePair<DateOnly, SortedDictionary<CurrencyCode, decimal>>>();
-        await foreach (var item in fetcher.FetchFxRatesAsync(new[] { "USD_EUR" }))
+        await foreach (var item in fetcher.FetchFxRatesAsync(new[] { "USD_EUR" }, CancellationToken.None))
         {
             results.Add(item);
         }
@@ -115,7 +115,7 @@ public sealed class FrankfurterFetcherTests
         using var fetcher = new FrankfurterFetcher(client, "https://api.frankfurter.dev");
 
         var results = new List<KeyValuePair<DateOnly, SortedDictionary<CurrencyCode, decimal>>>();
-        await foreach (var item in fetcher.FetchFxRatesAsync(new[] { "USD/EUR" }))
+        await foreach (var item in fetcher.FetchFxRatesAsync(new[] { "USD/EUR" }, CancellationToken.None))
         {
             results.Add(item);
         }
@@ -131,7 +131,7 @@ public sealed class FrankfurterFetcherTests
 
         var act = async () =>
         {
-            await foreach (var _ in fetcher.FetchFxRatesAsync(new[] { "USD_RUB" }))
+            await foreach (var _ in fetcher.FetchFxRatesAsync(new[] { "USD_RUB" }, CancellationToken.None))
             {
             }
         };
@@ -148,7 +148,7 @@ public sealed class FrankfurterFetcherTests
 
         var act = async () =>
         {
-            await foreach (var _ in fetcher.FetchFxRatesAsync(new[] { "USDEUR" }))
+            await foreach (var _ in fetcher.FetchFxRatesAsync(new[] { "USDEUR" }, CancellationToken.None))
             {
             }
         };
@@ -165,7 +165,7 @@ public sealed class FrankfurterFetcherTests
 
         var act = async () =>
         {
-            await foreach (var _ in fetcher.FetchFxRatesAsync(new[] { "USD_EUR" }))
+            await foreach (var _ in fetcher.FetchFxRatesAsync(new[] { "USD_EUR" }, CancellationToken.None))
             {
             }
         };
@@ -181,7 +181,7 @@ public sealed class FrankfurterFetcherTests
         using var fetcher = new FrankfurterFetcher(client, "https://api.frankfurter.dev");
 
         var results = new List<KeyValuePair<DateOnly, SortedDictionary<CurrencyCode, decimal>>>();
-        await foreach (var item in fetcher.FetchFxRatesAsync(new[] { "USD_EUR" }))
+        await foreach (var item in fetcher.FetchFxRatesAsync(new[] { "USD_EUR" }, CancellationToken.None))
         {
             results.Add(item);
         }
@@ -195,7 +195,7 @@ public sealed class FrankfurterFetcherTests
         using var client = CreateMockClient(ThreeDayJson);
         using var fetcher = new FrankfurterFetcher(client, "https://api.frankfurter.dev");
 
-        var act = () => fetcher.FetchMarketDataAsync(new[] { new Asset("AAPL") });
+        var act = () => fetcher.FetchMarketDataAsync(new[] { new Asset("AAPL") }, CancellationToken.None);
 
         act.Should().Throw<NotSupportedException>();
     }
@@ -218,7 +218,7 @@ public sealed class FrankfurterFetcherTests
         var client = new HttpClient(handler);
         using var fetcher = new FrankfurterFetcher(client, "https://api.frankfurter.dev");
 
-        await foreach (var _ in fetcher.FetchFxRatesAsync(new[] { "USD_EUR" }))
+        await foreach (var _ in fetcher.FetchFxRatesAsync(new[] { "USD_EUR" }, CancellationToken.None))
         {
         }
 

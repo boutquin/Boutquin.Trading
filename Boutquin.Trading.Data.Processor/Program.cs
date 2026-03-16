@@ -28,7 +28,7 @@ internal sealed class Program
         }
         var filename = Path.Combine(dataDir, "Symbols.csv");
         var symbolReader = new CsvSymbolReader(filename);
-        var assets = await symbolReader.ReadSymbolsAsync().ConfigureAwait(false);
+        var assets = await symbolReader.ReadSymbolsAsync(CancellationToken.None).ConfigureAwait(false);
 
         // Instantiate the composite market data fetcher (Tiingo for equities, Frankfurter for FX)
         var tiingoApiKey = Environment.GetEnvironmentVariable("TIINGO_API_KEY")
@@ -39,13 +39,13 @@ internal sealed class Program
         var writer = new CsvMarketDataStorage(dataDir);
         var marketDataProcessor = new MarketDataProcessor(apiFetcher, writer);
 
-        await marketDataProcessor.ProcessAndStoreMarketDataAsync(assets).ConfigureAwait(false);
+        await marketDataProcessor.ProcessAndStoreMarketDataAsync(assets, CancellationToken.None).ConfigureAwait(false);
 
         var fetcher = new CsvMarketDataFetcher(dataDir);
 
         try
         {
-            await foreach (var dataPoint in fetcher.FetchMarketDataAsync(assets).ConfigureAwait(false))
+            await foreach (var dataPoint in fetcher.FetchMarketDataAsync(assets, CancellationToken.None).ConfigureAwait(false))
             {
                 var date = dataPoint.Key;
                 var marketData = dataPoint.Value;

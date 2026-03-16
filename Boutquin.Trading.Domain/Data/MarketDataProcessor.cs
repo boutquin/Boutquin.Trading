@@ -51,25 +51,27 @@ public sealed class MarketDataProcessor(
     /// </summary>
     /// <param name="symbols">The symbols to fetch and store market data for.</param>
     /// <exception cref="ArgumentException">Thrown when no symbols are provided.</exception>
-    public async Task ProcessAndStoreMarketDataAsync(IEnumerable<Asset> symbols)
+    public async Task ProcessAndStoreMarketDataAsync(IEnumerable<Asset> symbols, CancellationToken cancellationToken)
     {
         if (symbols == null || !symbols.Any())
         {
             throw new ArgumentException("At least one symbol must be provided.", nameof(symbols));
         }
 
+        cancellationToken.ThrowIfCancellationRequested();
+
         try
         {
             // Fetch the market data using the provided fetcher.
-            var marketData = _fetcher.FetchMarketDataAsync(symbols);
+            var marketData = _fetcher.FetchMarketDataAsync(symbols, cancellationToken);
 
             // Iterate through the fetched market data.
-            await foreach (var dataPoint in marketData.ConfigureAwait(false))
+            await foreach (var dataPoint in marketData.WithCancellation(cancellationToken).ConfigureAwait(false))
             {
                 try
                 {
                     // Save the market data using the provided storage.
-                    await _storage.SaveMarketDataAsync(dataPoint).ConfigureAwait(false);
+                    await _storage.SaveMarketDataAsync(dataPoint, cancellationToken).ConfigureAwait(false);
                 }
                 catch (MarketDataStorageException ex)
                 {

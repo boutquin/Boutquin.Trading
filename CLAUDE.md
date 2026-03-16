@@ -65,6 +65,16 @@ Quantitative trading framework in C# .NET. Pre-release.
 - **Regime** in `Application/Regime/`: `GrowthInflationRegimeClassifier`.
 - **Universe** in `Application/Universe/`: `MinAumFilter`, `MinAgeFilter`, `LiquidityFilter`, `CompositeUniverseSelector`.
 
+## Infrastructure Polish Architecture (Phase 5)
+
+- **`IRiskManager` / `IRiskRule`** — Composite risk management. `IRiskRule.Evaluate(Order, IPortfolio) → RiskEvaluation`. Three built-in rules: `MaxDrawdownRule` (rejects when equity curve drawdown exceeds limit), `MaxPositionSizeRule` (rejects when single position exceeds % of portfolio), `MaxSectorExposureRule` (rejects when asset class exposure exceeds %, uses `IReadOnlyDictionary<Asset, AssetClassCode>` mapping). `RiskManager` evaluates all rules; first rejection short-circuits.
+- **`RiskEvaluation`** — Sealed record value object with `IsAllowed` and `RejectionReason`. Static factories: `RiskEvaluation.Allowed`, `RiskEvaluation.Rejected(reason)`.
+- **DI registration** — `ServiceCollectionExtensions.AddBoutquinTrading(IServiceCollection, IConfiguration)` registers all services. Construction model, cost model, slippage model, and risk manager are factory-based from `IOptions<T>`. Switch expressions on config strings select implementations (e.g., `"RiskParity"` → `RiskParityConstruction`).
+- **`IOptions<T>` configuration** — Three options classes: `BacktestOptions` (dates, currency, rebalancing frequency, construction model choice), `CostModelOptions` (transaction cost type, commission rate, slippage type/amount), `RiskManagementOptions` (max drawdown %, max position size %, max sector exposure %). Each has `SectionName` constant for `IConfiguration.GetSection()`.
+- **Structured logging** — `ILogger<T>` added to `Portfolio`, `BackTest`, `ConstructionModelStrategy` via backward-compatible constructor overloads (old constructor chains to new via `this(...)`). Logs computed weights, rebalance decisions, backtest start/end. Default `NullLogger<T>.Instance` ensures no exceptions when logger not provided.
+- **`CancellationToken` on all async APIs** — Every async interface method (`IBrokerage`, `IPortfolio`, `IEventProcessor`, `IEventHandler`, `IMarketDataFetcher`, `IMarketDataStorage`, `ICurrencyConversionService`, `IMarketDataProcessor`, `ISymbolReader`) accepts `CancellationToken cancellationToken = default`. Implementations call `ThrowIfCancellationRequested()` and forward token to inner calls. `IAsyncEnumerable` methods use `[EnumeratorCancellation]`.
+- **New packages** — `Application.csproj`: `Microsoft.Extensions.DependencyInjection` 10.0.5, `Microsoft.Extensions.Options.ConfigurationExtensions` 10.0.5.
+
 ## Codebase Map
 
 ### Project Structure
@@ -72,7 +82,7 @@ Quantitative trading framework in C# .NET. Pre-release.
 | Project | Purpose | Key Dependencies |
 |---------|---------|-----------------|
 | `Boutquin.Trading.Domain` | Core domain: interfaces, events, value objects, enums, extensions | Boutquin.Domain 0.7.0, EF Core Relational 10.0.5, Logging.Abstractions 10.0.5 |
-| `Boutquin.Trading.Application` | Backtest engine, portfolio, strategies, event handlers, brokers | Domain, System.Linq.Async 7.0.0 |
+| `Boutquin.Trading.Application` | Backtest engine, portfolio, strategies, event handlers, brokers, DI registration | Domain, System.Linq.Async 7.0.0, M.E.DependencyInjection 10.0.5, M.E.Options.ConfigurationExtensions 10.0.5 |
 | `Boutquin.Trading.Data.Tiingo` | Equity data fetcher (Tiingo API) | Domain |
 | `Boutquin.Trading.Data.Frankfurter` | FX rate fetcher (Frankfurter API, ECB-sourced) | Domain |
 | `Boutquin.Trading.Data.CSV` | CSV data reader | Domain |
@@ -136,10 +146,17 @@ Quantitative trading framework in C# .NET. Pre-release.
 | MonteCarloSimulator | `Application/Analytics/MonteCarloSimulator.cs` |
 | Universe filters (MinAum, MinAge, Liquidity, Composite) | `Application/Universe/` |
 | Analytics domain records (7) | `Domain/Analytics/` |
+| IRiskManager interface | `Domain/Interfaces/IRiskManager.cs` |
+| IRiskRule interface | `Domain/Interfaces/IRiskRule.cs` |
+| RiskEvaluation value object | `Domain/ValueObjects/RiskEvaluation.cs` |
+| Risk rules (MaxDrawdown, MaxPositionSize, MaxSectorExposure) | `Application/RiskManagement/` |
+| RiskManager (composite) | `Application/RiskManagement/RiskManager.cs` |
+| DI registration (ServiceCollectionExtensions) | `Application/Configuration/ServiceCollectionExtensions.cs` |
+| BacktestOptions, CostModelOptions, RiskManagementOptions | `Application/Configuration/` |
 
-### Domain Interfaces (21)
+### Domain Interfaces (23)
 
-`IBrokerage`, `ICapitalAllocationStrategy`, `ICovarianceEstimator`, `ICurrencyConversionService`, `IEventHandler`, `IEventProcessor`, `IFinancialEvent`, `IIndicator`, `IMacroIndicator`, `IMarketDataFetcher`, `IMarketDataProcessor`, `IMarketDataStorage`, `IOrderPriceCalculationStrategy`, `IPortfolio`, `IPortfolioConstructionModel`, `IPositionSizer`, `IRebalancingTrigger`, `IRegimeClassifier`, `IStrategy`, `ISymbolReader`, `IUniverseSelector`
+`IBrokerage`, `ICapitalAllocationStrategy`, `ICovarianceEstimator`, `ICurrencyConversionService`, `IEventHandler`, `IEventProcessor`, `IFinancialEvent`, `IIndicator`, `IMacroIndicator`, `IMarketDataFetcher`, `IMarketDataProcessor`, `IMarketDataStorage`, `IOrderPriceCalculationStrategy`, `IPortfolio`, `IPortfolioConstructionModel`, `IPositionSizer`, `IRebalancingTrigger`, `IRegimeClassifier`, `IRiskManager`, `IRiskRule`, `IStrategy`, `ISymbolReader`, `IUniverseSelector`
 
 ### Domain Enums (13)
 

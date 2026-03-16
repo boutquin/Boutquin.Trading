@@ -80,11 +80,11 @@ public sealed class SimulatedBrokerageTests
         };
         var marketDataKeyValuePair = new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(today, marketData);
 
-        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>()))
+        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>(), It.IsAny<CancellationToken>()))
             .Returns(new[] { marketDataKeyValuePair }.ToAsyncEnumerable());
 
         // Act
-        var result = await _simulatedBrokerage.SubmitOrderAsync(order).ConfigureAwait(false);
+        var result = await _simulatedBrokerage.SubmitOrderAsync(order, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         result.Should().BeTrue();
@@ -104,11 +104,11 @@ public sealed class SimulatedBrokerageTests
             TradeAction: TradeAction.Buy,
             OrderType: OrderType.Market,
             Quantity: 10);
-        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>()))
+        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>(), It.IsAny<CancellationToken>()))
             .Returns(Enumerable.Empty<KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>>().ToAsyncEnumerable());
 
         // Act
-        var result = await _simulatedBrokerage.SubmitOrderAsync(order).ConfigureAwait(false);
+        var result = await _simulatedBrokerage.SubmitOrderAsync(order, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         result.Should().BeFalse();
@@ -148,11 +148,11 @@ public sealed class SimulatedBrokerageTests
         };
         var marketDataKeyValuePair = new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(today, marketData);
 
-        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>()))
+        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>(), It.IsAny<CancellationToken>()))
             .Returns(new[] { marketDataKeyValuePair }.ToAsyncEnumerable());
 
         // Act
-        var result = await _simulatedBrokerage.SubmitOrderAsync(order).ConfigureAwait(false);
+        var result = await _simulatedBrokerage.SubmitOrderAsync(order, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         result.Should().BeTrue();
@@ -192,11 +192,11 @@ public sealed class SimulatedBrokerageTests
         };
         var marketDataKeyValuePair = new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(today, marketData);
 
-        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>()))
+        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>(), It.IsAny<CancellationToken>()))
             .Returns(new[] { marketDataKeyValuePair }.ToAsyncEnumerable());
 
         // Act
-        var result = await _simulatedBrokerage.SubmitOrderAsync(order).ConfigureAwait(false);
+        var result = await _simulatedBrokerage.SubmitOrderAsync(order, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         result.Should().BeFalse();
@@ -236,14 +236,14 @@ public sealed class SimulatedBrokerageTests
         };
         var marketDataKeyValuePair = new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(today, marketData);
 
-        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>()))
+        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>(), It.IsAny<CancellationToken>()))
             .Returns(new[] { marketDataKeyValuePair }.ToAsyncEnumerable());
 
         var eventTriggered = false;
         _simulatedBrokerage.FillOccurred += (sender, args) => { eventTriggered = true; return Task.CompletedTask; };
 
         // Act
-        var result = await _simulatedBrokerage.SubmitOrderAsync(order).ConfigureAwait(false);
+        var result = await _simulatedBrokerage.SubmitOrderAsync(order, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         result.Should().BeFalse();
@@ -284,14 +284,14 @@ public sealed class SimulatedBrokerageTests
         };
         var marketDataKeyValuePair = new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(today, marketData);
 
-        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>()))
+        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>(), It.IsAny<CancellationToken>()))
             .Returns(new[] { marketDataKeyValuePair }.ToAsyncEnumerable());
 
         var eventTriggered = false;
         _simulatedBrokerage.FillOccurred += (sender, args) => { eventTriggered = true; return Task.CompletedTask; };
 
         // Act
-        var result = await _simulatedBrokerage.SubmitOrderAsync(order).ConfigureAwait(false);
+        var result = await _simulatedBrokerage.SubmitOrderAsync(order, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         result.Should().BeTrue();
@@ -333,14 +333,14 @@ public sealed class SimulatedBrokerageTests
         };
         var marketDataKeyValuePair = new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(today, marketData);
 
-        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>()))
+        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>(), It.IsAny<CancellationToken>()))
             .Returns(new[] { marketDataKeyValuePair }.ToAsyncEnumerable());
 
         var eventTriggered = false;
         _simulatedBrokerage.FillOccurred += (sender, args) => { eventTriggered = true; return Task.CompletedTask; };
 
         // Act
-        var result = await _simulatedBrokerage.SubmitOrderAsync(order).ConfigureAwait(false);
+        var result = await _simulatedBrokerage.SubmitOrderAsync(order, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         result.Should().BeFalse();
@@ -382,14 +382,14 @@ public sealed class SimulatedBrokerageTests
         };
         var marketDataKeyValuePair = new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(today, marketData);
 
-        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>()))
+        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>(), It.IsAny<CancellationToken>()))
             .Returns(new[] { marketDataKeyValuePair }.ToAsyncEnumerable());
 
         var eventTriggered = false;
         _simulatedBrokerage.FillOccurred += (sender, args) => { eventTriggered = true; return Task.CompletedTask; };
 
         // Act
-        var result = await _simulatedBrokerage.SubmitOrderAsync(order).ConfigureAwait(false);
+        var result = await _simulatedBrokerage.SubmitOrderAsync(order, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         result.Should().BeTrue();

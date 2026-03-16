@@ -47,5 +47,5 @@ public interface IEventHandler
     /// The HandleEventAsync method should be implemented to process the provided financial event and perform any necessary actions.
     /// The specific actions to be performed will depend on the type of the event and the specific implementation of the IEventHandler interface.
     /// </remarks>
-    Task HandleEventAsync(IPortfolio portfolio, IFinancialEvent eventObj);
+    Task HandleEventAsync(IPortfolio portfolio, IFinancialEvent eventObj, CancellationToken cancellationToken = default);
 }

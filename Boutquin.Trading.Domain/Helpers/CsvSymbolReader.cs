@@ -53,10 +53,12 @@ public sealed class CsvSymbolReader : ISymbolReader
     /// </summary>
     /// <returns>A task representing the asynchronous operation that returns an IEnumerable of symbols.</returns>
     /// <exception cref="SymbolReaderException">Thrown when an error occurs while reading the CSV file.</exception>
-    public async Task<IEnumerable<ValueObjects.Asset>> ReadSymbolsAsync()
+    public async Task<IEnumerable<ValueObjects.Asset>> ReadSymbolsAsync(CancellationToken cancellationToken)
     {
         try
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             var symbols = new List<ValueObjects.Asset>();
 
 #pragma warning disable CA2007
@@ -64,7 +66,7 @@ public sealed class CsvSymbolReader : ISymbolReader
 #pragma warning restore CA2007
             using var streamReader = new StreamReader(fileStream);
 
-            while (await streamReader.ReadLineAsync().ConfigureAwait(false) is { } line)
+            while (await streamReader.ReadLineAsync(cancellationToken).ConfigureAwait(false) is { } line)
             {
                 symbols.Add(new ValueObjects.Asset(line));
             }

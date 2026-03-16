@@ -50,7 +50,7 @@ public sealed class TiingoFetcherTests
         using var fetcher = new TiingoFetcher(ValidApiKey, client, "https://api.tiingo.com");
 
         var results = new List<KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>>();
-        await foreach (var item in fetcher.FetchMarketDataAsync(new[] { new Asset("AAPL") }))
+        await foreach (var item in fetcher.FetchMarketDataAsync(new[] { new Asset("AAPL") }, CancellationToken.None))
         {
             results.Add(item);
         }
@@ -67,7 +67,7 @@ public sealed class TiingoFetcherTests
         using var fetcher = new TiingoFetcher(ValidApiKey, client, "https://api.tiingo.com");
 
         var results = new List<KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>>();
-        await foreach (var item in fetcher.FetchMarketDataAsync(new[] { new Asset("AAPL") }))
+        await foreach (var item in fetcher.FetchMarketDataAsync(new[] { new Asset("AAPL") }, CancellationToken.None))
         {
             results.Add(item);
         }
@@ -90,7 +90,7 @@ public sealed class TiingoFetcherTests
         using var fetcher = new TiingoFetcher(ValidApiKey, client, "https://api.tiingo.com");
 
         var results = new List<KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>>();
-        await foreach (var item in fetcher.FetchMarketDataAsync(new[] { new Asset("AAPL") }))
+        await foreach (var item in fetcher.FetchMarketDataAsync(new[] { new Asset("AAPL") }, CancellationToken.None))
         {
             results.Add(item);
         }
@@ -107,7 +107,7 @@ public sealed class TiingoFetcherTests
         using var fetcher = new TiingoFetcher(ValidApiKey, client, "https://api.tiingo.com");
 
         var results = new List<KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>>();
-        await foreach (var item in fetcher.FetchMarketDataAsync(new[] { new Asset("AAPL") }))
+        await foreach (var item in fetcher.FetchMarketDataAsync(new[] { new Asset("AAPL") }, CancellationToken.None))
         {
             results.Add(item);
         }
@@ -123,7 +123,7 @@ public sealed class TiingoFetcherTests
 
         var act = async () =>
         {
-            await foreach (var _ in fetcher.FetchMarketDataAsync(new[] { new Asset("INVALID") }))
+            await foreach (var _ in fetcher.FetchMarketDataAsync(new[] { new Asset("INVALID") }, CancellationToken.None))
             {
             }
         };
@@ -140,7 +140,7 @@ public sealed class TiingoFetcherTests
 
         var act = async () =>
         {
-            await foreach (var _ in fetcher.FetchMarketDataAsync(new[] { new Asset("AAPL") }))
+            await foreach (var _ in fetcher.FetchMarketDataAsync(new[] { new Asset("AAPL") }, CancellationToken.None))
             {
             }
         };
@@ -171,7 +171,7 @@ public sealed class TiingoFetcherTests
         using var client = CreateMockClient("[]");
         using var fetcher = new TiingoFetcher(ValidApiKey, client, "https://api.tiingo.com");
 
-        var act = () => fetcher.FetchFxRatesAsync(new[] { "USD_EUR" });
+        var act = () => fetcher.FetchFxRatesAsync(new[] { "USD_EUR" }, CancellationToken.None);
 
         act.Should().Throw<NotSupportedException>();
     }
@@ -210,7 +210,7 @@ public sealed class TiingoFetcherTests
         var client = new HttpClient(handler);
         using var fetcher = new TiingoFetcher(ValidApiKey, client, "https://api.tiingo.com");
 
-        await foreach (var _ in fetcher.FetchMarketDataAsync(new[] { new Asset("AAPL") }))
+        await foreach (var _ in fetcher.FetchMarketDataAsync(new[] { new Asset("AAPL") }, CancellationToken.None))
         {
         }
 
@@ -226,7 +226,7 @@ public sealed class TiingoFetcherTests
         using var fetcher = new TiingoFetcher(ValidApiKey, client, "https://api.tiingo.com");
 
         var results = new List<KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>>();
-        await foreach (var item in fetcher.FetchMarketDataAsync(new[] { new Asset("AAPL") }))
+        await foreach (var item in fetcher.FetchMarketDataAsync(new[] { new Asset("AAPL") }, CancellationToken.None))
         {
             results.Add(item);
         }

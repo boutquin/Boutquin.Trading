@@ -63,7 +63,7 @@ public sealed class CsvMarketDataFetcher : IMarketDataFetcher
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<ValueObjects.Asset, MarketData>>> FetchMarketDataAsync(
-        IEnumerable<ValueObjects.Asset> symbols)
+        IEnumerable<ValueObjects.Asset> symbols, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken)
     {
         // PERF-D01: Materialize to avoid double enumeration of IEnumerable.
         var symbolList = (symbols ?? throw new ArgumentNullException(nameof(symbols))).ToList();
@@ -74,6 +74,8 @@ public sealed class CsvMarketDataFetcher : IMarketDataFetcher
 
         foreach (var symbol in symbolList)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             var fileName = MarketDataFileNameHelper.GetCsvFileNameForMarketData(_dataDirectory, symbol.Ticker);
 
             if (!File.Exists(fileName))
@@ -89,10 +91,10 @@ public sealed class CsvMarketDataFetcher : IMarketDataFetcher
             using var streamReader = new StreamReader(fileStream);
 
             // Skip the header row
-            await streamReader.ReadLineAsync().ConfigureAwait(false);
+            await streamReader.ReadLineAsync(cancellationToken).ConfigureAwait(false);
 
             // ERR-D03: Throw directly from catch instead of deferred-exception pattern.
-            while (await streamReader.ReadLineAsync().ConfigureAwait(false) is { } line)
+            while (await streamReader.ReadLineAsync(cancellationToken).ConfigureAwait(false) is { } line)
             {
                 var columns = line.Split(',');
 
@@ -141,7 +143,7 @@ public sealed class CsvMarketDataFetcher : IMarketDataFetcher
     }
 
     public async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<CurrencyCode, decimal>>> FetchFxRatesAsync(
-        IEnumerable<string> currencyPairs)
+        IEnumerable<string> currencyPairs, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken)
     {
         // PERF-D01: Materialize to avoid double enumeration of IEnumerable.
         var pairList = (currencyPairs ?? throw new ArgumentNullException(nameof(currencyPairs))).ToList();
@@ -152,6 +154,8 @@ public sealed class CsvMarketDataFetcher : IMarketDataFetcher
 
         foreach (var pair in pairList)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             // ROB-D02: Validate both base and quote currency parts of the pair.
             var splitPair = pair.Split('_');
             if (splitPair.Length != 2
@@ -176,10 +180,10 @@ public sealed class CsvMarketDataFetcher : IMarketDataFetcher
             using var streamReader = new StreamReader(fileStream);
 
             // Skip the header row
-            await streamReader.ReadLineAsync().ConfigureAwait(false);
+            await streamReader.ReadLineAsync(cancellationToken).ConfigureAwait(false);
 
             // ERR-D03: Throw directly from catch instead of deferred-exception pattern.
-            while (await streamReader.ReadLineAsync().ConfigureAwait(false) is { } line)
+            while (await streamReader.ReadLineAsync(cancellationToken).ConfigureAwait(false) is { } line)
             {
                 var columns = line.Split(',');
 

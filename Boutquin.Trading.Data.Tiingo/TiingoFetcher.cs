@@ -59,7 +59,7 @@ public sealed class TiingoFetcher : IMarketDataFetcher, IDisposable
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>> FetchMarketDataAsync(
-        IEnumerable<Asset> symbols)
+        IEnumerable<Asset> symbols, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var symbolList = symbols?.ToList()
             ?? throw new ArgumentNullException(nameof(symbols));
@@ -71,12 +71,14 @@ public sealed class TiingoFetcher : IMarketDataFetcher, IDisposable
 
         foreach (var symbol in symbolList)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             var url = $"{_apiEndpoint}/tiingo/daily/{Uri.EscapeDataString(symbol.Ticker)}/prices?resampleFreq=daily&format=json";
 
             TiingoDailyPrice[]? prices;
             try
             {
-                var response = await _httpClient.GetAsync(url).ConfigureAwait(false);
+                var response = await _httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -84,7 +86,7 @@ public sealed class TiingoFetcher : IMarketDataFetcher, IDisposable
                         $"Tiingo API returned HTTP {(int)response.StatusCode} for symbol '{symbol.Ticker}'.");
                 }
 
-                var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
                 prices = JsonSerializer.Deserialize<TiingoDailyPrice[]>(json, s_jsonOptions);
             }
@@ -136,7 +138,7 @@ public sealed class TiingoFetcher : IMarketDataFetcher, IDisposable
 
     /// <inheritdoc/>
     public IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<CurrencyCode, decimal>>> FetchFxRatesAsync(
-        IEnumerable<string> currencyPairs)
+        IEnumerable<string> currencyPairs, CancellationToken cancellationToken)
     {
         throw new NotSupportedException(
             "TiingoFetcher provides equity data only. Use FrankfurterFetcher for FX rates.");

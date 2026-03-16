@@ -31,7 +31,7 @@ public interface IBrokerage
     /// </summary>
     /// <param name="order">The order to be executed, represented as an Order object.</param>
     /// <returns>A boolean indicating whether the order submission was successful.</returns>
-    Task<bool> SubmitOrderAsync(Order order);
+    Task<bool> SubmitOrderAsync(Order order, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// An event that is raised when an order is filled, providing the

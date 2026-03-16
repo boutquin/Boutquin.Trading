@@ -60,5 +60,5 @@ public interface IEventProcessor
     /// The ProcessEventAsync method should be implemented to process the provided financial event and perform any necessary actions.
     /// The specific actions to be performed will depend on the type of the event and the specific implementation of the IEventProcessor interface.
     /// </remarks>
-    Task ProcessEventAsync(IFinancialEvent eventObj);
+    Task ProcessEventAsync(IFinancialEvent eventObj, CancellationToken cancellationToken = default);
 }

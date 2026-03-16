@@ -58,7 +58,7 @@ public sealed class FrankfurterFetcher : IMarketDataFetcher, IDisposable
 
     /// <inheritdoc/>
     public IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>> FetchMarketDataAsync(
-        IEnumerable<Asset> symbols)
+        IEnumerable<Asset> symbols, CancellationToken cancellationToken)
     {
         throw new NotSupportedException(
             "FrankfurterFetcher provides FX rate data only. Use TiingoFetcher for equity data.");
@@ -66,7 +66,7 @@ public sealed class FrankfurterFetcher : IMarketDataFetcher, IDisposable
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<CurrencyCode, decimal>>> FetchFxRatesAsync(
-        IEnumerable<string> currencyPairs)
+        IEnumerable<string> currencyPairs, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var pairList = currencyPairs?.ToList()
             ?? throw new ArgumentNullException(nameof(currencyPairs));
@@ -115,13 +115,15 @@ public sealed class FrankfurterFetcher : IMarketDataFetcher, IDisposable
 
         foreach (var (baseCurrency, quoteCurrencies) in grouped)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             var symbolsParam = string.Join(",", quoteCurrencies);
             var url = $"{_apiEndpoint}/v1/1999-01-04..?base={baseCurrency}&symbols={symbolsParam}";
 
             FrankfurterRangeResponse? rangeResponse;
             try
             {
-                var response = await _httpClient.GetAsync(url).ConfigureAwait(false);
+                var response = await _httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -129,7 +131,7 @@ public sealed class FrankfurterFetcher : IMarketDataFetcher, IDisposable
                         $"Frankfurter API returned HTTP {(int)response.StatusCode} for base '{baseCurrency}'.");
                 }
 
-                var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
                 rangeResponse = JsonSerializer.Deserialize<FrankfurterRangeResponse>(json, s_jsonOptions);
             }

@@ -98,7 +98,7 @@ public interface IPortfolio
     /// Note that the event is processed asynchronously, so the method may return before the event processing has completed.
     /// Any errors that occur during the event processing are thrown as exceptions.
     /// </remarks>
-    Task HandleEventAsync(IFinancialEvent @event);
+    Task HandleEventAsync(IFinancialEvent @event, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Updates historical data of the portfolio.
@@ -133,7 +133,7 @@ public interface IPortfolio
     /// The method implementation should ensure that the necessary checks and validations are performed on the order event data 
     /// before creating and submitting the order to the brokerage.
     /// </remarks>
-    Task<bool> SubmitOrderAsync(OrderEvent orderEvent);
+    Task<bool> SubmitOrderAsync(OrderEvent orderEvent, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Generates trading signals for each strategy in the portfolio based on updated market data.
