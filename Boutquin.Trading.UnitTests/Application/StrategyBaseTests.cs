@@ -110,4 +110,27 @@ public sealed class StrategyBaseTests
         cash.Should().NotBeNull();
         cash.Should().ContainKey(CurrencyCode.USD);
     }
+
+    /// <summary>
+    /// H6: Verifies that StrategyBase makes a defensive copy of the cash dictionary,
+    /// so external mutation does not affect strategy state.
+    /// </summary>
+    [Fact]
+    public void Constructor_ShouldDefensivelyCopyCash()
+    {
+        // Arrange
+        var originalCash = new SortedDictionary<CurrencyCode, decimal>
+        {
+            { CurrencyCode.USD, 10000m }
+        };
+        var strategy = CreateStrategy(cash: originalCash);
+
+        // Act — mutate the original dictionary after construction
+        originalCash[CurrencyCode.USD] = 99999m;
+        originalCash[CurrencyCode.EUR] = 5000m;
+
+        // Assert — strategy's cash should be unaffected
+        strategy.Cash[CurrencyCode.USD].Should().Be(10000m);
+        strategy.Cash.Should().NotContainKey(CurrencyCode.EUR);
+    }
 }

@@ -41,7 +41,8 @@ public sealed class TieredCostModel : ITransactionCostModel
             throw new ArgumentException("At least one tier must be provided.", nameof(tiers));
         }
 
-        _tiers = tiers;
+        // L6: Sort tiers by MaxTradeValue ascending to ensure correct tier matching regardless of input order
+        _tiers = tiers.OrderBy(t => t.MaxTradeValue).ToList();
     }
 
     /// <inheritdoc />

@@ -111,4 +111,27 @@ public sealed class CostModelTests
         var act = () => new CompositeCostModel(new List<ITransactionCostModel>());
         act.Should().Throw<ArgumentException>();
     }
+
+    /// <summary>
+    /// L6: Verifies that TieredCostModel sorts tiers by MaxTradeValue ascending,
+    /// so unsorted input still applies the correct tier.
+    /// </summary>
+    [Fact]
+    public void TieredCostModel_UnsortedTiers_ShouldSortAndApplyCorrectTier()
+    {
+        // Arrange — tiers given in descending order (intentionally unsorted)
+        var tiers = new List<(decimal MaxTradeValue, decimal Rate)>
+        {
+            (decimal.MaxValue, 0.001m),  // Catch-all tier (lowest rate)
+            (10000m, 0.005m),            // Mid tier
+            (1000m, 0.01m),             // Low tier (highest rate)
+        };
+        var model = new TieredCostModel(tiers);
+
+        // Act — trade value of 500 should hit the 1000m tier (rate = 0.01)
+        var result = model.CalculateCommission(50m, 10, TradeAction.Buy);
+
+        // Assert — 50 * 10 = 500 → tier 1000 @ 0.01 → commission = 5.00
+        result.Should().BeApproximately(5.00m, Precision);
+    }
 }

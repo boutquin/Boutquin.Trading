@@ -87,19 +87,22 @@ public sealed class SimulatedBrokerage : IBrokerage
             return false;
         }
 
+        // H5: Forward cancellationToken to all Handle*Order methods
         var isOrderFilled = order.OrderType switch
         {
-            OrderType.Market => await HandleMarketOrder(order, assetMarketData).ConfigureAwait(false),
-            OrderType.Limit => await HandleLimitOrder(order, assetMarketData).ConfigureAwait(false),
-            OrderType.Stop => await HandleStopOrder(order, assetMarketData).ConfigureAwait(false),
-            OrderType.StopLimit => await HandleStopLimitOrder(order, assetMarketData).ConfigureAwait(false),
+            OrderType.Market => await HandleMarketOrder(order, assetMarketData, cancellationToken).ConfigureAwait(false),
+            OrderType.Limit => await HandleLimitOrder(order, assetMarketData, cancellationToken).ConfigureAwait(false),
+            OrderType.Stop => await HandleStopOrder(order, assetMarketData, cancellationToken).ConfigureAwait(false),
+            OrderType.StopLimit => await HandleStopLimitOrder(order, assetMarketData, cancellationToken).ConfigureAwait(false),
             _ => throw new ArgumentOutOfRangeException(nameof(order.OrderType), order.OrderType, "OrderType is out of range"),
         };
         return isOrderFilled;
     }
 
-    private async Task<bool> HandleMarketOrder(Order order, MarketData marketData)
+    private async Task<bool> HandleMarketOrder(Order order, MarketData marketData, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         var theoreticalPrice = marketData.Close;
         var fillPrice = _slippageModel.CalculateFillPrice(theoreticalPrice, order.Quantity, order.TradeAction);
         var commission = _costModel.CalculateCommission(fillPrice, order.Quantity, order.TradeAction);
@@ -113,15 +116,19 @@ public sealed class SimulatedBrokerage : IBrokerage
             order.Quantity,
             commission);
 
-        if (FillOccurred != null)
+        // M5: Thread-safe delegate invocation — copy to local before null-check
+        var handler = FillOccurred;
+        if (handler != null)
         {
-            await FillOccurred(this, fillEvent).ConfigureAwait(false);
+            await handler(this, fillEvent).ConfigureAwait(false);
         }
         return true;
     }
 
-    private async Task<bool> HandleLimitOrder(Order order, MarketData marketData)
+    private async Task<bool> HandleLimitOrder(Order order, MarketData marketData, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         if (order.PrimaryPrice == null)
         {
             throw new InvalidOperationException("Limit price must be set for a limit order.");
@@ -146,23 +153,28 @@ public sealed class SimulatedBrokerage : IBrokerage
             order.Quantity,
             commission);
 
-        if (FillOccurred != null)
+        // M5: Thread-safe delegate invocation
+        var handler = FillOccurred;
+        if (handler != null)
         {
-            await FillOccurred(this, fillEvent).ConfigureAwait(false);
+            await handler(this, fillEvent).ConfigureAwait(false);
         }
         return true;
     }
 
-    private async Task<bool> HandleStopOrder(Order order, MarketData marketData)
+    private async Task<bool> HandleStopOrder(Order order, MarketData marketData, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         if (order.PrimaryPrice == null)
         {
             throw new InvalidOperationException("Stop price must be set for a stop order.");
         }
 
         var stopPrice = order.PrimaryPrice.Value;
-        if ((order.TradeAction == TradeAction.Buy && stopPrice > marketData.Close) ||
-            (order.TradeAction == TradeAction.Sell && stopPrice < marketData.Close))
+        // M4: Use High/Low instead of Close for stop order trigger evaluation
+        if ((order.TradeAction == TradeAction.Buy && marketData.High < stopPrice) ||
+            (order.TradeAction == TradeAction.Sell && marketData.Low > stopPrice))
         {
             return false;
         }
@@ -179,15 +191,19 @@ public sealed class SimulatedBrokerage : IBrokerage
             order.Quantity,
             commission);
 
-        if (FillOccurred != null)
+        // M5: Thread-safe delegate invocation
+        var handler = FillOccurred;
+        if (handler != null)
         {
-            await FillOccurred(this, fillEvent).ConfigureAwait(false);
+            await handler(this, fillEvent).ConfigureAwait(false);
         }
         return true;
     }
 
-    private async Task<bool> HandleStopLimitOrder(Order order, MarketData marketData)
+    private async Task<bool> HandleStopLimitOrder(Order order, MarketData marketData, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         if (order.PrimaryPrice == null || order.SecondaryPrice == null)
         {
             throw new InvalidOperationException("Stop price and limit price must be set for a stop-limit order.");
@@ -214,9 +230,11 @@ public sealed class SimulatedBrokerage : IBrokerage
             order.Quantity,
             commission);
 
-        if (FillOccurred != null)
+        // M5: Thread-safe delegate invocation
+        var handler = FillOccurred;
+        if (handler != null)
         {
-            await FillOccurred(this, fillEvent).ConfigureAwait(false);
+            await handler(this, fillEvent).ConfigureAwait(false);
         }
         return true;
     }

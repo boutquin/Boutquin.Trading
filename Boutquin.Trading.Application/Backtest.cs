@@ -87,7 +87,7 @@ public sealed class BackTest
         // Validate the start and end dates.
         if (startDate >= endDate)
         {
-            throw new ArgumentException("The start date must be earlier than the end date.");
+            throw new ArgumentException("The start date must be earlier than the end date.", nameof(startDate));
         }
 
         cancellationToken.ThrowIfCancellationRequested();
@@ -95,14 +95,15 @@ public sealed class BackTest
         _logger.LogInformation("Backtest starting: {StartDate} to {EndDate}", startDate, endDate);
 
         // Fetch the historical market data for the backtest period for both the portfolio and the benchmark portfolio.
+        // L1: .Union() already deduplicates — removed redundant .Distinct()
         var symbols = _portfolio.Strategies.Values.SelectMany(s => s.Assets.Keys)
-                      .Union(_benchmarkPortfolio.Strategies.Values.SelectMany(s => s.Assets.Keys))
-                      .Distinct();
+                      .Union(_benchmarkPortfolio.Strategies.Values.SelectMany(s => s.Assets.Keys));
 
         var marketDataTimeline = _marketDataFetcher.FetchMarketDataAsync(symbols, cancellationToken);
 
-        // Get currency pairs by combining the base currency with the currencies of the assets in the portfolio strategies.
+        // H3: Include both portfolio AND benchmark asset currencies for FX rate fetching
         var currencyPairs = _portfolio.Strategies.Values
+                                      .Concat(_benchmarkPortfolio.Strategies.Values)
                                       .SelectMany(s => s.Assets.Values)
                                       .Select(currencyCode => $"{_baseCurrency}_{currencyCode}")
                                       .Distinct();
@@ -117,6 +118,12 @@ public sealed class BackTest
         await foreach (var fxRatesOnDate in fxRatesTimeline.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
             fxRatesForDate[fxRatesOnDate.Key] = fxRatesOnDate.Value;
+        }
+
+        // M32: Warn when no FX conversion rates are loaded
+        if (fxRatesForDate.Count == 0)
+        {
+            _logger.LogWarning("No FX conversion rates loaded. Foreign currency assets may fail valuation.");
         }
 
         // Iterate through the market data timeline and handle each event.

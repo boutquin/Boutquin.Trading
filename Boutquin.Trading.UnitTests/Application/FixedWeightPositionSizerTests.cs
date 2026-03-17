@@ -173,4 +173,51 @@ public sealed class FixedWeightPositionSizerTests
         positionSizes.Should().ContainKey(new Asset("MSFT"));
         positionSizes[new Asset("MSFT")].Should().Be(4);  // 1000 * 0.4 / 100 = 4
     }
+
+    /// <summary>
+    /// M10: Verifies that position sizing uses Math.Round(MidpointRounding.AwayFromZero) instead of truncation.
+    /// With truncation, 1000 * 0.5 / 333 = 1.5015... would yield 1. With rounding, it yields 2.
+    /// </summary>
+    [Fact]
+    public void FixedWeightPositionSizer_ComputePositionSizes_ShouldRoundAwayFromZero()
+    {
+        // Arrange — values chosen so desiredAssetValue / price = 1.5015... (rounds to 2, truncates to 1)
+        var fixedAssetWeights = new Dictionary<Asset, decimal> { { new Asset("XYZ"), 0.5m } };
+        var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { new Asset("XYZ"), CurrencyCode.USD } };
+        var baseCurrency = CurrencyCode.USD;
+        var positionSizer = new FixedWeightPositionSizer(fixedAssetWeights, baseCurrency);
+        var signalType = new Dictionary<Asset, SignalType> { { new Asset("XYZ"), SignalType.Rebalance } };
+        var marketData = new MarketData(
+            Timestamp: _initialTimestamp,
+            Open: 333,
+            High: 340,
+            Low: 330,
+            Close: 333,
+            AdjustedClose: 333,
+            Volume: 1000000,
+            DividendPerShare: 0,
+            SplitCoefficient: 1);
+
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        {
+            { _initialTimestamp, new SortedDictionary<Asset, MarketData> { { new Asset("XYZ"), marketData } } }
+        };
+        var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
+        {
+            { _initialTimestamp, new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
+        };
+        var strategyMock = new Mock<IStrategy>();
+        strategyMock.Setup(s => s.Assets).Returns(assetCurrencies);
+        strategyMock.Setup(s => s.ComputeTotalValue(
+            It.IsAny<DateOnly>(),
+            It.IsAny<CurrencyCode>(),
+            It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>>>(),
+            It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>>())).Returns(1000m);
+
+        // Act
+        var positionSizes = positionSizer.ComputePositionSizes(_initialTimestamp, signalType, strategyMock.Object, historicalMarketData, historicalFxConversionRates);
+
+        // Assert — 1000 * 0.5 / 333 = 1.5015... → Math.Round = 2 (not truncation = 1)
+        positionSizes[new Asset("XYZ")].Should().Be(2);
+    }
 }

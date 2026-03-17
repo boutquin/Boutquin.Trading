@@ -168,4 +168,40 @@ public sealed class RebalancingBuyAndHoldStrategyTests
         secondSignalEvent.Signals.Should().ContainKey(new Asset("AAPL"));
         secondSignalEvent.Signals[new Asset("AAPL")].Should().Be(SignalType.Rebalance);
     }
+
+    /// <summary>
+    /// L5: With RebalancingFrequency.Never, the strategy should only generate signals on the first call.
+    /// All subsequent calls should return empty signals because next rebalancing date is DateOnly.MaxValue.
+    /// </summary>
+    [Fact]
+    public void RebalancingBuyAndHoldStrategy_NeverFrequency_ShouldOnlyRebalanceOnce()
+    {
+        // Arrange
+        var strategy = new RebalancingBuyAndHoldStrategy(
+            _name, _assets, _cash,
+            _orderPriceCalculationStrategyMock.Object,
+            _positionSizerMock.Object,
+            RebalancingFrequency.Never);
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        {
+            { _initialTimestamp, new SortedDictionary<Asset, MarketData> { { new Asset("AAPL"), _marketData } } }
+        };
+        var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
+        {
+            { _initialTimestamp, new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
+        };
+
+        // Act — first call should rebalance
+        var firstSignals = strategy.GenerateSignals(
+            _initialTimestamp, CurrencyCode.USD, historicalMarketData, historicalFxConversionRates);
+
+        // Second call — even far in the future — should not rebalance
+        var futureDate = _initialTimestamp.AddYears(10);
+        var secondSignals = strategy.GenerateSignals(
+            futureDate, CurrencyCode.USD, historicalMarketData, historicalFxConversionRates);
+
+        // Assert
+        firstSignals.Signals.Should().NotBeEmpty("First call should generate rebalance signals");
+        secondSignals.Signals.Should().BeEmpty("RebalancingFrequency.Never should prevent all subsequent rebalances");
+    }
 }

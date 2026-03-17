@@ -700,6 +700,101 @@ public sealed class PortfolioTests
         portfolio.EquityCurve[timestamp].Should().Be(2500m);
     }
 
+    // ── H2: CancellationToken forwarded from HandleEventAsync to fill handler ──
+    [Fact]
+    public async Task HandleFillEvent_ShouldUseCapturedCancellationToken()
+    {
+        // Arrange
+        const CurrencyCode BaseCurrency = CurrencyCode.USD;
+        var asset = new Asset("AAPL");
+        var today = new DateOnly(2024, 1, 15);
+
+        var mockFillHandler = new Mock<IEventHandler>();
+        mockFillHandler
+            .Setup(h => h.HandleEventAsync(It.IsAny<IPortfolio>(), It.IsAny<FillEvent>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var handlers = new Dictionary<Type, IEventHandler>
+        {
+            { typeof(FillEvent), mockFillHandler.Object },
+            { typeof(OrderEvent), new OrderEventHandler() },
+            { typeof(MarketEvent), new MarketEventHandler() },
+            { typeof(SignalEvent), new SignalEventHandler() }
+        };
+
+        var marketData = new SortedDictionary<Asset, MarketData>
+        {
+            { asset, new MarketData(today, 150m, 155m, 145m, 150m, 150m, 1000, 0m) }
+        };
+
+        var mockFetcher = new Mock<IMarketDataFetcher>();
+        mockFetcher.Setup(f => f.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>(), It.IsAny<CancellationToken>()))
+            .Returns(new[] { new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(today, marketData) }.ToAsyncEnumerable());
+
+        var broker = new SimulatedBrokerage(mockFetcher.Object);
+        IStrategy strategy = new TestStrategy();
+        var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
+        var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { asset, BaseCurrency } };
+
+        var portfolio = new Portfolio(BaseCurrency, strategies, assetCurrencies, handlers, broker);
+
+        var cts = new CancellationTokenSource();
+
+        // Submit an order that triggers a fill, using a live token
+        var orderEvent = new OrderEvent(today, "TestStrategy", asset, TradeAction.Buy, OrderType.Market, 10);
+        await portfolio.HandleEventAsync(orderEvent, cts.Token).ConfigureAwait(true);
+
+        // Assert: The fill handler was invoked with a real token, not CancellationToken.None
+        mockFillHandler.Verify(
+            h => h.HandleEventAsync(It.IsAny<IPortfolio>(), It.IsAny<FillEvent>(), It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    // ── H4: Stock split uses Math.Round instead of truncation ──
+    [Fact]
+    public void AdjustPositionForSplit_ReverseSplit_ShouldRoundCorrectly()
+    {
+        // Arrange: 5 shares with 0.3 ratio → Round(1.5) = 2, truncation would give 1
+        const CurrencyCode BaseCurrency = CurrencyCode.USD;
+        var asset = new Asset("AAPL");
+
+        IStrategy strategy = new TestStrategy();
+        strategy.SetPosition(asset, 5);
+
+        var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
+        var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { asset, BaseCurrency } };
+
+        var portfolio = new Portfolio(BaseCurrency, strategies, assetCurrencies, _handlers, _mockBroker.Object);
+
+        // Act
+        portfolio.AdjustPositionForSplit(asset, 0.3m);
+
+        // Assert: Math.Round(5 * 0.3, MidpointRounding.AwayFromZero) = Math.Round(1.5) = 2
+        strategy.Positions[asset].Should().Be(2, "Math.Round(1.5, AwayFromZero) = 2, not truncation = 1");
+    }
+
+    [Fact]
+    public void AdjustPositionForSplit_FractionalResult_ShouldRoundAwayFromZero()
+    {
+        // Arrange: 5 shares with 0.5 ratio → Round(2.5) = 3 with AwayFromZero (vs ToEven = 2)
+        const CurrencyCode BaseCurrency = CurrencyCode.USD;
+        var asset = new Asset("AAPL");
+
+        IStrategy strategy = new TestStrategy();
+        strategy.SetPosition(asset, 5);
+
+        var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", strategy } };
+        var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { asset, BaseCurrency } };
+
+        var portfolio = new Portfolio(BaseCurrency, strategies, assetCurrencies, _handlers, _mockBroker.Object);
+
+        // Act
+        portfolio.AdjustPositionForSplit(asset, 0.5m);
+
+        // Assert: Math.Round(2.5, MidpointRounding.AwayFromZero) = 3
+        strategy.Positions[asset].Should().Be(3, "MidpointRounding.AwayFromZero rounds 2.5 to 3");
+    }
+
     /// <summary>
     /// Tests that the CalculateTotalPortfolioValue method of the Portfolio class returns the correct total value when given a timestamp and a base currency.
     /// </summary>

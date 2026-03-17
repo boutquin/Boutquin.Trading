@@ -20,7 +20,8 @@ namespace Boutquin.Trading.Application.Strategies;
 /// Implementation of the IOrderPriceCalculationStrategy that uses closing prices to determine order prices for various order types.
 /// </summary>
 /// <remarks>
-/// This strategy calculates order prices based on the closing price of the asset on the specified date. It supports Market, Limit, Stop, and StopLimit order types.
+/// This strategy always returns a Market order type with the closing price.
+/// It does not calculate separate prices for Limit, Stop, or StopLimit order types.
 /// </remarks>
 public sealed class ClosePriceOrderPriceCalculationStrategy : IOrderPriceCalculationStrategy
 {

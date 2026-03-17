@@ -23,31 +23,39 @@ namespace Boutquin.Trading.Application.EventHandlers;
 /// <remarks>
 /// This class handles OrderEvent objects by submitting the order to the portfolio.
 /// The IPortfolio object that is passed to the OrderEventHandler constructor is used to submit the order.
-/// 
-/// Here is an example of how to use this class:
-/// <code>
-/// var portfolio = new Portfolio();
-/// var orderEventHandler = new OrderEventHandler();
-/// 
-/// var orderEvent = new OrderEvent();
-/// await orderEventHandler.HandleEventAsync(portfolio, orderEvent);
-/// </code>
 /// </remarks>
 public sealed class OrderEventHandler : IEventHandler
 {
+    private readonly ILogger<OrderEventHandler> _logger;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OrderEventHandler"/> class (backward-compatible overload).
+    /// </summary>
+    public OrderEventHandler()
+        : this(NullLogger<OrderEventHandler>.Instance)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OrderEventHandler"/> class with structured logging.
+    /// </summary>
+    /// <param name="logger">A logger for structured logging.</param>
+    public OrderEventHandler(ILogger<OrderEventHandler> logger)
+    {
+        _logger = logger ?? NullLogger<OrderEventHandler>.Instance;
+    }
+
     /// <summary>
     /// Handles the provided OrderEvent object.
     /// </summary>
+    /// <param name="portfolio">The portfolio to submit the order to.</param>
     /// <param name="eventObj">The OrderEvent object to handle.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     /// <exception cref="ArgumentNullException">
     /// Thrown when portfolio is null.
     /// </exception>
     /// <exception cref="ArgumentException">Thrown when eventObj is not a OrderEvent object.</exception>
     /// <returns>A Task representing the asynchronous operation.</returns>
-    /// <remarks>
-    /// The HandleEventAsync method submits the order represented by the OrderEvent object to the portfolio.
-    /// The portfolio is retrieved from the portfolio that was passed to the OrderEventHandler constructor.
-    /// </remarks>
     public async Task HandleEventAsync(IPortfolio portfolio, IFinancialEvent eventObj, CancellationToken cancellationToken)
     {
         Guard.AgainstNull(() => portfolio); // Throws ArgumentNullException
@@ -57,11 +65,16 @@ public sealed class OrderEventHandler : IEventHandler
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        // ERR-A06: Throw on failed order submission instead of silently ignoring
+        // M15: Log warning instead of throwing — order rejection is a normal backtest condition
         var orderSubmitted = await portfolio.SubmitOrderAsync(orderEvent, cancellationToken).ConfigureAwait(false);
         if (!orderSubmitted)
         {
-            throw new InvalidOperationException($"Order submission failed for {orderEvent.Asset} ({orderEvent.TradeAction} {orderEvent.Quantity} @ {orderEvent.OrderType}).");
+            _logger.LogWarning(
+                "Order submission failed for {Asset} ({TradeAction} {Quantity} @ {OrderType})",
+                orderEvent.Asset,
+                orderEvent.TradeAction,
+                orderEvent.Quantity,
+                orderEvent.OrderType);
         }
     }
 }

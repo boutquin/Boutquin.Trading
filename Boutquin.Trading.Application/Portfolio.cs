@@ -53,6 +53,13 @@ public sealed class Portfolio : IPortfolio
     private readonly ILogger<Portfolio> _logger;
 
     /// <summary>
+    /// Stored token for forwarding into fill handler. Thread-safe only for single-threaded
+    /// backtest execution. For live trading, pass CancellationToken via the FillOccurred
+    /// delegate signature instead (requires domain interface change).
+    /// </summary>
+    private CancellationToken _activeCancellationToken;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="Portfolio"/> class.
     /// </summary>
     /// <param name="baseCurrency">
@@ -82,10 +89,10 @@ public sealed class Portfolio : IPortfolio
     /// Throws this exception if either the 'strategies' or 'assetCurrencies' dictionary is null or empty.
     /// </exception>
     /// <exception cref="ArgumentNullException">
-    /// Throws this exception if either the 'eventProcessor' or 'broker' argument is null.
+    /// Throws this exception if the 'broker' argument is null.
     /// </exception>
     /// <remarks>
-    /// When an instance of this class is created, it subscribes to the FillOccurred event of the provided brokerage. 
+    /// When an instance of this class is created, it subscribes to the FillOccurred event of the provided brokerage.
     /// This event is triggered when an order is filled by the brokerage.
     /// </remarks>
     /// <summary>
@@ -181,6 +188,9 @@ public sealed class Portfolio : IPortfolio
 
         cancellationToken.ThrowIfCancellationRequested();
 
+        // H2: Store the active token so HandleFillEvent can forward it
+        _activeCancellationToken = cancellationToken;
+
         _logger.LogDebug("Processing {EventType} event", @event.GetType().Name);
         await EventProcessor.ProcessEventAsync(@event, cancellationToken).ConfigureAwait(false);
     }
@@ -255,6 +265,9 @@ public sealed class Portfolio : IPortfolio
         Guard.AgainstNull(() => orderEvent); // Throws ArgumentNullException when the orderEvent parameter is null
 
         cancellationToken.ThrowIfCancellationRequested();
+
+        // H2: Store the active token so HandleFillEvent can forward it
+        _activeCancellationToken = cancellationToken;
 
         // Create an Order object from the OrderEvent data.
         var order = new Order(
@@ -377,7 +390,7 @@ public sealed class Portfolio : IPortfolio
         {
             if (strategy.Positions.TryGetValue(asset, out var position))
             {
-                strategy.SetPosition(asset, (int)(position * splitRatio));
+                strategy.SetPosition(asset, (int)Math.Round(position * splitRatio, MidpointRounding.AwayFromZero));
             }
         }
     }
@@ -477,6 +490,6 @@ public sealed class Portfolio : IPortfolio
         // Ensure that the @event is not null.
         Guard.AgainstNull(() => fillEvent); // Throws ArgumentNullException when the fillEvent parameter is null
 
-        await EventProcessor.ProcessEventAsync(fillEvent, CancellationToken.None).ConfigureAwait(false);
+        await EventProcessor.ProcessEventAsync(fillEvent, _activeCancellationToken).ConfigureAwait(false);
     }
 }

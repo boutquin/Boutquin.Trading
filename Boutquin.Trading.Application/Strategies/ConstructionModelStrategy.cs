@@ -125,8 +125,17 @@ public sealed class ConstructionModelStrategy : StrategyBase
             _logger.LogInformation("Computed target weights on {Date}: {Weights}",
                 timestamp, string.Join(", ", targetWeights.Select(kv => $"{kv.Key}={kv.Value:P2}")));
 
-            // Compute current weights
-            var currentWeights = ComputeCurrentWeights(timestamp, baseCurrency, historicalMarketData, historicalFxConversionRates);
+            // M9: Wrap ComputeCurrentWeights in try-catch — failure should fall back, not abort
+            Dictionary<Asset, decimal> currentWeights;
+            try
+            {
+                currentWeights = ComputeCurrentWeights(timestamp, baseCurrency, historicalMarketData, historicalFxConversionRates);
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "ComputeCurrentWeights failed on {Date}; proceeding with empty weights (will trigger rebalance)", timestamp);
+                currentWeights = [];
+            }
 
             // Check if rebalancing trigger fires
             if (_lastRebalancingDate == null || _rebalancingTrigger.ShouldRebalance(currentWeights, targetWeights))
@@ -261,6 +270,7 @@ public sealed class ConstructionModelStrategy : StrategyBase
 
         var nextDate = _rebalancingFrequency switch
         {
+            RebalancingFrequency.Never => DateOnly.MaxValue,
             RebalancingFrequency.Daily => _lastRebalancingDate.Value.AddDays(1),
             RebalancingFrequency.Weekly => _lastRebalancingDate.Value.AddDays(7),
             RebalancingFrequency.Monthly => _lastRebalancingDate.Value.AddMonths(1),

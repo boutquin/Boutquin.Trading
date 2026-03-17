@@ -119,7 +119,8 @@ public sealed class FixedWeightPositionSizer : IPositionSizer
                 throw new InvalidOperationException($"AdjustedClose is zero for asset \'{asset}\' on {timestamp}.");
             }
 
-            var positionSize = (int)(desiredAssetValue / marketData.AdjustedClose);
+            // M10: Round instead of truncate to avoid systematic downward bias
+            var positionSize = (int)Math.Round(desiredAssetValue / marketData.AdjustedClose, MidpointRounding.AwayFromZero);
             positionSizes[asset] = positionSize;
         }
 

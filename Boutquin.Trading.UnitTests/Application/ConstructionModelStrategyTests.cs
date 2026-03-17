@@ -247,4 +247,77 @@ public sealed class ConstructionModelStrategyTests
 
         act.Should().NotThrow("End-to-end backtest with risk parity should complete without error");
     }
+
+    /// <summary>
+    /// L5: With RebalancingFrequency.Never, only the first call should rebalance.
+    /// Subsequent calls should return empty signals.
+    /// </summary>
+    [Fact]
+    public void Strategy_WithNeverFrequency_ShouldOnlyRebalanceOnce()
+    {
+        var orderPriceCalc = new ClosePriceOrderPriceCalculationStrategy();
+        var positionSizer = new DynamicWeightPositionSizer(CurrencyCode.USD);
+        var constructionModel = new EqualWeightConstruction();
+
+        var strategy = new ConstructionModelStrategy(
+            "Never Test",
+            TestAssets,
+            TestCash,
+            orderPriceCalc,
+            positionSizer,
+            constructionModel,
+            RebalancingFrequency.Never,
+            lookbackWindow: 5);
+
+        var marketData = BuildMarketData();
+        var fxRates = BuildFxRates();
+
+        // First call triggers
+        var firstDate = new DateOnly(2024, 1, 2);
+        var firstSignals = strategy.GenerateSignals(firstDate, CurrencyCode.USD, marketData, fxRates);
+        firstSignals.Signals.Should().NotBeEmpty("First call should generate signals");
+
+        // All subsequent calls should return empty signals (Never = DateOnly.MaxValue)
+        var laterDate = new DateOnly(2024, 3, 15);
+        var laterSignals = strategy.GenerateSignals(laterDate, CurrencyCode.USD, marketData, fxRates);
+        laterSignals.Signals.Should().BeEmpty("RebalancingFrequency.Never should suppress all subsequent rebalances");
+    }
+
+    /// <summary>
+    /// M9: When ComputeCurrentWeights throws InvalidOperationException,
+    /// the strategy should catch it and proceed (fall back to empty weights → rebalance).
+    /// </summary>
+    [Fact]
+    public void Strategy_ComputeCurrentWeightsFailure_ShouldNotThrow()
+    {
+        // This test verifies indirectly: when a strategy has no positions and no matching market data
+        // for the current timestamp, ComputeCurrentWeights would previously throw. After M9,
+        // it catches InvalidOperationException and falls back.
+        var orderPriceCalc = new ClosePriceOrderPriceCalculationStrategy();
+        var positionSizer = new DynamicWeightPositionSizer(CurrencyCode.USD);
+        var constructionModel = new EqualWeightConstruction();
+
+        var strategy = new ConstructionModelStrategy(
+            "M9 Test",
+            TestAssets,
+            TestCash,
+            orderPriceCalc,
+            positionSizer,
+            constructionModel,
+            RebalancingFrequency.Daily,
+            lookbackWindow: 5);
+
+        var marketData = BuildMarketData();
+        var fxRates = BuildFxRates();
+
+        // First call to set _lastRebalancingDate
+        var firstDate = new DateOnly(2024, 1, 2);
+        strategy.GenerateSignals(firstDate, CurrencyCode.USD, marketData, fxRates);
+
+        // Second call on next day — ComputeCurrentWeights may fail due to missing position data,
+        // but the strategy should not throw (M9 fix: catch + fallback)
+        var nextDay = new DateOnly(2024, 1, 3);
+        var act = () => strategy.GenerateSignals(nextDay, CurrencyCode.USD, marketData, fxRates);
+        act.Should().NotThrow("M9: ComputeCurrentWeights failure should be caught, not propagated");
+    }
 }

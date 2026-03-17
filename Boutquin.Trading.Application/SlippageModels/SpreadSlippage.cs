@@ -53,6 +53,10 @@ public sealed class SpreadSlippage : ISlippageModel
 
     /// <summary>
     /// Calculates the fill price for a specific asset, using its configured half-spread if available.
+    /// This method is for direct usage when asset context is available, outside the <see cref="ISlippageModel"/>
+    /// pipeline. The <see cref="ISlippageModel.CalculateFillPrice"/> overload does not receive the asset,
+    /// so it falls back to the default half-spread. A future spec should evaluate extending
+    /// <see cref="ISlippageModel"/> with an asset-aware overload.
     /// </summary>
     /// <param name="theoreticalPrice">The theoretical execution price.</param>
     /// <param name="quantity">The number of shares/units being traded.</param>

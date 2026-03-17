@@ -89,7 +89,8 @@ public sealed class DynamicWeightPositionSizer : IPositionSizer
                 throw new InvalidOperationException($"AdjustedClose is zero for asset '{asset}' on {timestamp}.");
             }
 
-            positionSizes[asset] = (int)(desiredValue / md.AdjustedClose);
+            // M10: Round instead of truncate to avoid systematic downward bias
+            positionSizes[asset] = (int)Math.Round(desiredValue / md.AdjustedClose, MidpointRounding.AwayFromZero);
         }
 
         return positionSizes;

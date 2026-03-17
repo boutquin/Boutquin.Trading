@@ -418,9 +418,9 @@ public sealed class MediumSeverityApplicationTests
             .WithMessage("*Position size not computed*");
     }
 
-    // ── ERR-A06: OrderEventHandler throws on failed order submission ──
+    // ── M15: OrderEventHandler now logs warning instead of throwing on failed order ──
     [Fact]
-    public async Task OrderEventHandler_FailedOrder_Throws()
+    public async Task OrderEventHandler_FailedOrder_ShouldNotThrow()
     {
         // Arrange
         var handler = new OrderEventHandler();
@@ -434,9 +434,8 @@ public sealed class MediumSeverityApplicationTests
         // Act
         var act = async () => await handler.HandleEventAsync(portfolioMock.Object, orderEvent, CancellationToken.None).ConfigureAwait(false);
 
-        // Assert
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("*Order submission failed*");
+        // Assert — M15: now logs instead of throwing
+        await act.Should().NotThrowAsync();
     }
 
     [Fact]

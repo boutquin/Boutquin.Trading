@@ -319,4 +319,92 @@ public sealed class DependencyInjectionTests
 
         manager.Evaluate(order, portfolioMock.Object).IsAllowed.Should().BeTrue();
     }
+
+    // ============================================================
+    // M14: Unknown config values should throw — no silent defaults
+    // ============================================================
+
+    [Fact]
+    public void UnknownCostType_ShouldThrow()
+    {
+        var sp = BuildServiceProvider(new Dictionary<string, string?>
+        {
+            ["CostModel:TransactionCostType"] = "InvalidType",
+        });
+
+        var act = sp.GetRequiredService<ITransactionCostModel>;
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public void UnknownSlippageType_ShouldThrow()
+    {
+        var sp = BuildServiceProvider(new Dictionary<string, string?>
+        {
+            ["CostModel:SlippageType"] = "InvalidSlippage",
+        });
+
+        var act = sp.GetRequiredService<ISlippageModel>;
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public void UnknownConstructionModel_ShouldThrow()
+    {
+        var sp = BuildServiceProvider(new Dictionary<string, string?>
+        {
+            ["Backtest:ConstructionModel"] = "InvalidModel",
+        });
+
+        var act = sp.GetRequiredService<IPortfolioConstructionModel>;
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    // ============================================================
+    // M20: BlackLitterman construction model
+    // ============================================================
+
+    [Fact]
+    public void BlackLitterman_ConstructionModel_ShouldResolve_ViaConfig()
+    {
+        var sp = BuildServiceProvider(new Dictionary<string, string?>
+        {
+            ["Backtest:ConstructionModel"] = "BlackLitterman",
+        });
+
+        var model = sp.GetRequiredService<IPortfolioConstructionModel>();
+        model.Should().BeOfType<BlackLittermanConstruction>();
+    }
+
+    // ============================================================
+    // M30: FixedSlippage/PercentageSlippage with zero amount
+    // ============================================================
+
+    [Fact]
+    public void FixedSlippage_ZeroAmount_ShouldThrow()
+    {
+        var sp = BuildServiceProvider(new Dictionary<string, string?>
+        {
+            ["CostModel:SlippageType"] = "FixedSlippage",
+            ["CostModel:SlippageAmount"] = "0",
+        });
+
+        var act = sp.GetRequiredService<ISlippageModel>;
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*SlippageAmount must be greater than zero*");
+    }
+
+    [Fact]
+    public void PercentageSlippage_ZeroAmount_ShouldThrow()
+    {
+        var sp = BuildServiceProvider(new Dictionary<string, string?>
+        {
+            ["CostModel:SlippageType"] = "PercentageSlippage",
+            ["CostModel:SlippageAmount"] = "0",
+        });
+
+        var act = sp.GetRequiredService<ISlippageModel>;
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*SlippageAmount must be greater than zero*");
+    }
 }

@@ -92,6 +92,7 @@ public sealed class RebalancingBuyAndHoldStrategy : StrategyBase
     private DateOnly GetNextRebalancingDate(DateOnly currentDate) =>
         _rebalancingFrequency switch
         {
+            RebalancingFrequency.Never => DateOnly.MaxValue,
             RebalancingFrequency.Daily => currentDate.AddDays(1),
             RebalancingFrequency.Weekly => currentDate.AddDays(7),
             RebalancingFrequency.Monthly => currentDate.AddMonths(1),

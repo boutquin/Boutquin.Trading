@@ -61,7 +61,8 @@ public abstract class StrategyBase : IStrategy
 
         Name = name;
         Assets = assets;
-        _cash = cash;
+        // H6: Defensive copy — prevent external mutation via the original reference
+        _cash = new SortedDictionary<CurrencyCode, decimal>(cash);
         OrderPriceCalculationStrategy = orderPriceCalculationStrategy;
         PositionSizer = positionSizer;
     }

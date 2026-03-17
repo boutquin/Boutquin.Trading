@@ -48,35 +48,44 @@ public static class ServiceCollectionExtensions
         services.Configure<CostModelOptions>(configuration.GetSection(CostModelOptions.SectionName));
         services.Configure<RiskManagementOptions>(configuration.GetSection(RiskManagementOptions.SectionName));
 
-        // Register construction models
-        services.AddTransient<EqualWeightConstruction>();
-        services.AddTransient<InverseVolatilityConstruction>();
-        services.AddTransient<MinimumVarianceConstruction>();
+        // M28: Removed unused transient registrations for construction models and covariance estimator.
+        // The factory below creates instances via `new`, so these registrations were never used.
 
-        // Register covariance estimators
-        services.AddTransient<SampleCovarianceEstimator>();
-
-        // Register cost models (factory-based, configured via options)
+        // M14: Register cost models with explicit cases — no silent defaults
         services.AddSingleton<ITransactionCostModel>(sp =>
         {
             var options = sp.GetRequiredService<IOptions<CostModelOptions>>().Value;
             return options.TransactionCostType switch
             {
+                "FixedPerTrade" => new FixedPerTradeCostModel(options.CommissionRate),
                 "PercentageOfValue" => new PercentageOfValueCostModel(options.CommissionRate),
                 "PerShare" => new PerShareCostModel(options.CommissionRate),
-                _ => new FixedPerTradeCostModel(options.CommissionRate),
+                _ => throw new ArgumentOutOfRangeException(
+                    nameof(options.TransactionCostType),
+                    options.TransactionCostType,
+                    "Unknown TransactionCostType. Valid values: FixedPerTrade, PercentageOfValue, PerShare."),
             };
         });
 
-        // Register slippage model
+        // M14/M30: Register slippage model with explicit cases and zero-amount validation
         services.AddSingleton<ISlippageModel>(sp =>
         {
             var options = sp.GetRequiredService<IOptions<CostModelOptions>>().Value;
             return options.SlippageType switch
             {
-                "FixedSlippage" => new FixedSlippage(options.SlippageAmount),
-                "PercentageSlippage" => new PercentageSlippage(options.SlippageAmount),
-                _ => new NoSlippage(),
+                "NoSlippage" => new NoSlippage(),
+                "FixedSlippage" => options.SlippageAmount > 0
+                    ? new FixedSlippage(options.SlippageAmount)
+                    : throw new InvalidOperationException(
+                        $"CostModel:SlippageAmount must be greater than zero when SlippageType is '{options.SlippageType}'."),
+                "PercentageSlippage" => options.SlippageAmount > 0
+                    ? new PercentageSlippage(options.SlippageAmount)
+                    : throw new InvalidOperationException(
+                        $"CostModel:SlippageAmount must be greater than zero when SlippageType is '{options.SlippageType}'."),
+                _ => throw new ArgumentOutOfRangeException(
+                    nameof(options.SlippageType),
+                    options.SlippageType,
+                    "Unknown SlippageType. Valid values: NoSlippage, FixedSlippage, PercentageSlippage."),
             };
         });
 
@@ -99,22 +108,30 @@ public static class ServiceCollectionExtensions
             return new RiskManager(rules);
         });
 
-        // Register portfolio construction model (factory-based, configured via options)
+        // M14/M20: Register portfolio construction model with explicit cases — no silent defaults
         services.AddSingleton<IPortfolioConstructionModel>(sp =>
         {
             var options = sp.GetRequiredService<IOptions<BacktestOptions>>().Value;
             return options.ConstructionModel switch
             {
+                "EqualWeight" => new EqualWeightConstruction(),
                 "InverseVolatility" => new InverseVolatilityConstruction(),
                 "MinimumVariance" => new MinimumVarianceConstruction(new SampleCovarianceEstimator()),
                 "MeanVariance" => new MeanVarianceConstruction(new SampleCovarianceEstimator()),
                 "RiskParity" => new RiskParityConstruction(new SampleCovarianceEstimator()),
-                _ => new EqualWeightConstruction(),
+                // BlackLitterman requires equilibrium weights — default to equal-weight placeholder.
+                // Callers should configure proper equilibrium weights via the constructor directly.
+                "BlackLitterman" => new BlackLittermanConstruction(
+                    equilibriumWeights: [],
+                    covarianceEstimator: new SampleCovarianceEstimator()),
+                _ => throw new ArgumentOutOfRangeException(
+                    nameof(options.ConstructionModel),
+                    options.ConstructionModel,
+                    "Unknown ConstructionModel. Valid values: EqualWeight, InverseVolatility, MinimumVariance, MeanVariance, RiskParity, BlackLitterman."),
             };
         });
 
-        // Register backtest
-        services.AddTransient<BackTest>();
+        // L8: Removed BackTest transient registration — it requires constructor params that DI cannot resolve.
 
         return services;
     }
