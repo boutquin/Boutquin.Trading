@@ -30,7 +30,7 @@ A multi-asset, multi-strategy, event-driven quantitative trading framework for b
 ### Event-Driven Backtesting Engine
 - **Event pipeline** — `MarketEvent` → `SignalEvent` → `OrderEvent` → `FillEvent` with pluggable handlers
 - **Portfolio** — Multi-currency cash management, position tracking, equity curve computation (14 interface methods)
-- **SimulatedBrokerage** — Market, limit, and stop order execution with slippage and commission models
+- **SimulatedBrokerage** — Market, limit, stop, and stop-limit order execution with slippage, commission models, and optional buffered market data path
 - **Strategies** — `BuyAndHoldStrategy`, `RebalancingBuyAndHoldStrategy`, `ConstructionModelStrategy`
 
 ### Portfolio Construction (8 Models)
@@ -71,12 +71,18 @@ A multi-asset, multi-strategy, event-driven quantitative trading framework for b
 - **HTML Tearsheet** — Self-contained HTML with embedded SVG equity curve, drawdown area chart, metrics table, and monthly returns heatmap
 - **Benchmark Comparison** — Side-by-side portfolio vs benchmark with dual equity curve and tracking error
 
+### Caching
+- **L1 memory cache** — `ConcurrentDictionary` + `Lazy<Task>` decorators for thread-safe exactly-once materialization of market data, economic data, and factor data fetches
+- **L2 CSV write-through** — Transparent disk cache with atomic writes (tmp + rename), per-symbol existence checks, and partial cache support
+- **Backtest prefetch** — Materializes market data into a buffer dictionary; `SimulatedBrokerage` uses O(1) dictionary lookups instead of re-streaming `IAsyncEnumerable`
+- **DI wiring** — `AddBoutquinTradingCaching()` auto-decorates pre-registered fetchers based on `CacheOptions` (L1/L2 independently toggleable)
+
 ### Data Providers
 - **Tiingo** — Historical equity/ETF price data
 - **Frankfurter** — ECB-sourced FX rates with date range filtering
 - **FRED** — Federal Reserve Economic Data (treasury yields, inflation, GDP, macro indicators)
 - **Fama-French** — Academic factor return series (3-factor, 5-factor, momentum) from the Ken French Data Library
-- **CSV** — Symbol list ingestion
+- **CSV** — Market data, economic data, factor data, and symbol list storage/ingestion
 - **Composite fetcher** — Routes equity vs FX requests to the appropriate provider
 
 ## Quick Start
@@ -116,6 +122,10 @@ Configuration via `appsettings.json`:
     "MaxDrawdownPercent": 0.20,
     "MaxPositionSizePercent": 0.10,
     "MaxSectorExposurePercent": 0.40
+  },
+  "Cache": {
+    "DataDirectory": "./data/cache",
+    "EnableMemoryCache": true
   }
 }
 ```
@@ -143,10 +153,11 @@ Configuration via `appsettings.json`:
 │    BlackLitterman, TacticalOverlay, VolatilityTargeting               │
 │  Analytics: BrinsonFachler, FactorRegressor, CorrelationAnalyzer,     │
 │    DrawdownAnalyzer, WalkForwardOptimizer, MonteCarloSimulator        │
+│  Caching: L1 Memory (CachingXxxFetcher), L2 CSV (WriteThroughXxx)    │
 │  Risk: RiskManager, MaxDrawdown, MaxPositionSize, MaxSectorExposure   │
 │  Indicators: SMA, EMA, RealizedVol, Momentum, Spread, RateOfChange    │
 │  Reporting: HtmlReportGenerator, BenchmarkComparisonReport            │
-│  DI: ServiceCollectionExtensions, BacktestOptions, CostModelOptions   │
+│  DI: ServiceCollectionExtensions, BacktestOptions, CacheOptions       │
 └───────────────────────────────────────────────────────────────────────┘
 ┌───────────────────────────────────────────────────────────────────────┐
 │                          Data Layer                                   │

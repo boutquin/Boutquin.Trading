@@ -40,4 +40,10 @@ public interface IBrokerage
     // A1 fix: Changed from EventHandler<FillEvent> to Func<object, FillEvent, Task>
     // so that async handlers can propagate exceptions instead of swallowing them via async void.
     event Func<object, FillEvent, Task> FillOccurred;
+
+    /// <summary>
+    /// Provides pre-buffered market data for backtest mode, eliminating per-order fetch calls.
+    /// Default implementation is a no-op — only SimulatedBrokerage overrides this.
+    /// </summary>
+    void SetBufferedMarketData(IReadOnlyDictionary<DateOnly, SortedDictionary<ValueObjects.Asset, MarketData>> data) { }
 }

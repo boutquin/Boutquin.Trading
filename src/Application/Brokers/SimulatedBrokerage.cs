@@ -29,6 +29,7 @@ public sealed class SimulatedBrokerage : IBrokerage
     private readonly IMarketDataFetcher _marketDataFetcher;
     private readonly ITransactionCostModel _costModel;
     private readonly ISlippageModel _slippageModel;
+    private IReadOnlyDictionary<DateOnly, SortedDictionary<Domain.ValueObjects.Asset, MarketData>>? _bufferedMarketData;
 
     /// <summary>
     /// Initializes a new instance of the SimulatedBrokerage class with explicit cost and slippage models.
@@ -66,6 +67,14 @@ public sealed class SimulatedBrokerage : IBrokerage
     public event Func<object, FillEvent, Task>? FillOccurred;
 
     /// <summary>
+    /// Provides pre-buffered market data for backtest mode, eliminating per-order FetchMarketDataAsync calls.
+    /// </summary>
+    public void SetBufferedMarketData(IReadOnlyDictionary<DateOnly, SortedDictionary<Domain.ValueObjects.Asset, MarketData>> data)
+    {
+        _bufferedMarketData = data ?? throw new ArgumentNullException(nameof(data));
+    }
+
+    /// <summary>
     /// Submits an order for execution. The order is processed based on the available market data.
     /// </summary>
     /// <param name="order">The order to be executed.</param>
@@ -78,13 +87,28 @@ public sealed class SimulatedBrokerage : IBrokerage
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        // A5 fix: Filter market data to match the order's timestamp
-        var marketData = await _marketDataFetcher.FetchMarketDataAsync([order.Asset], cancellationToken)
-            .FirstOrDefaultAsync(kvp => kvp.Key == order.Timestamp, cancellationToken).ConfigureAwait(false);
+        MarketData? assetMarketData;
 
-        if (marketData.Value == null || !marketData.Value.TryGetValue(order.Asset, out var assetMarketData))
+        if (_bufferedMarketData != null)
         {
-            return false;
+            // Buffered path: O(1) dictionary lookup instead of IAsyncEnumerable scan
+            if (!_bufferedMarketData.TryGetValue(order.Timestamp, out var dayData) ||
+                !dayData.TryGetValue(order.Asset, out assetMarketData))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            // Original path: fetch from market data source
+            // A5 fix: Filter market data to match the order's timestamp
+            var marketData = await _marketDataFetcher.FetchMarketDataAsync([order.Asset], cancellationToken)
+                .FirstOrDefaultAsync(kvp => kvp.Key == order.Timestamp, cancellationToken).ConfigureAwait(false);
+
+            if (marketData.Value == null || !marketData.Value.TryGetValue(order.Asset, out assetMarketData))
+            {
+                return false;
+            }
         }
 
         // H5: Forward cancellationToken to all Handle*Order methods

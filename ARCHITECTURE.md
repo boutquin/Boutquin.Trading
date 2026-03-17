@@ -32,7 +32,7 @@ Boutquin.Trading/
 ## Layer Dependencies
 
 ```
-Domain  ←  Application  ←  BackTest / Sample
+Domain  ←  Application (+ Data.CSV for L2 write-through cache)  ←  BackTest / Sample
 Domain  ←  DataAccess
 Domain  ←  Data.Tiingo / Data.Frankfurter / Data.Fred / Data.FamaFrench / Data.CSV
 Application ← Data.Processor (also depends on Data.Tiingo, Data.Frankfurter, Domain)
@@ -49,7 +49,7 @@ Core business logic, contracts, and value types. No implementation dependencies.
 - **Enums/** — 14 domain enums: `AssetClassCode`, `CurrencyCode`, `OrderType`, `TradeAction`, `RebalancingFrequency`, `EconomicRegime`, `FamaFrenchDataset`, etc.
 - **Extensions/** — `DecimalArrayExtensions` (financial metrics), `EquityCurveExtensions` (drawdown tracking)
 - **Analytics/** — 7 sealed record types for analytics results
-- **Data/** — `MarketData` record and security price types
+- **Data/** — `MarketData` record, security price types, and CSV fetcher/storage implementations (`CsvMarketDataFetcher`, `CsvMarketDataStorage`, `CsvEconomicDataFetcher`, `CsvEconomicDataStorage`, `CsvFactorDataFetcher`, `CsvFactorDataStorage`)
 - **Helpers/** — `RollingWindow<T>` (circular buffer), `TearSheet` (performance summary), `FamaFrenchConstants` (well-known factor names)
 - **ValueObjects/** — `RiskEvaluation` (allowed/rejected with reason)
 - **Exceptions/** — `CalculationException` for degenerate-input guards
@@ -71,10 +71,14 @@ All implementations of domain interfaces, the backtest engine, and DI wiring.
 - **Analytics/** — BrinsonFachler, FactorRegressor, CorrelationAnalyzer, DrawdownAnalyzer, WalkForwardOptimizer, MonteCarloSimulator
 - **Reporting/** — `HtmlReportGenerator`, `BenchmarkComparisonReport`
 - **RiskManagement/** — `RiskManager`, MaxDrawdown/MaxPositionSize/MaxSectorExposure rules
+- **Caching/** — 3-layer transparent caching:
+  - L1 memory: `CachingMarketDataFetcher`, `CachingEconomicDataFetcher`, `CachingFactorDataFetcher` (ConcurrentDictionary + Lazy\<Task\>)
+  - L2 CSV write-through: `WriteThroughMarketDataFetcher`, `WriteThroughEconomicDataFetcher`, `WriteThroughFactorDataFetcher` (atomic tmp+rename)
+  - Backtest prefetch via `SimulatedBrokerage.SetBufferedMarketData` (O(1) lookups)
 - **EventHandlers/** — Market, Signal, Order, Fill event handlers
 - **CostModels/** — Tiered, Percentage transaction cost strategies
 - **SlippageModels/** — Fixed, Percentage slippage models
-- **Configuration/** — `ServiceCollectionExtensions`, `BacktestOptions`, `CostModelOptions`, `RiskManagementOptions`
+- **Configuration/** — `ServiceCollectionExtensions` (`AddBoutquinTrading`, `AddBoutquinTradingCaching`), `BacktestOptions`, `CostModelOptions`, `RiskManagementOptions`, `CacheOptions`
 - **CompositeMarketDataFetcher.cs** — Routes equity → Tiingo, FX → Frankfurter
 
 ## Boutquin.Trading.DataAccess (`src/DataAccess/`)
@@ -96,7 +100,7 @@ Each provider implements domain interfaces for a specific data source:
 | **Data.Frankfurter** | Frankfurter (ECB) | `IMarketDataFetcher` | `FetchFxRatesAsync` |
 | **Data.Fred** | FRED REST API | `IEconomicDataFetcher` | `FetchSeriesAsync` |
 | **Data.FamaFrench** | Ken French Data Library | `IFactorDataFetcher` | `FetchDailyAsync`, `FetchMonthlyAsync` |
-| **Data.CSV** | CSV files | `ISymbolReader` | `ReadSymbolsAsync` |
+| **Data.CSV** | CSV files | `ISymbolReader`, `IMarketDataFetcher`, `IMarketDataStorage` | Symbol lists, market/economic/factor data storage |
 | **Data.Processor** | Pipeline | — | Orchestrates data processing |
 
 ## Tests (`tests/`)
@@ -125,6 +129,8 @@ Each provider implements domain interfaces for a specific data source:
 - **`CancellationToken` on all async APIs** — Every async interface method accepts `CancellationToken cancellationToken = default`.
 - **Backward-compatible constructors** — `ILogger<T>` added via constructor overloads that default to `NullLogger<T>.Instance`.
 - **Projected gradient descent** for optimization — MeanVariance and MinimumVariance use gradient descent with simplex projection rather than external solver dependencies.
+- **Decorator pattern for caching** — L1/L2 caches are transparent decorators that implement the same interface as the inner fetcher. Composable: L1 wraps L2 wraps base fetcher. DI wiring auto-decorates based on `CacheOptions`.
+- **Backtest prefetch** — Market data is materialized into a buffer once; `SimulatedBrokerage` uses O(1) dictionary lookups instead of re-streaming per order. Default interface method on `IBrokerage` keeps the contract backward-compatible.
 
 ## Root Files
 

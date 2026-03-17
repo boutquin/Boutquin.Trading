@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Domain\Boutquin.Trading.Domain.csproj" />
+    <ProjectReference Include="..\Data.CSV\Boutquin.Trading.Data.CSV.csproj" />
   </ItemGroup>
 
 </Project>

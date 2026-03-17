@@ -31,9 +31,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Analytics** — `BrinsonFachlerAttributor`, `FactorRegressor`, `CorrelationAnalyzer`, `DrawdownAnalyzer`, `WalkForwardOptimizer`, `MonteCarloSimulator`.
 - **Reporting** — `HtmlReportGenerator` (self-contained SVG tearsheet), `BenchmarkComparisonReport` (dual equity curve).
 - **Risk management** — `RiskManager` with `MaxDrawdownRule`, `MaxPositionSizeRule`, `MaxSectorExposureRule`.
-- **DI registration** — `ServiceCollectionExtensions.AddBoutquinTrading()` with `IOptions<T>` configuration (`BacktestOptions`, `CostModelOptions`, `RiskManagementOptions`).
+- **Caching** — Transparent 3-layer caching architecture:
+  - **L1 memory cache** — `CachingMarketDataFetcher`, `CachingEconomicDataFetcher`, `CachingFactorDataFetcher` decorators using `ConcurrentDictionary<string, Lazy<Task<List<...>>>>` for thread-safe exactly-once materialization. Superset date filtering for economic/factor data.
+  - **L2 CSV write-through** — `WriteThroughMarketDataFetcher`, `WriteThroughEconomicDataFetcher`, `WriteThroughFactorDataFetcher` decorators. Per-symbol CSV existence check (partial cache). Atomic write protocol (write to `.tmp`, rename on success).
+  - **Backtest prefetch** — `BackTest.RunAsync` materializes market data into a buffer dictionary. `SimulatedBrokerage.SetBufferedMarketData` enables O(1) dictionary lookups instead of re-streaming `IAsyncEnumerable`. Default interface method on `IBrokerage` (no-op for non-simulated brokerages).
+  - **DI wiring** — `AddBoutquinTradingCaching(IConfiguration)` auto-decorates pre-registered fetchers based on `CacheOptions`. L1 and L2 independently toggleable.
+- **`CacheOptions`** — `DataDirectory` (null = L2 disabled), `EnableMemoryCache` (default true). Bound from `"Cache"` config section.
+- **DI registration** — `ServiceCollectionExtensions.AddBoutquinTrading()` with `IOptions<T>` configuration (`BacktestOptions`, `CostModelOptions`, `RiskManagementOptions`, `CacheOptions`).
 - **Structured logging** — `ILogger<T>` on `Portfolio`, `BackTest`, `ConstructionModelStrategy` with backward-compatible constructors.
 - **`CancellationToken`** — All async APIs accept `CancellationToken cancellationToken = default`.
+- **Risk-free rate** — `BackTest` supports daily risk-free rate parameter for Sharpe/Sortino calculations in tearsheet generation.
 
 #### Data Layer
 - **Composite data fetcher** — `CompositeMarketDataFetcher` delegating to `TiingoFetcher` (equities) and `FrankfurterFetcher` (FX rates).
@@ -41,7 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **FredFetcher** — FRED REST API fetcher for economic time series (treasury yields, inflation, GDP). API key required. Returns raw values; caller transforms units. Missing values (`"."`) silently skipped.
 - **FredSeriesConstants** — Well-known FRED series IDs for treasury yields, inflation, and growth indicators.
 - **FamaFrenchFetcher** — Downloads ZIP/CSV from the Kenneth R. French Data Library. Supports 3-factor, 5-factor, and momentum datasets in daily and monthly frequencies. No API key required. Values in percentage form. Missing values (`-99.99`/`-999`) silently skipped. Monthly annual summary sections excluded.
-- **CSV reader** — `CsvSymbolReader` for symbol list ingestion.
+- **CSV reader/storage** — `CsvSymbolReader` for symbol list ingestion. `CsvMarketDataFetcher`/`CsvMarketDataStorage` for market data. `CsvEconomicDataFetcher`/`CsvEconomicDataStorage` for FRED-style series. `CsvFactorDataFetcher`/`CsvFactorDataStorage` for Fama-French-style factor data. All storage classes use atomic write (tmp + rename).
 - **Data processor** — Pipeline for market data processing.
 
 #### Infrastructure

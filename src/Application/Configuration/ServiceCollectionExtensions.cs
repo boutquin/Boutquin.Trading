@@ -16,6 +16,7 @@
 
 namespace Boutquin.Trading.Application.Configuration;
 
+using Caching;
 using CostModels;
 using CovarianceEstimators;
 using Microsoft.Extensions.Configuration;
@@ -144,6 +145,131 @@ public static class ServiceCollectionExtensions
 
         // L8: Removed BackTest transient registration — it requires constructor params that DI cannot resolve.
 
+        // Bind cache options and register decorators
+        services.AddBoutquinTradingCaching(configuration);
+
         return services;
+    }
+
+    /// <summary>
+    /// Registers caching decorators (L1 memory, L2 CSV write-through) around
+    /// pre-registered <see cref="IMarketDataFetcher"/>, <see cref="IEconomicDataFetcher"/>,
+    /// and <see cref="IFactorDataFetcher"/> instances.
+    /// <para>
+    /// Call this after the base fetchers are registered. If a base fetcher is not registered,
+    /// the decorator for that fetcher type is skipped.
+    /// </para>
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="configuration">The configuration root (reads "Cache" section).</param>
+    /// <returns>The service collection for chaining.</returns>
+    public static IServiceCollection AddBoutquinTradingCaching(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        Guard.AgainstNull(() => services);
+        Guard.AgainstNull(() => configuration);
+
+        services.Configure<CacheOptions>(configuration.GetSection(CacheOptions.SectionName));
+
+        // Snapshot the current base registrations before replacing them
+        var baseMarketData = FindDescriptor<IMarketDataFetcher>(services);
+        var baseEconomic = FindDescriptor<IEconomicDataFetcher>(services);
+        var baseFactor = FindDescriptor<IFactorDataFetcher>(services);
+
+        if (baseMarketData != null)
+        {
+            services.Remove(baseMarketData);
+            services.AddSingleton<IMarketDataFetcher>(sp =>
+            {
+                var cacheOptions = sp.GetRequiredService<IOptions<CacheOptions>>().Value;
+                IMarketDataFetcher fetcher = ResolveFromDescriptor<IMarketDataFetcher>(baseMarketData, sp);
+
+                if (cacheOptions.DataDirectory != null)
+                {
+                    fetcher = new WriteThroughMarketDataFetcher(fetcher, cacheOptions.DataDirectory);
+                }
+
+                if (cacheOptions.EnableMemoryCache)
+                {
+                    fetcher = new CachingMarketDataFetcher(fetcher);
+                }
+
+                return fetcher;
+            });
+        }
+
+        if (baseEconomic != null)
+        {
+            services.Remove(baseEconomic);
+            services.AddSingleton<IEconomicDataFetcher>(sp =>
+            {
+                var cacheOptions = sp.GetRequiredService<IOptions<CacheOptions>>().Value;
+                IEconomicDataFetcher fetcher = ResolveFromDescriptor<IEconomicDataFetcher>(baseEconomic, sp);
+
+                if (cacheOptions.DataDirectory != null)
+                {
+                    fetcher = new WriteThroughEconomicDataFetcher(fetcher, cacheOptions.DataDirectory);
+                }
+
+                if (cacheOptions.EnableMemoryCache)
+                {
+                    fetcher = new CachingEconomicDataFetcher(fetcher);
+                }
+
+                return fetcher;
+            });
+        }
+
+        if (baseFactor != null)
+        {
+            services.Remove(baseFactor);
+            services.AddSingleton<IFactorDataFetcher>(sp =>
+            {
+                var cacheOptions = sp.GetRequiredService<IOptions<CacheOptions>>().Value;
+                IFactorDataFetcher fetcher = ResolveFromDescriptor<IFactorDataFetcher>(baseFactor, sp);
+
+                if (cacheOptions.DataDirectory != null)
+                {
+                    fetcher = new WriteThroughFactorDataFetcher(fetcher, cacheOptions.DataDirectory);
+                }
+
+                if (cacheOptions.EnableMemoryCache)
+                {
+                    fetcher = new CachingFactorDataFetcher(fetcher);
+                }
+
+                return fetcher;
+            });
+        }
+
+        return services;
+    }
+
+    private static ServiceDescriptor? FindDescriptor<T>(IServiceCollection services)
+    {
+        return services.FirstOrDefault(d => d.ServiceType == typeof(T));
+    }
+
+    private static T ResolveFromDescriptor<T>(ServiceDescriptor descriptor, IServiceProvider sp)
+        where T : class
+    {
+        if (descriptor.ImplementationInstance is T instance)
+        {
+            return instance;
+        }
+
+        if (descriptor.ImplementationFactory != null)
+        {
+            return (T)descriptor.ImplementationFactory(sp);
+        }
+
+        if (descriptor.ImplementationType != null)
+        {
+            return (T)ActivatorUtilities.CreateInstance(sp, descriptor.ImplementationType);
+        }
+
+        throw new InvalidOperationException(
+            $"Cannot resolve base {typeof(T).Name} from the existing service descriptor.");
     }
 }

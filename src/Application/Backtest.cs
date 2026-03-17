@@ -117,7 +117,19 @@ public sealed class BackTest
         var symbols = _portfolio.Strategies.Values.SelectMany(s => s.Assets.Keys)
                       .Union(_benchmarkPortfolio.Strategies.Values.SelectMany(s => s.Assets.Keys));
 
+        // Fetch and materialize market data once — eliminates double-streaming
+        // and enables the buffered dictionary to be passed to SimulatedBrokerage
         var marketDataTimeline = _marketDataFetcher.FetchMarketDataAsync(symbols, cancellationToken);
+        var bufferedMarketData = new SortedDictionary<DateOnly, SortedDictionary<Domain.ValueObjects.Asset, MarketData>>();
+
+        await foreach (var kvp in marketDataTimeline.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            // BUG-A07: Filter market data to startDate..endDate range
+            if (kvp.Key >= startDate && kvp.Key <= endDate)
+            {
+                bufferedMarketData[kvp.Key] = kvp.Value;
+            }
+        }
 
         // H3: Include both portfolio AND benchmark asset currencies for FX rate fetching
         var currencyPairs = _portfolio.Strategies.Values
@@ -144,16 +156,10 @@ public sealed class BackTest
             _logger.LogWarning("No FX conversion rates loaded. Foreign currency assets may fail valuation.");
         }
 
-        // Iterate through the market data timeline and handle each event.
-        await foreach (var marketData in marketDataTimeline.WithCancellation(cancellationToken).ConfigureAwait(false))
+        // Event loop iterates buffered market data — single materialization
+        foreach (var marketData in bufferedMarketData)
         {
             cancellationToken.ThrowIfCancellationRequested();
-
-            // BUG-A07: Filter market data to startDate..endDate range
-            if (marketData.Key < startDate || marketData.Key > endDate)
-            {
-                continue;
-            }
 
             // Get the FX rates for the current date.
             var fxRates = fxRatesForDate.TryGetValue(marketData.Key, out var ratesForDate)

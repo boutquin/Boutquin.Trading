@@ -101,10 +101,21 @@ Quantitative trading framework in C# .NET. Pre-release.
 - **DI registration** — `ServiceCollectionExtensions.AddBoutquinTrading(IServiceCollection, IConfiguration)` registers all services. Construction model, cost model, slippage model, and risk manager are factory-based from `IOptions<T>`. All switch expressions use explicit cases with `_ => throw new ArgumentOutOfRangeException(...)` — no silent defaults. Valid construction models: `EqualWeight`, `InverseVolatility`, `MinimumVariance`, `MeanVariance`, `RiskParity`, `BlackLitterman`. Slippage models with non-zero `SlippageAmount` required for `FixedSlippage`/`PercentageSlippage`.
 - **BlackLitterman must not be registered with empty equilibrium weights** — The DI factory should throw `InvalidOperationException` rather than creating a `BlackLittermanConstruction(equilibriumWeights: [])` instance that will produce nonsensical results at runtime. Require manual configuration outside DI.
 - **All `RiskManagementOptions` properties must be wired** — `MaxSectorExposurePercent` must create a `MaxSectorExposureRule` in the DI factory, same as `MaxDrawdownPercent` and `MaxPositionSizePercent`. Configuration options that exist but aren't wired are silent traps.
-- **`IOptions<T>` configuration** — Three options classes: `BacktestOptions` (dates, currency, rebalancing frequency, construction model choice), `CostModelOptions` (transaction cost type, commission rate, slippage type/amount), `RiskManagementOptions` (max drawdown %, max position size %, max sector exposure %). Each has `SectionName` constant for `IConfiguration.GetSection()`.
+- **`IOptions<T>` configuration** — Four options classes: `BacktestOptions` (dates, currency, rebalancing frequency, construction model choice), `CostModelOptions` (transaction cost type, commission rate, slippage type/amount), `RiskManagementOptions` (max drawdown %, max position size %, max sector exposure %), `CacheOptions` (data directory for L2, enable memory cache for L1). Each has `SectionName` constant for `IConfiguration.GetSection()`.
 - **Structured logging** — `ILogger<T>` added to `Portfolio`, `BackTest`, `ConstructionModelStrategy` via backward-compatible constructor overloads (old constructor chains to new via `this(...)`). Logs computed weights, rebalance decisions, backtest start/end. Default `NullLogger<T>.Instance` ensures no exceptions when logger not provided.
 - **`CancellationToken` on all async APIs** — Every async interface method (`IBrokerage`, `IPortfolio`, `IEventProcessor`, `IEventHandler`, `IMarketDataFetcher`, `IMarketDataStorage`, `ICurrencyConversionService`, `IMarketDataProcessor`, `ISymbolReader`) accepts `CancellationToken cancellationToken = default`. Implementations call `ThrowIfCancellationRequested()` and forward token to inner calls. `IAsyncEnumerable` methods use `[EnumeratorCancellation]`.
 - **New packages** — `Application.csproj`: `Microsoft.Extensions.DependencyInjection` 10.0.5, `Microsoft.Extensions.Options.ConfigurationExtensions` 10.0.5.
+
+## Caching Architecture
+
+- **Decorator pattern for transparent caching** — L1/L2 caches implement the same interface as the inner fetcher (`IMarketDataFetcher`, `IEconomicDataFetcher`, `IFactorDataFetcher`). Composable: L1 wraps L2 wraps base fetcher. No consumer code changes required.
+- **L1 memory cache** — `CachingMarketDataFetcher`, `CachingEconomicDataFetcher`, `CachingFactorDataFetcher` use `ConcurrentDictionary<string, Lazy<Task<List<...>>>>` for thread-safe exactly-once materialization. Cache key: sorted+joined tickers for market data (`"AAPL|MSFT"`), `"{seriesId}|{startDate}|{endDate}"` for economic data (with `*` for null dates), `"{dataset}|{startDate}|{endDate}"` for factor data. Superset filtering: if full range (`*|*`) is cached, subset requests filter in-memory instead of re-fetching.
+- **L2 CSV write-through** — `WriteThroughMarketDataFetcher`, `WriteThroughEconomicDataFetcher`, `WriteThroughFactorDataFetcher`. On L2 miss: fetch from API, write to CSV (atomic: tmp + rename), return data. On L2 hit: read from CSV. Per-symbol existence check for market data (partial cache — only missing symbols hit API).
+- **CSV storage classes** — `CsvEconomicDataFetcher`/`CsvEconomicDataStorage` (format: `fred_{seriesId}.csv` with `Date,Value`), `CsvFactorDataFetcher`/`CsvFactorDataStorage` (format: `ff_{dataset}_{frequency}.csv` with header-driven factor names). Located in `src/Domain/Data/`.
+- **Backtest prefetch** — `BackTest.RunAsync` materializes market data into `SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>` before the event loop. `SimulatedBrokerage.SetBufferedMarketData` enables O(1) dictionary lookups. Default interface method on `IBrokerage` (no-op) keeps contract backward-compatible.
+- **`CacheOptions`** — `DataDirectory` (string?, null = L2 disabled), `EnableMemoryCache` (bool, default true). Section name: `"Cache"`. Bound via `IOptions<CacheOptions>`.
+- **DI wiring** — `AddBoutquinTradingCaching(IConfiguration)` finds pre-registered base fetchers, removes them, re-registers with decorator chain based on `CacheOptions`. If no base fetcher registered, decorator is skipped. Called automatically from `AddBoutquinTrading`. Can also be called standalone.
+- **Application depends on Data.CSV** — `Application.csproj` has `<ProjectReference>` to `Data.CSV` for L2 write-through (uses `CsvMarketDataFetcher`, `CsvMarketDataStorage`, `MarketDataFileNameHelper`). Alias `CsvFileNameHelper = Boutquin.Trading.Data.CSV.MarketDataFileNameHelper` resolves namespace ambiguity with `Domain.Helpers.MarketDataFileNameHelper`.
 
 ## Codebase Map
 
@@ -113,7 +124,7 @@ Quantitative trading framework in C# .NET. Pre-release.
 | Project | Path | Key Dependencies |
 |---------|------|-----------------|
 | `Boutquin.Trading.Domain` | `src/Domain/` | Boutquin.Domain 0.7.0, EF Core Relational 10.0.5, Logging.Abstractions 10.0.5 |
-| `Boutquin.Trading.Application` | `src/Application/` | Domain, System.Linq.Async 7.0.0, M.E.DependencyInjection 10.0.5, M.E.Options.ConfigurationExtensions 10.0.5 |
+| `Boutquin.Trading.Application` | `src/Application/` | Domain, Data.CSV, System.Linq.Async 7.0.0, M.E.DependencyInjection 10.0.5, M.E.Options.ConfigurationExtensions 10.0.5 |
 | `Boutquin.Trading.Data.Tiingo` | `src/Data.Tiingo/` | Domain |
 | `Boutquin.Trading.Data.Frankfurter` | `src/Data.Frankfurter/` | Domain |
 | `Boutquin.Trading.Data.Fred` | `src/Data.Fred/` | Domain |
@@ -192,8 +203,12 @@ Quantitative trading framework in C# .NET. Pre-release.
 | RiskEvaluation value object | `src/Domain/ValueObjects/RiskEvaluation.cs` |
 | Risk rules (MaxDrawdown, MaxPositionSize, MaxSectorExposure) | `src/Application/RiskManagement/` |
 | RiskManager (composite) | `src/Application/RiskManagement/RiskManager.cs` |
+| L1 memory cache decorators (3) | `src/Application/Caching/CachingMarketDataFetcher.cs`, `CachingEconomicDataFetcher.cs`, `CachingFactorDataFetcher.cs` |
+| L2 write-through decorators (3) | `src/Application/Caching/WriteThroughMarketDataFetcher.cs`, `WriteThroughEconomicDataFetcher.cs`, `WriteThroughFactorDataFetcher.cs` |
+| CSV economic data fetcher/storage | `src/Domain/Data/CsvEconomicDataFetcher.cs`, `CsvEconomicDataStorage.cs` |
+| CSV factor data fetcher/storage | `src/Domain/Data/CsvFactorDataFetcher.cs`, `CsvFactorDataStorage.cs` |
 | DI registration (ServiceCollectionExtensions) | `src/Application/Configuration/ServiceCollectionExtensions.cs` |
-| BacktestOptions, CostModelOptions, RiskManagementOptions | `src/Application/Configuration/` |
+| BacktestOptions, CostModelOptions, RiskManagementOptions, CacheOptions | `src/Application/Configuration/` |
 
 ### Domain Interfaces (26)
 
