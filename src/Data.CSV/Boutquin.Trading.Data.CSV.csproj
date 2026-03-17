@@ -9,8 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\README.md" Pack="True" PackagePath="\" />
-    <None Include="..\Resources\icon.png" Link="icon.png">
+    <None Include="..\..\README.md" Pack="True" PackagePath="\" />
+    <None Include="..\..\Resources\icon.png" Link="icon.png">
       <PackagePath>\</PackagePath>
       <Pack>True</Pack>
     </None>
@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Boutquin.Trading.Domain\Boutquin.Trading.Domain.csproj" />
+    <ProjectReference Include="..\Domain\Boutquin.Trading.Domain.csproj" />
   </ItemGroup>
 
 </Project>

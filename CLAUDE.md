@@ -90,81 +90,81 @@ Quantitative trading framework in C# .NET. Pre-release.
 
 ### Project Structure
 
-| Project | Purpose | Key Dependencies |
-|---------|---------|-----------------|
-| `Boutquin.Trading.Domain` | Core domain: interfaces, events, value objects, enums, extensions | Boutquin.Domain 0.7.0, EF Core Relational 10.0.5, Logging.Abstractions 10.0.5 |
-| `Boutquin.Trading.Application` | Backtest engine, portfolio, strategies, event handlers, brokers, DI registration | Domain, System.Linq.Async 7.0.0, M.E.DependencyInjection 10.0.5, M.E.Options.ConfigurationExtensions 10.0.5 |
-| `Boutquin.Trading.Data.Tiingo` | Equity data fetcher (Tiingo API) | Domain |
-| `Boutquin.Trading.Data.Frankfurter` | FX rate fetcher (Frankfurter API, ECB-sourced) | Domain |
-| `Boutquin.Trading.Data.CSV` | CSV data reader | Domain |
-| `Boutquin.Trading.Data.Processor` | Data processing pipeline | Domain |
-| `Boutquin.Trading.DataAccess` | EF Core data access (SecurityMaster) | Domain |
-| `Boutquin.Trading.BackTest` | Backtest runner entry point | Application |
-| `Boutquin.Trading.BenchMark` | BenchmarkDotNet performance benchmarks | Domain |
-| `Boutquin.Trading.Sample` | Sample usage | Application |
-| `Boutquin.Trading.UnitTests` | xUnit tests | xUnit 2.9.3, FluentAssertions 8.8.0, Moq 4.20.70 |
-| `Tests/ArchitectureTests` | Architecture fitness functions (NetArchTest) | Domain, Application |
+| Project | Path | Key Dependencies |
+|---------|------|-----------------|
+| `Boutquin.Trading.Domain` | `src/Domain/` | Boutquin.Domain 0.7.0, EF Core Relational 10.0.5, Logging.Abstractions 10.0.5 |
+| `Boutquin.Trading.Application` | `src/Application/` | Domain, System.Linq.Async 7.0.0, M.E.DependencyInjection 10.0.5, M.E.Options.ConfigurationExtensions 10.0.5 |
+| `Boutquin.Trading.Data.Tiingo` | `src/Data.Tiingo/` | Domain |
+| `Boutquin.Trading.Data.Frankfurter` | `src/Data.Frankfurter/` | Domain |
+| `Boutquin.Trading.Data.CSV` | `src/Data.CSV/` | Domain |
+| `Boutquin.Trading.Data.Processor` | `src/Data.Processor/` | Domain, Application |
+| `Boutquin.Trading.DataAccess` | `src/DataAccess/` | Domain |
+| `Boutquin.Trading.BackTest` | `src/BackTest/` | Application |
+| `Boutquin.Trading.Sample` | `src/Sample/` | Application |
+| `Boutquin.Trading.BenchMark` | `benchmarks/BenchMark/` | Domain |
+| `Boutquin.Trading.Tests.UnitTests` | `tests/UnitTests/` | xUnit 2.9.3, FluentAssertions 8.8.0, Moq 4.20.70 |
+| `Boutquin.Trading.Tests.ArchitectureTests` | `tests/ArchitectureTests/` | Domain, Application, NetArchTest |
 
 ### Key File Locations
 
 | What | Path |
 |------|------|
-| Financial metrics (extension methods on `decimal[]`) | `Domain/Extensions/DecimalArrayExtensions.cs` |
-| Equity curve drawdown analysis | `Domain/Extensions/EquityCurveExtensions.cs` |
-| Tearsheet record (performance summary) | `Domain/Helpers/TearSheet.cs` |
-| IStrategy interface | `Domain/Interfaces/IStrategy.cs` |
-| IPortfolio interface (14 methods) | `Domain/Interfaces/IPortfolio.cs` |
-| IPositionSizer interface | `Domain/Interfaces/IPositionSizer.cs` |
-| IBrokerage interface | `Domain/Interfaces/IBrokerage.cs` |
-| ICapitalAllocationStrategy (no impls yet) | `Domain/Interfaces/ICapitalAllocationStrategy.cs` |
-| MarketData record | `Domain/Data/MarketData.cs` |
-| Event records (Market/Signal/Order/Fill) | `Domain/Events/` |
-| CalculationException | `Domain/Exceptions/CalculationException.cs` |
-| Portfolio implementation | `Application/Portfolio.cs` |
-| Backtest engine | `Application/Backtest.cs` |
-| SimulatedBrokerage | `Application/Brokers/SimulatedBrokerage.cs` |
-| BuyAndHoldStrategy | `Application/Strategies/BuyAndHoldStrategy.cs` |
-| RebalancingBuyAndHoldStrategy | `Application/Strategies/RebalancingBuyAndHoldStrategy.cs` |
-| FixedWeightPositionSizer | `Application/PositionSizing/FixedWeightPositionSizer.cs` |
-| Event handlers | `Application/EventHandlers/` |
-| CompositeMarketDataFetcher | `Application/CompositeMarketDataFetcher.cs` |
-| RollingWindow\<T\> (circular buffer) | `Domain/Helpers/RollingWindow.cs` |
-| ICovarianceEstimator interface | `Domain/Interfaces/ICovarianceEstimator.cs` |
-| IPortfolioConstructionModel interface | `Domain/Interfaces/IPortfolioConstructionModel.cs` |
-| ILeveragedConstructionModel interface | `Domain/Interfaces/ILeveragedConstructionModel.cs` |
-| IRebalancingTrigger interface | `Domain/Interfaces/IRebalancingTrigger.cs` |
-| Covariance estimators (Sample, EWMA, Ledoit-Wolf) | `Application/CovarianceEstimators/` |
-| Portfolio construction models (6 models) | `Application/PortfolioConstruction/` |
-| Rebalancing triggers (Calendar, Threshold) | `Application/Rebalancing/` |
-| ConstructionModelStrategy | `Application/Strategies/ConstructionModelStrategy.cs` |
-| DynamicWeightPositionSizer | `Application/PositionSizing/DynamicWeightPositionSizer.cs` |
-| Analytics domain records (Phase 3) | `Domain/Analytics/` |
-| BrinsonFachlerAttributor | `Application/Analytics/BrinsonFachlerAttributor.cs` |
-| FactorRegressor | `Application/Analytics/FactorRegressor.cs` |
-| CorrelationAnalyzer | `Application/Analytics/CorrelationAnalyzer.cs` |
-| DrawdownAnalyzer | `Application/Analytics/DrawdownAnalyzer.cs` |
-| HtmlReportGenerator | `Application/Reporting/HtmlReportGenerator.cs` |
-| BenchmarkComparisonReport | `Application/Reporting/BenchmarkComparisonReport.cs` |
-| IIndicator interface | `Domain/Interfaces/IIndicator.cs` |
-| IMacroIndicator interface | `Domain/Interfaces/IMacroIndicator.cs` |
-| IRegimeClassifier interface | `Domain/Interfaces/IRegimeClassifier.cs` |
-| IUniverseSelector interface | `Domain/Interfaces/IUniverseSelector.cs` |
-| Core indicators (SMA, EMA, RealizedVol, Momentum) | `Application/Indicators/` |
-| Macro indicators (Spread, RateOfChange) | `Application/Indicators/` |
-| GrowthInflationRegimeClassifier | `Application/Regime/GrowthInflationRegimeClassifier.cs` |
-| TacticalOverlayConstruction | `Application/PortfolioConstruction/TacticalOverlayConstruction.cs` |
-| VolatilityTargetingConstruction | `Application/PortfolioConstruction/VolatilityTargetingConstruction.cs` |
-| WalkForwardOptimizer | `Application/Analytics/WalkForwardOptimizer.cs` |
-| MonteCarloSimulator | `Application/Analytics/MonteCarloSimulator.cs` |
-| Universe filters (MinAum, MinAge, Liquidity, Composite) | `Application/Universe/` |
-| Analytics domain records (7) | `Domain/Analytics/` |
-| IRiskManager interface | `Domain/Interfaces/IRiskManager.cs` |
-| IRiskRule interface | `Domain/Interfaces/IRiskRule.cs` |
-| RiskEvaluation value object | `Domain/ValueObjects/RiskEvaluation.cs` |
-| Risk rules (MaxDrawdown, MaxPositionSize, MaxSectorExposure) | `Application/RiskManagement/` |
-| RiskManager (composite) | `Application/RiskManagement/RiskManager.cs` |
-| DI registration (ServiceCollectionExtensions) | `Application/Configuration/ServiceCollectionExtensions.cs` |
-| BacktestOptions, CostModelOptions, RiskManagementOptions | `Application/Configuration/` |
+| Financial metrics (extension methods on `decimal[]`) | `src/Domain/Extensions/DecimalArrayExtensions.cs` |
+| Equity curve drawdown analysis | `src/Domain/Extensions/EquityCurveExtensions.cs` |
+| Tearsheet record (performance summary) | `src/Domain/Helpers/TearSheet.cs` |
+| IStrategy interface | `src/Domain/Interfaces/IStrategy.cs` |
+| IPortfolio interface (14 methods) | `src/Domain/Interfaces/IPortfolio.cs` |
+| IPositionSizer interface | `src/Domain/Interfaces/IPositionSizer.cs` |
+| IBrokerage interface | `src/Domain/Interfaces/IBrokerage.cs` |
+| ICapitalAllocationStrategy (no impls yet) | `src/Domain/Interfaces/ICapitalAllocationStrategy.cs` |
+| MarketData record | `src/Domain/Data/MarketData.cs` |
+| Event records (Market/Signal/Order/Fill) | `src/Domain/Events/` |
+| CalculationException | `src/Domain/Exceptions/CalculationException.cs` |
+| Portfolio implementation | `src/Application/Portfolio.cs` |
+| Backtest engine | `src/Application/Backtest.cs` |
+| SimulatedBrokerage | `src/Application/Brokers/SimulatedBrokerage.cs` |
+| BuyAndHoldStrategy | `src/Application/Strategies/BuyAndHoldStrategy.cs` |
+| RebalancingBuyAndHoldStrategy | `src/Application/Strategies/RebalancingBuyAndHoldStrategy.cs` |
+| FixedWeightPositionSizer | `src/Application/PositionSizing/FixedWeightPositionSizer.cs` |
+| Event handlers | `src/Application/EventHandlers/` |
+| CompositeMarketDataFetcher | `src/Application/CompositeMarketDataFetcher.cs` |
+| RollingWindow\<T\> (circular buffer) | `src/Domain/Helpers/RollingWindow.cs` |
+| ICovarianceEstimator interface | `src/Domain/Interfaces/ICovarianceEstimator.cs` |
+| IPortfolioConstructionModel interface | `src/Domain/Interfaces/IPortfolioConstructionModel.cs` |
+| ILeveragedConstructionModel interface | `src/Domain/Interfaces/ILeveragedConstructionModel.cs` |
+| IRebalancingTrigger interface | `src/Domain/Interfaces/IRebalancingTrigger.cs` |
+| Covariance estimators (Sample, EWMA, Ledoit-Wolf) | `src/Application/CovarianceEstimators/` |
+| Portfolio construction models (6 models) | `src/Application/PortfolioConstruction/` |
+| Rebalancing triggers (Calendar, Threshold) | `src/Application/Rebalancing/` |
+| ConstructionModelStrategy | `src/Application/Strategies/ConstructionModelStrategy.cs` |
+| DynamicWeightPositionSizer | `src/Application/PositionSizing/DynamicWeightPositionSizer.cs` |
+| Analytics domain records (Phase 3) | `src/Domain/Analytics/` |
+| BrinsonFachlerAttributor | `src/Application/Analytics/BrinsonFachlerAttributor.cs` |
+| FactorRegressor | `src/Application/Analytics/FactorRegressor.cs` |
+| CorrelationAnalyzer | `src/Application/Analytics/CorrelationAnalyzer.cs` |
+| DrawdownAnalyzer | `src/Application/Analytics/DrawdownAnalyzer.cs` |
+| HtmlReportGenerator | `src/Application/Reporting/HtmlReportGenerator.cs` |
+| BenchmarkComparisonReport | `src/Application/Reporting/BenchmarkComparisonReport.cs` |
+| IIndicator interface | `src/Domain/Interfaces/IIndicator.cs` |
+| IMacroIndicator interface | `src/Domain/Interfaces/IMacroIndicator.cs` |
+| IRegimeClassifier interface | `src/Domain/Interfaces/IRegimeClassifier.cs` |
+| IUniverseSelector interface | `src/Domain/Interfaces/IUniverseSelector.cs` |
+| Core indicators (SMA, EMA, RealizedVol, Momentum) | `src/Application/Indicators/` |
+| Macro indicators (Spread, RateOfChange) | `src/Application/Indicators/` |
+| GrowthInflationRegimeClassifier | `src/Application/Regime/GrowthInflationRegimeClassifier.cs` |
+| TacticalOverlayConstruction | `src/Application/PortfolioConstruction/TacticalOverlayConstruction.cs` |
+| VolatilityTargetingConstruction | `src/Application/PortfolioConstruction/VolatilityTargetingConstruction.cs` |
+| WalkForwardOptimizer | `src/Application/Analytics/WalkForwardOptimizer.cs` |
+| MonteCarloSimulator | `src/Application/Analytics/MonteCarloSimulator.cs` |
+| Universe filters (MinAum, MinAge, Liquidity, Composite) | `src/Application/Universe/` |
+| Analytics domain records (7) | `src/Domain/Analytics/` |
+| IRiskManager interface | `src/Domain/Interfaces/IRiskManager.cs` |
+| IRiskRule interface | `src/Domain/Interfaces/IRiskRule.cs` |
+| RiskEvaluation value object | `src/Domain/ValueObjects/RiskEvaluation.cs` |
+| Risk rules (MaxDrawdown, MaxPositionSize, MaxSectorExposure) | `src/Application/RiskManagement/` |
+| RiskManager (composite) | `src/Application/RiskManagement/RiskManager.cs` |
+| DI registration (ServiceCollectionExtensions) | `src/Application/Configuration/ServiceCollectionExtensions.cs` |
+| BacktestOptions, CostModelOptions, RiskManagementOptions | `src/Application/Configuration/` |
 
 ### Domain Interfaces (24)
 

@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Boutquin.Trading.Application\Boutquin.Trading.Application.csproj" />
+    <ProjectReference Include="..\Application\Boutquin.Trading.Application.csproj" />
   </ItemGroup>
 
 </Project>
