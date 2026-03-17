@@ -137,7 +137,8 @@ public sealed class FrankfurterFetcher : IMarketDataFetcher, IDisposable
             FrankfurterRangeResponse? rangeResponse;
             try
             {
-                var response = await _httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
+                // R2I-05: Dispose HttpResponseMessage
+                using var response = await _httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
 
                 if (!response.IsSuccessStatusCode)
                 {

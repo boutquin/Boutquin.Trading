@@ -47,4 +47,11 @@ public sealed class SecurityPriceTests
         volumeProperty.Should().NotBeNull();
         volumeProperty!.PropertyType.Should().Be(typeof(long));
     }
+
+    // R2I-06: SecurityPrice price scale must be >= 4 to handle penny stocks, crypto, FX, adjusted close
+    [Fact]
+    public void SecurityPrice_PriceScale_IsAtLeast4()
+    {
+        ColumnConstants.SecurityPrice_Price_Scale.Should().BeGreaterThanOrEqualTo(4);
+    }
 }

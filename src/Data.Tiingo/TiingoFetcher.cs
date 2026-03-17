@@ -35,6 +35,7 @@ public sealed class TiingoFetcher : IMarketDataFetcher, IDisposable
     private readonly HttpClient _httpClient;
     private readonly bool _ownsClient;
     private readonly string _apiEndpoint;
+    private readonly string _apiKey;
 
     private static readonly JsonSerializerOptions s_jsonOptions = new()
     {
@@ -52,9 +53,8 @@ public sealed class TiingoFetcher : IMarketDataFetcher, IDisposable
         _ownsClient = httpClient == null;
         _httpClient = httpClient ?? new HttpClient();
         _apiEndpoint = apiEndpoint.TrimEnd('/');
-
-        _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", $"Token {apiKey}");
-        _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", "application/json");
+        _apiKey = apiKey;
+        // R2I-03: Auth headers are now set per-request via CreateRequest() to avoid mutating shared HttpClient.
     }
 
     /// <inheritdoc/>
@@ -78,7 +78,8 @@ public sealed class TiingoFetcher : IMarketDataFetcher, IDisposable
             TiingoDailyPrice[]? prices;
             try
             {
-                var response = await _httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
+                // R2I-03: Per-request headers; R2I-04: Dispose HttpResponseMessage
+                using var response = await _httpClient.SendAsync(CreateRequest(url), cancellationToken).ConfigureAwait(false);
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -142,6 +143,17 @@ public sealed class TiingoFetcher : IMarketDataFetcher, IDisposable
     {
         throw new NotSupportedException(
             "TiingoFetcher provides equity data only. Use FrankfurterFetcher for FX rates.");
+    }
+
+    /// <summary>
+    /// Creates an HttpRequestMessage with per-request auth headers.
+    /// </summary>
+    private HttpRequestMessage CreateRequest(string url)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, url);
+        request.Headers.TryAddWithoutValidation("Authorization", $"Token {_apiKey}");
+        request.Headers.TryAddWithoutValidation("Content-Type", "application/json");
+        return request;
     }
 
     public void Dispose()

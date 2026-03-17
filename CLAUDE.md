@@ -41,6 +41,9 @@ Quantitative trading framework in C# .NET. Pre-release.
 
 - **Composite pattern for `IMarketDataFetcher`** — `CompositeMarketDataFetcher` delegates `FetchMarketDataAsync` → `TiingoFetcher` (equities) and `FetchFxRatesAsync` → `FrankfurterFetcher` (FX rates). Single-responsibility fetchers that each throw `NotSupportedException` for the method they don't handle. Consumers use the composite.
 - **FrankfurterFetcher supports date range filtering** — Constructor accepts optional `DateOnly? startDate` and `DateOnly? endDate` parameters. Defaults to `1999-01-04..` (full history) for backward compatibility. Currency codes and base currency are URL-encoded via `Uri.EscapeDataString` for defense-in-depth.
+- **`IEconomicDataFetcher`** — New interface for scalar economic time series (treasury yields, macro indicators). Returns `IAsyncEnumerable<KeyValuePair<DateOnly, decimal>>` for a given series ID. Not part of `IMarketDataFetcher` because FRED data is scalar, not OHLCV/FX.
+- **`FredFetcher`** — Fetches from FRED REST API. API key required (free). Returns raw values as FRED provides them (e.g., yields in percent, not decimal). Caller transforms. Missing values (`"."`) are silently skipped.
+- **`FredSeriesConstants`** — Well-known FRED series IDs for treasury yields, inflation, and growth indicators.
 - **Deprecating a data provider project** — Checklist: (1) delete project directory, (2) `dotnet sln remove`, (3) remove `ProjectReference` entries from all consuming `.csproj` files, (4) update `GlobalUsings.cs` and source code to use replacement, (5) add new `ProjectReference` entries for replacement projects, (6) grep for old namespace to catch stragglers.
 
 ## Portfolio Construction Architecture (Phase 2)
@@ -52,7 +55,7 @@ Quantitative trading framework in C# .NET. Pre-release.
 - **`RollingWindow<T>`** — Generic circular buffer in `Domain/Helpers/`. Fixed capacity, drops oldest on add, chronological iteration. Used for windowed return series.
 - **`IRebalancingTrigger`** — Two implementations: `CalendarRebalancingTrigger` (always true, calendar logic in strategy), `ThresholdRebalancingTrigger` (fires when any asset drifts beyond band).
 - **`ConstructionModelStrategy`** — Wires `IPortfolioConstructionModel` + `IRebalancingTrigger` + `RebalancingFrequency` into the strategy pipeline. Extracts rolling returns from `historicalMarketData`, computes target weights dynamically at each rebalance. Stores `LastComputedWeights` for `DynamicWeightPositionSizer` to read.
-- **`ConstructionModelStrategy.ComputeCurrentWeights` must throw on missing FX rate** — When computing current weights for multi-currency portfolios, a missing FX rate must throw `InvalidOperationException`, not silently use the unconverted asset value. Consistent with `StrategyBase.ComputeTotalValue` behavior.
+- **`ConstructionModelStrategy.ComputeCurrentWeights` must throw on missing FX rate** — When computing current weights for multi-currency portfolios, a missing FX rate must throw `InvalidOperationException`, not silently use the unconverted asset value. Consistent with `StrategyBase.ComputeTotalValue` behavior. The caller `GenerateSignals` wraps this in a try-catch (M9 resilience) that logs the failure and falls back to empty weights, triggering a full rebalance. Both layers are intentional: the computation never returns silently wrong values, and the caller has an explicit recovery path. Do not remove the M9 try-catch.
 - **`DynamicWeightPositionSizer`** — Reads `LastComputedWeights` from `ConstructionModelStrategy` to compute position sizes. Falls back to equal weight if no computed weights available.
 - **Optimization approach** — `MeanVarianceConstruction` and `MinimumVarianceConstruction` use projected gradient descent with line search and simplex projection. `RiskParityConstruction` uses iterative inverse-MRC algorithm.
 - **Line search acceptance must require strict improvement** — MeanVariance: `newUtility > oldUtility`. MinimumVariance: `newVar < oldVar`. Conditions like `newVar <= oldVar + tolerance` accept worsening steps on every iteration, causing divergence.
@@ -109,6 +112,7 @@ Quantitative trading framework in C# .NET. Pre-release.
 | `Boutquin.Trading.Application` | `src/Application/` | Domain, System.Linq.Async 7.0.0, M.E.DependencyInjection 10.0.5, M.E.Options.ConfigurationExtensions 10.0.5 |
 | `Boutquin.Trading.Data.Tiingo` | `src/Data.Tiingo/` | Domain |
 | `Boutquin.Trading.Data.Frankfurter` | `src/Data.Frankfurter/` | Domain |
+| `Boutquin.Trading.Data.Fred` | `src/Data.Fred/` | Domain |
 | `Boutquin.Trading.Data.CSV` | `src/Data.CSV/` | Domain |
 | `Boutquin.Trading.Data.Processor` | `src/Data.Processor/` | Domain, Application |
 | `Boutquin.Trading.DataAccess` | `src/DataAccess/` | Domain |
@@ -141,6 +145,9 @@ Quantitative trading framework in C# .NET. Pre-release.
 | FixedWeightPositionSizer | `src/Application/PositionSizing/FixedWeightPositionSizer.cs` |
 | Event handlers | `src/Application/EventHandlers/` |
 | CompositeMarketDataFetcher | `src/Application/CompositeMarketDataFetcher.cs` |
+| IEconomicDataFetcher interface | `src/Domain/Interfaces/IEconomicDataFetcher.cs` |
+| FredFetcher | `src/Data.Fred/FredFetcher.cs` |
+| FRED series constants | `src/Data.Fred/FredSeriesConstants.cs` |
 | RollingWindow\<T\> (circular buffer) | `src/Domain/Helpers/RollingWindow.cs` |
 | ICovarianceEstimator interface | `src/Domain/Interfaces/ICovarianceEstimator.cs` |
 | IPortfolioConstructionModel interface | `src/Domain/Interfaces/IPortfolioConstructionModel.cs` |
@@ -179,9 +186,9 @@ Quantitative trading framework in C# .NET. Pre-release.
 | DI registration (ServiceCollectionExtensions) | `src/Application/Configuration/ServiceCollectionExtensions.cs` |
 | BacktestOptions, CostModelOptions, RiskManagementOptions | `src/Application/Configuration/` |
 
-### Domain Interfaces (24)
+### Domain Interfaces (25)
 
-`IBrokerage`, `ICapitalAllocationStrategy`, `ICovarianceEstimator`, `ICurrencyConversionService`, `IEventHandler`, `IEventProcessor`, `IFinancialEvent`, `IIndicator`, `ILeveragedConstructionModel`, `IMacroIndicator`, `IMarketDataFetcher`, `IMarketDataProcessor`, `IMarketDataStorage`, `IOrderPriceCalculationStrategy`, `IPortfolio`, `IPortfolioConstructionModel`, `IPositionSizer`, `IRebalancingTrigger`, `IRegimeClassifier`, `IRiskManager`, `IRiskRule`, `IStrategy`, `ISymbolReader`, `IUniverseSelector`
+`IBrokerage`, `ICapitalAllocationStrategy`, `ICovarianceEstimator`, `ICurrencyConversionService`, `IEconomicDataFetcher`, `IEventHandler`, `IEventProcessor`, `IFinancialEvent`, `IIndicator`, `ILeveragedConstructionModel`, `IMacroIndicator`, `IMarketDataFetcher`, `IMarketDataProcessor`, `IMarketDataStorage`, `IOrderPriceCalculationStrategy`, `IPortfolio`, `IPortfolioConstructionModel`, `IPositionSizer`, `IRebalancingTrigger`, `IRegimeClassifier`, `IRiskManager`, `IRiskRule`, `IStrategy`, `ISymbolReader`, `IUniverseSelector`
 
 ### Domain Enums (13)
 

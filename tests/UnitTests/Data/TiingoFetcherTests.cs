@@ -234,4 +234,25 @@ public sealed class TiingoFetcherTests
         results[0].Key.Should().Be(new DateOnly(2024, 1, 15));
         results[0].Value[new Asset("AAPL")].Timestamp.Should().Be(new DateOnly(2024, 1, 15));
     }
+
+    // R2I-03: Verify per-request headers don't mutate the injected HttpClient
+    [Fact]
+    public async Task FetchMarketDataAsync_DoesNotMutateInjectedClientHeaders()
+    {
+        var handler = CreateMockHandler(SingleDayJson);
+        var client = new HttpClient(handler);
+        using var fetcher = new TiingoFetcher(ValidApiKey, client, "https://api.tiingo.com");
+
+        await foreach (var _ in fetcher.FetchMarketDataAsync(new[] { new Asset("AAPL") }, CancellationToken.None))
+        {
+        }
+
+        // The injected client's DefaultRequestHeaders should NOT have Authorization
+        client.DefaultRequestHeaders.Contains("Authorization").Should().BeFalse(
+            "auth headers should be per-request, not on the shared client");
+        // But the request itself should have it
+        handler.LastRequest!.Headers.GetValues("Authorization").Should().Contain($"Token {ValidApiKey}");
+
+        client.Dispose();
+    }
 }

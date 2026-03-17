@@ -19,26 +19,74 @@ using System.Text;
 
 namespace Boutquin.Trading.Tests.UnitTests.Helpers;
 
+/// <summary>
+/// Mock HTTP message handler for testing. Supports both single fixed response
+/// and per-URL response mapping for multi-symbol fetcher tests.
+/// </summary>
 public sealed class MockHttpMessageHandler : HttpMessageHandler
 {
-    private readonly string _responseBody;
-    private readonly HttpStatusCode _statusCode;
+    private readonly string? _defaultResponseBody;
+    private readonly HttpStatusCode _defaultStatusCode;
+    private readonly Dictionary<string, (string Body, HttpStatusCode Status)> _urlResponses;
 
     public HttpRequestMessage? LastRequest { get; private set; }
+    public List<HttpRequestMessage> AllRequests { get; } = [];
 
+    /// <summary>
+    /// Creates a handler that returns the same response for all requests (backward compatible).
+    /// </summary>
     public MockHttpMessageHandler(string responseBody, HttpStatusCode statusCode = HttpStatusCode.OK)
     {
-        _responseBody = responseBody ?? throw new ArgumentNullException(nameof(responseBody));
-        _statusCode = statusCode;
+        _defaultResponseBody = responseBody ?? throw new ArgumentNullException(nameof(responseBody));
+        _defaultStatusCode = statusCode;
+        _urlResponses = new Dictionary<string, (string, HttpStatusCode)>(StringComparer.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Creates a handler with per-URL response mapping. Uses substring matching if exact match fails.
+    /// </summary>
+    public MockHttpMessageHandler(Dictionary<string, (string Body, HttpStatusCode Status)> urlResponses)
+    {
+        _urlResponses = urlResponses ?? throw new ArgumentNullException(nameof(urlResponses));
+        _defaultResponseBody = null;
+        _defaultStatusCode = HttpStatusCode.NotFound;
     }
 
     protected override Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request, CancellationToken cancellationToken)
     {
         LastRequest = request;
-        return Task.FromResult(new HttpResponseMessage(_statusCode)
+        AllRequests.Add(request);
+
+        var url = request.RequestUri?.ToString() ?? string.Empty;
+
+        // Try exact match first
+        if (_urlResponses.TryGetValue(url, out var match))
         {
-            Content = new StringContent(_responseBody, Encoding.UTF8, "application/json")
-        });
+            return CreateResponse(match.Body, match.Status);
+        }
+
+        // Then substring match
+        foreach (var kvp in _urlResponses)
+        {
+            if (url.Contains(kvp.Key, StringComparison.OrdinalIgnoreCase))
+            {
+                return CreateResponse(kvp.Value.Body, kvp.Value.Status);
+            }
+        }
+
+        // Fall back to default
+        if (_defaultResponseBody != null)
+        {
+            return CreateResponse(_defaultResponseBody, _defaultStatusCode);
+        }
+
+        return CreateResponse("{}", HttpStatusCode.NotFound);
     }
+
+    private static Task<HttpResponseMessage> CreateResponse(string body, HttpStatusCode status) =>
+        Task.FromResult(new HttpResponseMessage(status)
+        {
+            Content = new StringContent(body, Encoding.UTF8, "application/json")
+        });
 }

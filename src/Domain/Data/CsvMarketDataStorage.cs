@@ -107,7 +107,8 @@ public sealed class CsvMarketDataStorage : IMarketDataStorage
                 }
                 fileStream.Seek(0, SeekOrigin.End);
                 await using var appendWriter = new StreamWriter(fileStream);
-                var line = $"{marketData.Timestamp},{marketData.Open},{marketData.High},{marketData.Low},{marketData.Close},{marketData.AdjustedClose},{marketData.Volume},{marketData.DividendPerShare},{marketData.SplitCoefficient}";
+                // R2I-07: Use InvariantCulture to prevent comma-as-decimal on non-US locales
+                var line = FormattableString.Invariant($"{marketData.Timestamp},{marketData.Open},{marketData.High},{marketData.Low},{marketData.Close},{marketData.AdjustedClose},{marketData.Volume},{marketData.DividendPerShare},{marketData.SplitCoefficient}");
                 await appendWriter.WriteLineAsync(line).ConfigureAwait(false);
             }
             catch (IOException ex)
@@ -162,7 +163,8 @@ public sealed class CsvMarketDataStorage : IMarketDataStorage
 
                 foreach (var dataPoint in symbolDataPoints.Value)
                 {
-                    var line = $"{dataPoint.Timestamp},{dataPoint.Open},{dataPoint.High},{dataPoint.Low},{dataPoint.Close},{dataPoint.AdjustedClose},{dataPoint.Volume},{dataPoint.DividendPerShare},{dataPoint.SplitCoefficient}";
+                    // R2I-07: Use InvariantCulture to prevent comma-as-decimal on non-US locales
+                    var line = FormattableString.Invariant($"{dataPoint.Timestamp},{dataPoint.Open},{dataPoint.High},{dataPoint.Low},{dataPoint.Close},{dataPoint.AdjustedClose},{dataPoint.Volume},{dataPoint.DividendPerShare},{dataPoint.SplitCoefficient}");
                     await appendWriter.WriteLineAsync(line).ConfigureAwait(false);
                 }
             }

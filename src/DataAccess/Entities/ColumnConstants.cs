@@ -153,7 +153,8 @@ public static class ColumnConstants
     /// <summary>
     /// The scale of the OpenPrice, HighPrice, LowPrice, ClosePrice, and Dividend columns in the SecurityPrice table.
     /// </summary>
-    public const int SecurityPrice_Price_Scale = 2;
+    // R2I-06: Scale 2 truncated penny stocks, crypto, FX, and adjusted close. Increased to 4.
+    public const int SecurityPrice_Price_Scale = 4;
 
     // FxRate table
     /// <summary>

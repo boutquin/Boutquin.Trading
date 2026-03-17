@@ -105,6 +105,16 @@ public static class ServiceCollectionExtensions
                 rules.Add(new MaxPositionSizeRule(options.MaxPositionSizePercent));
             }
 
+            // R2I-02: Wire MaxSectorExposureRule when configured
+            if (options.MaxSectorExposurePercent > 0)
+            {
+                var assetClassMapping = sp.GetService<IReadOnlyDictionary<Domain.ValueObjects.Asset, AssetClassCode>>()
+                    ?? throw new InvalidOperationException(
+                        "MaxSectorExposurePercent is configured but no IReadOnlyDictionary<Asset, AssetClassCode> " +
+                        "is registered in DI. Register the asset-class mapping or set MaxSectorExposurePercent to 0.");
+                rules.Add(new MaxSectorExposureRule(options.MaxSectorExposurePercent, assetClassMapping));
+            }
+
             return new RiskManager(rules);
         });
 
@@ -119,11 +129,12 @@ public static class ServiceCollectionExtensions
                 "MinimumVariance" => new MinimumVarianceConstruction(new SampleCovarianceEstimator()),
                 "MeanVariance" => new MeanVarianceConstruction(new SampleCovarianceEstimator()),
                 "RiskParity" => new RiskParityConstruction(new SampleCovarianceEstimator()),
-                // BlackLitterman requires equilibrium weights — default to equal-weight placeholder.
-                // Callers should configure proper equilibrium weights via the constructor directly.
-                "BlackLitterman" => new BlackLittermanConstruction(
-                    equilibriumWeights: [],
-                    covarianceEstimator: new SampleCovarianceEstimator()),
+                // R2I-01: BlackLitterman requires non-empty equilibrium weights.
+                // Registration via DI is not supported — register manually with proper weights.
+                "BlackLitterman" => throw new InvalidOperationException(
+                    "BlackLitterman construction model requires non-empty equilibrium weights. " +
+                    "Configure equilibrium weights and register BlackLittermanConstruction manually " +
+                    "instead of using AddBoutquinTrading DI registration."),
                 _ => throw new ArgumentOutOfRangeException(
                     nameof(options.ConstructionModel),
                     options.ConstructionModel,
