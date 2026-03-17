@@ -51,4 +51,11 @@ public sealed class BacktestOptions
     /// The portfolio construction model to use.
     /// </summary>
     public string ConstructionModel { get; set; } = "EqualWeight";
+
+    /// <summary>
+    /// The annualized risk-free rate as a decimal (e.g., 0.05 for 5%).
+    /// Used for Sharpe ratio, Sortino ratio, and CAPM alpha calculations.
+    /// Default: 0 (backward-compatible with existing behavior).
+    /// </summary>
+    public decimal RiskFreeRate { get; set; } = 0m;
 }

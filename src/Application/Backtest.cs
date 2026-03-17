@@ -49,6 +49,8 @@ public sealed class BackTest
 
     private readonly ILogger<BackTest> _logger;
 
+    private readonly decimal _dailyRiskFreeRate;
+
     /// <summary>
     /// Initializes a new instance of the BackTest class (backward-compatible overload).
     /// </summary>
@@ -73,6 +75,22 @@ public sealed class BackTest
         _marketDataFetcher = marketDataFetcher ?? throw new ArgumentNullException(nameof(marketDataFetcher), "The provided market reader source cannot be null.");
         _baseCurrency = baseCurrency;
         _logger = logger ?? NullLogger<BackTest>.Instance;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the BackTest class with structured logging and a risk-free rate.
+    /// </summary>
+    /// <param name="portfolio">A Portfolio object representing the trading portfolio.</param>
+    /// <param name="benchmarkPortfolio">A Portfolio object representing the benchmark portfolio.</param>
+    /// <param name="marketDataFetcher">An object implementing the IMarketDataFetcher interface, responsible for providing market data for the backtest.</param>
+    /// <param name="baseCurrency">A CurrencyCode enum value representing the base currency for the backtest.</param>
+    /// <param name="logger">A logger for structured logging.</param>
+    /// <param name="dailyRiskFreeRate">The daily risk-free rate as a decimal (e.g., 0.05/252 for 5% annualized). Default: 0.</param>
+    /// <exception cref="ArgumentNullException">Thrown when any of the provided arguments are null.</exception>
+    public BackTest(IPortfolio portfolio, IPortfolio benchmarkPortfolio, IMarketDataFetcher marketDataFetcher, CurrencyCode baseCurrency, ILogger<BackTest> logger, decimal dailyRiskFreeRate)
+        : this(portfolio, benchmarkPortfolio, marketDataFetcher, baseCurrency, logger)
+    {
+        _dailyRiskFreeRate = dailyRiskFreeRate;
     }
 
     /// <summary>
@@ -180,13 +198,13 @@ public sealed class BackTest
         var dailyReturns = _portfolio.EquityCurve.Values.ToArray().DailyReturns().ToArray();
 
         var annualizedReturn = dailyReturns.AnnualizedReturn();
-        var sharpeRatio = dailyReturns.SharpeRatio();
-        var sortinoRatio = dailyReturns.SortinoRatio();
+        var sharpeRatio = dailyReturns.SharpeRatio(_dailyRiskFreeRate);
+        var sortinoRatio = dailyReturns.SortinoRatio(_dailyRiskFreeRate);
         var cagr = dailyReturns.CompoundAnnualGrowthRate();
         var volatility = dailyReturns.Volatility();
 
         var benchmarkDailyReturns = _benchmarkPortfolio.EquityCurve.Values.ToArray().DailyReturns().ToArray();
-        var alpha = dailyReturns.Alpha(benchmarkDailyReturns);
+        var alpha = dailyReturns.Alpha(benchmarkDailyReturns, _dailyRiskFreeRate);
         var beta = dailyReturns.Beta(benchmarkDailyReturns);
         var informationRatio = dailyReturns.InformationRatio(benchmarkDailyReturns);
 
