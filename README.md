@@ -119,19 +119,19 @@ Configuration via `appsettings.json`:
 ## Architecture
 
 ```
-┌──────────────────────────────────────────────────────────────────────┐
+┌───────────────────────────────────────────────────────────────────────┐
 │                           Domain Layer                                │
 │  Interfaces: IPortfolio, IBrokerage, IStrategy, IPositionSizer,       │
-│    ICovarianceEstimator, IPortfolioConstructionModel, IRiskManager,    │
+│    ICovarianceEstimator, IPortfolioConstructionModel, IRiskManager,   │
 │    IIndicator, IMacroIndicator, IRegimeClassifier, IUniverseSelector  │
 │  Events: MarketEvent, SignalEvent, OrderEvent, FillEvent              │
 │  Enums: AssetClassCode, CurrencyCode, OrderType, TradeAction (13)     │
 │  Extensions: DecimalArrayExtensions, EquityCurveExtensions            │
-│  Analytics: BrinsonFachlerResult, DrawdownPeriod, MonteCarloResult     │
+│  Analytics: BrinsonFachlerResult, DrawdownPeriod, MonteCarloResult    │
 │  Value Objects: RiskEvaluation                                        │
-└───────────────────────────┬──────────────────────────────────────────┘
+└───────────────────────────┬───────────────────────────────────────────┘
                             │ depends on
-┌───────────────────────────▼──────────────────────────────────────────┐
+┌───────────────────────────▼───────────────────────────────────────────┐
 │                        Application Layer                              │
 │  Engine: Portfolio, BackTest, SimulatedBrokerage                      │
 │  Strategies: BuyAndHold, RebalancingBuyAndHold, ConstructionModel     │
@@ -140,15 +140,15 @@ Configuration via `appsettings.json`:
 │  Analytics: BrinsonFachler, FactorRegressor, CorrelationAnalyzer,     │
 │    DrawdownAnalyzer, WalkForwardOptimizer, MonteCarloSimulator        │
 │  Risk: RiskManager, MaxDrawdown, MaxPositionSize, MaxSectorExposure   │
-│  Indicators: SMA, EMA, RealizedVol, Momentum, Spread, RateOfChange   │
+│  Indicators: SMA, EMA, RealizedVol, Momentum, Spread, RateOfChange    │
 │  Reporting: HtmlReportGenerator, BenchmarkComparisonReport            │
 │  DI: ServiceCollectionExtensions, BacktestOptions, CostModelOptions   │
-└──────────────────────────────────────────────────────────────────────┘
-┌──────────────────────────────────────────────────────────────────────┐
+└───────────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────┐
 │                          Data Layer                                   │
 │  Tiingo (equities), Frankfurter (FX), CSV (symbols)                   │
 │  CompositeMarketDataFetcher, DataAccess (EF Core SecurityMaster)      │
-└──────────────────────────────────────────────────────────────────────┘
+└───────────────────────────────────────────────────────────────────────┘
 ```
 
 The architecture follows the dependency inversion principle — the Domain layer defines contracts, and Application/Data layers provide implementations that can be swapped independently.
