@@ -97,8 +97,8 @@ public sealed class DecimalArrayExtensionsTestData
     /// </summary>
     public static IEnumerable<object[]> CompoundAnnualGrowthRateData =>
     [
-        [new[] { 0.01m, 0.02m, -0.01m, 0.03m, -0.02m }, 332.56367192912200m],
-        [new[] { 0.05m, -0.02m, 0.03m, -0.01m, 0.01m }, 1764.4127297619500m]
+        [new[] { 0.01m, 0.02m, -0.01m, 0.03m, -0.02m }, 3.3256367192912200m],
+        [new[] { 0.05m, -0.02m, 0.03m, -0.01m, 0.01m }, 17.644127297619500m]
     ];
 
     /// <summary>

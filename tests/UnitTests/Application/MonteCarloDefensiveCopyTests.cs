@@ -21,21 +21,27 @@ using Boutquin.Trading.Application.Analytics;
 public sealed class MonteCarloDefensiveCopyTests
 {
     [Fact]
-    public void Run_MutatingReturnedArray_DoesNotAffectResult()
+    public void Run_ReturnedSharpeRatios_IsReadOnly()
     {
         var dailyReturns = new decimal[] { 0.01m, -0.02m, 0.03m, -0.01m, 0.02m, -0.03m, 0.01m, 0.00m, -0.01m, 0.02m };
         var simulator = new MonteCarloSimulator(simulationCount: 50, seed: 42);
 
-        var result1 = simulator.Run(dailyReturns);
-        var originalFirstSharpe = result1.SharpeRatios[0];
+        var result = simulator.Run(dailyReturns);
 
-        // Mutate the returned array
-        result1.SharpeRatios[0] = 999.99m;
+        // SharpeRatios is IReadOnlyList<decimal> — cannot be mutated
+        result.SharpeRatios.Should().BeAssignableTo<IReadOnlyList<decimal>>();
+        result.SharpeRatios.Count.Should().Be(50);
+    }
 
-        // Run again with same seed — should produce the same original result
-        var result2 = simulator.Run(dailyReturns);
+    [Fact]
+    public void Run_DeterministicSeed_ProducesConsistentResults()
+    {
+        var dailyReturns = new decimal[] { 0.01m, -0.02m, 0.03m, -0.01m, 0.02m, -0.03m, 0.01m, 0.00m, -0.01m, 0.02m };
 
-        result2.SharpeRatios[0].Should().Be(originalFirstSharpe,
-            "mutating the returned SharpeRatios array should not affect subsequent runs");
+        var result1 = new MonteCarloSimulator(simulationCount: 50, seed: 42).Run(dailyReturns);
+        var result2 = new MonteCarloSimulator(simulationCount: 50, seed: 42).Run(dailyReturns);
+
+        result1.SharpeRatios[0].Should().Be(result2.SharpeRatios[0],
+            "same seed should produce identical results across runs");
     }
 }

@@ -52,10 +52,15 @@ public static class DecimalArrayExtensions
         }
 
         // Calculate the annualized return of the portfolio.
-        var annualizedReturn = (decimal)Math.Pow((double)(cumulativeReturn + 1m), (double)(tradingDaysPerYear / (decimal)dailyReturns.Length)) - 1m;
-
-        // Return the annualized return.
-        return annualizedReturn;
+        try
+        {
+            var annualizedReturn = (decimal)Math.Pow((double)(cumulativeReturn + 1m), (double)(tradingDaysPerYear / (decimal)dailyReturns.Length)) - 1m;
+            return annualizedReturn;
+        }
+        catch (OverflowException)
+        {
+            throw new CalculationException("Annualized return calculation overflowed; cumulative return is too extreme for decimal precision.");
+        }
     }
 
     /// <summary>
@@ -168,6 +173,12 @@ public static class DecimalArrayExtensions
 
         var averageReturn = dailyReturns.Average() - riskFreeRate;
         var downsideDeviation = dailyReturns.DownsideDeviation(riskFreeRate);
+
+        if (downsideDeviation == 0m)
+        {
+            throw new CalculationException("Sortino ratio is undefined when downside deviation is zero (no downside risk).");
+        }
+
         return averageReturn / downsideDeviation;
     }
 
@@ -201,7 +212,7 @@ public static class DecimalArrayExtensions
     /// </summary>
     /// <param name="dailyReturns">An array of daily returns.</param>
     /// <param name="tradingDaysPerYear">The number of trading days per year, by default 252.</param>
-    /// <returns>The CAGR expressed as a percentage.</returns>
+    /// <returns>The CAGR expressed as a raw decimal ratio (e.g., 0.125 for 12.5%).</returns>
     /// <exception cref="EmptyOrNullArrayException">Thrown when the <paramref name="dailyReturns"/> array is null or empty.</exception>
     /// <exception cref="InsufficientDataException">Thrown when the <paramref name="dailyReturns"/> array contains less than two elements for sample calculation.</exception>
     /// <exception cref="CalculationException">Thrown when the calculated CAGR value is too large or too small for a decimal.</exception>
@@ -235,7 +246,7 @@ public static class DecimalArrayExtensions
         {
             // CAGR = [(Cumulative Return) ^ (1 / Total Years)] - 1
             var growthRate = (decimal)Math.Pow((double)cumulativeReturn, 1.0 / totalYears) - 1;
-            return growthRate * 100;
+            return growthRate;
         }
         catch (OverflowException ex)
         {
@@ -272,12 +283,6 @@ public static class DecimalArrayExtensions
         // B2 fix: Use sample divisor (N-1) to align with StandardDeviation (sample-based)
         var averageSquaredDownsideReturn = squaredDownsideReturns.Sum() / (squaredDownsideReturns.Length - 1);
         var result = (decimal)Math.Sqrt((double)averageSquaredDownsideReturn);
-
-        // B5 fix: Guard zero downside deviation to prevent division by zero in SortinoRatio
-        if (result == 0m)
-        {
-            throw new CalculationException("Downside deviation is zero; cannot compute Sortino ratio.");
-        }
 
         return result;
     }

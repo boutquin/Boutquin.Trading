@@ -34,7 +34,7 @@ public sealed class MonteCarloTests
         var result = simulator.Run(returns);
 
         result.SimulationCount.Should().Be(1000);
-        result.SharpeRatios.Length.Should().Be(1000);
+        result.SharpeRatios.Count.Should().Be(1000);
         result.Percentile5Sharpe.Should().BeLessThanOrEqualTo(result.MedianSharpe);
         result.MedianSharpe.Should().BeLessThanOrEqualTo(result.Percentile95Sharpe);
     }

@@ -20,14 +20,14 @@ namespace Boutquin.Trading.Domain.Analytics;
 /// Result of a Monte Carlo bootstrap simulation over portfolio returns.
 /// </summary>
 /// <param name="SimulationCount">Number of bootstrap simulations run.</param>
-/// <param name="SharpeRatios">Sharpe ratios from each simulation, sorted ascending. This is a defensive copy; callers should not mutate it.</param>
+/// <param name="SharpeRatios">Sharpe ratios from each simulation, sorted ascending. Exposed as read-only to prevent mutation.</param>
 /// <param name="MedianSharpe">Median Sharpe ratio across simulations.</param>
 /// <param name="Percentile5Sharpe">5th percentile Sharpe ratio (worst-case).</param>
 /// <param name="Percentile95Sharpe">95th percentile Sharpe ratio (best-case).</param>
 /// <param name="MeanSharpe">Mean Sharpe ratio across simulations.</param>
 public sealed record MonteCarloResult(
     int SimulationCount,
-    decimal[] SharpeRatios,
+    IReadOnlyList<decimal> SharpeRatios,
     decimal MedianSharpe,
     decimal Percentile5Sharpe,
     decimal Percentile95Sharpe,

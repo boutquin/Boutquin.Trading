@@ -132,7 +132,12 @@ public static class EquityCurveExtensions
         {
             var prevValue = monthlyLastValues[months[i - 1]];
             var currValue = monthlyLastValues[months[i]];
-            result[months[i]] = prevValue == 0 ? 0 : (currValue / prevValue) - 1;
+            if (prevValue == 0)
+            {
+                throw new CalculationException("Previous-period equity is zero (total loss); cannot calculate return.");
+            }
+
+            result[months[i]] = (currValue / prevValue) - 1;
         }
 
         return result;
@@ -165,7 +170,12 @@ public static class EquityCurveExtensions
         {
             var prevValue = yearlyLastValues[years[i - 1]];
             var currValue = yearlyLastValues[years[i]];
-            result[years[i]] = prevValue == 0 ? 0 : (currValue / prevValue) - 1;
+            if (prevValue == 0)
+            {
+                throw new CalculationException("Previous-period equity is zero (total loss); cannot calculate return.");
+            }
+
+            result[years[i]] = (currValue / prevValue) - 1;
         }
 
         return result;

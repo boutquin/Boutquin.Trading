@@ -385,10 +385,10 @@ public sealed class DecimalArrayExtensionsTests
     public void CalmarRatio_ShouldReturnCorrectResult()
     {
         var dailyReturns = new[] { 0.01m, 0.02m, -0.01m, 0.03m, -0.005m, 0.015m, -0.01m, 0.02m, 0.01m, -0.005m };
-        // CAGR ≈ 542.67 (annualized over 252 trading days from 10 data points), maxDrawdown ≈ -0.01
-        // CalmarRatio = CAGR / |maxDrawdown| ≈ 54266.6
+        // CAGR ≈ 5.4267 (raw decimal, annualized over 252 trading days from 10 data points), maxDrawdown ≈ -0.01
+        // CalmarRatio = CAGR / |maxDrawdown| ≈ 542.67
         var result = dailyReturns.CalmarRatio();
-        result.Should().BeApproximately(54266.6m, 1m);
+        result.Should().BeApproximately(542.666m, 1m);
     }
 
     [Fact]
