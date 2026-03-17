@@ -35,6 +35,8 @@ public interface IPortfolioConstructionModel
     /// <returns>
     /// A dictionary mapping each asset to its target weight.
     /// Weights are non-negative for long-only portfolios and sum to 1.0.
+    /// Models that intentionally produce leveraged weights (sum != 1.0) should implement
+    /// <see cref="ILeveragedConstructionModel"/> instead, which relaxes this constraint.
     /// </returns>
     IReadOnlyDictionary<Asset, decimal> ComputeTargetWeights(
         IReadOnlyList<Asset> assets,

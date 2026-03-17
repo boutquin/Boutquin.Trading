@@ -43,9 +43,24 @@ public sealed class RealizedVolatility : IIndicator
                 $"Need at least {_window} returns to compute realized volatility, got {returns.Length}.");
         }
 
-        var windowReturns = returns.AsSpan(returns.Length - _window).ToArray();
-        var mean = windowReturns.Average();
-        var sumSquaredDev = windowReturns.Sum(r => (r - mean) * (r - mean));
+        // Compute mean of last _window returns (allocation-free)
+        var start = returns.Length - _window;
+        var mean = 0m;
+        for (var i = start; i < returns.Length; i++)
+        {
+            mean += returns[i];
+        }
+
+        mean /= _window;
+
+        // Compute sample variance
+        var sumSquaredDev = 0m;
+        for (var i = start; i < returns.Length; i++)
+        {
+            var dev = returns[i] - mean;
+            sumSquaredDev += dev * dev;
+        }
+
         var variance = sumSquaredDev / (_window - 1); // sample variance
         var stdDev = (decimal)Math.Sqrt((double)variance);
 

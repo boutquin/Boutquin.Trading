@@ -62,12 +62,12 @@ public sealed class BlackLittermanConstruction : IPortfolioConstructionModel
     {
         Guard.AgainstNull(() => equilibriumWeights);
 
-        _equilibriumWeights = equilibriumWeights;
+        _equilibriumWeights = (decimal[])equilibriumWeights.Clone();
         _riskAversionCoefficient = riskAversionCoefficient;
         _tau = tau;
-        _pickMatrix = pickMatrix;
-        _viewReturns = viewReturns;
-        _viewUncertainty = viewUncertainty;
+        _pickMatrix = pickMatrix is not null ? (decimal[,])pickMatrix.Clone() : null;
+        _viewReturns = viewReturns is not null ? (decimal[])viewReturns.Clone() : null;
+        _viewUncertainty = viewUncertainty is not null ? (decimal[,])viewUncertainty.Clone() : null;
         _covarianceEstimator = covarianceEstimator ?? new SampleCovarianceEstimator();
     }
 
@@ -86,6 +86,13 @@ public sealed class BlackLittermanConstruction : IPortfolioConstructionModel
         if (returns is null || returns.Length != assets.Count)
         {
             throw new ArgumentException("Returns array must have one series per asset.", nameof(returns));
+        }
+
+        if (_equilibriumWeights.Length != assets.Count)
+        {
+            throw new ArgumentException(
+                $"Equilibrium weights length ({_equilibriumWeights.Length}) must match assets count ({assets.Count}).",
+                nameof(assets));
         }
 
         var n = assets.Count;
@@ -184,16 +191,40 @@ public sealed class BlackLittermanConstruction : IPortfolioConstructionModel
 
         // Step 3: Compute optimal weights from posterior returns
         // w* = (1/δ) * Σ^-1 * μ_BL
-        // For numerical stability, use inverse-volatility approach as fallback
-        // Simple approach: w_i proportional to μ_i / σ_ii, then normalize
+        // Try full matrix inversion; fall back to diagonal approximation if singular.
         var rawWeights = new decimal[n];
-        var sumRaw = 0m;
 
+        try
+        {
+            var sigmaInv = InvertMatrix(sigma, n);
+
+            for (var i = 0; i < n; i++)
+            {
+                var sum = 0m;
+                for (var j = 0; j < n; j++)
+                {
+                    sum += sigmaInv[i, j] * posteriorMu[j];
+                }
+
+                rawWeights[i] = sum / _riskAversionCoefficient;
+            }
+        }
+        catch (CalculationException)
+        {
+            // Singular covariance matrix — fall back to diagonal approximation:
+            // w_i proportional to μ_i / σ_ii, then normalize.
+            for (var i = 0; i < n; i++)
+            {
+                var variance = sigma[i, i];
+                rawWeights[i] = variance > 0m ? posteriorMu[i] / (_riskAversionCoefficient * variance) : 0m;
+            }
+        }
+
+        // Long-only constraint and normalization
+        var sumRaw = 0m;
         for (var i = 0; i < n; i++)
         {
-            var variance = sigma[i, i];
-            rawWeights[i] = variance > 0m ? posteriorMu[i] / (_riskAversionCoefficient * variance) : 0m;
-            rawWeights[i] = Math.Max(0m, rawWeights[i]); // Long-only constraint
+            rawWeights[i] = Math.Max(0m, rawWeights[i]);
             sumRaw += rawWeights[i];
         }
 

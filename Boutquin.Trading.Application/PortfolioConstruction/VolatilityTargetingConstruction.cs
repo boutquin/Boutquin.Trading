@@ -24,7 +24,7 @@ using Domain.ValueObjects;
 /// matches a target level. If realized vol is higher than target, weights are scaled down;
 /// if lower, scaled up (capped at a maximum leverage ratio).
 /// </summary>
-public sealed class VolatilityTargetingConstruction : IPortfolioConstructionModel
+public sealed class VolatilityTargetingConstruction : ILeveragedConstructionModel
 {
     private const int DefaultTradingDaysPerYear = 252;
     private readonly IPortfolioConstructionModel _baseModel;
@@ -65,6 +65,7 @@ public sealed class VolatilityTargetingConstruction : IPortfolioConstructionMode
         _tradingDaysPerYear = tradingDaysPerYear;
     }
 
+    /// <inheritdoc />
     public IReadOnlyDictionary<Asset, decimal> ComputeTargetWeights(
         IReadOnlyList<Asset> assets,
         decimal[][] returns)

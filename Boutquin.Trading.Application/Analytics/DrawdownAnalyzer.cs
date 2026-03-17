@@ -15,6 +15,7 @@
 //
 
 using Boutquin.Trading.Domain.Analytics;
+using Boutquin.Trading.Domain.Exceptions;
 
 namespace Boutquin.Trading.Application.Analytics;
 
@@ -41,6 +42,11 @@ public static class DrawdownAnalyzer
         var entries = equityCurve.ToList();
 
         var peak = entries[0].Value;
+        if (peak == 0m)
+        {
+            throw new CalculationException("Cannot compute drawdown when peak equity is zero.");
+        }
+
         var peakDate = entries[0].Key;
         var inDrawdown = false;
         var troughValue = peak;

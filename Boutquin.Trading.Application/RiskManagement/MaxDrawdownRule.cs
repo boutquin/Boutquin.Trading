@@ -62,25 +62,18 @@ public sealed class MaxDrawdownRule : IRiskRule
             return RiskEvaluation.Allowed;
         }
 
+        // Find the all-time high (peak) and compute current drawdown from peak to last value.
         var peak = decimal.MinValue;
-        var currentDrawdown = 0m;
-
         foreach (var value in equityCurve.Values)
         {
             if (value > peak)
             {
                 peak = value;
             }
-
-            if (peak > 0)
-            {
-                var drawdown = (peak - value) / peak;
-                if (drawdown > currentDrawdown)
-                {
-                    currentDrawdown = drawdown;
-                }
-            }
         }
+
+        var lastValue = equityCurve.Values.Last();
+        var currentDrawdown = peak > 0 ? (peak - lastValue) / peak : 0m;
 
         if (currentDrawdown > _maxDrawdownPercent)
         {

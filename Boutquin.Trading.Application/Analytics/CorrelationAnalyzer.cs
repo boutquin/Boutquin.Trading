@@ -36,6 +36,31 @@ public static class CorrelationAnalyzer
         decimal[][] returns,
         decimal[] weights)
     {
+        Guard.AgainstNull(() => assetNames);
+        Guard.AgainstNull(() => returns);
+        Guard.AgainstNull(() => weights);
+
+        if (returns.Length != assetNames.Count)
+        {
+            throw new ArgumentException(
+                $"Returns array length ({returns.Length}) must match asset count ({assetNames.Count}).",
+                nameof(returns));
+        }
+
+        if (weights.Length != assetNames.Count)
+        {
+            throw new ArgumentException(
+                $"Weights array length ({weights.Length}) must match asset count ({assetNames.Count}).",
+                nameof(weights));
+        }
+
+        if (assetNames.Count > 0 && returns[0].Length < 2)
+        {
+            throw new ArgumentException(
+                "Need at least 2 observations per asset for covariance computation (N-1 divisor).",
+                nameof(returns));
+        }
+
         var n = assetNames.Count;
         var t = returns[0].Length;
 
@@ -115,6 +140,8 @@ public static class CorrelationAnalyzer
 
     /// <summary>
     /// Computes a rolling correlation time series between two return series.
+    /// Note: This implementation recomputes each window from scratch. An incremental (online)
+    /// algorithm is a future optimization for very large series.
     /// </summary>
     /// <param name="returnsA">First asset return series.</param>
     /// <param name="returnsB">Second asset return series.</param>

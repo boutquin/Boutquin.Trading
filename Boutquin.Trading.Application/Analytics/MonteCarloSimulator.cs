@@ -77,7 +77,7 @@ public sealed class MonteCarloSimulator
 
         return new MonteCarloResult(
             SimulationCount: _simulationCount,
-            SharpeRatios: sharpes,
+            SharpeRatios: (decimal[])sharpes.Clone(),
             MedianSharpe: Percentile(sharpes, 0.50m),
             Percentile5Sharpe: Percentile(sharpes, 0.05m),
             Percentile95Sharpe: Percentile(sharpes, 0.95m),

@@ -20,7 +20,7 @@ namespace Boutquin.Trading.Domain.Analytics;
 /// Result of a Monte Carlo bootstrap simulation over portfolio returns.
 /// </summary>
 /// <param name="SimulationCount">Number of bootstrap simulations run.</param>
-/// <param name="SharpeRatios">Sharpe ratios from each simulation, sorted ascending.</param>
+/// <param name="SharpeRatios">Sharpe ratios from each simulation, sorted ascending. This is a defensive copy; callers should not mutate it.</param>
 /// <param name="MedianSharpe">Median Sharpe ratio across simulations.</param>
 /// <param name="Percentile5Sharpe">5th percentile Sharpe ratio (worst-case).</param>
 /// <param name="Percentile95Sharpe">95th percentile Sharpe ratio (best-case).</param>

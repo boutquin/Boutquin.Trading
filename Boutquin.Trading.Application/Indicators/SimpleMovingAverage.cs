@@ -35,7 +35,13 @@ public sealed class SimpleMovingAverage : IIndicator
                 $"Need at least {_period} values to compute SMA({_period}), got {values.Length}.");
         }
 
-        // Average of the last _period values
-        return values.AsSpan(values.Length - _period).ToArray().Average();
+        // Average of the last _period values (allocation-free)
+        var sum = 0m;
+        for (var i = values.Length - _period; i < values.Length; i++)
+        {
+            sum += values[i];
+        }
+
+        return sum / _period;
     }
 }

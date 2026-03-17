@@ -27,6 +27,8 @@ namespace Boutquin.Trading.Application.CovarianceEstimators;
 /// </remarks>
 public sealed class LedoitWolfShrinkageEstimator : ICovarianceEstimator
 {
+    private static readonly SampleCovarianceEstimator s_sharedEstimator = new();
+
     /// <inheritdoc />
     public decimal[,] Estimate(decimal[][] returns)
     {
@@ -36,8 +38,7 @@ public sealed class LedoitWolfShrinkageEstimator : ICovarianceEstimator
         var t = returns[0].Length; // Number of observations
 
         // Step 1: Compute sample covariance matrix
-        var sampleEstimator = new SampleCovarianceEstimator();
-        var sampleCov = sampleEstimator.Estimate(returns);
+        var sampleCov = s_sharedEstimator.Estimate(returns);
 
         // Step 2: Compute the shrinkage target — scaled identity matrix
         // Target = mu * I, where mu = average of diagonal elements

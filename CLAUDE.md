@@ -120,6 +120,7 @@ Quantitative trading framework in C# .NET. Pre-release.
 | RollingWindow\<T\> (circular buffer) | `Domain/Helpers/RollingWindow.cs` |
 | ICovarianceEstimator interface | `Domain/Interfaces/ICovarianceEstimator.cs` |
 | IPortfolioConstructionModel interface | `Domain/Interfaces/IPortfolioConstructionModel.cs` |
+| ILeveragedConstructionModel interface | `Domain/Interfaces/ILeveragedConstructionModel.cs` |
 | IRebalancingTrigger interface | `Domain/Interfaces/IRebalancingTrigger.cs` |
 | Covariance estimators (Sample, EWMA, Ledoit-Wolf) | `Application/CovarianceEstimators/` |
 | Portfolio construction models (6 models) | `Application/PortfolioConstruction/` |
@@ -154,9 +155,9 @@ Quantitative trading framework in C# .NET. Pre-release.
 | DI registration (ServiceCollectionExtensions) | `Application/Configuration/ServiceCollectionExtensions.cs` |
 | BacktestOptions, CostModelOptions, RiskManagementOptions | `Application/Configuration/` |
 
-### Domain Interfaces (23)
+### Domain Interfaces (24)
 
-`IBrokerage`, `ICapitalAllocationStrategy`, `ICovarianceEstimator`, `ICurrencyConversionService`, `IEventHandler`, `IEventProcessor`, `IFinancialEvent`, `IIndicator`, `IMacroIndicator`, `IMarketDataFetcher`, `IMarketDataProcessor`, `IMarketDataStorage`, `IOrderPriceCalculationStrategy`, `IPortfolio`, `IPortfolioConstructionModel`, `IPositionSizer`, `IRebalancingTrigger`, `IRegimeClassifier`, `IRiskManager`, `IRiskRule`, `IStrategy`, `ISymbolReader`, `IUniverseSelector`
+`IBrokerage`, `ICapitalAllocationStrategy`, `ICovarianceEstimator`, `ICurrencyConversionService`, `IEventHandler`, `IEventProcessor`, `IFinancialEvent`, `IIndicator`, `ILeveragedConstructionModel`, `IMacroIndicator`, `IMarketDataFetcher`, `IMarketDataProcessor`, `IMarketDataStorage`, `IOrderPriceCalculationStrategy`, `IPortfolio`, `IPortfolioConstructionModel`, `IPositionSizer`, `IRebalancingTrigger`, `IRegimeClassifier`, `IRiskManager`, `IRiskRule`, `IStrategy`, `ISymbolReader`, `IUniverseSelector`
 
 ### Domain Enums (13)
 

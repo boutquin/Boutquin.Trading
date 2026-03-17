@@ -33,6 +33,11 @@ public sealed class GrowthInflationRegimeClassifier : IRegimeClassifier
         _deadband = deadband;
     }
 
+    /// <summary>
+    /// Clears the cached prior regime, so the next classification uses no history.
+    /// </summary>
+    public void Reset() => _priorRegime = null;
+
     public EconomicRegime Classify(decimal growthSignal, decimal inflationSignal)
     {
         var growthRising = growthSignal > _deadband;

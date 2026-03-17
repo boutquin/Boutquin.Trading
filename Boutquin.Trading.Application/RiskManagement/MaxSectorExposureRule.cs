@@ -93,8 +93,11 @@ public sealed class MaxSectorExposureRule : IRiskRule
             return RiskEvaluation.Allowed;
         }
 
-        // Sum current exposure for this asset class across all strategies
+        // Sum current exposure for this asset class across all strategies,
+        // tracking the order's asset position separately for post-trade adjustment.
         var sectorExposure = 0m;
+        var existingOrderAssetQty = 0;
+
         foreach (var strategy in portfolio.Strategies.Values)
         {
             foreach (var (asset, qty) in strategy.Positions)
@@ -104,17 +107,25 @@ public sealed class MaxSectorExposureRule : IRiskRule
                     latestMarketData.TryGetValue(asset, out var md))
                 {
                     sectorExposure += Math.Abs(qty * md.Close);
+
+                    if (asset == order.Asset)
+                    {
+                        existingOrderAssetQty += qty;
+                    }
                 }
             }
         }
 
-        // Add the proposed order's value
+        // Compute post-trade exposure: adjust the order's asset from existing to post-trade quantity.
         if (latestMarketData.TryGetValue(order.Asset, out var orderMarketData))
         {
-            var orderValue = order.TradeAction == TradeAction.Buy
-                ? order.Quantity * orderMarketData.Close
-                : -(order.Quantity * orderMarketData.Close);
-            sectorExposure += orderValue;
+            var postTradeQty = order.TradeAction == TradeAction.Buy
+                ? existingOrderAssetQty + order.Quantity
+                : existingOrderAssetQty - order.Quantity;
+
+            sectorExposure = sectorExposure
+                - Math.Abs(existingOrderAssetQty * orderMarketData.Close)
+                + Math.Abs(postTradeQty * orderMarketData.Close);
         }
 
         var exposurePercent = sectorExposure / totalPortfolioValue;

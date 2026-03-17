@@ -63,6 +63,7 @@ public sealed class TacticalOverlayConstruction : IPortfolioConstructionModel
         _momentumStrength = momentumStrength;
     }
 
+    /// <inheritdoc />
     public IReadOnlyDictionary<Asset, decimal> ComputeTargetWeights(
         IReadOnlyList<Asset> assets,
         decimal[][] returns)

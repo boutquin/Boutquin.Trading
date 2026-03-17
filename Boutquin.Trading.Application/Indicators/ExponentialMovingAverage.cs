@@ -36,8 +36,14 @@ public sealed class ExponentialMovingAverage : IIndicator
         }
 
         var multiplier = 2m / (_period + 1);
-        // Seed with SMA of first _period values
-        var ema = values.AsSpan(0, _period).ToArray().Average();
+        // Seed with SMA of first _period values (allocation-free)
+        var seed = 0m;
+        for (var i = 0; i < _period; i++)
+        {
+            seed += values[i];
+        }
+
+        var ema = seed / _period;
 
         for (var i = _period; i < values.Length; i++)
         {

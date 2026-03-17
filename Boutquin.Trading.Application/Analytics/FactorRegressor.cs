@@ -15,6 +15,7 @@
 //
 
 using Boutquin.Trading.Domain.Analytics;
+using Boutquin.Trading.Domain.Exceptions;
 
 namespace Boutquin.Trading.Application.Analytics;
 
@@ -193,14 +194,15 @@ public static class FactorRegressor
                 }
             }
 
+            if (Math.Abs(aug[col, col]) < 1e-14)
+            {
+                throw new CalculationException(
+                    "Normal equation matrix is singular; factors may be collinear.");
+            }
+
             // Eliminate below
             for (var row = col + 1; row < n; row++)
             {
-                if (aug[col, col] == 0)
-                {
-                    continue;
-                }
-
                 var factor = aug[row, col] / aug[col, col];
                 for (var j = col; j <= n; j++)
                 {
@@ -219,7 +221,7 @@ public static class FactorRegressor
                 sum -= aug[i, j] * result[j];
             }
 
-            result[i] = aug[i, i] != 0 ? sum / aug[i, i] : 0;
+            result[i] = sum / aug[i, i];
         }
 
         return result;

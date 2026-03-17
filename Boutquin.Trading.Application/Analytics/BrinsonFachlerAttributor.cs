@@ -49,6 +49,26 @@ public static class BrinsonFachlerAttributor
         IReadOnlyDictionary<Asset, decimal> portfolioReturns,
         IReadOnlyDictionary<Asset, decimal> benchmarkReturns)
     {
+        Guard.AgainstNull(() => assetNames);
+        Guard.AgainstNull(() => portfolioWeights);
+        Guard.AgainstNull(() => benchmarkWeights);
+        Guard.AgainstNull(() => portfolioReturns);
+        Guard.AgainstNull(() => benchmarkReturns);
+
+        // Validate all asset names exist in all dictionaries
+        foreach (var asset in assetNames)
+        {
+            if (!portfolioWeights.ContainsKey(asset) ||
+                !benchmarkWeights.ContainsKey(asset) ||
+                !portfolioReturns.ContainsKey(asset) ||
+                !benchmarkReturns.ContainsKey(asset))
+            {
+                throw new ArgumentException(
+                    $"Asset '{asset}' is missing from one or more input dictionaries.",
+                    nameof(assetNames));
+            }
+        }
+
         if (assetNames.Count == 0)
         {
             return new BrinsonFachlerResult(
