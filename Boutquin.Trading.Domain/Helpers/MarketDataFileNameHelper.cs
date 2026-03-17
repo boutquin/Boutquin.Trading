@@ -31,10 +31,20 @@ public static class MarketDataFileNameHelper
     /// </summary>
     /// <param name="directory">The directory where the file will be located.</param>
     /// <param name="ticker">The ticker for the market data.</param>
-    /// <returns>A string representing the file name.</returns>
+    /// <returns>The full path to the CSV file (not a relative filename).</returns>
     public static string GetCsvFileNameForMarketData(string directory, string ticker)
     {
-        return Path.Combine(directory, "daily_adjusted_" + SanitizeTickerForFileName(ticker) + ".csv");
+        ArgumentNullException.ThrowIfNull(directory);
+        ArgumentNullException.ThrowIfNull(ticker);
+
+        var sanitized = SanitizeTickerForFileName(ticker);
+        if (string.IsNullOrWhiteSpace(sanitized))
+        {
+            throw new ArgumentException(
+                "Ticker produced an empty filename after sanitization.", nameof(ticker));
+        }
+
+        return Path.Combine(directory, "daily_adjusted_" + sanitized + ".csv");
     }
 
     /// <summary>
@@ -64,10 +74,21 @@ public static class MarketDataFileNameHelper
     /// </summary>
     /// <param name="directory">The directory where the file will be located.</param>
     /// <param name="currencyPair">The currency pair for the FX rate data.</param>
-    /// <returns>A string representing the file name.</returns>
+    /// <returns>The full path to the CSV file (not a relative filename).</returns>
     public static string GetCsvFileNameForFxRateData(string directory, string currencyPair)
     {
-        return Path.Combine(directory, "daily_fx_" + SanitizeCurrencyPairForFileName(currencyPair) + ".csv");
+        ArgumentNullException.ThrowIfNull(directory);
+        ArgumentNullException.ThrowIfNull(currencyPair);
+
+        var sanitized = SanitizeCurrencyPairForFileName(currencyPair);
+        if (string.IsNullOrWhiteSpace(sanitized))
+        {
+            throw new ArgumentException(
+                "Currency pair produced an empty filename after sanitization.",
+                nameof(currencyPair));
+        }
+
+        return Path.Combine(directory, "daily_fx_" + sanitized + ".csv");
     }
 
     /// <summary>
@@ -77,7 +98,12 @@ public static class MarketDataFileNameHelper
     /// <returns>A string representing the sanitized currency pair.</returns>
     private static string SanitizeCurrencyPairForFileName(string currencyPair)
     {
-        // Replace the slash symbol with an underscore
-        return currencyPair.Replace("/", "_");
+        // Replace slash with underscore, then strip all invalid filename chars
+        var sanitized = new string(
+            currencyPair.Select(c => c == '/' ? '_' : c)
+                        .Where(c => !s_invalidFileNameChars.Contains(c))
+                        .ToArray());
+        sanitized = sanitized.Replace("..", "");
+        return sanitized;
     }
 }

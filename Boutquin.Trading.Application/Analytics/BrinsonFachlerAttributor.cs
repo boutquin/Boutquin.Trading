@@ -15,6 +15,7 @@
 //
 
 using Boutquin.Trading.Domain.Analytics;
+using Boutquin.Trading.Domain.ValueObjects;
 
 namespace Boutquin.Trading.Application.Analytics;
 
@@ -42,27 +43,27 @@ public static class BrinsonFachlerAttributor
     /// <param name="benchmarkReturns">Benchmark return per sector.</param>
     /// <returns>A <see cref="BrinsonFachlerResult"/> with allocation, selection, and interaction effects.</returns>
     public static BrinsonFachlerResult Attribute(
-        IReadOnlyList<string> assetNames,
-        IReadOnlyDictionary<string, decimal> portfolioWeights,
-        IReadOnlyDictionary<string, decimal> benchmarkWeights,
-        IReadOnlyDictionary<string, decimal> portfolioReturns,
-        IReadOnlyDictionary<string, decimal> benchmarkReturns)
+        IReadOnlyList<Asset> assetNames,
+        IReadOnlyDictionary<Asset, decimal> portfolioWeights,
+        IReadOnlyDictionary<Asset, decimal> benchmarkWeights,
+        IReadOnlyDictionary<Asset, decimal> portfolioReturns,
+        IReadOnlyDictionary<Asset, decimal> benchmarkReturns)
     {
         if (assetNames.Count == 0)
         {
             return new BrinsonFachlerResult(
                 0m, 0m, 0m, 0m,
-                new Dictionary<string, decimal>(),
-                new Dictionary<string, decimal>(),
-                new Dictionary<string, decimal>());
+                new Dictionary<Asset, decimal>(),
+                new Dictionary<Asset, decimal>(),
+                new Dictionary<Asset, decimal>());
         }
 
         // Compute total benchmark return
         var benchmarkTotalReturn = assetNames.Sum(a => benchmarkWeights[a] * benchmarkReturns[a]);
 
-        var allocationEffects = new Dictionary<string, decimal>();
-        var selectionEffects = new Dictionary<string, decimal>();
-        var interactionEffects = new Dictionary<string, decimal>();
+        var allocationEffects = new Dictionary<Asset, decimal>();
+        var selectionEffects = new Dictionary<Asset, decimal>();
+        var interactionEffects = new Dictionary<Asset, decimal>();
 
         foreach (var asset in assetNames)
         {

@@ -72,7 +72,7 @@ public interface IPortfolio
     /// <summary>
     /// The HistoricalMarketData property represents a sorted dictionary of historical market data used by the portfolio.
     /// </summary>
-    SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>?> HistoricalMarketData { get; }
+    SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>> HistoricalMarketData { get; }
 
     /// <summary>
     /// The HistoricalFxConversionRates property represents a sorted dictionary of historical foreign exchange conversion rates used by the portfolio.

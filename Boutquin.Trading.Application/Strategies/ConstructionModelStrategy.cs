@@ -98,7 +98,7 @@ public sealed class ConstructionModelStrategy : StrategyBase
     public override SignalEvent GenerateSignals(
         DateOnly timestamp,
         CurrencyCode baseCurrency,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>?> historicalMarketData,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>> historicalMarketData,
         IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
     {
         Guard.AgainstUndefinedEnumValue(() => baseCurrency);
@@ -157,7 +157,7 @@ public sealed class ConstructionModelStrategy : StrategyBase
 
     private decimal[][]? ExtractReturns(
         List<Asset> assetList,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>?> historicalMarketData,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>> historicalMarketData,
         DateOnly asOf)
     {
         // Get sorted dates up to and including asOf
@@ -216,7 +216,7 @@ public sealed class ConstructionModelStrategy : StrategyBase
     private Dictionary<Asset, decimal> ComputeCurrentWeights(
         DateOnly timestamp,
         CurrencyCode baseCurrency,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>?> historicalMarketData,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>> historicalMarketData,
         IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
     {
         var totalValue = ComputeTotalValue(timestamp, baseCurrency, historicalMarketData, historicalFxConversionRates);

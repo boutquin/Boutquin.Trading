@@ -83,8 +83,6 @@ public sealed class CsvMarketDataFetcher : IMarketDataFetcher
                 throw new FileNotFoundException($"Market data file not found for symbol {symbol}.", fileName);
             }
 
-            var marketData = new SortedDictionary<DateOnly, MarketData>();
-
 #pragma warning disable CA2007
             await using var fileStream = File.OpenRead(fileName);
 #pragma warning restore CA2007
@@ -114,7 +112,6 @@ public sealed class CsvMarketDataFetcher : IMarketDataFetcher
 
                     marketDataPoint = new MarketData(date, open, high, low, close, adjustedClose, volume,
                         dividendPerShare, splitCoefficient);
-                    marketData[date] = marketDataPoint;
                 }
                 catch (FormatException ex)
                 {
@@ -172,8 +169,6 @@ public sealed class CsvMarketDataFetcher : IMarketDataFetcher
                 throw new FileNotFoundException($"FX rate data file not found for currency pair {pair}.", fileName);
             }
 
-            var fxRates = new SortedDictionary<DateOnly, decimal>();
-
 #pragma warning disable CA2007
             await using var fileStream = File.OpenRead(fileName);
 #pragma warning restore CA2007
@@ -193,7 +188,6 @@ public sealed class CsvMarketDataFetcher : IMarketDataFetcher
                 {
                     date = DateOnly.Parse(columns[0], System.Globalization.CultureInfo.InvariantCulture);
                     rate = decimal.Parse(columns[1], System.Globalization.CultureInfo.InvariantCulture);
-                    fxRates[date] = rate;
                 }
                 catch (FormatException ex)
                 {

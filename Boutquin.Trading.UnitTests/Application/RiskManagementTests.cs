@@ -48,7 +48,7 @@ public sealed class RiskManagementTests
 
     private static Mock<IPortfolio> CreatePortfolioMock(
         SortedDictionary<DateOnly, decimal>? equityCurve = null,
-        SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>?>? historicalData = null,
+        SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>? historicalData = null,
         Dictionary<string, IStrategy>? strategies = null)
     {
         var mock = new Mock<IPortfolio>();
@@ -192,7 +192,7 @@ public sealed class RiskManagementTests
             [new DateOnly(2026, 1, 1)] = 100_000m,
         };
 
-        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>?>
+        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>
         {
             [new DateOnly(2026, 1, 1)] = new()
             {
@@ -219,7 +219,7 @@ public sealed class RiskManagementTests
             [new DateOnly(2026, 1, 1)] = 100_000m,
         };
 
-        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>?>
+        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>
         {
             [new DateOnly(2026, 1, 1)] = new()
             {
@@ -258,7 +258,7 @@ public sealed class RiskManagementTests
             [new DateOnly(2026, 1, 1)] = 100_000m,
         };
 
-        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>?>
+        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>
         {
             [new DateOnly(2026, 1, 1)] = new()
             {
@@ -285,7 +285,7 @@ public sealed class RiskManagementTests
             [new DateOnly(2026, 1, 1)] = 100_000m,
         };
 
-        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>?>
+        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>
         {
             [new DateOnly(2026, 1, 1)] = new()
             {
@@ -331,7 +331,7 @@ public sealed class RiskManagementTests
             [new DateOnly(2026, 1, 1)] = 100_000m,
         };
 
-        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>?>
+        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>
         {
             [new DateOnly(2026, 1, 1)] = new()
             {
@@ -365,7 +365,7 @@ public sealed class RiskManagementTests
             [new DateOnly(2026, 1, 1)] = 100_000m,
         };
 
-        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>?>
+        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>
         {
             [new DateOnly(2026, 1, 1)] = new()
             {
@@ -420,7 +420,7 @@ public sealed class RiskManagementTests
             [new DateOnly(2026, 1, 2)] = 99_000m, // 1% drawdown
         };
 
-        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>?>
+        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>
         {
             [new DateOnly(2026, 1, 2)] = new()
             {

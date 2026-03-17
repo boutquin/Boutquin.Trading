@@ -35,5 +35,9 @@ public sealed record RiskEvaluation(
     /// </summary>
     /// <param name="reason">The reason for rejecting the order.</param>
     /// <returns>A rejected risk evaluation.</returns>
-    public static RiskEvaluation Rejected(string reason) => new(false, reason);
+    public static RiskEvaluation Rejected(string reason)
+    {
+        Guard.AgainstNullOrWhiteSpace(() => reason);
+        return new(false, reason);
+    }
 }

@@ -19,7 +19,6 @@ namespace Boutquin.Trading.Tests.UnitTests.Application;
 using Boutquin.Trading.Application.Configuration;
 using Boutquin.Trading.Application.CostModels;
 using Boutquin.Trading.Application.PortfolioConstruction;
-using Boutquin.Trading.Application.RiskManagement;
 using Boutquin.Trading.Application.SlippageModels;
 
 using Microsoft.Extensions.Configuration;

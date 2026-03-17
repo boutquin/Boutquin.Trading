@@ -15,6 +15,7 @@
 //
 
 using Boutquin.Trading.Domain.Analytics;
+using Boutquin.Trading.Domain.ValueObjects;
 
 namespace Boutquin.Trading.Application.Analytics;
 
@@ -31,7 +32,7 @@ public static class CorrelationAnalyzer
     /// <param name="weights">N portfolio weights (must sum to 1).</param>
     /// <returns>A <see cref="CorrelationAnalysisResult"/> with the correlation matrix and diversification ratio.</returns>
     public static CorrelationAnalysisResult Analyze(
-        IReadOnlyList<string> assetNames,
+        IReadOnlyList<Asset> assetNames,
         decimal[][] returns,
         decimal[] weights)
     {

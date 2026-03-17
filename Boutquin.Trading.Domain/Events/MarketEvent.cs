@@ -27,6 +27,6 @@ using ValueObjects;
 /// <param name="HistoricalFxConversionRates">A sorted dictionary containing the historical foreign exchange (FX) conversion rates for multiple currency pairs, with DateOnly as keys and a SortedDictionary of CurrencyCode and decimal pairs as values.</param>
 public sealed record MarketEvent(
     DateOnly Timestamp,
-    SortedDictionary<Asset, MarketData>? HistoricalMarketData,
+    SortedDictionary<Asset, MarketData> HistoricalMarketData,
     SortedDictionary<CurrencyCode, decimal> HistoricalFxConversionRates) : IFinancialEvent;
 

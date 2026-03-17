@@ -33,7 +33,7 @@ using ValueObjects;
 /// ILoggerFactory loggerFactory = new LoggerFactory();
 /// 
 /// MarketDataProcessor processor = new MarketDataProcessor(fetcher, storage, loggerFactory);
-/// await processor.ProcessAndStoreMarketDataAsync(new List&gt;string&lt; { new Asset("AAPL"), "MSFT" });
+/// await processor.ProcessAndStoreMarketDataAsync(new List&lt;Asset&gt; { new Asset("AAPL"), new Asset("MSFT") });
 /// </code>
 /// </example>
 public sealed class MarketDataProcessor(
@@ -53,7 +53,8 @@ public sealed class MarketDataProcessor(
     /// <exception cref="ArgumentException">Thrown when no symbols are provided.</exception>
     public async Task ProcessAndStoreMarketDataAsync(IEnumerable<Asset> symbols, CancellationToken cancellationToken)
     {
-        if (symbols == null || !symbols.Any())
+        var symbolList = (symbols ?? throw new ArgumentNullException(nameof(symbols))).ToList();
+        if (symbolList.Count == 0)
         {
             throw new ArgumentException("At least one symbol must be provided.", nameof(symbols));
         }
@@ -63,7 +64,7 @@ public sealed class MarketDataProcessor(
         try
         {
             // Fetch the market data using the provided fetcher.
-            var marketData = _fetcher.FetchMarketDataAsync(symbols, cancellationToken);
+            var marketData = _fetcher.FetchMarketDataAsync(symbolList, cancellationToken);
 
             // Iterate through the fetched market data.
             await foreach (var dataPoint in marketData.WithCancellation(cancellationToken).ConfigureAwait(false))

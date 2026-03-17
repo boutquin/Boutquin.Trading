@@ -60,7 +60,15 @@ public sealed class CsvMarketDataStorage : IMarketDataStorage
 
         if (!Directory.Exists(_dataDirectory))
         {
-            Directory.CreateDirectory(_dataDirectory);
+            try
+            {
+                Directory.CreateDirectory(_dataDirectory);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
+            {
+                throw new MarketDataStorageException(
+                    $"Failed to create data directory '{_dataDirectory}'.", ex);
+            }
         }
     }
 
@@ -71,10 +79,10 @@ public sealed class CsvMarketDataStorage : IMarketDataStorage
     /// await storage.SaveMarketDataAsync(dataPoint);
     /// </code>
     /// </example>
-    public async Task SaveMarketDataAsync(KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>?> dataPoint, CancellationToken cancellationToken)
+    public async Task SaveMarketDataAsync(KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>> dataPoint, CancellationToken cancellationToken)
     {
         // Validate the input data point
-        if (dataPoint.Value == null || dataPoint.Value.Count == 0)
+        if (dataPoint.Value.Count == 0)
         {
             throw new ArgumentException("The data point must contain at least one symbol and its market data.", nameof(dataPoint));
         }
@@ -86,8 +94,7 @@ public sealed class CsvMarketDataStorage : IMarketDataStorage
         {
             var symbol = symbolData.Key;
             var marketData = symbolData.Value;
-            var fileName = MarketDataFileNameHelper.GetCsvFileNameForMarketData(_dataDirectory, symbol.Ticker);
-            var filePath = Path.Combine(_dataDirectory, fileName);
+            var filePath = MarketDataFileNameHelper.GetCsvFileNameForMarketData(_dataDirectory, symbol.Ticker);
 
             try
             {
@@ -139,8 +146,7 @@ public sealed class CsvMarketDataStorage : IMarketDataStorage
         foreach (var symbolDataPoints in groupedDataPoints)
         {
             var symbol = symbolDataPoints.Key;
-            var fileName = MarketDataFileNameHelper.GetCsvFileNameForMarketData(_dataDirectory, symbol.Ticker);
-            var filePath = Path.Combine(_dataDirectory, fileName);
+            var filePath = MarketDataFileNameHelper.GetCsvFileNameForMarketData(_dataDirectory, symbol.Ticker);
 
             try
             {

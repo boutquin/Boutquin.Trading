@@ -32,7 +32,7 @@ public sealed class CorrelationAnalysisTests
     public void Analyze_PerfectlyCorrelatedAssets_DiversificationRatioShouldBeOne()
     {
         // B = 2*A, perfect correlation
-        var assetNames = new[] { "A", "B" };
+        var assetNames = new Asset[] { new("A"), new("B") };
         var returns = new[]
         {
             new[] { 0.01m, -0.02m, 0.03m, -0.01m, 0.02m },
@@ -55,7 +55,7 @@ public sealed class CorrelationAnalysisTests
     [Fact]
     public void Analyze_UncorrelatedAssets_DiversificationRatioShouldBeGreaterThanOne()
     {
-        var assetNames = new[] { "A", "B" };
+        var assetNames = new Asset[] { new("A"), new("B") };
         var returns = new[]
         {
             new[] { 0.01m, -0.01m, 0.01m, -0.01m, 0.01m, -0.01m, 0.01m, -0.01m },
@@ -74,7 +74,7 @@ public sealed class CorrelationAnalysisTests
     [Fact]
     public void Analyze_DiagonalShouldBeOne()
     {
-        var assetNames = new[] { "A", "B", "C" };
+        var assetNames = new Asset[] { new("A"), new("B"), new("C") };
         var returns = new[]
         {
             new[] { 0.01m, -0.02m, 0.03m, -0.01m, 0.02m },
@@ -97,7 +97,7 @@ public sealed class CorrelationAnalysisTests
     [Fact]
     public void Analyze_CorrelationMatrixShouldBeSymmetric()
     {
-        var assetNames = new[] { "A", "B", "C" };
+        var assetNames = new Asset[] { new("A"), new("B"), new("C") };
         var returns = new[]
         {
             new[] { 0.01m, -0.02m, 0.03m, -0.01m, 0.02m },

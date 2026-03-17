@@ -366,7 +366,7 @@ public sealed class PortfolioTests
         mockStrategy.Setup(s => s.GenerateSignals(
             It.IsAny<DateOnly>(),
             It.IsAny<CurrencyCode>(),
-            It.IsAny<SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>?>>(),
+            It.IsAny<SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>>(),
             It.IsAny<SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>>()
         )).Returns(expectedSignal);
 
@@ -714,7 +714,7 @@ public sealed class PortfolioTests
         mockStrategy.Setup(s => s.ComputeTotalValue(
             It.IsAny<DateOnly>(),
             It.IsAny<CurrencyCode>(),
-            It.IsAny<SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>?>>(),
+            It.IsAny<SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>>(),
             It.IsAny<SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>>()
         )).Returns(1000m);
 

@@ -27,17 +27,17 @@ public static class EquityCurveExtensions
     /// <summary>
     /// Calculates the drawdowns, maximum drawdown, and its duration from the given equity curve.
     /// </summary>
-    /// <param name="equityCurve">A SortedDictionary&lt;DateTime, decimal&gt; representing the equity curve of a trading strategy.</param>
-    /// <returns>A tuple with the drawdowns as SortedDictionary&lt;DateTime, decimal&gt;, the maximum drawdown as decimal, and its duration as int.</returns>
+    /// <param name="equityCurve">A SortedDictionary&lt;DateOnly, decimal&gt; representing the equity curve of a trading strategy.</param>
+    /// <returns>A tuple with the drawdowns as SortedDictionary&lt;DateOnly, decimal&gt;, the maximum drawdown as decimal, and its duration as int.</returns>
     /// <exception cref="EmptyOrNullDictionaryException">Thrown when the <paramref name="equityCurve"/> is null or empty.</exception>
     /// <exception cref="InsufficientDataException">Thrown when the <paramref name="equityCurve"/> contains less than two elements for sample calculation.</exception>
     /// <example>
     /// <code>
-    /// var equityCurve = new SortedDictionary&lt;DateTime, decimal&gt; {
-    ///     { new DateTime(2021, 1, 1), 1000m },
-    ///     { new DateTime(2021, 1, 2), 1020m },
-    ///     { new DateTime(2021, 1, 3), 1010m },
-    ///     { new DateTime(2021, 1, 4), 1030m },
+    /// var equityCurve = new SortedDictionary&lt;DateOnly, decimal&gt; {
+    ///     { new DateOnly(2021, 1, 1), 1000m },
+    ///     { new DateOnly(2021, 1, 2), 1020m },
+    ///     { new DateOnly(2021, 1, 3), 1010m },
+    ///     { new DateOnly(2021, 1, 4), 1030m },
     /// };
     ///
     /// var (drawdowns, maxDrawdown, maxDrawdownDuration) = equityCurve.DrawdownAnalysis();

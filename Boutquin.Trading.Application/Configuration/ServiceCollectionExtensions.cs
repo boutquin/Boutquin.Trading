@@ -18,13 +18,12 @@ namespace Boutquin.Trading.Application.Configuration;
 
 using CostModels;
 using CovarianceEstimators;
-using PortfolioConstruction;
-using RiskManagement;
-using SlippageModels;
-
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using PortfolioConstruction;
+using RiskManagement;
+using SlippageModels;
 
 /// <summary>
 /// Extension methods for registering Boutquin.Trading services in the DI container.

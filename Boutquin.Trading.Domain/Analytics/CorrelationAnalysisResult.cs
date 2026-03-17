@@ -14,6 +14,8 @@
 //   limitations under the License.
 //
 
+using Boutquin.Trading.Domain.ValueObjects;
+
 namespace Boutquin.Trading.Domain.Analytics;
 
 /// <summary>
@@ -25,5 +27,5 @@ namespace Boutquin.Trading.Domain.Analytics;
 /// A value of 1.0 means perfectly correlated (no diversification benefit); greater than 1.0 means diversification benefit exists.</param>
 public sealed record CorrelationAnalysisResult(
     decimal[,] CorrelationMatrix,
-    IReadOnlyList<string> AssetNames,
+    IReadOnlyList<Asset> AssetNames,
     decimal DiversificationRatio);

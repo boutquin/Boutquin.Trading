@@ -43,5 +43,5 @@ public interface IOrderPriceCalculationStrategy
             DateOnly timestamp,
             Asset asset,
             TradeAction tradeAction,
-            IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>?> historicalData);
+            IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>> historicalData);
 }

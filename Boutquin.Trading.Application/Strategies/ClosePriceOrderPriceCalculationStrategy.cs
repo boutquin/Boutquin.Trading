@@ -38,7 +38,7 @@ public sealed class ClosePriceOrderPriceCalculationStrategy : IOrderPriceCalcula
             DateOnly timestamp,
             Domain.ValueObjects.Asset asset,
             TradeAction tradeAction,
-            IReadOnlyDictionary<DateOnly, SortedDictionary<Domain.ValueObjects.Asset, MarketData>?> historicalData)
+            IReadOnlyDictionary<DateOnly, SortedDictionary<Domain.ValueObjects.Asset, MarketData>> historicalData)
     {
         // Check if there is market data for the specified timestamp.
         if (!historicalData.TryGetValue(timestamp, out var marketDataForDate))

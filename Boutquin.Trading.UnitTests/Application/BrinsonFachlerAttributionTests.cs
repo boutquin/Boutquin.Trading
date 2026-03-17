@@ -32,11 +32,11 @@ public sealed class BrinsonFachlerAttributionTests
     public void Attribute_SameWeightsAsBenchmark_ShouldHaveZeroAllocationEffect()
     {
         // Portfolio and benchmark have identical weights but different returns
-        var assetNames = new[] { "Equity", "Bonds" };
-        var portfolioWeights = new Dictionary<string, decimal> { ["Equity"] = 0.6m, ["Bonds"] = 0.4m };
-        var benchmarkWeights = new Dictionary<string, decimal> { ["Equity"] = 0.6m, ["Bonds"] = 0.4m };
-        var portfolioReturns = new Dictionary<string, decimal> { ["Equity"] = 0.10m, ["Bonds"] = 0.03m };
-        var benchmarkReturns = new Dictionary<string, decimal> { ["Equity"] = 0.08m, ["Bonds"] = 0.02m };
+        var assetNames = new Asset[] { new("Equity"), new("Bonds") };
+        var portfolioWeights = new Dictionary<Asset, decimal> { [new Asset("Equity")] = 0.6m, [new Asset("Bonds")] = 0.4m };
+        var benchmarkWeights = new Dictionary<Asset, decimal> { [new Asset("Equity")] = 0.6m, [new Asset("Bonds")] = 0.4m };
+        var portfolioReturns = new Dictionary<Asset, decimal> { [new Asset("Equity")] = 0.10m, [new Asset("Bonds")] = 0.03m };
+        var benchmarkReturns = new Dictionary<Asset, decimal> { [new Asset("Equity")] = 0.08m, [new Asset("Bonds")] = 0.02m };
 
         var result = BrinsonFachlerAttributor.Attribute(
             assetNames, portfolioWeights, benchmarkWeights, portfolioReturns, benchmarkReturns);
@@ -51,11 +51,11 @@ public sealed class BrinsonFachlerAttributionTests
     public void Attribute_SameReturnsAsBenchmark_ShouldHaveZeroSelectionEffect()
     {
         // Portfolio and benchmark have identical returns but different weights
-        var assetNames = new[] { "Equity", "Bonds" };
-        var portfolioWeights = new Dictionary<string, decimal> { ["Equity"] = 0.7m, ["Bonds"] = 0.3m };
-        var benchmarkWeights = new Dictionary<string, decimal> { ["Equity"] = 0.6m, ["Bonds"] = 0.4m };
-        var portfolioReturns = new Dictionary<string, decimal> { ["Equity"] = 0.08m, ["Bonds"] = 0.02m };
-        var benchmarkReturns = new Dictionary<string, decimal> { ["Equity"] = 0.08m, ["Bonds"] = 0.02m };
+        var assetNames = new Asset[] { new("Equity"), new("Bonds") };
+        var portfolioWeights = new Dictionary<Asset, decimal> { [new Asset("Equity")] = 0.7m, [new Asset("Bonds")] = 0.3m };
+        var benchmarkWeights = new Dictionary<Asset, decimal> { [new Asset("Equity")] = 0.6m, [new Asset("Bonds")] = 0.4m };
+        var portfolioReturns = new Dictionary<Asset, decimal> { [new Asset("Equity")] = 0.08m, [new Asset("Bonds")] = 0.02m };
+        var benchmarkReturns = new Dictionary<Asset, decimal> { [new Asset("Equity")] = 0.08m, [new Asset("Bonds")] = 0.02m };
 
         var result = BrinsonFachlerAttributor.Attribute(
             assetNames, portfolioWeights, benchmarkWeights, portfolioReturns, benchmarkReturns);
@@ -69,15 +69,15 @@ public sealed class BrinsonFachlerAttributionTests
     [Fact]
     public void Attribute_EffectsSumToTotalActiveReturn()
     {
-        var assetNames = new[] { "Equity", "Bonds", "Commodities" };
-        var portfolioWeights = new Dictionary<string, decimal>
-        { ["Equity"] = 0.5m, ["Bonds"] = 0.3m, ["Commodities"] = 0.2m };
-        var benchmarkWeights = new Dictionary<string, decimal>
-        { ["Equity"] = 0.6m, ["Bonds"] = 0.3m, ["Commodities"] = 0.1m };
-        var portfolioReturns = new Dictionary<string, decimal>
-        { ["Equity"] = 0.12m, ["Bonds"] = 0.04m, ["Commodities"] = 0.08m };
-        var benchmarkReturns = new Dictionary<string, decimal>
-        { ["Equity"] = 0.10m, ["Bonds"] = 0.03m, ["Commodities"] = 0.05m };
+        var assetNames = new Asset[] { new("Equity"), new("Bonds"), new("Commodities") };
+        var portfolioWeights = new Dictionary<Asset, decimal>
+        { [new Asset("Equity")] = 0.5m, [new Asset("Bonds")] = 0.3m, [new Asset("Commodities")] = 0.2m };
+        var benchmarkWeights = new Dictionary<Asset, decimal>
+        { [new Asset("Equity")] = 0.6m, [new Asset("Bonds")] = 0.3m, [new Asset("Commodities")] = 0.1m };
+        var portfolioReturns = new Dictionary<Asset, decimal>
+        { [new Asset("Equity")] = 0.12m, [new Asset("Bonds")] = 0.04m, [new Asset("Commodities")] = 0.08m };
+        var benchmarkReturns = new Dictionary<Asset, decimal>
+        { [new Asset("Equity")] = 0.10m, [new Asset("Bonds")] = 0.03m, [new Asset("Commodities")] = 0.05m };
 
         var result = BrinsonFachlerAttributor.Attribute(
             assetNames, portfolioWeights, benchmarkWeights, portfolioReturns, benchmarkReturns);
@@ -92,11 +92,11 @@ public sealed class BrinsonFachlerAttributionTests
     [Fact]
     public void Attribute_ShouldPopulatePerAssetEffects()
     {
-        var assetNames = new[] { "Equity", "Bonds" };
-        var portfolioWeights = new Dictionary<string, decimal> { ["Equity"] = 0.7m, ["Bonds"] = 0.3m };
-        var benchmarkWeights = new Dictionary<string, decimal> { ["Equity"] = 0.6m, ["Bonds"] = 0.4m };
-        var portfolioReturns = new Dictionary<string, decimal> { ["Equity"] = 0.10m, ["Bonds"] = 0.03m };
-        var benchmarkReturns = new Dictionary<string, decimal> { ["Equity"] = 0.08m, ["Bonds"] = 0.02m };
+        var assetNames = new Asset[] { new("Equity"), new("Bonds") };
+        var portfolioWeights = new Dictionary<Asset, decimal> { [new Asset("Equity")] = 0.7m, [new Asset("Bonds")] = 0.3m };
+        var benchmarkWeights = new Dictionary<Asset, decimal> { [new Asset("Equity")] = 0.6m, [new Asset("Bonds")] = 0.4m };
+        var portfolioReturns = new Dictionary<Asset, decimal> { [new Asset("Equity")] = 0.10m, [new Asset("Bonds")] = 0.03m };
+        var benchmarkReturns = new Dictionary<Asset, decimal> { [new Asset("Equity")] = 0.08m, [new Asset("Bonds")] = 0.02m };
 
         var result = BrinsonFachlerAttributor.Attribute(
             assetNames, portfolioWeights, benchmarkWeights, portfolioReturns, benchmarkReturns);
@@ -133,11 +133,11 @@ public sealed class BrinsonFachlerAttributionTests
         //
         // Check: 0.006 + 0.016 + 0.001 = 0.023 ✓
 
-        var assetNames = new[] { "Equity", "Bonds" };
-        var portfolioWeights = new Dictionary<string, decimal> { ["Equity"] = 0.7m, ["Bonds"] = 0.3m };
-        var benchmarkWeights = new Dictionary<string, decimal> { ["Equity"] = 0.6m, ["Bonds"] = 0.4m };
-        var portfolioReturns = new Dictionary<string, decimal> { ["Equity"] = 0.10m, ["Bonds"] = 0.03m };
-        var benchmarkReturns = new Dictionary<string, decimal> { ["Equity"] = 0.08m, ["Bonds"] = 0.02m };
+        var assetNames = new Asset[] { new("Equity"), new("Bonds") };
+        var portfolioWeights = new Dictionary<Asset, decimal> { [new Asset("Equity")] = 0.7m, [new Asset("Bonds")] = 0.3m };
+        var benchmarkWeights = new Dictionary<Asset, decimal> { [new Asset("Equity")] = 0.6m, [new Asset("Bonds")] = 0.4m };
+        var portfolioReturns = new Dictionary<Asset, decimal> { [new Asset("Equity")] = 0.10m, [new Asset("Bonds")] = 0.03m };
+        var benchmarkReturns = new Dictionary<Asset, decimal> { [new Asset("Equity")] = 0.08m, [new Asset("Bonds")] = 0.02m };
 
         var result = BrinsonFachlerAttributor.Attribute(
             assetNames, portfolioWeights, benchmarkWeights, portfolioReturns, benchmarkReturns);
@@ -154,11 +154,11 @@ public sealed class BrinsonFachlerAttributionTests
     public void Attribute_EmptyAssets_ShouldReturnZeroEffects()
     {
         var result = BrinsonFachlerAttributor.Attribute(
-            Array.Empty<string>(),
-            new Dictionary<string, decimal>(),
-            new Dictionary<string, decimal>(),
-            new Dictionary<string, decimal>(),
-            new Dictionary<string, decimal>());
+            Array.Empty<Asset>(),
+            new Dictionary<Asset, decimal>(),
+            new Dictionary<Asset, decimal>(),
+            new Dictionary<Asset, decimal>(),
+            new Dictionary<Asset, decimal>());
 
         result.AllocationEffect.Should().Be(0m);
         result.SelectionEffect.Should().Be(0m);

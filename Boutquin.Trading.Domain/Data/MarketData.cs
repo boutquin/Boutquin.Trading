@@ -85,7 +85,7 @@ public sealed record MarketData(
             Low / splitEventSplitRatio,
             Close / splitEventSplitRatio,
             AdjustedClose / splitEventSplitRatio,
-            (long)(Volume * splitEventSplitRatio),
+            checked((long)(Volume * splitEventSplitRatio)),
             DividendPerShare,
             SplitCoefficient * splitEventSplitRatio);
     }

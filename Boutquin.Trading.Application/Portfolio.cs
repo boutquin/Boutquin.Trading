@@ -145,7 +145,7 @@ public sealed class Portfolio : IPortfolio
     /// <summary>
     /// The HistoricalMarketData property represents a sorted dictionary of historical market data used by the portfolio.
     /// </summary>
-    public SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>?> HistoricalMarketData { get; }
+    public SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>> HistoricalMarketData { get; }
         = [];
 
     /// <summary>

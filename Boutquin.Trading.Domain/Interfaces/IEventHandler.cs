@@ -27,7 +27,7 @@ namespace Boutquin.Trading.Domain.Interfaces;
 /// <code>
 /// public class TradeEventHandler : IEventHandler
 /// {
-///     public async Task HandleEventAsync(IFinancialEvent eventObj)
+///     public async Task HandleEventAsync(IPortfolio portfolio, IFinancialEvent eventObj, CancellationToken cancellationToken = default)
 ///     {
 ///         var tradeEvent = eventObj as TradeEvent;
 ///         // Process the trade event...

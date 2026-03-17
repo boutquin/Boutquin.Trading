@@ -139,9 +139,9 @@ public sealed class MediumSeverityApplicationTests
         portfolioMock.Verify(p => p.AdjustPositionForSplit(It.IsAny<Asset>(), It.IsAny<decimal>()), Times.Never);
     }
 
-    // ── BUG-A08: Null market data inner dict throws meaningful error ──
+    // ── BUG-A08: Empty market data inner dict throws meaningful error ──
     [Fact]
-    public void FixedWeightPositionSizer_NullMarketData_Throws()
+    public void FixedWeightPositionSizer_EmptyMarketData_Throws()
     {
         // Arrange
         var asset = new Asset("AAPL");
@@ -155,10 +155,10 @@ public sealed class MediumSeverityApplicationTests
             Cash = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 100_000m } },
         };
 
-        // historicalMarketData has the date but null inner dictionary
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>?>
+        // historicalMarketData has the date but empty inner dictionary (asset not found)
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>
         {
-            { s_testDate, null }
+            { s_testDate, new SortedDictionary<Asset, MarketData>() }
         };
         var historicalFx = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
         {
@@ -199,7 +199,7 @@ public sealed class MediumSeverityApplicationTests
             AdjustedClose: 0, Volume: 1_000_000,
             DividendPerShare: 0, SplitCoefficient: 1);
 
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>?>
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>
         {
             { s_testDate, new SortedDictionary<Asset, MarketData> { { asset, zeroCloseData } } }
         };
@@ -386,7 +386,7 @@ public sealed class MediumSeverityApplicationTests
         positionSizerMock.Setup(ps => ps.ComputePositionSizes(
                 It.IsAny<DateOnly>(), It.IsAny<IReadOnlyDictionary<Asset, SignalType>>(),
                 It.IsAny<IStrategy>(),
-                It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>?>>(),
+                It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>>>(),
                 It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>>()))
             .Returns(new Dictionary<Asset, int>()); // Empty — no position for AAPL
 
@@ -403,7 +403,7 @@ public sealed class MediumSeverityApplicationTests
         var portfolioMock = new Mock<IPortfolio>();
         portfolioMock.Setup(p => p.GetStrategy("Test")).Returns(strategy);
         portfolioMock.Setup(p => p.HistoricalMarketData)
-            .Returns(new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>?>());
+            .Returns(new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>());
         portfolioMock.Setup(p => p.HistoricalFxConversionRates)
             .Returns(new SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>());
 
@@ -480,7 +480,7 @@ public sealed class MediumSeverityApplicationTests
         };
 
         var md = new MarketData(s_testDate, 100, 110, 90, 105, 105, 1_000_000, 0, 1);
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>?>
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>
         {
             { s_testDate, new SortedDictionary<Asset, MarketData> { { aapl, md }, { msft, md } } }
         };

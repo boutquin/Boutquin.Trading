@@ -41,9 +41,9 @@ public sealed class ConstructionModelStrategyTests
     private static SortedDictionary<CurrencyCode, decimal> TestCash =>
         new() { [CurrencyCode.USD] = 100_000m };
 
-    private static IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>?> BuildMarketData()
+    private static IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>> BuildMarketData()
     {
-        var data = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>?>();
+        var data = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>();
 
         // Generate 70 days of data with different price patterns
         var baseDate = new DateOnly(2024, 1, 2);

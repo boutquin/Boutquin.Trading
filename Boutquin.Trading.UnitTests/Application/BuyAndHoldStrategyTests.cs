@@ -79,7 +79,7 @@ public sealed class BuyAndHoldStrategyTests
                 DividendPerShare: 0,
                 SplitCoefficient: 1);
 
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>?>
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>
                     {
                         { _initialTimestamp, new SortedDictionary<Asset, MarketData> { { new Asset("AAPL"), marketData } } }
                     };
@@ -122,7 +122,7 @@ public sealed class BuyAndHoldStrategyTests
                 DividendPerShare: 0,
                 SplitCoefficient: 1);
 
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>?>
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>
                     {
                         { _initialTimestamp.AddDays(1), new SortedDictionary<Asset, MarketData> { { new Asset("AAPL"), marketData } } }
                     };

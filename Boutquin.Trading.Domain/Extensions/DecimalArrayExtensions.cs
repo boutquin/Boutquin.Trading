@@ -45,6 +45,12 @@ public static class DecimalArrayExtensions
         // Calculate the cumulative return of the portfolio.
         var cumulativeReturn = dailyReturns.Aggregate(1m, (acc, r) => acc * (r + 1m)) - 1m;
 
+        if (cumulativeReturn <= -1m)
+        {
+            throw new CalculationException(
+                "Cumulative return is <= -100% (total portfolio wipeout); cannot annualize.");
+        }
+
         // Calculate the annualized return of the portfolio.
         var annualizedReturn = (decimal)Math.Pow((double)(cumulativeReturn + 1m), (double)(tradingDaysPerYear / (decimal)dailyReturns.Length)) - 1m;
 
@@ -245,6 +251,11 @@ public static class DecimalArrayExtensions
     /// <returns>The Downside Deviation.</returns>
     /// <exception cref="EmptyOrNullArrayException">Thrown when the <paramref name="dailyReturns"/> array is null or empty.</exception>
     /// <exception cref="InsufficientDataException">Thrown when the <paramref name="dailyReturns"/> array contains less than two elements for sample calculation.</exception>
+    /// <remarks>
+    /// Uses the full sample length with N-1 (sample) divisor, consistent with <see cref="StandardDeviation"/>.
+    /// This is a full-sample semi-deviation: all returns are included in the denominator via
+    /// <c>Math.Min(0, ...)</c>, but only downside returns contribute non-zero squared values.
+    /// </remarks>
 
     public static decimal DownsideDeviation(
         this decimal[] dailyReturns,
@@ -537,6 +548,14 @@ public static class DecimalArrayExtensions
     {
         Guard.AgainstNullOrEmptyArray(() => dailyReturns);
 
+        if (confidenceLevel <= 0m || confidenceLevel >= 1m)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(confidenceLevel),
+                confidenceLevel,
+                "Confidence level must be between 0 and 1 (exclusive).");
+        }
+
         var sorted = dailyReturns.OrderBy(r => r).ToArray();
         var index = (double)(1m - confidenceLevel) * (sorted.Length - 1);
         var lower = (int)Math.Floor(index);
@@ -559,6 +578,15 @@ public static class DecimalArrayExtensions
         decimal confidenceLevel = 0.95m)
     {
         Guard.AgainstNullOrEmptyArray(() => dailyReturns);
+
+        if (confidenceLevel <= 0m || confidenceLevel >= 1m)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(confidenceLevel),
+                confidenceLevel,
+                "Confidence level must be between 0 and 1 (exclusive).");
+        }
+
         Guard.Against(dailyReturns.Length == 1)
             .With<InsufficientDataException>(ExceptionMessages.InsufficientDataForSampleCalculation);
 
