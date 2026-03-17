@@ -140,7 +140,7 @@ public static class ColumnConstants
     public const int SecuritySymbol_Symbol_Length = 50;
 
     /// <summary>
-    /// The length of the Symbol column in the SecuritySymbol table.
+    /// The length of the Standard column in the SecuritySymbol table.
     /// </summary>
     public const int SecuritySymbol_Standard_Length = 50;
 

@@ -31,7 +31,9 @@ public static class ExchangeExtensionsTestData
             var city = new City("New York", TimeZoneCode.EST, CountryCode.US);
             var exchange = new Exchange(ExchangeCode.XNYS, "New York Stock Exchange", city);
             exchange.ExchangeSchedules.Add(new ExchangeSchedule(ExchangeCode.XNYS, DayOfWeek.Monday, new TimeSpan(9, 0, 0), new TimeSpan(17, 0, 0)));
+            exchange.ExchangeSchedules.Add(new ExchangeSchedule(ExchangeCode.XNYS, DayOfWeek.Tuesday, new TimeSpan(9, 0, 0), new TimeSpan(17, 0, 0)));
             exchange.ExchangeHolidays.Add(new ExchangeHoliday(ExchangeCode.XNYS, DateOnly.FromDateTime(new DateTime(2023, 1, 1)), "New Year's Day"));
+            exchange.ExchangeHolidays.Add(new ExchangeHoliday(ExchangeCode.XNYS, new DateOnly(2023, 7, 4), "Independence Day"));
 
             // Test case 1: Normal trading day, exchange should be open.
             yield return
@@ -41,7 +43,7 @@ public static class ExchangeExtensionsTestData
                 true
             ];
 
-            // Test case 2: Exchange closed on holiday.
+            // Test case 2: Exchange closed on holiday (Sunday — also no schedule).
             yield return
             [
                 exchange,
@@ -49,7 +51,13 @@ public static class ExchangeExtensionsTestData
                 false
             ];
 
-            // ... Add more test cases.
+            // Test case 3: Exchange closed on weekday holiday (exercises holiday logic, not weekend logic).
+            yield return
+            [
+                exchange,
+                new DateOnly(2023, 7, 4), // Tuesday (Independence Day)
+                false
+            ];
         }
     }
 

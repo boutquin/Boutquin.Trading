@@ -28,11 +28,14 @@ Quantitative trading framework in C# .NET. Pre-release.
 - **Position sizing uses `Math.Round(MidpointRounding.AwayFromZero)`** — Both `FixedWeightPositionSizer` and `DynamicWeightPositionSizer` round share quantities instead of truncating with `(int)` cast, avoiding systematic downward bias.
 - **Portfolio.AdjustPositionForSplit uses `Math.Round`** — Reverse splits (e.g., 1:3) that produce fractional positions are rounded via `MidpointRounding.AwayFromZero` instead of truncated.
 - **Backtest fetches FX rates for benchmark assets** — `RunAsync` includes `_benchmarkPortfolio.Strategies.Values` in the currency pair collection for FX rate fetching. Previously only portfolio currencies were fetched.
+- **Position.Sell does not subtract fee from BookValue** — Transaction fees are realized costs, not reductions of remaining cost basis. `Sell` computes `soldBookValue = BookValue * (shares / originalQuantity)` and sets `BookValue -= soldBookValue`. The fee is not tracked in `Position` (follow-up: add `TotalFees` property).
+- **SecurityPrice.Volume is `long`** — Matches domain `MarketData.Volume` type. High-volume securities can exceed `int.MaxValue` (2.1B). EF Core maps `long` to `bigint` automatically.
 - **TieredCostModel sorts tiers on construction** — Constructor sorts input tiers by `MaxTradeValue` ascending, ensuring correct tier matching regardless of input order.
 
 ## Data Fetcher Architecture
 
 - **Composite pattern for `IMarketDataFetcher`** — `CompositeMarketDataFetcher` delegates `FetchMarketDataAsync` → `TiingoFetcher` (equities) and `FetchFxRatesAsync` → `FrankfurterFetcher` (FX rates). Single-responsibility fetchers that each throw `NotSupportedException` for the method they don't handle. Consumers use the composite.
+- **FrankfurterFetcher supports date range filtering** — Constructor accepts optional `DateOnly? startDate` and `DateOnly? endDate` parameters. Defaults to `1999-01-04..` (full history) for backward compatibility. Currency codes and base currency are URL-encoded via `Uri.EscapeDataString` for defense-in-depth.
 - **Deprecating a data provider project** — Checklist: (1) delete project directory, (2) `dotnet sln remove`, (3) remove `ProjectReference` entries from all consuming `.csproj` files, (4) update `GlobalUsings.cs` and source code to use replacement, (5) add new `ProjectReference` entries for replacement projects, (6) grep for old namespace to catch stragglers.
 
 ## Portfolio Construction Architecture (Phase 2)

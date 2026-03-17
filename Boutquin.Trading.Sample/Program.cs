@@ -61,3 +61,6 @@ var benchmarkPortfolio = new Portfolio(
     broker
 );
 
+// TODO: Wire up BackTest execution with this portfolio.
+// This sample currently demonstrates configuration and setup only.
+// To run a complete backtest, instantiate BackTest and call RunAsync.

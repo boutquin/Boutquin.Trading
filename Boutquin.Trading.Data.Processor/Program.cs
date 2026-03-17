@@ -39,7 +39,16 @@ internal sealed class Program
         var writer = new CsvMarketDataStorage(dataDir);
         var marketDataProcessor = new MarketDataProcessor(apiFetcher, writer);
 
-        await marketDataProcessor.ProcessAndStoreMarketDataAsync(assets, CancellationToken.None).ConfigureAwait(false);
+        try
+        {
+            await marketDataProcessor.ProcessAndStoreMarketDataAsync(assets, CancellationToken.None).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine("An error occurred while processing market data:");
+            Console.Error.WriteLine(ex.ToString());
+            return;
+        }
 
         var fetcher = new CsvMarketDataFetcher(dataDir);
 
@@ -62,7 +71,8 @@ internal sealed class Program
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"An error occurred: {ex.Message}");
+            Console.Error.WriteLine("An error occurred while reading market data:");
+            Console.Error.WriteLine(ex.ToString());
         }
     }
 }

@@ -20,12 +20,11 @@ public static class AsyncEnumerableExtensions
 {
     public static async IAsyncEnumerable<T> ToAsyncEnumerable<T>(this IEnumerable<T> source)
     {
+        await Task.Yield();
         foreach (var item in source)
         {
             yield return item;
         }
-
-        await Task.CompletedTask;
     }
 }
 
@@ -59,7 +58,7 @@ public sealed class CompositeMarketDataFetcherTests
 
         results.Should().HaveCount(1);
         results[0].Key.Should().Be(new DateOnly(2024, 1, 15));
-        mockEquity.Verify(f => f.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>()), Times.Once);
+        mockEquity.Verify(f => f.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -89,7 +88,7 @@ public sealed class CompositeMarketDataFetcherTests
 
         results.Should().HaveCount(1);
         results[0].Value[CurrencyCode.EUR].Should().Be(0.91358m);
-        mockFx.Verify(f => f.FetchFxRatesAsync(It.IsAny<IEnumerable<string>>()), Times.Once);
+        mockFx.Verify(f => f.FetchFxRatesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

@@ -32,7 +32,7 @@ public static class ExchangeExtensions
     /// <example>
     /// <code>
     /// var exchange = new Exchange { ... };
-    /// DateOnly day = DateOnly.FromDateTime(DateTime.Now);
+    /// var day = new DateOnly(2024, 1, 15);
     /// bool isOpen = exchange.IsOpen(day);
     /// </code>
     /// </example>

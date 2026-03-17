@@ -76,7 +76,7 @@ public sealed class PortfolioTests
         await portfolio.HandleEventAsync(orderEvent, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        mockOrderHandler.Verify(h => h.HandleEventAsync(It.IsAny<IPortfolio>(), orderEvent), Times.Once);
+        mockOrderHandler.Verify(h => h.HandleEventAsync(It.IsAny<IPortfolio>(), orderEvent, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     /// <summary>
@@ -126,7 +126,7 @@ public sealed class PortfolioTests
         await portfolio.HandleEventAsync(fillEvent, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        mockFillHandler.Verify(h => h.HandleEventAsync(It.IsAny<IPortfolio>(), fillEvent), Times.Once);
+        mockFillHandler.Verify(h => h.HandleEventAsync(It.IsAny<IPortfolio>(), fillEvent, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     /// <summary>
@@ -177,7 +177,7 @@ public sealed class PortfolioTests
         await portfolio.HandleEventAsync(signalEvent, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        mockSignalHandler.Verify(h => h.HandleEventAsync(It.IsAny<IPortfolio>(), signalEvent), Times.Once);
+        mockSignalHandler.Verify(h => h.HandleEventAsync(It.IsAny<IPortfolio>(), signalEvent, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     /// <summary>
@@ -235,7 +235,7 @@ public sealed class PortfolioTests
         await portfolio.HandleEventAsync(marketEvent, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        mockMarketHandler.Verify(h => h.HandleEventAsync(It.IsAny<IPortfolio>(), marketEvent), Times.Once);
+        mockMarketHandler.Verify(h => h.HandleEventAsync(It.IsAny<IPortfolio>(), marketEvent, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     /// <summary>

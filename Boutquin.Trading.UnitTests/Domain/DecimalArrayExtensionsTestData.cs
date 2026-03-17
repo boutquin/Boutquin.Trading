@@ -54,7 +54,7 @@ public sealed class DecimalArrayExtensionsTestData
 
     /// <summary>
     /// Gets a collection of test cases containing varied decimal arrays and their corresponding Sharpe Ratio values.
-    /// </summary>w decimal[]
+    /// </summary>
     public static IEnumerable<object[]> SharpeRatioData =>
     [
         [new[] { 0.01m, 0.02m, -0.01m, 0.03m, -0.02m }, 0m, 0.289345693302247559290018236m],

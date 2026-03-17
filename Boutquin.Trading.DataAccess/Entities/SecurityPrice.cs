@@ -43,7 +43,7 @@ public sealed class SecurityPrice
         decimal highPrice,
         decimal lowPrice,
         decimal closePrice,
-        int volume,
+        long volume,
         decimal dividend)
     {
         // Validate parameters
@@ -52,7 +52,7 @@ public sealed class SecurityPrice
         Guard.AgainstNegativeOrZero(() => highPrice); // Throws ArgumentOutOfRangeException
         Guard.AgainstNegativeOrZero(() => lowPrice); // Throws ArgumentOutOfRangeException
         Guard.AgainstNegativeOrZero(() => closePrice); // Throws ArgumentOutOfRangeException
-        Guard.AgainstNegativeOrZero(() => volume); // Throws ArgumentOutOfRangeException
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(volume);
         Guard.AgainstNegative(() => dividend); // Throws ArgumentOutOfRangeException
 
         _id = -1;
@@ -104,7 +104,7 @@ public sealed class SecurityPrice
     /// <summary>
     /// Gets the volume.
     /// </summary>
-    public int Volume { get; private set; } // Setter is for EF
+    public long Volume { get; private set; } // Setter is for EF
 
     /// <summary>
     /// Gets the dividend.

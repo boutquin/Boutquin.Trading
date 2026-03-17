@@ -55,6 +55,8 @@ public sealed class Security
     /// </summary>
     private Security()
     {
+        Name = string.Empty;
+        Exchange = null!; // EF Core sets via reflection
     }
 
     /// <summary>

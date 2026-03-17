@@ -22,8 +22,7 @@ namespace Boutquin.Trading.Tests.UnitTests.DataAccess;
 public sealed class PositionTests
 {
     /// <summary>
-    /// D2: Selling 20 of 100 shares should reduce book value by exactly 20%, not 25%.
-    /// Bug: original code does Quantity -= shares first, then divides by the new (reduced) Quantity.
+    /// D2: Selling 20 of 100 shares should reduce book value by exactly 20%.
     /// </summary>
     [Fact]
     public void Position_Sell_BookValueProportionalToPreSaleQuantity()
@@ -34,15 +33,15 @@ public sealed class PositionTests
         // Act — sell 20 shares at $15/share with $5 fee
         position.Sell(20, 15m, 5m);
 
-        // Assert — book value should be reduced by 20% (proportion of pre-sale qty), minus fee
-        // Expected: 1000 * (1 - 20/100) - 5 = 800 - 5 = 795
-        position.BookValue.Should().Be(795m);
+        // Assert — book value should be reduced by 20% (proportion of pre-sale qty)
+        // M6 fix: fee is a realized cost, not a reduction of remaining book value
+        // Expected: 1000 * (1 - 20/100) = 800
+        position.BookValue.Should().Be(800m);
         position.Quantity.Should().Be(80);
     }
 
     /// <summary>
-    /// D2: Selling all shares should result in zero book value (minus fee).
-    /// This was a divide-by-zero with the old code since Quantity becomes 0 before division.
+    /// D2: Selling all shares should result in zero book value.
     /// </summary>
     [Fact]
     public void Position_Sell_AllShares_ZeroBookValue()
@@ -56,6 +55,54 @@ public sealed class PositionTests
         // Assert — all shares sold, book value should be 0
         position.Quantity.Should().Be(0);
         position.BookValue.Should().Be(0m);
+    }
+
+    /// <summary>
+    /// M6: Transaction fee should not reduce the book value of remaining shares.
+    /// </summary>
+    [Fact]
+    public void Sell_TransactionFee_DoesNotReduceBookValue()
+    {
+        // Arrange — 100 shares at $10 = $1000 book value
+        var position = new Position("TEST", 100, 1000m);
+
+        // Act — sell 50 shares at $10 with $100 fee
+        position.Sell(50, 10m, 100m);
+
+        // Assert — remaining 50 shares should still have book value of $500
+        position.BookValue.Should().Be(500m);
+    }
+
+    /// <summary>
+    /// M6: Selling all shares zeroes book value regardless of fee.
+    /// </summary>
+    [Fact]
+    public void Sell_AllShares_BookValueZero()
+    {
+        // Arrange
+        var position = new Position("TEST", 100, 1000m);
+
+        // Act — sell all with fee
+        position.Sell(100, 10m, 50m);
+
+        // Assert
+        position.BookValue.Should().Be(0m);
+    }
+
+    /// <summary>
+    /// M6: High fee should not make book value negative.
+    /// </summary>
+    [Fact]
+    public void Sell_HighFee_DoesNotMakeBookValueNegative()
+    {
+        // Arrange — 10 shares at $10 = $100 book value
+        var position = new Position("TEST", 10, 100m);
+
+        // Act — sell 5 shares at $10 with $200 fee
+        position.Sell(5, 10m, 200m);
+
+        // Assert — remaining 5 shares should have book value of $50 (proportional), not negative
+        position.BookValue.Should().Be(50m);
     }
 
     /// <summary>

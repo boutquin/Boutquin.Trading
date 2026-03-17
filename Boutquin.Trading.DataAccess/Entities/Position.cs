@@ -101,7 +101,7 @@ public sealed class Position
         Quantity -= shares;
         var proportion = (decimal)shares / originalQuantity;
         var soldBookValue = BookValue * proportion;
-        BookValue = BookValue - soldBookValue - transactionFee;
+        BookValue -= soldBookValue;
     }
 
     /// <summary>

@@ -225,4 +225,110 @@ public sealed class FrankfurterFetcherTests
         handler.LastRequest!.RequestUri!.ToString().Should().Contain("base=USD");
         handler.LastRequest.RequestUri.ToString().Should().Contain("symbols=EUR");
     }
+
+    // ── H10: Date range filtering ──
+
+    [Fact]
+    public async Task FetchFxRatesAsync_WithDateRange_BuildsCorrectUrl()
+    {
+        var handler = CreateMockHandler(ThreeDayJson);
+        var client = new HttpClient(handler);
+        using var fetcher = new FrankfurterFetcher(
+            client, "https://api.frankfurter.dev",
+            startDate: new DateOnly(2024, 1, 1),
+            endDate: new DateOnly(2024, 1, 31));
+
+        await foreach (var _ in fetcher.FetchFxRatesAsync(new[] { "USD_EUR" }, CancellationToken.None))
+        {
+        }
+
+        var url = handler.LastRequest!.RequestUri!.ToString();
+        url.Should().Contain("2024-01-01..2024-01-31");
+        url.Should().NotContain("1999-01-04");
+    }
+
+    [Fact]
+    public async Task FetchFxRatesAsync_WithStartDateOnly_BuildsOpenEndedUrl()
+    {
+        var handler = CreateMockHandler(ThreeDayJson);
+        var client = new HttpClient(handler);
+        using var fetcher = new FrankfurterFetcher(
+            client, "https://api.frankfurter.dev",
+            startDate: new DateOnly(2024, 1, 1));
+
+        await foreach (var _ in fetcher.FetchFxRatesAsync(new[] { "USD_EUR" }, CancellationToken.None))
+        {
+        }
+
+        var url = handler.LastRequest!.RequestUri!.ToString();
+        url.Should().Contain("2024-01-01..");
+        url.Should().NotContain("1999-01-04");
+    }
+
+    [Fact]
+    public async Task FetchFxRatesAsync_WithEndDateOnly_BuildsUrl()
+    {
+        var handler = CreateMockHandler(ThreeDayJson);
+        var client = new HttpClient(handler);
+        using var fetcher = new FrankfurterFetcher(
+            client, "https://api.frankfurter.dev",
+            endDate: new DateOnly(2024, 1, 31));
+
+        await foreach (var _ in fetcher.FetchFxRatesAsync(new[] { "USD_EUR" }, CancellationToken.None))
+        {
+        }
+
+        var url = handler.LastRequest!.RequestUri!.ToString();
+        url.Should().Contain("1999-01-04..2024-01-31");
+    }
+
+    [Fact]
+    public async Task FetchFxRatesAsync_WithNoDateRange_UsesFullHistory()
+    {
+        var handler = CreateMockHandler(ThreeDayJson);
+        var client = new HttpClient(handler);
+        using var fetcher = new FrankfurterFetcher(client, "https://api.frankfurter.dev");
+
+        await foreach (var _ in fetcher.FetchFxRatesAsync(new[] { "USD_EUR" }, CancellationToken.None))
+        {
+        }
+
+        var url = handler.LastRequest!.RequestUri!.ToString();
+        url.Should().Contain("1999-01-04..");
+    }
+
+    [Fact]
+    public void FetchFxRatesAsync_StartDateAfterEndDate_ThrowsArgumentException()
+    {
+        var handler = CreateMockHandler(ThreeDayJson);
+        var client = new HttpClient(handler);
+
+        var act = () => new FrankfurterFetcher(
+            client, "https://api.frankfurter.dev",
+            startDate: new DateOnly(2024, 2, 1),
+            endDate: new DateOnly(2024, 1, 1));
+
+        act.Should().Throw<ArgumentException>()
+            .WithMessage("*startDate*endDate*");
+    }
+
+    // ── L13: URL encoding ──
+
+    [Fact]
+    public async Task FetchFxRatesAsync_CurrencyCodes_AreUrlEncoded()
+    {
+        var handler = CreateMockHandler(ThreeDayJson);
+        var client = new HttpClient(handler);
+        using var fetcher = new FrankfurterFetcher(client, "https://api.frankfurter.dev");
+
+        await foreach (var _ in fetcher.FetchFxRatesAsync(new[] { "USD_EUR" }, CancellationToken.None))
+        {
+        }
+
+        // Standard currency codes pass through URL encoding unchanged,
+        // but the encoding function should be applied (defense-in-depth)
+        var url = handler.LastRequest!.RequestUri!.ToString();
+        url.Should().Contain("base=USD");
+        url.Should().Contain("symbols=EUR");
+    }
 }

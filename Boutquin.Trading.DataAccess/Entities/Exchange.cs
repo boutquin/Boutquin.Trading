@@ -58,6 +58,8 @@ public sealed class Exchange
     /// </summary>
     private Exchange()
     {
+        Name = string.Empty;
+        City = null!; // EF Core sets via reflection
     }
 
     /// <summary>

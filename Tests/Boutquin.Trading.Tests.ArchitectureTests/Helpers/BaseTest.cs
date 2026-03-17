@@ -26,7 +26,7 @@ using Domain.Interfaces;
 /// Base class for architecture tests, providing common functionalities for testing.
 /// Includes utility methods to aid in asserting conditions and retrieving information about test results.
 /// </summary>
-public class BaseTest
+public abstract class BaseTest
 {
     protected static Assembly DomainAssembly => typeof(IPositionSizer).Assembly;
 

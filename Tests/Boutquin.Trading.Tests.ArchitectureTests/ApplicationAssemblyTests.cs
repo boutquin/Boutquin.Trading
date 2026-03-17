@@ -17,7 +17,7 @@
 namespace Boutquin.Trading.Tests.ArchitectureTests;
 
 // E1 fix: Replaced vacuous empty Test1() with a real architecture test
-public class ApplicationAssemblyTests : BaseTest
+public sealed class ApplicationAssemblyTests : BaseTest
 {
     /// <summary>
     /// Verifies that all non-static classes in the Application assembly are sealed.

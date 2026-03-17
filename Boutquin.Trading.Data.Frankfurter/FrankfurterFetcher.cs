@@ -33,6 +33,8 @@ public sealed class FrankfurterFetcher : IMarketDataFetcher, IDisposable
     private readonly HttpClient _httpClient;
     private readonly bool _ownsClient;
     private readonly string _apiEndpoint;
+    private readonly DateOnly _startDate;
+    private readonly DateOnly? _endDate;
 
     private static readonly JsonSerializerOptions s_jsonOptions = new()
     {
@@ -49,11 +51,20 @@ public sealed class FrankfurterFetcher : IMarketDataFetcher, IDisposable
 
     public FrankfurterFetcher(
         HttpClient? httpClient = null,
-        string apiEndpoint = "https://api.frankfurter.dev")
+        string apiEndpoint = "https://api.frankfurter.dev",
+        DateOnly? startDate = null,
+        DateOnly? endDate = null)
     {
         _ownsClient = httpClient == null;
         _httpClient = httpClient ?? new HttpClient();
         _apiEndpoint = (apiEndpoint ?? throw new ArgumentNullException(nameof(apiEndpoint))).TrimEnd('/');
+        _startDate = startDate ?? new DateOnly(1999, 1, 4);
+        _endDate = endDate;
+
+        if (_endDate.HasValue && _startDate > _endDate.Value)
+        {
+            throw new ArgumentException("startDate cannot be after endDate.");
+        }
     }
 
     /// <inheritdoc/>
@@ -117,8 +128,11 @@ public sealed class FrankfurterFetcher : IMarketDataFetcher, IDisposable
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var symbolsParam = string.Join(",", quoteCurrencies);
-            var url = $"{_apiEndpoint}/v1/1999-01-04..?base={baseCurrency}&symbols={symbolsParam}";
+            var dateRange = _endDate.HasValue
+                ? $"{_startDate:yyyy-MM-dd}..{_endDate.Value:yyyy-MM-dd}"
+                : $"{_startDate:yyyy-MM-dd}..";
+            var symbolsParam = Uri.EscapeDataString(string.Join(",", quoteCurrencies));
+            var url = $"{_apiEndpoint}/v1/{dateRange}?base={Uri.EscapeDataString(baseCurrency)}&symbols={symbolsParam}";
 
             FrankfurterRangeResponse? rangeResponse;
             try

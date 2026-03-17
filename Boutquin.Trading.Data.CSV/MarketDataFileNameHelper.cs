@@ -51,14 +51,18 @@ public static class MarketDataFileNameHelper
     /// This method sanitizes a ticker for use in a file name by removing or replacing any characters that are not valid in file names.
     /// In this case, the caret symbol is removed.
     /// </remarks>
+    private static readonly HashSet<char> s_invalidFileNameChars = new(
+        Path.GetInvalidFileNameChars()
+            .Concat(['<', '>', ':', '"', '|', '?', '*', '\\', '/'])
+            .Concat(['^']));
+
     private static string SanitizeTickerForFileName(string ticker)
     {
-        // ROB-I02 fix: Strip all invalid filename chars, not just '^'
-        foreach (var c in Path.GetInvalidFileNameChars())
-        {
-            ticker = ticker.Replace(c.ToString(), "");
-        }
-        return ticker;
+        var sanitized = new string(
+            ticker.Where(c => !s_invalidFileNameChars.Contains(c))
+                  .ToArray());
+        sanitized = sanitized.Replace("..", "");
+        return sanitized;
     }
 
     /// <summary>
@@ -88,7 +92,12 @@ public static class MarketDataFileNameHelper
     /// </remarks>
     private static string SanitizeCurrencyPairForFileName(string currencyPair)
     {
-        // Replace the slash symbol with an underscore
-        return currencyPair.Replace("/", "_");
+        // Replace slash with underscore first, then strip remaining invalid chars
+        var sanitized = new string(
+            currencyPair.Select(c => c == '/' ? '_' : c)
+                        .Where(c => !s_invalidFileNameChars.Contains(c))
+                        .ToArray());
+        sanitized = sanitized.Replace("..", "");
+        return sanitized;
     }
 }

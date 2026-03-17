@@ -382,20 +382,23 @@ public sealed class DecimalArrayExtensionsTests
     }
 
     [Fact]
-    public void CalmarRatio_ShouldReturnPositiveForGrowingReturns()
+    public void CalmarRatio_ShouldReturnCorrectResult()
     {
-        // Mix of gains and losses where net is positive
         var dailyReturns = new[] { 0.01m, 0.02m, -0.01m, 0.03m, -0.005m, 0.015m, -0.01m, 0.02m, 0.01m, -0.005m };
+        // CAGR ≈ 542.67 (annualized over 252 trading days from 10 data points), maxDrawdown ≈ -0.01
+        // CalmarRatio = CAGR / |maxDrawdown| ≈ 54266.6
         var result = dailyReturns.CalmarRatio();
-        result.Should().BeGreaterThan(0m);
+        result.Should().BeApproximately(54266.6m, 1m);
     }
 
     [Fact]
-    public void RecoveryFactor_ShouldReturnPositiveForGrowingReturns()
+    public void RecoveryFactor_ShouldReturnCorrectResult()
     {
         var dailyReturns = new[] { 0.01m, 0.02m, -0.01m, 0.03m, -0.005m, 0.015m, -0.01m, 0.02m, 0.01m, -0.005m };
+        // CumulativeReturn = 0.07662..., maxDrawdown = -0.01
+        // RecoveryFactor = 0.07662... / 0.01 = 7.6621...
         var result = dailyReturns.RecoveryFactor();
-        result.Should().BeGreaterThan(0m);
+        result.Should().BeApproximately(7.6621153820794m, Precision);
     }
 
     [Fact]
