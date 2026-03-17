@@ -41,13 +41,28 @@ public static class BenchmarkComparisonReport
         string portfolioName,
         string benchmarkName)
     {
-        // Compute tracking error from equity curves
-        var portfolioDailyReturns = ExtractDailyReturns(portfolio.EquityCurve);
-        var benchmarkDailyReturns = ExtractDailyReturns(benchmark.EquityCurve);
-        var trackingError = portfolioDailyReturns.Length > 0 && benchmarkDailyReturns.Length > 0
-            && portfolioDailyReturns.Length == benchmarkDailyReturns.Length
-            ? CalculateTrackingError(portfolioDailyReturns, benchmarkDailyReturns)
-            : 0m;
+        // Compute date-aligned tracking error from equity curves
+        var overlappingDates = portfolio.EquityCurve.Keys
+            .Intersect(benchmark.EquityCurve.Keys)
+            .OrderBy(d => d)
+            .ToList();
+
+        if (overlappingDates.Count == 0)
+        {
+            throw new InvalidOperationException(
+                "Cannot generate benchmark comparison: no overlapping dates between portfolio and benchmark equity curves.");
+        }
+
+        var trackingError = 0m;
+        if (overlappingDates.Count >= 3)
+        {
+            var alignedPortfolioReturns = ExtractDailyReturnsForDates(portfolio.EquityCurve, overlappingDates);
+            var alignedBenchmarkReturns = ExtractDailyReturnsForDates(benchmark.EquityCurve, overlappingDates);
+            if (alignedPortfolioReturns.Length > 0 && alignedBenchmarkReturns.Length > 0)
+            {
+                trackingError = CalculateTrackingError(alignedPortfolioReturns, alignedBenchmarkReturns);
+            }
+        }
 
         var sb = new StringBuilder();
         sb.AppendLine("<!DOCTYPE html>");
@@ -117,18 +132,21 @@ public static class BenchmarkComparisonReport
         return activeReturns.StandardDeviation() * (decimal)Math.Sqrt(252);
     }
 
-    private static decimal[] ExtractDailyReturns(SortedDictionary<DateOnly, decimal> equityCurve)
+    private static decimal[] ExtractDailyReturnsForDates(
+        SortedDictionary<DateOnly, decimal> equityCurve,
+        List<DateOnly> sortedDates)
     {
-        var values = equityCurve.Values.ToArray();
-        if (values.Length < 2)
+        if (sortedDates.Count < 2)
         {
             return [];
         }
 
-        var returns = new decimal[values.Length - 1];
-        for (var i = 1; i < values.Length; i++)
+        var returns = new decimal[sortedDates.Count - 1];
+        for (var i = 1; i < sortedDates.Count; i++)
         {
-            returns[i - 1] = values[i - 1] != 0 ? (values[i] / values[i - 1]) - 1 : 0m;
+            var prev = equityCurve[sortedDates[i - 1]];
+            var curr = equityCurve[sortedDates[i]];
+            returns[i - 1] = prev != 0 ? (curr / prev) - 1 : 0m;
         }
 
         return returns;
@@ -201,27 +219,37 @@ public static class BenchmarkComparisonReport
             range = 1;
         }
 
+        // Date-based x-axis: compute shared min/max date across both curves
+        var allDates = pEntries.Select(e => e.Key).Concat(bEntries.Select(e => e.Key)).ToList();
+        var minDate = allDates.Min();
+        var maxDate = allDates.Max();
+        var dateRange = maxDate.DayNumber - minDate.DayNumber;
+        if (dateRange == 0)
+        {
+            dateRange = 1;
+        }
+
         var sb = new StringBuilder();
         sb.AppendLine(CultureInfo.InvariantCulture, $"<svg viewBox=\"0 0 {width} {height + 30}\" xmlns=\"http://www.w3.org/2000/svg\">");
 
-        // Portfolio line
+        // Portfolio line — date-based x-axis
         sb.Append("<polyline fill=\"none\" stroke=\"#0d47a1\" stroke-width=\"2\" points=\"");
-        for (var i = 0; i < pEntries.Count; i++)
+        foreach (var entry in pEntries)
         {
-            var normalized = pBase != 0 ? pEntries[i].Value / pBase * 100 : 100m;
-            var x = margin + (decimal)i / (pEntries.Count - 1) * (width - 2 * margin);
+            var normalized = pBase != 0 ? entry.Value / pBase * 100 : 100m;
+            var x = margin + (decimal)(entry.Key.DayNumber - minDate.DayNumber) / dateRange * (width - 2 * margin);
             var y = height - margin - (normalized - minVal) / range * (height - 2 * margin);
             sb.Append(CultureInfo.InvariantCulture, $"{x:F1},{y:F1} ");
         }
 
         sb.AppendLine("\" />");
 
-        // Benchmark line
+        // Benchmark line — date-based x-axis
         sb.Append("<polyline fill=\"none\" stroke=\"#e65100\" stroke-width=\"2\" stroke-dasharray=\"5,3\" points=\"");
-        for (var i = 0; i < bEntries.Count; i++)
+        foreach (var entry in bEntries)
         {
-            var normalized = bBase != 0 ? bEntries[i].Value / bBase * 100 : 100m;
-            var x = margin + (decimal)i / (bEntries.Count - 1) * (width - 2 * margin);
+            var normalized = bBase != 0 ? entry.Value / bBase * 100 : 100m;
+            var x = margin + (decimal)(entry.Key.DayNumber - minDate.DayNumber) / dateRange * (width - 2 * margin);
             var y = height - margin - (normalized - minVal) / range * (height - 2 * margin);
             sb.Append(CultureInfo.InvariantCulture, $"{x:F1},{y:F1} ");
         }

@@ -26,17 +26,21 @@ public sealed class MonteCarloSimulator
 {
     private readonly int _simulationCount;
     private readonly int _seed;
+    private readonly int _tradingDaysPerYear;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MonteCarloSimulator"/> class.
     /// </summary>
     /// <param name="simulationCount">Number of bootstrap simulations to run.</param>
     /// <param name="seed">Random seed for reproducibility. Default -1 (non-deterministic).</param>
-    public MonteCarloSimulator(int simulationCount = 1000, int seed = -1)
+    /// <param name="tradingDaysPerYear">Trading days per year for Sharpe ratio annualization. Default 252.</param>
+    public MonteCarloSimulator(int simulationCount = 1000, int seed = -1, int tradingDaysPerYear = 252)
     {
         Guard.AgainstNegativeOrZero(() => simulationCount);
+        Guard.AgainstNegativeOrZero(() => tradingDaysPerYear);
         _simulationCount = simulationCount;
         _seed = seed;
+        _tradingDaysPerYear = tradingDaysPerYear;
     }
 
     /// <summary>
@@ -70,7 +74,7 @@ public sealed class MonteCarloSimulator
             var sumSqDev = resampled.Sum(r => (r - mean) * (r - mean));
             var stdDev = (decimal)Math.Sqrt((double)(sumSqDev / (resampled.Length - 1)));
 
-            sharpes[sim] = stdDev == 0m ? 0m : mean / stdDev;
+            sharpes[sim] = stdDev == 0m ? 0m : (mean / stdDev) * (decimal)Math.Sqrt(_tradingDaysPerYear);
         }
 
         Array.Sort(sharpes);

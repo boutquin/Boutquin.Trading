@@ -87,9 +87,29 @@ public sealed class LedoitWolfShrinkageEstimator : ICovarianceEstimator
             }
         }
 
-        // Shrinkage intensity: delta = piSum / (t * sumSquaredDiff)
+        // Compute rho: sum of asymptotic covariances of sample entries with target entries.
+        // For scaled identity target F = mu*I, off-diagonal target entries are 0,
+        // so rho_ij = 0 for i != j. Diagonal rho_ii == pi_ii.
+        // Therefore: rhoSum = sum of diagonal pi terms only.
+        // This makes (piSum - rhoSum) = sum of OFF-DIAGONAL pi terms.
+        // Reference: Ledoit & Wolf (2004), Equation (2) for target = mu*I.
+        var rhoSum = 0m;
+        for (var i = 0; i < n; i++)
+        {
+            var sum = 0m;
+            for (var k = 0; k < t; k++)
+            {
+                var zki = returns[i][k] - means[i];
+                var term = zki * zki - sampleCov[i, i];
+                sum += term * term;
+            }
+
+            rhoSum += sum / t;
+        }
+
+        // Shrinkage intensity: delta = max(0, min(1, (piSum - rhoSum) / (T * gamma)))
         // Clamp to [0, 1]
-        var delta = sumSquaredDiff == 0m ? 1m : piSum / (t * sumSquaredDiff);
+        var delta = sumSquaredDiff == 0m ? 1m : (piSum - rhoSum) / (t * sumSquaredDiff);
         delta = Math.Max(0m, Math.Min(1m, delta));
 
         // Step 4: Compute shrunk covariance matrix

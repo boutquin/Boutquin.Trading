@@ -107,7 +107,7 @@ public sealed class MinimumVarianceConstruction : IPortfolioConstructionModel
                 var newVar = ComputePortfolioVariance(candidate, cov);
                 var oldVar = ComputePortfolioVariance(w, cov);
 
-                if (newVar <= oldVar + _tolerance)
+                if (newVar < oldVar)
                 {
                     var maxDiff = 0m;
                     for (var i = 0; i < n; i++)

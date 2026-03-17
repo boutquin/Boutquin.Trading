@@ -240,6 +240,8 @@ public sealed class BlackLittermanConstruction : IPortfolioConstructionModel
     /// <summary>
     /// Inverts a small K x K matrix using Gauss-Jordan elimination.
     /// </summary>
+    private const decimal SingularityEpsilon = 1e-20m;
+
     private static decimal[,] InvertMatrix(decimal[,] matrix, int size)
     {
         var augmented = new decimal[size, 2 * size];
@@ -277,13 +279,13 @@ public sealed class BlackLittermanConstruction : IPortfolioConstructionModel
                 }
             }
 
-            var pivot = augmented[col, col];
-            if (pivot == 0m)
+            if (Math.Abs(augmented[col, col]) < SingularityEpsilon)
             {
                 throw new CalculationException("Matrix is singular and cannot be inverted.");
             }
 
             // Scale pivot row
+            var pivot = augmented[col, col];
             for (var j = 0; j < 2 * size; j++)
             {
                 augmented[col, j] /= pivot;

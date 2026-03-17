@@ -87,10 +87,10 @@ public sealed class RiskParityConstruction : IPortfolioConstructionModel
                     mrc += cov[i, j] * w[j];
                 }
 
-                // Avoid division by zero
                 if (mrc <= 0m)
                 {
-                    mrc = _tolerance;
+                    throw new Boutquin.Trading.Domain.Exceptions.CalculationException(
+                        $"Risk parity is undefined when marginal risk contribution is <= 0 (asset has negative risk contribution, typical for hedging assets). MRC = {mrc}.");
                 }
 
                 newW[i] = 1m / mrc;

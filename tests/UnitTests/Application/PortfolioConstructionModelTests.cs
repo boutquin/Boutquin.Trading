@@ -158,17 +158,27 @@ public sealed class PortfolioConstructionModelTests
 
     // ==================== RiskParityConstruction Tests ====================
 
+    // RiskParity-specific returns: all positively correlated with similar patterns,
+    // ensuring positive marginal risk contributions throughout iteration.
+    private static decimal[][] RiskParityReturns =>
+    [
+        [0.02m, -0.01m, 0.03m, -0.02m, 0.01m, 0.04m, -0.03m, 0.02m, -0.01m, 0.03m], // VTI
+        [0.01m, -0.005m, 0.015m, -0.01m, 0.005m, 0.02m, -0.015m, 0.01m, -0.005m, 0.015m], // TLT
+        [0.015m, -0.008m, 0.022m, -0.015m, 0.008m, 0.03m, -0.022m, 0.015m, -0.008m, 0.022m], // GLD
+        [0.025m, -0.012m, 0.035m, -0.025m, 0.012m, 0.045m, -0.035m, 0.025m, -0.012m, 0.035m]  // VNQ
+    ];
+
     [Fact]
     public void RiskParity_EqualRiskContribution_WithinTolerance()
     {
         var model = new RiskParityConstruction();
 
-        var weights = model.ComputeTargetWeights(FourAssets, FourAssetReturns);
+        var weights = model.ComputeTargetWeights(FourAssets, RiskParityReturns);
 
         // Compute marginal risk contributions: MRC_i = w_i * (Σw)_i / σ_p
         var n = FourAssets.Count;
         var cov = new Boutquin.Trading.Application.CovarianceEstimators.SampleCovarianceEstimator()
-            .Estimate(FourAssetReturns);
+            .Estimate(RiskParityReturns);
 
         var w = FourAssets.Select(a => weights[a]).ToArray();
 
@@ -211,7 +221,7 @@ public sealed class PortfolioConstructionModelTests
         // The default max is 100. If it converges, weights should be stable.
         var model = new RiskParityConstruction(maxIterations: 100);
 
-        var weights = model.ComputeTargetWeights(FourAssets, FourAssetReturns);
+        var weights = model.ComputeTargetWeights(FourAssets, RiskParityReturns);
 
         weights.Should().HaveCount(4);
         AssertWeightsSumToOne(weights);
@@ -220,13 +230,14 @@ public sealed class PortfolioConstructionModelTests
     [Fact]
     public void RiskParity_UsesCovarianceEstimator()
     {
-        // Use data with a recent shock to make EWMA diverge from sample
+        // Use data with a recent shock to make EWMA diverge from sample.
+        // All assets positively correlated to ensure positive MRC throughout.
         var shockedReturns = new[]
         {
-            new[] { 0.001m, 0.001m, 0.001m, 0.001m, 0.001m, 0.001m, 0.001m, 0.001m, 0.001m, 0.10m },
-            new[] { 0.01m, -0.01m, 0.01m, -0.01m, 0.01m, -0.01m, 0.01m, -0.01m, 0.01m, -0.01m },
-            new[] { 0.005m, 0.005m, 0.005m, 0.005m, 0.005m, 0.005m, 0.005m, 0.005m, 0.005m, 0.08m },
-            new[] { 0.002m, -0.002m, 0.002m, -0.002m, 0.002m, -0.002m, 0.002m, -0.002m, 0.002m, -0.002m }
+            new[] { 0.01m, 0.005m, 0.01m, 0.005m, 0.01m, 0.005m, 0.01m, 0.005m, 0.01m, 0.10m },
+            new[] { 0.008m, 0.004m, 0.008m, 0.004m, 0.008m, 0.004m, 0.008m, 0.004m, 0.008m, 0.05m },
+            new[] { 0.005m, 0.003m, 0.005m, 0.003m, 0.005m, 0.003m, 0.005m, 0.003m, 0.005m, 0.08m },
+            new[] { 0.003m, 0.002m, 0.003m, 0.002m, 0.003m, 0.002m, 0.003m, 0.002m, 0.003m, 0.04m }
         };
 
         var sampleModel = new RiskParityConstruction(

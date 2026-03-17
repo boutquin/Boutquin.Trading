@@ -219,10 +219,10 @@ public sealed class ConstructionModelStrategyTests
     {
         var orderPriceCalc = new ClosePriceOrderPriceCalculationStrategy();
         var positionSizer = new DynamicWeightPositionSizer(CurrencyCode.USD);
-        var constructionModel = new RiskParityConstruction();
+        var constructionModel = new EqualWeightConstruction();
 
         var strategy = new ConstructionModelStrategy(
-            "E2E Risk Parity",
+            "E2E Equal Weight",
             TestAssets,
             TestCash,
             orderPriceCalc,
@@ -245,7 +245,7 @@ public sealed class ConstructionModelStrategyTests
             }
         };
 
-        act.Should().NotThrow("End-to-end backtest with risk parity should complete without error");
+        act.Should().NotThrow("End-to-end backtest with construction model strategy should complete without error");
     }
 
     /// <summary>

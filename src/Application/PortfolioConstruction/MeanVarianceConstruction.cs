@@ -127,7 +127,7 @@ public sealed class MeanVarianceConstruction : IPortfolioConstructionModel
                 var newUtility = ComputeUtility(candidate, means, cov, _riskAversion);
                 var oldUtility = ComputeUtility(w, means, cov, _riskAversion);
 
-                if (newUtility >= oldUtility - _tolerance)
+                if (newUtility > oldUtility)
                 {
                     var maxDiff = 0m;
                     for (var i = 0; i < n; i++)
