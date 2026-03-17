@@ -29,6 +29,7 @@
     <ProjectReference Include="..\..\src\Data.Tiingo\Boutquin.Trading.Data.Tiingo.csproj" />
     <ProjectReference Include="..\..\src\Data.CSV\Boutquin.Trading.Data.CSV.csproj" />
     <ProjectReference Include="..\..\src\Data.Frankfurter\Boutquin.Trading.Data.Frankfurter.csproj" />
+    <ProjectReference Include="..\..\src\Data.Fred\Boutquin.Trading.Data.Fred.csproj" />
   </ItemGroup>
 
   <ItemGroup>
