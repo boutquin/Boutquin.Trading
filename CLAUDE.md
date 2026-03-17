@@ -44,6 +44,10 @@ Quantitative trading framework in C# .NET. Pre-release.
 - **`IEconomicDataFetcher`** — New interface for scalar economic time series (treasury yields, macro indicators). Returns `IAsyncEnumerable<KeyValuePair<DateOnly, decimal>>` for a given series ID. Not part of `IMarketDataFetcher` because FRED data is scalar, not OHLCV/FX.
 - **`FredFetcher`** — Fetches from FRED REST API. API key required (free). Returns raw values as FRED provides them (e.g., yields in percent, not decimal). Caller transforms. Missing values (`"."`) are silently skipped.
 - **`FredSeriesConstants`** — Well-known FRED series IDs for treasury yields, inflation, and growth indicators.
+- **`IFactorDataFetcher`** — New interface for multi-factor return series (Fama-French, etc.). Returns `IAsyncEnumerable<KeyValuePair<DateOnly, IReadOnlyDictionary<string, decimal>>>` — all factors from a dataset in one async stream. Not part of `IMarketDataFetcher` because factor returns are not OHLCV/FX data.
+- **`FamaFrenchFetcher`** — Downloads ZIP/CSV from Ken French Data Library. No API key required. Supports 3-factor, 5-factor, and momentum datasets in both daily and monthly frequencies. Values in percentage (caller transforms). Missing values (-99.99/-999) silently skipped. Monthly annual summary section excluded.
+- **`FamaFrenchDataset` enum** — Constrains valid dataset identifiers: `ThreeFactors`, `FiveFactors`, `Momentum`.
+- **`FamaFrenchConstants`** — Well-known factor names matching CSV headers: `Mkt-RF`, `SMB`, `HML`, `RMW`, `CMA`, `RF`, `Mom`.
 - **Deprecating a data provider project** — Checklist: (1) delete project directory, (2) `dotnet sln remove`, (3) remove `ProjectReference` entries from all consuming `.csproj` files, (4) update `GlobalUsings.cs` and source code to use replacement, (5) add new `ProjectReference` entries for replacement projects, (6) grep for old namespace to catch stragglers.
 
 ## Portfolio Construction Architecture (Phase 2)
@@ -113,6 +117,7 @@ Quantitative trading framework in C# .NET. Pre-release.
 | `Boutquin.Trading.Data.Tiingo` | `src/Data.Tiingo/` | Domain |
 | `Boutquin.Trading.Data.Frankfurter` | `src/Data.Frankfurter/` | Domain |
 | `Boutquin.Trading.Data.Fred` | `src/Data.Fred/` | Domain |
+| `Boutquin.Trading.Data.FamaFrench` | `src/Data.FamaFrench/` | Domain |
 | `Boutquin.Trading.Data.CSV` | `src/Data.CSV/` | Domain |
 | `Boutquin.Trading.Data.Processor` | `src/Data.Processor/` | Domain, Application |
 | `Boutquin.Trading.DataAccess` | `src/DataAccess/` | Domain |
@@ -148,6 +153,10 @@ Quantitative trading framework in C# .NET. Pre-release.
 | IEconomicDataFetcher interface | `src/Domain/Interfaces/IEconomicDataFetcher.cs` |
 | FredFetcher | `src/Data.Fred/FredFetcher.cs` |
 | FRED series constants | `src/Data.Fred/FredSeriesConstants.cs` |
+| IFactorDataFetcher interface | `src/Domain/Interfaces/IFactorDataFetcher.cs` |
+| FamaFrenchDataset enum | `src/Domain/Enums/FamaFrenchDataset.cs` |
+| FamaFrenchFetcher | `src/Data.FamaFrench/FamaFrenchFetcher.cs` |
+| Fama-French factor constants | `src/Domain/Helpers/FamaFrenchConstants.cs` |
 | RollingWindow\<T\> (circular buffer) | `src/Domain/Helpers/RollingWindow.cs` |
 | ICovarianceEstimator interface | `src/Domain/Interfaces/ICovarianceEstimator.cs` |
 | IPortfolioConstructionModel interface | `src/Domain/Interfaces/IPortfolioConstructionModel.cs` |
@@ -186,13 +195,13 @@ Quantitative trading framework in C# .NET. Pre-release.
 | DI registration (ServiceCollectionExtensions) | `src/Application/Configuration/ServiceCollectionExtensions.cs` |
 | BacktestOptions, CostModelOptions, RiskManagementOptions | `src/Application/Configuration/` |
 
-### Domain Interfaces (25)
+### Domain Interfaces (26)
 
-`IBrokerage`, `ICapitalAllocationStrategy`, `ICovarianceEstimator`, `ICurrencyConversionService`, `IEconomicDataFetcher`, `IEventHandler`, `IEventProcessor`, `IFinancialEvent`, `IIndicator`, `ILeveragedConstructionModel`, `IMacroIndicator`, `IMarketDataFetcher`, `IMarketDataProcessor`, `IMarketDataStorage`, `IOrderPriceCalculationStrategy`, `IPortfolio`, `IPortfolioConstructionModel`, `IPositionSizer`, `IRebalancingTrigger`, `IRegimeClassifier`, `IRiskManager`, `IRiskRule`, `IStrategy`, `ISymbolReader`, `IUniverseSelector`
+`IBrokerage`, `ICapitalAllocationStrategy`, `ICovarianceEstimator`, `ICurrencyConversionService`, `IEconomicDataFetcher`, `IEventHandler`, `IEventProcessor`, `IFactorDataFetcher`, `IFinancialEvent`, `IIndicator`, `ILeveragedConstructionModel`, `IMacroIndicator`, `IMarketDataFetcher`, `IMarketDataProcessor`, `IMarketDataStorage`, `IOrderPriceCalculationStrategy`, `IPortfolio`, `IPortfolioConstructionModel`, `IPositionSizer`, `IRebalancingTrigger`, `IRegimeClassifier`, `IRiskManager`, `IRiskRule`, `IStrategy`, `ISymbolReader`, `IUniverseSelector`
 
-### Domain Enums (13)
+### Domain Enums (14)
 
-`AssetClassCode`, `ContinentCode`, `CountryCode`, `CurrencyCode`, `EconomicRegime`, `ExchangeCode`, `OrderType`, `RebalancingFrequency`, `SecuritySymbolStandard`, `SignalType`, `TimeZoneCode`, `TradeAction`
+`AssetClassCode`, `ContinentCode`, `CountryCode`, `CurrencyCode`, `EconomicRegime`, `ExchangeCode`, `FamaFrenchDataset`, `OrderType`, `RebalancingFrequency`, `SecuritySymbolStandard`, `SignalType`, `TimeZoneCode`, `TradeAction`
 
 ### Test Patterns
 

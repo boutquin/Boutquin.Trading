@@ -15,6 +15,8 @@ A multi-asset, multi-strategy, event-driven quantitative trading framework for b
 | **Boutquin.Trading.DataAccess** | `Boutquin.Trading.DataAccess` | EF Core data access (SecurityMaster) |
 | **Boutquin.Trading.Data.Tiingo** | `Boutquin.Trading.Data.Tiingo` | Equity data fetcher (Tiingo API) |
 | **Boutquin.Trading.Data.Frankfurter** | `Boutquin.Trading.Data.Frankfurter` | FX rate fetcher (Frankfurter API, ECB-sourced) |
+| **Boutquin.Trading.Data.Fred** | `Boutquin.Trading.Data.Fred` | Economic data fetcher (FRED API — treasury yields, inflation, growth) |
+| **Boutquin.Trading.Data.FamaFrench** | `Boutquin.Trading.Data.FamaFrench` | Fama-French factor data fetcher (Ken French Data Library) |
 | **Boutquin.Trading.Data.CSV** | `Boutquin.Trading.Data.CSV` | CSV data reader |
 | **Boutquin.Trading.Data.Processor** | — | Data processing pipeline |
 | **Boutquin.Trading.BackTest** | — | Backtest runner entry point |
@@ -72,6 +74,8 @@ A multi-asset, multi-strategy, event-driven quantitative trading framework for b
 ### Data Providers
 - **Tiingo** — Historical equity/ETF price data
 - **Frankfurter** — ECB-sourced FX rates with date range filtering
+- **FRED** — Federal Reserve Economic Data (treasury yields, inflation, GDP, macro indicators)
+- **Fama-French** — Academic factor return series (3-factor, 5-factor, momentum) from the Ken French Data Library
 - **CSV** — Symbol list ingestion
 - **Composite fetcher** — Routes equity vs FX requests to the appropriate provider
 
@@ -125,7 +129,7 @@ Configuration via `appsettings.json`:
 │    ICovarianceEstimator, IPortfolioConstructionModel, IRiskManager,   │
 │    IIndicator, IMacroIndicator, IRegimeClassifier, IUniverseSelector  │
 │  Events: MarketEvent, SignalEvent, OrderEvent, FillEvent              │
-│  Enums: AssetClassCode, CurrencyCode, OrderType, TradeAction (13)     │
+│  Enums: AssetClassCode, CurrencyCode, OrderType, TradeAction (14)     │
 │  Extensions: DecimalArrayExtensions, EquityCurveExtensions            │
 │  Analytics: BrinsonFachlerResult, DrawdownPeriod, MonteCarloResult    │
 │  Value Objects: RiskEvaluation                                        │
@@ -146,7 +150,7 @@ Configuration via `appsettings.json`:
 └───────────────────────────────────────────────────────────────────────┘
 ┌───────────────────────────────────────────────────────────────────────┐
 │                          Data Layer                                   │
-│  Tiingo (equities), Frankfurter (FX), CSV (symbols)                   │
+│  Tiingo (equities), Frankfurter (FX), FRED (economic), FF (factors)   │
 │  CompositeMarketDataFetcher, DataAccess (EF Core SecurityMaster)      │
 └───────────────────────────────────────────────────────────────────────┘
 ```
@@ -165,6 +169,8 @@ Boutquin.Trading/
 │   ├── DataAccess/         # EF Core data access
 │   ├── Data.Tiingo/        # Tiingo equity data fetcher
 │   ├── Data.Frankfurter/   # Frankfurter FX rate fetcher
+│   ├── Data.Fred/          # FRED economic data fetcher
+│   ├── Data.FamaFrench/    # Fama-French factor data fetcher
 │   ├── Data.CSV/           # CSV data reader
 │   ├── Data.Processor/     # Data processing pipeline
 │   ├── BackTest/           # Backtest runner entry point

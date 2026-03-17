@@ -26,6 +26,7 @@ namespace Boutquin.Trading.Tests.UnitTests.Helpers;
 public sealed class MockHttpMessageHandler : HttpMessageHandler
 {
     private readonly string? _defaultResponseBody;
+    private readonly byte[]? _defaultResponseBytes;
     private readonly HttpStatusCode _defaultStatusCode;
     private readonly Dictionary<string, (string Body, HttpStatusCode Status)> _urlResponses;
 
@@ -38,6 +39,16 @@ public sealed class MockHttpMessageHandler : HttpMessageHandler
     public MockHttpMessageHandler(string responseBody, HttpStatusCode statusCode = HttpStatusCode.OK)
     {
         _defaultResponseBody = responseBody ?? throw new ArgumentNullException(nameof(responseBody));
+        _defaultStatusCode = statusCode;
+        _urlResponses = new Dictionary<string, (string, HttpStatusCode)>(StringComparer.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Creates a handler that returns the same binary response for all requests (for ZIP/binary content).
+    /// </summary>
+    public MockHttpMessageHandler(byte[] responseBytes, HttpStatusCode statusCode = HttpStatusCode.OK)
+    {
+        _defaultResponseBytes = responseBytes ?? throw new ArgumentNullException(nameof(responseBytes));
         _defaultStatusCode = statusCode;
         _urlResponses = new Dictionary<string, (string, HttpStatusCode)>(StringComparer.OrdinalIgnoreCase);
     }
@@ -76,6 +87,11 @@ public sealed class MockHttpMessageHandler : HttpMessageHandler
         }
 
         // Fall back to default
+        if (_defaultResponseBytes != null)
+        {
+            return CreateBinaryResponse(_defaultResponseBytes, _defaultStatusCode);
+        }
+
         if (_defaultResponseBody != null)
         {
             return CreateResponse(_defaultResponseBody, _defaultStatusCode);
@@ -88,5 +104,11 @@ public sealed class MockHttpMessageHandler : HttpMessageHandler
         Task.FromResult(new HttpResponseMessage(status)
         {
             Content = new StringContent(body, Encoding.UTF8, "application/json")
+        });
+
+    private static Task<HttpResponseMessage> CreateBinaryResponse(byte[] bytes, HttpStatusCode status) =>
+        Task.FromResult(new HttpResponseMessage(status)
+        {
+            Content = new ByteArrayContent(bytes)
         });
 }

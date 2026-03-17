@@ -10,8 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 #### Domain Layer
-- **24 domain interfaces** — `IBrokerage`, `IPortfolio` (14 methods), `IStrategy`, `IPositionSizer`, `ICovarianceEstimator`, `IPortfolioConstructionModel`, `IRebalancingTrigger`, `IRegimeClassifier`, `IRiskManager`, `IRiskRule`, `IIndicator`, `IMacroIndicator`, `IUniverseSelector`, and more.
-- **13 domain enums** — `AssetClassCode`, `CurrencyCode`, `OrderType`, `TradeAction`, `RebalancingFrequency`, `EconomicRegime`, and others.
+- **26 domain interfaces** — `IBrokerage`, `IPortfolio` (14 methods), `IStrategy`, `IPositionSizer`, `ICovarianceEstimator`, `IPortfolioConstructionModel`, `IRebalancingTrigger`, `IRegimeClassifier`, `IRiskManager`, `IRiskRule`, `IIndicator`, `IMacroIndicator`, `IUniverseSelector`, `IEconomicDataFetcher`, `IFactorDataFetcher`, and more.
+- **14 domain enums** — `AssetClassCode`, `CurrencyCode`, `OrderType`, `TradeAction`, `RebalancingFrequency`, `EconomicRegime`, `FamaFrenchDataset`, and others.
+- **`FamaFrenchConstants`** — Well-known factor names (`Mkt-RF`, `SMB`, `HML`, `RMW`, `CMA`, `RF`, `Mom`) for consumer code.
 - **Event pipeline** — `MarketEvent`, `SignalEvent`, `OrderEvent`, `FillEvent` records driving the event-driven backtesting engine.
 - **Financial metrics** — `DecimalArrayExtensions` with Sharpe ratio, annualized return, standard deviation, downside deviation, Sortino ratio, max drawdown, Beta, and more (all sample-based with N-1 divisor).
 - **Equity curve analysis** — `EquityCurveExtensions` for drawdown tracking and `TearSheet` record for performance summaries.
@@ -37,6 +38,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Data Layer
 - **Composite data fetcher** — `CompositeMarketDataFetcher` delegating to `TiingoFetcher` (equities) and `FrankfurterFetcher` (FX rates).
 - **FrankfurterFetcher** — ECB-sourced FX rates with optional date range filtering.
+- **FredFetcher** — FRED REST API fetcher for economic time series (treasury yields, inflation, GDP). API key required. Returns raw values; caller transforms units. Missing values (`"."`) silently skipped.
+- **FredSeriesConstants** — Well-known FRED series IDs for treasury yields, inflation, and growth indicators.
+- **FamaFrenchFetcher** — Downloads ZIP/CSV from the Kenneth R. French Data Library. Supports 3-factor, 5-factor, and momentum datasets in daily and monthly frequencies. No API key required. Values in percentage form. Missing values (`-99.99`/`-999`) silently skipped. Monthly annual summary sections excluded.
 - **CSV reader** — `CsvSymbolReader` for symbol list ingestion.
 - **Data processor** — Pipeline for market data processing.
 

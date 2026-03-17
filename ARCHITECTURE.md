@@ -12,6 +12,8 @@ Boutquin.Trading/
 │   ├── DataAccess/             # EF Core persistence
 │   ├── Data.Tiingo/            # Tiingo equity data provider
 │   ├── Data.Frankfurter/       # Frankfurter FX rate provider
+│   ├── Data.Fred/              # FRED economic data provider
+│   ├── Data.FamaFrench/        # Fama-French factor data provider
 │   ├── Data.CSV/               # CSV data reader
 │   ├── Data.Processor/         # Data processing pipeline
 │   ├── BackTest/               # Backtest runner entry point
@@ -32,7 +34,7 @@ Boutquin.Trading/
 ```
 Domain  ←  Application  ←  BackTest / Sample
 Domain  ←  DataAccess
-Domain  ←  Data.Tiingo / Data.Frankfurter / Data.CSV
+Domain  ←  Data.Tiingo / Data.Frankfurter / Data.Fred / Data.FamaFrench / Data.CSV
 Application ← Data.Processor (also depends on Data.Tiingo, Data.Frankfurter, Domain)
 ```
 
@@ -42,13 +44,13 @@ No project depends upward. Domain has zero project references (only NuGet: Boutq
 
 Core business logic, contracts, and value types. No implementation dependencies.
 
-- **Interfaces/** — 24 domain interfaces defining all contracts (`IBrokerage`, `IPortfolio`, `IStrategy`, `IPositionSizer`, `ICovarianceEstimator`, `IPortfolioConstructionModel`, `IRebalancingTrigger`, `IRegimeClassifier`, `IRiskManager`, `IRiskRule`, `IIndicator`, `IMacroIndicator`, `IUniverseSelector`, etc.)
+- **Interfaces/** — 26 domain interfaces defining all contracts (`IBrokerage`, `IPortfolio`, `IStrategy`, `IPositionSizer`, `ICovarianceEstimator`, `IPortfolioConstructionModel`, `IRebalancingTrigger`, `IRegimeClassifier`, `IRiskManager`, `IRiskRule`, `IIndicator`, `IMacroIndicator`, `IUniverseSelector`, `IEconomicDataFetcher`, `IFactorDataFetcher`, etc.)
 - **Events/** — Event records driving the pipeline: `MarketEvent`, `SignalEvent`, `OrderEvent`, `FillEvent`
-- **Enums/** — 13 domain enums: `AssetClassCode`, `CurrencyCode`, `OrderType`, `TradeAction`, `RebalancingFrequency`, `EconomicRegime`, etc.
+- **Enums/** — 14 domain enums: `AssetClassCode`, `CurrencyCode`, `OrderType`, `TradeAction`, `RebalancingFrequency`, `EconomicRegime`, `FamaFrenchDataset`, etc.
 - **Extensions/** — `DecimalArrayExtensions` (financial metrics), `EquityCurveExtensions` (drawdown tracking)
 - **Analytics/** — 7 sealed record types for analytics results
 - **Data/** — `MarketData` record and security price types
-- **Helpers/** — `RollingWindow<T>` (circular buffer), `TearSheet` (performance summary)
+- **Helpers/** — `RollingWindow<T>` (circular buffer), `TearSheet` (performance summary), `FamaFrenchConstants` (well-known factor names)
 - **ValueObjects/** — `RiskEvaluation` (allowed/rejected with reason)
 - **Exceptions/** — `CalculationException` for degenerate-input guards
 
@@ -88,12 +90,14 @@ EF Core persistence for the SecurityMaster database.
 
 Each provider implements domain interfaces for a specific data source:
 
-| Project | Source | Method |
-|---------|--------|--------|
-| **Data.Tiingo** | Tiingo API | `FetchMarketDataAsync` |
-| **Data.Frankfurter** | Frankfurter (ECB) | `FetchFxRatesAsync` |
-| **Data.CSV** | CSV files | `ReadSymbolsAsync` |
-| **Data.Processor** | Pipeline | Orchestrates data processing |
+| Project | Source | Interface | Method |
+|---------|--------|-----------|--------|
+| **Data.Tiingo** | Tiingo API | `IMarketDataFetcher` | `FetchMarketDataAsync` |
+| **Data.Frankfurter** | Frankfurter (ECB) | `IMarketDataFetcher` | `FetchFxRatesAsync` |
+| **Data.Fred** | FRED REST API | `IEconomicDataFetcher` | `FetchSeriesAsync` |
+| **Data.FamaFrench** | Ken French Data Library | `IFactorDataFetcher` | `FetchDailyAsync`, `FetchMonthlyAsync` |
+| **Data.CSV** | CSV files | `ISymbolReader` | `ReadSymbolsAsync` |
+| **Data.Processor** | Pipeline | — | Orchestrates data processing |
 
 ## Tests (`tests/`)
 
