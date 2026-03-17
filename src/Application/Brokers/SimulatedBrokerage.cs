@@ -116,12 +116,7 @@ public sealed class SimulatedBrokerage : IBrokerage
             order.Quantity,
             commission);
 
-        // M5: Thread-safe delegate invocation — copy to local before null-check
-        var handler = FillOccurred;
-        if (handler != null)
-        {
-            await handler(this, fillEvent).ConfigureAwait(false);
-        }
+        await RaiseFillOccurredAsync(fillEvent, cancellationToken).ConfigureAwait(false);
         return true;
     }
 
@@ -153,12 +148,7 @@ public sealed class SimulatedBrokerage : IBrokerage
             order.Quantity,
             commission);
 
-        // M5: Thread-safe delegate invocation
-        var handler = FillOccurred;
-        if (handler != null)
-        {
-            await handler(this, fillEvent).ConfigureAwait(false);
-        }
+        await RaiseFillOccurredAsync(fillEvent, cancellationToken).ConfigureAwait(false);
         return true;
     }
 
@@ -191,12 +181,7 @@ public sealed class SimulatedBrokerage : IBrokerage
             order.Quantity,
             commission);
 
-        // M5: Thread-safe delegate invocation
-        var handler = FillOccurred;
-        if (handler != null)
-        {
-            await handler(this, fillEvent).ConfigureAwait(false);
-        }
+        await RaiseFillOccurredAsync(fillEvent, cancellationToken).ConfigureAwait(false);
         return true;
     }
 
@@ -212,8 +197,16 @@ public sealed class SimulatedBrokerage : IBrokerage
         var stopPrice = order.PrimaryPrice.Value;
         var limitPrice = order.SecondaryPrice.Value;
 
-        if ((order.TradeAction == TradeAction.Buy && (stopPrice > marketData.Close || limitPrice < marketData.Close)) ||
-            (order.TradeAction == TradeAction.Sell && (stopPrice < marketData.Close || limitPrice > marketData.Close)))
+        // R2C-01 fix: Use High/Low for stop trigger (same as HandleStopOrder), Close for limit fill
+        var stopTriggered = order.TradeAction == TradeAction.Buy
+            ? marketData.High >= stopPrice
+            : marketData.Low <= stopPrice;
+
+        var limitFilled = order.TradeAction == TradeAction.Buy
+            ? marketData.Close <= limitPrice
+            : marketData.Close >= limitPrice;
+
+        if (!stopTriggered || !limitFilled)
         {
             return false;
         }
@@ -230,12 +223,26 @@ public sealed class SimulatedBrokerage : IBrokerage
             order.Quantity,
             commission);
 
-        // M5: Thread-safe delegate invocation
-        var handler = FillOccurred;
-        if (handler != null)
-        {
-            await handler(this, fillEvent).ConfigureAwait(false);
-        }
+        await RaiseFillOccurredAsync(fillEvent, cancellationToken).ConfigureAwait(false);
         return true;
+    }
+
+    /// <summary>
+    /// R2C-04 fix: Iterate GetInvocationList() to await all multicast handlers.
+    /// Thread-safe copy-to-local pattern preserved.
+    /// </summary>
+    private async Task RaiseFillOccurredAsync(FillEvent fillEvent, CancellationToken cancellationToken)
+    {
+        var handler = FillOccurred;
+        if (handler == null)
+        {
+            return;
+        }
+
+        foreach (var d in handler.GetInvocationList().Cast<Func<object, FillEvent, Task>>())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            await d(this, fillEvent).ConfigureAwait(false);
+        }
     }
 }

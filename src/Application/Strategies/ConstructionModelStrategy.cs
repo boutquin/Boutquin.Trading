@@ -248,10 +248,16 @@ public sealed class ConstructionModelStrategy : StrategyBase
 
             var assetValue = qty * md.AdjustedClose;
 
-            if (assetCurrency != baseCurrency &&
-                historicalFxConversionRates.TryGetValue(timestamp, out var fxRates) &&
-                fxRates.TryGetValue(assetCurrency, out var rate))
+            // R2C-05 fix: Missing FX rate must throw, not silently use unconverted value
+            if (assetCurrency != baseCurrency)
             {
+                if (!historicalFxConversionRates.TryGetValue(timestamp, out var fxRates) ||
+                    !fxRates.TryGetValue(assetCurrency, out var rate))
+                {
+                    throw new InvalidOperationException(
+                        $"Missing FX rate for {assetCurrency} on {timestamp}. Cannot compute portfolio weights without currency conversion.");
+                }
+
                 assetValue *= rate;
             }
 

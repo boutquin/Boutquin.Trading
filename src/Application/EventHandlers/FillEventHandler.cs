@@ -59,7 +59,12 @@ public sealed class FillEventHandler : IEventHandler
 
         // Call methods on the Portfolio class to perform the necessary actions
         var strategy = portfolio.GetStrategy(fillEvent.StrategyName);
-        strategy.UpdatePositions(fillEvent.Asset, fillEvent.Quantity);
+
+        // R2C-02 fix: Sell must negate quantity to reduce position
+        var positionDelta = fillEvent.TradeAction == TradeAction.Buy
+            ? fillEvent.Quantity
+            : -fillEvent.Quantity;
+        strategy.UpdatePositions(fillEvent.Asset, positionDelta);
 
         // A3 fix: Branch on TradeAction — Buy deducts, Sell credits
         var tradeValue = fillEvent.FillPrice * fillEvent.Quantity;
