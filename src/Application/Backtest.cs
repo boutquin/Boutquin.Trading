@@ -267,4 +267,66 @@ public sealed class BackTest
             recoveryFactor
         );
     }
+
+    /// <summary>
+    /// Analyzes performance metrics for the benchmark portfolio.
+    /// Uses the main portfolio as the reference for relative metrics (alpha, beta, information ratio).
+    /// </summary>
+    public Tearsheet AnalyzeBenchmarkPerformanceMetrics()
+    {
+        if (_benchmarkPortfolio.EquityCurve.Count < 2)
+        {
+            throw new InvalidOperationException("Benchmark equity curve must contain at least 2 data points. Run the backtest first.");
+        }
+
+        var dailyReturns = _benchmarkPortfolio.EquityCurve.Values.ToArray().DailyReturns().ToArray();
+
+        var annualizedReturn = dailyReturns.AnnualizedReturn();
+        var sharpeRatio = dailyReturns.SharpeRatio(_dailyRiskFreeRate);
+        var sortinoRatio = dailyReturns.SortinoRatio(_dailyRiskFreeRate);
+        var cagr = dailyReturns.CompoundAnnualGrowthRate();
+        var volatility = dailyReturns.Volatility();
+
+        // Relative metrics: benchmark vs portfolio (reversed perspective)
+        var portfolioDailyReturns = _portfolio.EquityCurve.Values.ToArray().DailyReturns().ToArray();
+        var alpha = dailyReturns.Alpha(portfolioDailyReturns, _dailyRiskFreeRate);
+        var beta = dailyReturns.Beta(portfolioDailyReturns);
+        var informationRatio = dailyReturns.InformationRatio(portfolioDailyReturns);
+
+        var (drawdowns, maxDrawdown, maxDrawdownDuration) = _benchmarkPortfolio.EquityCurve.CalculateDrawdownsAndMaxDrawdownInfo();
+
+        var calmarRatio = dailyReturns.CalmarRatio();
+        var omegaRatio = dailyReturns.OmegaRatio();
+        var historicalVaR = dailyReturns.HistoricalVaR();
+        var conditionalVaR = dailyReturns.ConditionalVaR();
+        var skewness = dailyReturns.Skewness();
+        var kurtosis = dailyReturns.Kurtosis();
+        var winRate = dailyReturns.WinRate();
+        var profitFactor = dailyReturns.ProfitFactor();
+        var recoveryFactor = dailyReturns.RecoveryFactor();
+
+        return new Tearsheet(
+            annualizedReturn,
+            sharpeRatio,
+            sortinoRatio,
+            maxDrawdown,
+            cagr,
+            volatility,
+            alpha,
+            beta,
+            informationRatio,
+            _benchmarkPortfolio.EquityCurve,
+            drawdowns,
+            maxDrawdownDuration,
+            calmarRatio,
+            omegaRatio,
+            historicalVaR,
+            conditionalVaR,
+            skewness,
+            kurtosis,
+            winRate,
+            profitFactor,
+            recoveryFactor
+        );
+    }
 }
