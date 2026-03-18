@@ -60,9 +60,16 @@ public sealed class MarketEventHandler : IEventHandler
         // Call methods on the Portfolio class to perform the necessary actions
         portfolio.UpdateHistoricalData(marketEvent);
 
-        // Detect and handle dividend and split events
+        // Detect and handle dividend and split events.
+        // MarketEvent may contain data for assets across multiple portfolios (e.g. portfolio + benchmark).
+        // Skip assets that don't belong to this portfolio to avoid "Asset not found" errors.
         foreach (var (asset, marketData) in marketEvent.HistoricalMarketData)
         {
+            if (portfolio.AssetCurrencies != null && !portfolio.AssetCurrencies.ContainsKey(asset))
+            {
+                continue;
+            }
+
             // Detect and handle dividend events
             var dividendPerShare = marketData.DividendPerShare;
             if (dividendPerShare > 0)

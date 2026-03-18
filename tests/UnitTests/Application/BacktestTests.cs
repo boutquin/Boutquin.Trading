@@ -271,10 +271,12 @@ public sealed class BacktestTests
     public async Task RunAsync_NoFxRates_ShouldLogWarning()
     {
         // Arrange
+        // Use a foreign-currency asset so currencyPairList is non-empty and the FX fetch is attempted.
+        // The FX mock returns empty, triggering the "No FX conversion rates loaded" warning.
         var portfolioStrategy = new Mock<IStrategy>();
         portfolioStrategy.Setup(s => s.Assets).Returns(new Dictionary<Asset, CurrencyCode>
         {
-            [new Asset("AAPL")] = CurrencyCode.USD
+            [new Asset("SHEL")] = CurrencyCode.GBP
         });
 
         var portfolio = new Mock<IPortfolio>();

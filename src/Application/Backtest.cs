@@ -127,35 +127,49 @@ public sealed class BackTest
             // BUG-A07: Filter market data to startDate..endDate range
             if (kvp.Key >= startDate && kvp.Key <= endDate)
             {
-                bufferedMarketData[kvp.Key] = kvp.Value;
+                // Merge — fetchers emit one-symbol-per-date entries; overwrite would drop all but the last.
+                if (bufferedMarketData.TryGetValue(kvp.Key, out var existing))
+                {
+                    foreach (var entry in kvp.Value)
+                    {
+                        existing[entry.Key] = entry.Value;
+                    }
+                }
+                else
+                {
+                    bufferedMarketData[kvp.Key] = kvp.Value;
+                }
             }
         }
 
         // H3: Include both portfolio AND benchmark asset currencies for FX rate fetching.
-        // Filter out same-currency pairs (e.g. USD_USD) — FX providers reject them.
-        var currencyPairs = _portfolio.Strategies.Values
-                                      .Concat(_benchmarkPortfolio.Strategies.Values)
-                                      .SelectMany(s => s.Assets.Values)
-                                      .Where(currencyCode => currencyCode != _baseCurrency)
-                                      .Select(currencyCode => $"{_baseCurrency}_{currencyCode}")
-                                      .Distinct();
-
-        // Fetch the historical FX rates for the currency pairs.
-        var fxRatesTimeline = _marketDataFetcher.FetchFxRatesAsync(currencyPairs, cancellationToken);
+        // Filter out same-currency pairs (e.g. USD_USD) — FX providers reject them with HTTP 422.
+        var currencyPairList = _portfolio.Strategies.Values
+                                         .Concat(_benchmarkPortfolio.Strategies.Values)
+                                         .SelectMany(s => s.Assets.Values)
+                                         .Where(currencyCode => currencyCode != _baseCurrency)
+                                         .Select(currencyCode => $"{_baseCurrency}_{currencyCode}")
+                                         .Distinct()
+                                         .ToList();
 
         // Create a dictionary to hold the FX rates for each date.
         var fxRatesForDate = new SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>();
 
-        // Fill the dictionary with FX rates for each date.
-        await foreach (var fxRatesOnDate in fxRatesTimeline.WithCancellation(cancellationToken).ConfigureAwait(false))
+        // Skip the FX fetch entirely for single-currency portfolios (e.g. all-USD) —
+        // passing an empty list to the fetcher throws ArgumentException.
+        if (currencyPairList.Count > 0)
         {
-            fxRatesForDate[fxRatesOnDate.Key] = fxRatesOnDate.Value;
-        }
+            var fxRatesTimeline = _marketDataFetcher.FetchFxRatesAsync(currencyPairList, cancellationToken);
+            await foreach (var fxRatesOnDate in fxRatesTimeline.WithCancellation(cancellationToken).ConfigureAwait(false))
+            {
+                fxRatesForDate[fxRatesOnDate.Key] = fxRatesOnDate.Value;
+            }
 
-        // M32: Warn when no FX conversion rates are loaded
-        if (fxRatesForDate.Count == 0)
-        {
-            _logger.LogWarning("No FX conversion rates loaded. Foreign currency assets may fail valuation.");
+            // M32: Warn when FX fetch was attempted but returned no rates — likely a data gap.
+            if (fxRatesForDate.Count == 0)
+            {
+                _logger.LogWarning("No FX conversion rates loaded. Foreign currency assets may fail valuation.");
+            }
         }
 
         // Event loop iterates buffered market data — single materialization
