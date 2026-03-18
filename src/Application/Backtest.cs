@@ -131,10 +131,12 @@ public sealed class BackTest
             }
         }
 
-        // H3: Include both portfolio AND benchmark asset currencies for FX rate fetching
+        // H3: Include both portfolio AND benchmark asset currencies for FX rate fetching.
+        // Filter out same-currency pairs (e.g. USD_USD) — FX providers reject them.
         var currencyPairs = _portfolio.Strategies.Values
                                       .Concat(_benchmarkPortfolio.Strategies.Values)
                                       .SelectMany(s => s.Assets.Values)
+                                      .Where(currencyCode => currencyCode != _baseCurrency)
                                       .Select(currencyCode => $"{_baseCurrency}_{currencyCode}")
                                       .Distinct();
 
