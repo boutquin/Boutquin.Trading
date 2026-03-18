@@ -36,6 +36,7 @@ public sealed class TiingoFetcher : IMarketDataFetcher, IDisposable
     private readonly bool _ownsClient;
     private readonly string _apiEndpoint;
     private readonly string _apiKey;
+    private readonly DateOnly? _startDate;
 
     private static readonly JsonSerializerOptions s_jsonOptions = new()
     {
@@ -45,7 +46,8 @@ public sealed class TiingoFetcher : IMarketDataFetcher, IDisposable
     public TiingoFetcher(
         string apiKey,
         HttpClient? httpClient = null,
-        string apiEndpoint = "https://api.tiingo.com")
+        string apiEndpoint = "https://api.tiingo.com",
+        DateOnly? startDate = null)
     {
         Guard.AgainstNullOrWhiteSpace(() => apiKey);
         Guard.AgainstNullOrWhiteSpace(() => apiEndpoint);
@@ -54,6 +56,7 @@ public sealed class TiingoFetcher : IMarketDataFetcher, IDisposable
         _httpClient = httpClient ?? new HttpClient();
         _apiEndpoint = apiEndpoint.TrimEnd('/');
         _apiKey = apiKey;
+        _startDate = startDate;
         // R2I-03: Auth headers are now set per-request via CreateRequest() to avoid mutating shared HttpClient.
     }
 
@@ -74,6 +77,10 @@ public sealed class TiingoFetcher : IMarketDataFetcher, IDisposable
             cancellationToken.ThrowIfCancellationRequested();
 
             var url = $"{_apiEndpoint}/tiingo/daily/{Uri.EscapeDataString(symbol.Ticker)}/prices?resampleFreq=daily&format=json";
+            if (_startDate.HasValue)
+            {
+                url += $"&startDate={_startDate.Value:yyyy-MM-dd}";
+            }
 
             TiingoDailyPrice[]? prices;
             try
