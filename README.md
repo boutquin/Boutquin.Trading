@@ -155,7 +155,7 @@ Configuration via `appsettings.json`:
 │    BlackLitterman, TacticalOverlay, VolatilityTargeting               │
 │  Analytics: BrinsonFachler, FactorRegressor, CorrelationAnalyzer,     │
 │    DrawdownAnalyzer, WalkForwardOptimizer, MonteCarloSimulator        │
-│  Caching: L1 Memory (CachingXxxFetcher), L2 CSV (WriteThroughXxx)    │
+│  Caching: L1 Memory (CachingXxxFetcher), L2 CSV (WriteThroughXxx)     │
 │  Risk: RiskManager, MaxDrawdown, MaxPositionSize, MaxSectorExposure   │
 │  Indicators: SMA, EMA, RealizedVol, Momentum, Spread, RateOfChange    │
 │  Reporting: HtmlReportGenerator, BenchmarkComparisonReport            │
@@ -163,7 +163,7 @@ Configuration via `appsettings.json`:
 └───────────────────────────────────────────────────────────────────────┘
 ┌───────────────────────────────────────────────────────────────────────┐
 │                          Data Layer                                   │
-│  Tiingo (equities), Frankfurter (FX), FRED (economic), FF (factors)   │
+│  Tiingo, TwelveData (equities), Frankfurter (FX), FRED, FF (factors)  │
 │  CompositeMarketDataFetcher, DataAccess (EF Core SecurityMaster)      │
 └───────────────────────────────────────────────────────────────────────┘
 ```
@@ -181,6 +181,7 @@ Boutquin.Trading/
 │   ├── Application/        # Backtest engine, strategies, analytics, DI
 │   ├── DataAccess/         # EF Core data access
 │   ├── Data.Tiingo/        # Tiingo equity data fetcher
+│   ├── Data.TwelveData/    # Twelve Data equity data fetcher
 │   ├── Data.Frankfurter/   # Frankfurter FX rate fetcher
 │   ├── Data.Fred/          # FRED economic data fetcher
 │   ├── Data.FamaFrench/    # Fama-French factor data fetcher
