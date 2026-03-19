@@ -2,12 +2,7 @@
 
 > **Language conventions:** `~/.claude/conventions/dotnet-conventions.md`
 
-Quantitative trading framework in C# .NET. Pre-release.
-
-## Remotes
-
-- `origin` → `boutquin/Boutquin.Trading.Dev` (private, full history)
-- `public` → `boutquin/Boutquin.Trading` (private, release repo — not yet public)
+Quantitative trading framework in C# .NET.
 
 ## Financial Calculation Conventions
 
@@ -40,10 +35,10 @@ Quantitative trading framework in C# .NET. Pre-release.
 ## Data Fetcher Architecture
 
 - **Composite pattern for `IMarketDataFetcher`** — `CompositeMarketDataFetcher` delegates `FetchMarketDataAsync` → `TiingoFetcher` or `TwelveDataFetcher` (equities) and `FetchFxRatesAsync` → `FrankfurterFetcher` (FX rates). Single-responsibility fetchers that each throw `NotSupportedException` for the method they don't handle. Consumers use the composite.
-- **TwelveDataFetcher merges three endpoints** — Combines `/time_series` (OHLCV), `/dividends`, and `/splits` per symbol to produce full `MarketData` records. Dividend/split fetch failures are non-fatal (returns empty); time series failure throws `MarketDataRetrievalException`. API key is passed as query parameter, not header.
+- **TwelveDataFetcher merges three endpoints** — Combines `/time_series` (OHLCV), `/dividends`, and `/splits` per symbol to produce full `MarketData` records. Dividend/split fetch failures are non-fatal (returns empty); time series failure throws `MarketDataRetrievalException`.
 - **FrankfurterFetcher supports date range filtering** — Constructor accepts optional `DateOnly? startDate` and `DateOnly? endDate` parameters. Defaults to `1999-01-04..` (full history) for backward compatibility. Currency codes and base currency are URL-encoded via `Uri.EscapeDataString` for defense-in-depth.
 - **`IEconomicDataFetcher`** — New interface for scalar economic time series (treasury yields, macro indicators). Returns `IAsyncEnumerable<KeyValuePair<DateOnly, decimal>>` for a given series ID. Not part of `IMarketDataFetcher` because FRED data is scalar, not OHLCV/FX.
-- **`FredFetcher`** — Fetches from FRED REST API. API key required (free). Returns raw values as FRED provides them (e.g., yields in percent, not decimal). Caller transforms. Missing values (`"."`) are silently skipped.
+- **`FredFetcher`** — Fetches from FRED REST API. Returns raw values as FRED provides them (e.g., yields in percent, not decimal). Caller transforms. Missing values (`"."`) are silently skipped.
 - **`FredSeriesConstants`** — Well-known FRED series IDs for treasury yields, inflation, and growth indicators.
 - **`IFactorDataFetcher`** — New interface for multi-factor return series (Fama-French, etc.). Returns `IAsyncEnumerable<KeyValuePair<DateOnly, IReadOnlyDictionary<string, decimal>>>` — all factors from a dataset in one async stream. Not part of `IMarketDataFetcher` because factor returns are not OHLCV/FX data.
 - **`FamaFrenchFetcher`** — Downloads ZIP/CSV from Ken French Data Library. No API key required. Supports 3-factor, 5-factor, and momentum datasets in both daily and monthly frequencies. Values in percentage (caller transforms). Missing values (-99.99/-999) silently skipped. Monthly annual summary section excluded.

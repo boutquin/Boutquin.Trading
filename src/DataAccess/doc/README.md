@@ -1,14 +1,12 @@
-﻿# Boutquin.Trading.DataAccess
+# Boutquin.Trading.DataAccess
 
 ![Nuget](https://img.shields.io/nuget/vpre/boutquin.trading.dataaccess?style=for-the-badge) ![License](https://img.shields.io/github/license/boutquin/boutquin.trading?style=for-the-badge)
 
-*** Very much a work in progress ***
+## Security Master Data Access Layer
 
-# Security Master Data Access Layer
+EF Core data access layer for the Security Master system.
 
-This repository contains the data access layer for the Security Master system. 
-
-It includes configuration classes and a `SecurityMasterDbContext` that encompasses the following 13 entities:
+The `SecurityMasterDbContext` encompasses the following 14 entities:
 
 1. AssetClass
 2. City
@@ -27,25 +25,18 @@ It includes configuration classes and a `SecurityMasterDbContext` that encompass
 
 ## Getting Started
 
-To use the Security Master Data Access Layer, follow these steps:
-
-1. Clone the repository to your local machine.
-2. Open the solution in your favorite IDE (e.g., Visual Studio).
-3. Set up the appropriate connection string in the `appsettings.json` file to connect to your preferred database system.
-4. Run any necessary database migrations using the built-in Entity Framework Core tools.
+1. Install the NuGet package: `dotnet add package Boutquin.Trading.DataAccess`
+2. Configure your connection string via `IConfiguration`
+3. Run EF Core migrations: `dotnet ef database update`
 
 ## Configuration Classes
 
-The configuration classes are responsible for configuring the entity classes, setting up relationships, and ensuring the correct column types, lengths, and constraints are applied to the database tables.
-
-## SecurityMasterDbContext
-
-`SecurityMasterDbContext` is the main `DbContext` class that encompasses all the 13 entities. It is responsible for creating and managing the database connections and transactions, and it enables the use of LINQ queries to interact with the data.
+The configuration classes set up entity relationships, column types, lengths, and constraints for each database table.
 
 ## Contributing
 
-If you'd like to contribute to the development of the Security Master Data Access Layer, please feel free to submit a pull request or open an issue with your suggestions or improvements.
+Please read the [contributing guidelines](https://github.com/boutquin/Boutquin.Trading/blob/main/CONTRIBUTING.md) first.
 
 ## License
 
-This project is licensed under the Apache 2.0 License. See the [LICENSE file](https://github.com/boutquin/Boutquin.Trading/blob/master/LICENSE.txt) for more information.
+This project is licensed under the Apache 2.0 License. See the [LICENSE file](https://github.com/boutquin/Boutquin.Trading/blob/main/LICENSE.txt) for details.

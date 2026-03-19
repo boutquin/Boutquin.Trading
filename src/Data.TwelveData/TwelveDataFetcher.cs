@@ -40,7 +40,7 @@ public sealed class TwelveDataFetcher : IMarketDataFetcher, IDisposable
     private readonly string _apiKey;
     private readonly string _apiEndpoint;
 
-    private static readonly JsonSerializerOptions JsonOptions = new()
+    private static readonly JsonSerializerOptions s_jsonOptions = new()
     {
         PropertyNameCaseInsensitive = true
     };
@@ -169,7 +169,7 @@ public sealed class TwelveDataFetcher : IMarketDataFetcher, IDisposable
             }
 
             var json = await httpResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            response = JsonSerializer.Deserialize<TwelveDataTimeSeriesResponse>(json, JsonOptions);
+            response = JsonSerializer.Deserialize<TwelveDataTimeSeriesResponse>(json, s_jsonOptions);
         }
         catch (MarketDataRetrievalException)
         {
@@ -239,7 +239,7 @@ public sealed class TwelveDataFetcher : IMarketDataFetcher, IDisposable
             }
 
             var json = await httpResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            response = JsonSerializer.Deserialize<TwelveDataDividendsResponse>(json, JsonOptions);
+            response = JsonSerializer.Deserialize<TwelveDataDividendsResponse>(json, s_jsonOptions);
         }
         catch (Exception) when (IsNonCriticalException())
         {
@@ -286,7 +286,7 @@ public sealed class TwelveDataFetcher : IMarketDataFetcher, IDisposable
             }
 
             var json = await httpResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            response = JsonSerializer.Deserialize<TwelveDataSplitsResponse>(json, JsonOptions);
+            response = JsonSerializer.Deserialize<TwelveDataSplitsResponse>(json, s_jsonOptions);
         }
         catch (Exception) when (IsNonCriticalException())
         {

@@ -17,6 +17,7 @@ A multi-asset, multi-strategy, event-driven quantitative trading framework for b
 | **Boutquin.Trading.Data.Frankfurter** | `Boutquin.Trading.Data.Frankfurter` | FX rate fetcher (Frankfurter API, ECB-sourced) |
 | **Boutquin.Trading.Data.Fred** | `Boutquin.Trading.Data.Fred` | Economic data fetcher (FRED API — treasury yields, inflation, growth) |
 | **Boutquin.Trading.Data.FamaFrench** | `Boutquin.Trading.Data.FamaFrench` | Fama-French factor data fetcher (Ken French Data Library) |
+| **Boutquin.Trading.Data.TwelveData** | `Boutquin.Trading.Data.TwelveData` | Equity data fetcher (Twelve Data API) |
 | **Boutquin.Trading.Data.CSV** | `Boutquin.Trading.Data.CSV` | CSV data reader |
 | **Boutquin.Trading.Data.Processor** | — | Data processing pipeline |
 | **Boutquin.Trading.BackTest** | — | Backtest runner entry point |
