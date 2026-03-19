@@ -80,6 +80,7 @@ A multi-asset, multi-strategy, event-driven quantitative trading framework for b
 
 ### Data Providers
 - **Tiingo** — Historical equity/ETF price data
+- **Twelve Data** — Equity market data combining time series, dividends, and splits
 - **Frankfurter** — ECB-sourced FX rates with date range filtering
 - **FRED** — Federal Reserve Economic Data (treasury yields, inflation, GDP, macro indicators)
 - **Fama-French** — Academic factor return series (3-factor, 5-factor, momentum) from the Ken French Data Library
