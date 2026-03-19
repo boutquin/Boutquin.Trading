@@ -663,7 +663,8 @@ public static class DecimalArrayExtensions
         });
 
         // Adjusted Fisher-Pearson: n / ((n-1)(n-2)) * Σ((xi - mean)/s)^3
-        return (decimal)n / ((n - 1) * (n - 2)) * sumCubed;
+        var nL = (long)n;
+        return (decimal)nL / ((nL - 1) * (nL - 2)) * sumCubed;
     }
 
     /// <summary>
@@ -699,9 +700,10 @@ public static class DecimalArrayExtensions
             return squared * squared;
         });
 
-        // Sample excess kurtosis formula
-        var term1 = (decimal)(n * (n + 1)) / ((n - 1) * (n - 2) * (n - 3)) * sumFourth;
-        var term2 = 3m * (decimal)((n - 1) * (n - 1)) / ((n - 2) * (n - 3));
+        // Sample excess kurtosis formula (use long to avoid int overflow for n > ~1290)
+        var nL = (long)n;
+        var term1 = (decimal)(nL * (nL + 1)) / ((nL - 1) * (nL - 2) * (nL - 3)) * sumFourth;
+        var term2 = 3m * (decimal)((nL - 1) * (nL - 1)) / ((nL - 2) * (nL - 3));
 
         return term1 - term2;
     }

@@ -363,6 +363,35 @@ public sealed class DecimalArrayExtensionsTests
         actualResult.Should().BeApproximately(expectedResult, 1e-6m);
     }
 
+    [Fact]
+    public void Kurtosis_LargeArray_ShouldNotOverflow()
+    {
+        // Regression: int overflow in (n-1)*(n-2)*(n-3) for n > ~1290
+        var rng = new Random(42);
+        var returns = Enumerable.Range(0, 2000)
+            .Select(_ => (decimal)(rng.NextDouble() * 0.04 - 0.02))
+            .ToArray();
+
+        var result = returns.Kurtosis();
+
+        // Excess kurtosis for near-normal data should be in a reasonable range
+        result.Should().BeInRange(-5m, 5m, "kurtosis of near-normal data should be near zero, not overflow to extreme values");
+    }
+
+    [Fact]
+    public void Skewness_LargeArray_ShouldNotOverflow()
+    {
+        // Regression: int overflow defense for (n-1)*(n-2) at very large n
+        var rng = new Random(42);
+        var returns = Enumerable.Range(0, 2000)
+            .Select(_ => (decimal)(rng.NextDouble() * 0.04 - 0.02))
+            .ToArray();
+
+        var result = returns.Skewness();
+
+        result.Should().BeInRange(-3m, 3m, "skewness of near-normal data should be near zero");
+    }
+
     [Theory]
     [MemberData(nameof(ExtendedMetricsTestData.WinRateData), MemberType = typeof(ExtendedMetricsTestData))]
     public void WinRate_ShouldReturnCorrectResult(

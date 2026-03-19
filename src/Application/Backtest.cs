@@ -220,10 +220,10 @@ public sealed class BackTest
         var dailyReturns = _portfolio.EquityCurve.Values.ToArray().DailyReturns().ToArray();
 
         var annualizedReturn = dailyReturns.AnnualizedReturn();
-        var sharpeRatio = dailyReturns.SharpeRatio(_dailyRiskFreeRate);
-        var sortinoRatio = dailyReturns.SortinoRatio(_dailyRiskFreeRate);
+        var sharpeRatio = dailyReturns.AnnualizedSharpeRatio(_dailyRiskFreeRate);
+        var sortinoRatio = dailyReturns.AnnualizedSortinoRatio(_dailyRiskFreeRate);
         var cagr = dailyReturns.CompoundAnnualGrowthRate();
-        var volatility = dailyReturns.Volatility();
+        var volatility = dailyReturns.AnnualizedVolatility();
 
         var benchmarkDailyReturns = _benchmarkPortfolio.EquityCurve.Values.ToArray().DailyReturns().ToArray();
         var alpha = dailyReturns.Alpha(benchmarkDailyReturns, _dailyRiskFreeRate);
@@ -282,10 +282,10 @@ public sealed class BackTest
         var dailyReturns = _benchmarkPortfolio.EquityCurve.Values.ToArray().DailyReturns().ToArray();
 
         var annualizedReturn = dailyReturns.AnnualizedReturn();
-        var sharpeRatio = dailyReturns.SharpeRatio(_dailyRiskFreeRate);
-        var sortinoRatio = dailyReturns.SortinoRatio(_dailyRiskFreeRate);
+        var sharpeRatio = dailyReturns.AnnualizedSharpeRatio(_dailyRiskFreeRate);
+        var sortinoRatio = dailyReturns.AnnualizedSortinoRatio(_dailyRiskFreeRate);
         var cagr = dailyReturns.CompoundAnnualGrowthRate();
-        var volatility = dailyReturns.Volatility();
+        var volatility = dailyReturns.AnnualizedVolatility();
 
         // Relative metrics: benchmark vs portfolio (reversed perspective)
         var portfolioDailyReturns = _portfolio.EquityCurve.Values.ToArray().DailyReturns().ToArray();
