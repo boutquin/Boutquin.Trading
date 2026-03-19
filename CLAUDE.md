@@ -39,7 +39,8 @@ Quantitative trading framework in C# .NET. Pre-release.
 
 ## Data Fetcher Architecture
 
-- **Composite pattern for `IMarketDataFetcher`** — `CompositeMarketDataFetcher` delegates `FetchMarketDataAsync` → `TiingoFetcher` (equities) and `FetchFxRatesAsync` → `FrankfurterFetcher` (FX rates). Single-responsibility fetchers that each throw `NotSupportedException` for the method they don't handle. Consumers use the composite.
+- **Composite pattern for `IMarketDataFetcher`** — `CompositeMarketDataFetcher` delegates `FetchMarketDataAsync` → `TiingoFetcher` or `TwelveDataFetcher` (equities) and `FetchFxRatesAsync` → `FrankfurterFetcher` (FX rates). Single-responsibility fetchers that each throw `NotSupportedException` for the method they don't handle. Consumers use the composite.
+- **TwelveDataFetcher merges three endpoints** — Combines `/time_series` (OHLCV), `/dividends`, and `/splits` per symbol to produce full `MarketData` records. Dividend/split fetch failures are non-fatal (returns empty); time series failure throws `MarketDataRetrievalException`. API key is passed as query parameter, not header.
 - **FrankfurterFetcher supports date range filtering** — Constructor accepts optional `DateOnly? startDate` and `DateOnly? endDate` parameters. Defaults to `1999-01-04..` (full history) for backward compatibility. Currency codes and base currency are URL-encoded via `Uri.EscapeDataString` for defense-in-depth.
 - **`IEconomicDataFetcher`** — New interface for scalar economic time series (treasury yields, macro indicators). Returns `IAsyncEnumerable<KeyValuePair<DateOnly, decimal>>` for a given series ID. Not part of `IMarketDataFetcher` because FRED data is scalar, not OHLCV/FX.
 - **`FredFetcher`** — Fetches from FRED REST API. API key required (free). Returns raw values as FRED provides them (e.g., yields in percent, not decimal). Caller transforms. Missing values (`"."`) are silently skipped.
@@ -129,6 +130,7 @@ Quantitative trading framework in C# .NET. Pre-release.
 | `Boutquin.Trading.Data.Frankfurter` | `src/Data.Frankfurter/` | Domain |
 | `Boutquin.Trading.Data.Fred` | `src/Data.Fred/` | Domain |
 | `Boutquin.Trading.Data.FamaFrench` | `src/Data.FamaFrench/` | Domain |
+| `Boutquin.Trading.Data.TwelveData` | `src/Data.TwelveData/` | Domain |
 | `Boutquin.Trading.Data.CSV` | `src/Data.CSV/` | Domain |
 | `Boutquin.Trading.Data.Processor` | `src/Data.Processor/` | Domain, Application |
 | `Boutquin.Trading.DataAccess` | `src/DataAccess/` | Domain |

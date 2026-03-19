@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Title>Boutquin.Trading.Data.TwelveData</Title>
+    <Description>Twelve Data market data fetcher for the Boutquin.Trading quantitative trading framework. Provides OHLCV, adjusted prices, dividends, and splits via the Twelve Data REST API.</Description>
+    <PackageTags>trading;market-data;twelvedata;backtesting;quantitative-finance;ohlcv</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\..\Resources\icon.png" Link="icon.png" Pack="True" PackagePath="\" />
+    <None Include="..\..\README.md" Pack="True" PackagePath="\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MinVer" Version="7.0.0" PrivateAssets="All" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Domain\Boutquin.Trading.Domain.csproj" />
+  </ItemGroup>
+</Project>
