@@ -1,0 +1,97 @@
+{
+  "description": "Phase 5C: Risk rule verification vectors (simplified logic tests)",
+  "cases": {
+    "max_dd_no_drawdown": {
+      "rule": "MaxDrawdown",
+      "equity_curve": [
+        10000,
+        10100,
+        10200,
+        10300
+      ],
+      "max_drawdown_percent": 0.2,
+      "expected_allowed": true
+    },
+    "max_dd_within_limit": {
+      "rule": "MaxDrawdown",
+      "equity_curve": [
+        10000,
+        10500,
+        10200,
+        10300
+      ],
+      "max_drawdown_percent": 0.2,
+      "current_drawdown": 0.01904761904761905,
+      "expected_allowed": true
+    },
+    "max_dd_exceeded": {
+      "rule": "MaxDrawdown",
+      "equity_curve": [
+        10000,
+        10500,
+        8000
+      ],
+      "max_drawdown_percent": 0.2,
+      "current_drawdown": 0.23809523809523808,
+      "expected_allowed": false
+    },
+    "max_dd_at_limit": {
+      "rule": "MaxDrawdown",
+      "equity_curve": [
+        10000,
+        8000
+      ],
+      "max_drawdown_percent": 0.2,
+      "current_drawdown": 0.2,
+      "expected_allowed": true
+    },
+    "max_dd_single_point": {
+      "rule": "MaxDrawdown",
+      "equity_curve": [
+        10000
+      ],
+      "max_drawdown_percent": 0.1,
+      "expected_allowed": true
+    },
+    "max_pos_allowed": {
+      "rule": "MaxPositionSize",
+      "position_value": 2000,
+      "total_portfolio_value": 10000,
+      "max_position_percent": 0.25,
+      "expected_allowed": true,
+      "position_percent": 0.2
+    },
+    "max_pos_rejected": {
+      "rule": "MaxPositionSize",
+      "position_value": 3000,
+      "total_portfolio_value": 10000,
+      "max_position_percent": 0.25,
+      "expected_allowed": false,
+      "position_percent": 0.3
+    },
+    "max_pos_at_limit": {
+      "rule": "MaxPositionSize",
+      "position_value": 2500,
+      "total_portfolio_value": 10000,
+      "max_position_percent": 0.25,
+      "expected_allowed": true,
+      "position_percent": 0.25
+    },
+    "max_sector_allowed": {
+      "rule": "MaxSectorExposure",
+      "sector_exposure": 3500,
+      "total_portfolio_value": 10000,
+      "max_exposure_percent": 0.4,
+      "expected_allowed": true,
+      "exposure_percent": 0.35
+    },
+    "max_sector_rejected": {
+      "rule": "MaxSectorExposure",
+      "sector_exposure": 4500,
+      "total_portfolio_value": 10000,
+      "max_exposure_percent": 0.4,
+      "expected_allowed": false,
+      "exposure_percent": 0.45
+    }
+  }
+}

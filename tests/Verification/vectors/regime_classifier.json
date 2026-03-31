@@ -1,0 +1,107 @@
+{
+  "description": "Phase 5B: GrowthInflationRegimeClassifier verification vectors",
+  "cases": {
+    "rising_rising": {
+      "growth_signal": 0.5,
+      "inflation_signal": 0.3,
+      "deadband": 0.0,
+      "prior_regime": null,
+      "expected_regime": "RisingGrowthRisingInflation"
+    },
+    "rising_falling": {
+      "growth_signal": 0.5,
+      "inflation_signal": -0.3,
+      "deadband": 0.0,
+      "prior_regime": null,
+      "expected_regime": "RisingGrowthFallingInflation"
+    },
+    "falling_rising": {
+      "growth_signal": -0.5,
+      "inflation_signal": 0.3,
+      "deadband": 0.0,
+      "prior_regime": null,
+      "expected_regime": "FallingGrowthRisingInflation"
+    },
+    "falling_falling": {
+      "growth_signal": -0.5,
+      "inflation_signal": -0.3,
+      "deadband": 0.0,
+      "prior_regime": null,
+      "expected_regime": "FallingGrowthFallingInflation"
+    },
+    "hysteresis_both_ambiguous": {
+      "growth_signal": 0.05,
+      "inflation_signal": 0.05,
+      "deadband": 0.1,
+      "prior_regime": "RisingGrowthRisingInflation",
+      "expected_regime": "RisingGrowthRisingInflation"
+    },
+    "hysteresis_growth_ambiguous": {
+      "growth_signal": 0.05,
+      "inflation_signal": -0.5,
+      "deadband": 0.1,
+      "prior_regime": "RisingGrowthRisingInflation",
+      "expected_regime": "RisingGrowthFallingInflation"
+    },
+    "hysteresis_inflation_ambiguous": {
+      "growth_signal": -0.5,
+      "inflation_signal": 0.05,
+      "deadband": 0.1,
+      "prior_regime": "RisingGrowthRisingInflation",
+      "expected_regime": "FallingGrowthRisingInflation"
+    },
+    "no_prior_both_ambiguous": {
+      "growth_signal": 0.05,
+      "inflation_signal": 0.05,
+      "deadband": 0.1,
+      "prior_regime": null,
+      "expected_regime": "FallingGrowthFallingInflation"
+    },
+    "sequence": {
+      "signals": [
+        {
+          "growth": 0.5,
+          "inflation": 0.3
+        },
+        {
+          "growth": 0.05,
+          "inflation": 0.05
+        },
+        {
+          "growth": -0.5,
+          "inflation": 0.05
+        },
+        {
+          "growth": 0.05,
+          "inflation": -0.5
+        },
+        {
+          "growth": 0.5,
+          "inflation": 0.5
+        }
+      ],
+      "deadband": 0.1,
+      "expected_regimes": [
+        "RisingGrowthRisingInflation",
+        "RisingGrowthRisingInflation",
+        "FallingGrowthRisingInflation",
+        "FallingGrowthFallingInflation",
+        "RisingGrowthRisingInflation"
+      ]
+    },
+    "exact_boundary": {
+      "growth_signal": 0.1,
+      "inflation_signal": 0.1,
+      "deadband": 0.1,
+      "prior_regime": null,
+      "expected_regime": "FallingGrowthFallingInflation"
+    },
+    "zero_deadband_tiny": {
+      "growth_signal": 0.001,
+      "inflation_signal": 0.001,
+      "deadband": 0.0,
+      "prior_regime": null,
+      "expected_regime": "RisingGrowthRisingInflation"
+    }
+  }
+}

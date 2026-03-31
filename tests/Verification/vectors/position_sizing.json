@@ -1,0 +1,73 @@
+{
+  "description": "Phase 5D: Position sizing verification vectors",
+  "cases": {
+    "fixed_equal_no_buffer": {
+      "type": "FixedWeight",
+      "total_value": 100000.0,
+      "weights": {
+        "AAPL": 0.5,
+        "MSFT": 0.5
+      },
+      "prices": {
+        "AAPL": 150.0,
+        "MSFT": 300.0
+      },
+      "cash_buffer_percent": 0.0,
+      "expected_quantities": {
+        "AAPL": 333,
+        "MSFT": 167
+      }
+    },
+    "fixed_unequal_with_buffer": {
+      "type": "FixedWeight",
+      "total_value": 50000.0,
+      "weights": {
+        "AAPL": 0.6,
+        "GOOG": 0.4
+      },
+      "prices": {
+        "AAPL": 175.0,
+        "GOOG": 140.0
+      },
+      "cash_buffer_percent": 0.02,
+      "expected_quantities": {
+        "AAPL": 168,
+        "GOOG": 140
+      }
+    },
+    "fixed_three_assets": {
+      "type": "FixedWeight",
+      "total_value": 200000.0,
+      "weights": {
+        "A": 0.4,
+        "B": 0.35,
+        "C": 0.25
+      },
+      "prices": {
+        "A": 50.0,
+        "B": 120.0,
+        "C": 85.0
+      },
+      "cash_buffer_percent": 0.0,
+      "expected_quantities": {
+        "A": 1600,
+        "B": 583,
+        "C": 588
+      }
+    },
+    "fixed_rounding_edge": {
+      "type": "FixedWeight",
+      "total_value": 50000.0,
+      "weights": {
+        "X": 0.333
+      },
+      "prices": {
+        "X": 100.0
+      },
+      "cash_buffer_percent": 0.0,
+      "expected_quantities": {
+        "X": 167
+      }
+    }
+  }
+}

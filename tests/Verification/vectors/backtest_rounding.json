@@ -1,0 +1,144 @@
+{
+  "inputs": {
+    "market_data": {
+      "ODD": [
+        {
+          "date": "2024-01-02",
+          "open": 33.33,
+          "high": 33.83,
+          "low": 32.83,
+          "close": 33.33,
+          "adjusted_close": 33.33,
+          "volume": 1000000,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-01-03",
+          "open": 33.33,
+          "high": 33.83,
+          "low": 32.83,
+          "close": 33.33,
+          "adjusted_close": 33.33,
+          "volume": 1000000,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-01-04",
+          "open": 33.25,
+          "high": 33.75,
+          "low": 32.75,
+          "close": 33.25,
+          "adjusted_close": 33.25,
+          "volume": 1000000,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-01-05",
+          "open": 33.75,
+          "high": 34.25,
+          "low": 33.25,
+          "close": 33.75,
+          "adjusted_close": 33.75,
+          "volume": 1000000,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-01-08",
+          "open": 33.1,
+          "high": 33.6,
+          "low": 32.6,
+          "close": 33.1,
+          "adjusted_close": 33.1,
+          "volume": 1000000,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        }
+      ]
+    },
+    "weights": {
+      "ODD": 1.0
+    },
+    "initial_cash": 10000.0,
+    "commission_rate": 0.0,
+    "strategy": "BuyAndHold"
+  },
+  "expected": {
+    "equity_curve": {
+      "2024-01-02": 10000.0,
+      "2024-01-03": 10000.0,
+      "2024-01-04": 9976.0,
+      "2024-01-05": 10126.0,
+      "2024-01-08": 9931.0
+    },
+    "trades": [
+      {
+        "date": "2024-01-03",
+        "ticker": "ODD",
+        "action": "Buy",
+        "quantity": 300,
+        "fill_price": 33.33,
+        "commission": 0.0
+      }
+    ],
+    "positions": {
+      "2024-01-02": {
+        "ODD": 0
+      },
+      "2024-01-03": {
+        "ODD": 300
+      },
+      "2024-01-04": {
+        "ODD": 300
+      },
+      "2024-01-05": {
+        "ODD": 300
+      },
+      "2024-01-08": {
+        "ODD": 300
+      }
+    },
+    "cash": {
+      "2024-01-02": 10000.0,
+      "2024-01-03": 1.0,
+      "2024-01-04": 1.0,
+      "2024-01-05": 1.0,
+      "2024-01-08": 1.0
+    },
+    "daily_returns": [
+      0.0,
+      -0.0024,
+      0.015036086607858861,
+      -0.019257357298044637
+    ],
+    "metrics": {
+      "annualized_return": -0.35351588354551744,
+      "cagr": -0.35351588354551744,
+      "annualized_volatility": 0.22294678726641076,
+      "annualized_sharpe_ratio": -1.8710296685425722,
+      "annualized_sortino_ratio": -2.345301825175064,
+      "max_drawdown": -0.019257357298044637,
+      "max_drawdown_duration": 1,
+      "calmar_ratio": -18.357445316830308,
+      "omega_ratio": 0.694271530959893,
+      "win_rate": 0.25,
+      "profit_factor": 0.694271530959893,
+      "recovery_factor": -0.3583046153846105,
+      "historical_var": -0.01672875370333794,
+      "conditional_var": -0.019257357298044637,
+      "skewness": -0.1923541478136285,
+      "kurtosis": 1.3758795863501092
+    },
+    "expected_initial_position": 300,
+    "rounding_detail": {
+      "raw_value": 300.03000300030004,
+      "rounded": 300,
+      "method": "MidpointRounding.AwayFromZero"
+    }
+  },
+  "library": "numpy 2.4.3",
+  "notes": "Position sizing rounding verification. 10000 / 33.33 = 300.03 \u2192 rounds to 300 (AwayFromZero). Cash remainder = 10000 - 300 * 33.33 = 10000 - 9999 = 1.0."
+}

@@ -1,0 +1,10 @@
+numpy>=2.0,<3
+pandas>=2.0,<3
+scipy>=1.14,<2
+empyrical-reloaded>=0.5.7,<1
+PyPortfolioOpt>=1.5,<2
+scikit-learn>=1.5,<2
+statsmodels>=0.14,<1
+pytest>=8.0,<9
+riskparityportfolio>=0.4
+cvxpy>=1.4

@@ -1,0 +1,53 @@
+{
+  "inputs": {
+    "assets": [
+      "Equities",
+      "Bonds",
+      "Commodities"
+    ],
+    "portfolio_weights": {
+      "Equities": 0.6,
+      "Bonds": 0.3,
+      "Commodities": 0.1
+    },
+    "benchmark_weights": {
+      "Equities": 0.5,
+      "Bonds": 0.4,
+      "Commodities": 0.1
+    },
+    "portfolio_returns": {
+      "Equities": 0.08,
+      "Bonds": 0.03,
+      "Commodities": -0.02
+    },
+    "benchmark_returns": {
+      "Equities": 0.06,
+      "Bonds": 0.04,
+      "Commodities": -0.01
+    }
+  },
+  "expected": {
+    "benchmark_total_return": 0.045,
+    "allocation_effects": {
+      "Equities": 0.0014999999999999996,
+      "Bonds": 0.0004999999999999999,
+      "Commodities": -0.0
+    },
+    "selection_effects": {
+      "Equities": 0.010000000000000002,
+      "Bonds": -0.004000000000000001,
+      "Commodities": -0.001
+    },
+    "interaction_effects": {
+      "Equities": 0.002,
+      "Bonds": 0.0010000000000000005,
+      "Commodities": -0.0
+    },
+    "total_allocation": 0.0019999999999999996,
+    "total_selection": 0.005000000000000001,
+    "total_interaction": 0.0030000000000000005,
+    "total_active_return": 0.010000000000000002
+  },
+  "library": "manual calculation (Brinson-Fachler formula)",
+  "notes": "Alloc=(Wp-Wb)(Rb_sector-Rb_total), Sel=Wb(Rp-Rb), Inter=(Wp-Wb)(Rp-Rb)."
+}

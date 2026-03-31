@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="Data\Symbols.csv" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Application\Boutquin.Trading.Application.csproj" />
+    <ProjectReference Include="..\Data.Frankfurter\Boutquin.Trading.Data.Frankfurter.csproj" />
+    <ProjectReference Include="..\Data.Tiingo\Boutquin.Trading.Data.Tiingo.csproj" />
+    <ProjectReference Include="..\Domain\Boutquin.Trading.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

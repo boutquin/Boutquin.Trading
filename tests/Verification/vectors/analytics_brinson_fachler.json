@@ -1,0 +1,205 @@
+{
+  "cases": {
+    "four_sector": {
+      "assets": [
+        "Equities",
+        "Bonds",
+        "Commodities",
+        "RealEstate"
+      ],
+      "portfolio_weights": {
+        "Equities": 0.5,
+        "Bonds": 0.25,
+        "Commodities": 0.15,
+        "RealEstate": 0.1
+      },
+      "benchmark_weights": {
+        "Equities": 0.4,
+        "Bonds": 0.35,
+        "Commodities": 0.15,
+        "RealEstate": 0.1
+      },
+      "portfolio_returns": {
+        "Equities": 0.1,
+        "Bonds": 0.03,
+        "Commodities": -0.02,
+        "RealEstate": 0.06
+      },
+      "benchmark_returns": {
+        "Equities": 0.08,
+        "Bonds": 0.04,
+        "Commodities": -0.01,
+        "RealEstate": 0.05
+      },
+      "allocation_effect": 0.003999999999999999,
+      "selection_effect": 0.004000000000000001,
+      "interaction_effect": 0.003,
+      "total_active_return": 0.011,
+      "asset_allocation_effects": {
+        "Equities": 0.0030499999999999993,
+        "Bonds": 0.0009499999999999999,
+        "Commodities": -0.0,
+        "RealEstate": 0.0
+      },
+      "asset_selection_effects": {
+        "Equities": 0.008000000000000002,
+        "Bonds": -0.0035000000000000005,
+        "Commodities": -0.0015,
+        "RealEstate": 0.0009999999999999996
+      },
+      "asset_interaction_effects": {
+        "Equities": 0.002,
+        "Bonds": 0.001,
+        "Commodities": -0.0,
+        "RealEstate": 0.0
+      }
+    },
+    "identical_weights": {
+      "assets": [
+        "Equities",
+        "Bonds",
+        "Commodities",
+        "RealEstate"
+      ],
+      "portfolio_weights": {
+        "Equities": 0.4,
+        "Bonds": 0.35,
+        "Commodities": 0.15,
+        "RealEstate": 0.1
+      },
+      "benchmark_weights": {
+        "Equities": 0.4,
+        "Bonds": 0.35,
+        "Commodities": 0.15,
+        "RealEstate": 0.1
+      },
+      "portfolio_returns": {
+        "Equities": 0.1,
+        "Bonds": 0.03,
+        "Commodities": -0.02,
+        "RealEstate": 0.06
+      },
+      "benchmark_returns": {
+        "Equities": 0.08,
+        "Bonds": 0.04,
+        "Commodities": -0.01,
+        "RealEstate": 0.05
+      },
+      "allocation_effect": 0.0,
+      "selection_effect": 0.004000000000000001,
+      "interaction_effect": 0.0,
+      "total_active_return": 0.004000000000000001,
+      "asset_allocation_effects": {
+        "Equities": 0.0,
+        "Bonds": -0.0,
+        "Commodities": -0.0,
+        "RealEstate": 0.0
+      },
+      "asset_selection_effects": {
+        "Equities": 0.008000000000000002,
+        "Bonds": -0.0035000000000000005,
+        "Commodities": -0.0015,
+        "RealEstate": 0.0009999999999999996
+      },
+      "asset_interaction_effects": {
+        "Equities": 0.0,
+        "Bonds": -0.0,
+        "Commodities": -0.0,
+        "RealEstate": 0.0
+      }
+    },
+    "identical_returns": {
+      "assets": [
+        "Equities",
+        "Bonds",
+        "Commodities",
+        "RealEstate"
+      ],
+      "portfolio_weights": {
+        "Equities": 0.5,
+        "Bonds": 0.25,
+        "Commodities": 0.15,
+        "RealEstate": 0.1
+      },
+      "benchmark_weights": {
+        "Equities": 0.4,
+        "Bonds": 0.35,
+        "Commodities": 0.15,
+        "RealEstate": 0.1
+      },
+      "portfolio_returns": {
+        "Equities": 0.08,
+        "Bonds": 0.04,
+        "Commodities": -0.01,
+        "RealEstate": 0.05
+      },
+      "benchmark_returns": {
+        "Equities": 0.08,
+        "Bonds": 0.04,
+        "Commodities": -0.01,
+        "RealEstate": 0.05
+      },
+      "allocation_effect": 0.003999999999999999,
+      "selection_effect": 0.0,
+      "interaction_effect": 0.0,
+      "total_active_return": 0.003999999999999999,
+      "asset_allocation_effects": {
+        "Equities": 0.0030499999999999993,
+        "Bonds": 0.0009499999999999999,
+        "Commodities": -0.0,
+        "RealEstate": 0.0
+      },
+      "asset_selection_effects": {
+        "Equities": 0.0,
+        "Bonds": 0.0,
+        "Commodities": 0.0,
+        "RealEstate": 0.0
+      },
+      "asset_interaction_effects": {
+        "Equities": 0.0,
+        "Bonds": -0.0,
+        "Commodities": 0.0,
+        "RealEstate": 0.0
+      }
+    },
+    "two_sector": {
+      "assets": [
+        "Equities",
+        "Bonds"
+      ],
+      "portfolio_weights": {
+        "Equities": 0.7,
+        "Bonds": 0.3
+      },
+      "benchmark_weights": {
+        "Equities": 0.6,
+        "Bonds": 0.4
+      },
+      "portfolio_returns": {
+        "Equities": 0.12,
+        "Bonds": 0.02
+      },
+      "benchmark_returns": {
+        "Equities": 0.1,
+        "Bonds": 0.03
+      },
+      "allocation_effect": 0.007000000000000001,
+      "selection_effect": 0.007999999999999993,
+      "interaction_effect": 0.002999999999999999,
+      "total_active_return": 0.017999999999999995,
+      "asset_allocation_effects": {
+        "Equities": 0.0028000000000000004,
+        "Bonds": 0.004200000000000001
+      },
+      "asset_selection_effects": {
+        "Equities": 0.011999999999999993,
+        "Bonds": -0.003999999999999999
+      },
+      "asset_interaction_effects": {
+        "Equities": 0.0019999999999999987,
+        "Bonds": 0.0010000000000000002
+      }
+    }
+  },
+  "notes": "Brinson-Fachler single-period attribution. Alloc=(Wp-Wb)(Rb_i-Rb_total), Sel=Wb(Rp_i-Rb_i), Inter=(Wp-Wb)(Rp_i-Rb_i)."
+}

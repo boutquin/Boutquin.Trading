@@ -1,0 +1,49 @@
+{
+  "inputs": {
+    "daily_returns": [
+      0.01,
+      -0.005
+    ],
+    "benchmark_returns": [
+      0.008,
+      -0.003
+    ],
+    "trading_days_per_year": 252
+  },
+  "expected": {
+    "cumulative_return": 0.00495000000000001,
+    "annualized_return": 0.862950307211549,
+    "cagr": 0.862950307211549,
+    "equity_curve": [
+      10000.0,
+      10100.0,
+      10049.5
+    ],
+    "daily_returns_from_equity": [
+      0.01,
+      -0.005
+    ],
+    "volatility": 0.010606601717798213,
+    "annualized_volatility": 0.1683745824048274,
+    "downside_deviation": 0.005,
+    "sharpe_ratio": 0.23570226039551584,
+    "annualized_sharpe_ratio": 3.7416573867739413,
+    "sortino_ratio": 0.5,
+    "annualized_sortino_ratio": 7.937253933193772,
+    "beta": 1.3636363636363635,
+    "alpha": -0.0009090909090909089,
+    "information_ratio": 0.0,
+    "max_drawdown": -0.005,
+    "calmar_ratio": 172.5900614423098,
+    "omega_ratio": 2.0,
+    "win_rate": 0.5,
+    "profit_factor": 2.0,
+    "recovery_factor": 0.990000000000002,
+    "historical_var": -0.0042499999999999994,
+    "parametric_var": -0.014946307305150104,
+    "conditional_var": -0.005,
+    "skewness": "EXCEPTION:InsufficientDataException",
+    "kurtosis": "EXCEPTION:InsufficientDataException"
+  },
+  "notes": "N=2: minimum for sample std dev. Skewness/Kurtosis should throw."
+}

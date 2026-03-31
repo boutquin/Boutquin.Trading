@@ -1,0 +1,182 @@
+// Copyright (c) 2023-2026 Pierre G. Boutquin. All rights reserved.
+//
+//   Licensed under the Apache License, Version 2.0 (the "License").
+//   You may not use this file except in compliance with the License.
+//   You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//   Unless required by applicable law or agreed to in writing, software
+//   distributed under the License is distributed on an "AS IS" BASIS,
+//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+//   See the License for the specific language governing permissions and
+//   limitations under the License.
+//
+
+using ExceptionMessages = Boutquin.Domain.Exceptions.ExceptionMessages;
+
+namespace Boutquin.Trading.Domain.Extensions;
+
+/// <summary>
+/// Provides extension methods for calculating drawdowns from an
+/// equity curve represented by a SortedDictionary&lt;DateTime, decimal&gt;.
+/// </summary>
+public static class EquityCurveExtensions
+{
+    /// <summary>
+    /// Calculates the drawdowns, maximum drawdown, and its duration from the given equity curve.
+    /// </summary>
+    /// <param name="equityCurve">A SortedDictionary&lt;DateOnly, decimal&gt; representing the equity curve of a trading strategy.</param>
+    /// <returns>A tuple with the drawdowns as SortedDictionary&lt;DateOnly, decimal&gt;, the maximum drawdown as decimal, and its duration as int.</returns>
+    /// <exception cref="EmptyOrNullDictionaryException">Thrown when the <paramref name="equityCurve"/> is null or empty.</exception>
+    /// <exception cref="InsufficientDataException">Thrown when the <paramref name="equityCurve"/> contains less than two elements for sample calculation.</exception>
+    /// <example>
+    /// <code>
+    /// var equityCurve = new SortedDictionary&lt;DateOnly, decimal&gt; {
+    ///     { new DateOnly(2021, 1, 1), 1000m },
+    ///     { new DateOnly(2021, 1, 2), 1020m },
+    ///     { new DateOnly(2021, 1, 3), 1010m },
+    ///     { new DateOnly(2021, 1, 4), 1030m },
+    /// };
+    ///
+    /// var (drawdowns, maxDrawdown, maxDrawdownDuration) = equityCurve.DrawdownAnalysis();
+    /// </code>
+    /// </example>
+    public static (SortedDictionary<DateOnly, decimal> Drawdowns, decimal MaxDrawdown, int MaxDrawdownDuration)
+        CalculateDrawdownsAndMaxDrawdownInfo(this IReadOnlyDictionary<DateOnly, decimal> equityCurve)
+    {
+        // Ensure the equity curve dictionary is not null or empty
+        Guard.AgainstEmptyOrNullReadOnlyDictionary(() => equityCurve); // Throws EmptyOrNullDictionaryException
+        // Check if there is enough data for sample calculation
+        Guard.Against(equityCurve.Count == 1)
+            .With<InsufficientDataException>(ExceptionMessages.InsufficientDataForSampleCalculation);
+
+        // Initialize a SortedDictionary to store the drawdowns.
+        var drawdowns = new SortedDictionary<DateOnly, decimal>();
+
+        // BUG-D06: Initialize peak equity to first value, not 0 (avoids inflated drawdown).
+        decimal peakEquity = equityCurve.First().Value;
+        decimal maxDrawdown = 0;
+        var maxDrawdownDuration = 0;
+
+        // Track drawdown start as a trading-day index (not calendar date).
+        // Trading-day duration avoids inflating durations with weekends/holidays.
+        var startDrawdownIndex = 0;
+        var tradingDayIndex = 0;
+
+        // Iterate through the given equity curve.
+        foreach (var (date, equity) in equityCurve)
+        {
+            // If a new highest equity value is encountered, update the peak equity and reset the drawdown duration.
+            var drawdownDuration = 0;
+            if (equity >= peakEquity)
+            {
+                peakEquity = equity;
+                startDrawdownIndex = tradingDayIndex;
+                drawdownDuration = 0;
+            }
+            else
+            {
+                // Duration in trading days (each entry in the equity curve is one trading day)
+                drawdownDuration = tradingDayIndex - startDrawdownIndex;
+                if (drawdownDuration > maxDrawdownDuration)
+                {
+                    maxDrawdownDuration = drawdownDuration;
+                }
+            }
+
+            // BUG-D07: Guard against division by zero when peakEquity is 0.
+            var drawdown = equity >= peakEquity ? 0 : peakEquity == 0 ? 0 : (equity / peakEquity) - 1;
+
+            // Update the maximum drawdown if the current drawdown is greater than the previous maximum drawdown.
+            if (drawdown < maxDrawdown)
+            {
+                maxDrawdown = drawdown;
+            }
+
+            // Add the calculated drawdown to the drawdowns SortedDictionary with the corresponding date.
+            drawdowns[date] = drawdown;
+            tradingDayIndex++;
+        }
+
+        // Return the calculated drawdowns, maximum drawdown, and maximum drawdown duration.
+        return (drawdowns, maxDrawdown, maxDrawdownDuration);
+    }
+
+    /// <summary>
+    /// Computes monthly returns from an equity curve.
+    /// Each monthly return is calculated as (lastValueInMonth / lastValueInPriorMonth) - 1.
+    /// </summary>
+    /// <param name="equityCurve">The equity curve keyed by date.</param>
+    /// <returns>A sorted dictionary keyed by (Year, Month) with the corresponding monthly return.</returns>
+    /// <exception cref="EmptyOrNullDictionaryException">Thrown when the equity curve is null or empty.</exception>
+    public static SortedDictionary<(int Year, int Month), decimal> MonthlyReturns(
+        this IReadOnlyDictionary<DateOnly, decimal> equityCurve)
+    {
+        Guard.AgainstEmptyOrNullReadOnlyDictionary(() => equityCurve);
+
+        var result = new SortedDictionary<(int Year, int Month), decimal>();
+
+        // Group entries by (year, month) and take the last value in each month
+        var monthlyLastValues = new SortedDictionary<(int Year, int Month), decimal>();
+        foreach (var (date, value) in equityCurve)
+        {
+            monthlyLastValues[(date.Year, date.Month)] = value;
+        }
+
+        // Compute returns between consecutive months
+        var months = monthlyLastValues.Keys.ToArray();
+        for (var i = 1; i < months.Length; i++)
+        {
+            var prevValue = monthlyLastValues[months[i - 1]];
+            var currValue = monthlyLastValues[months[i]];
+            if (prevValue == 0)
+            {
+                throw new CalculationException("Previous-period equity is zero (total loss); cannot calculate return.");
+            }
+
+            result[months[i]] = (currValue / prevValue) - 1;
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Computes annual returns from an equity curve.
+    /// Each annual return is calculated as (lastValueInYear / lastValueInPriorYear) - 1.
+    /// </summary>
+    /// <param name="equityCurve">The equity curve keyed by date.</param>
+    /// <returns>A sorted dictionary keyed by year with the corresponding annual return.</returns>
+    /// <exception cref="EmptyOrNullDictionaryException">Thrown when the equity curve is null or empty.</exception>
+    public static SortedDictionary<int, decimal> AnnualReturns(
+        this IReadOnlyDictionary<DateOnly, decimal> equityCurve)
+    {
+        Guard.AgainstEmptyOrNullReadOnlyDictionary(() => equityCurve);
+
+        var result = new SortedDictionary<int, decimal>();
+
+        // Group entries by year and take the last value in each year
+        var yearlyLastValues = new SortedDictionary<int, decimal>();
+        foreach (var (date, value) in equityCurve)
+        {
+            yearlyLastValues[date.Year] = value;
+        }
+
+        // Compute returns between consecutive years
+        var years = yearlyLastValues.Keys.ToArray();
+        for (var i = 1; i < years.Length; i++)
+        {
+            var prevValue = yearlyLastValues[years[i - 1]];
+            var currValue = yearlyLastValues[years[i]];
+            if (prevValue == 0)
+            {
+                throw new CalculationException("Previous-period equity is zero (total loss); cannot calculate return.");
+            }
+
+            result[years[i]] = (currValue / prevValue) - 1;
+        }
+
+        return result;
+    }
+}

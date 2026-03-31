@@ -1,0 +1,2195 @@
+{
+  "inputs": {
+    "market_data": {
+      "BEAR": [
+        {
+          "date": "2024-01-02",
+          "open": 99.8607,
+          "high": 101.115,
+          "low": 99.2097,
+          "close": 100.2825,
+          "adjusted_close": 100.2825,
+          "volume": 3057275,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-01-03",
+          "open": 100.1031,
+          "high": 100.5936,
+          "low": 99.4103,
+          "close": 100.0239,
+          "adjusted_close": 100.0239,
+          "volume": 1606484,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-01-04",
+          "open": 100.1028,
+          "high": 101.7059,
+          "low": 99.1748,
+          "close": 101.1173,
+          "adjusted_close": 101.1173,
+          "volume": 2200478,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-01-05",
+          "open": 100.98,
+          "high": 102.3998,
+          "low": 100.4128,
+          "close": 101.7056,
+          "adjusted_close": 101.7056,
+          "volume": 4504360,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-01-08",
+          "open": 101.2426,
+          "high": 103.347,
+          "low": 100.2319,
+          "close": 102.3795,
+          "adjusted_close": 102.3795,
+          "volume": 2800768,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-01-09",
+          "open": 102.6101,
+          "high": 103.9983,
+          "low": 102.1726,
+          "close": 103.5709,
+          "adjusted_close": 103.5709,
+          "volume": 1762636,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-01-10",
+          "open": 103.8317,
+          "high": 105.4888,
+          "low": 101.136,
+          "close": 102.1498,
+          "adjusted_close": 102.1498,
+          "volume": 1563278,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-01-11",
+          "open": 102.521,
+          "high": 103.5267,
+          "low": 100.8488,
+          "close": 101.5901,
+          "adjusted_close": 101.5901,
+          "volume": 4599978,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-01-12",
+          "open": 101.4914,
+          "high": 103.5665,
+          "low": 100.8928,
+          "close": 102.6515,
+          "adjusted_close": 102.6515,
+          "volume": 2682387,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-01-15",
+          "open": 102.758,
+          "high": 103.5181,
+          "low": 101.7684,
+          "close": 102.5574,
+          "adjusted_close": 102.5574,
+          "volume": 1481471,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-01-16",
+          "open": 102.5907,
+          "high": 103.2188,
+          "low": 101.5229,
+          "close": 102.0714,
+          "adjusted_close": 102.0714,
+          "volume": 2286772,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-01-17",
+          "open": 102.0862,
+          "high": 102.9133,
+          "low": 99.5656,
+          "close": 100.845,
+          "adjusted_close": 100.845,
+          "volume": 4342359,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-01-18",
+          "open": 101.0093,
+          "high": 102.8963,
+          "low": 100.0395,
+          "close": 102.0321,
+          "adjusted_close": 102.0321,
+          "volume": 1129961,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-01-19",
+          "open": 101.7943,
+          "high": 102.2297,
+          "low": 101.5188,
+          "close": 101.7799,
+          "adjusted_close": 101.7799,
+          "volume": 4608938,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-01-22",
+          "open": 101.4015,
+          "high": 102.749,
+          "low": 100.5119,
+          "close": 102.0011,
+          "adjusted_close": 102.0011,
+          "volume": 1247340,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-01-23",
+          "open": 102.0359,
+          "high": 102.5402,
+          "low": 101.4334,
+          "close": 101.9797,
+          "adjusted_close": 101.9797,
+          "volume": 3076819,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-01-24",
+          "open": 101.9743,
+          "high": 102.7655,
+          "low": 101.6232,
+          "close": 102.2654,
+          "adjusted_close": 102.2654,
+          "volume": 882653,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-01-25",
+          "open": 102.4007,
+          "high": 102.8251,
+          "low": 101.6776,
+          "close": 102.2778,
+          "adjusted_close": 102.2778,
+          "volume": 1663148,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-01-26",
+          "open": 101.9242,
+          "high": 105.0168,
+          "low": 101.0097,
+          "close": 103.4119,
+          "adjusted_close": 103.4119,
+          "volume": 4998592,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-01-29",
+          "open": 103.2774,
+          "high": 105.5781,
+          "low": 102.5086,
+          "close": 104.6549,
+          "adjusted_close": 104.6549,
+          "volume": 3170543,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-01-30",
+          "open": 104.7994,
+          "high": 105.5835,
+          "low": 102.7489,
+          "close": 103.5214,
+          "adjusted_close": 103.5214,
+          "volume": 3022074,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-01-31",
+          "open": 103.3296,
+          "high": 103.9719,
+          "low": 101.4665,
+          "close": 101.954,
+          "adjusted_close": 101.954,
+          "volume": 4584225,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-02-01",
+          "open": 101.6133,
+          "high": 102.0307,
+          "low": 100.3583,
+          "close": 101.3104,
+          "adjusted_close": 101.3104,
+          "volume": 2414651,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-02-02",
+          "open": 100.4565,
+          "high": 105.4023,
+          "low": 98.3047,
+          "close": 103.2689,
+          "adjusted_close": 103.2689,
+          "volume": 4812614,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-02-05",
+          "open": 103.7637,
+          "high": 104.1801,
+          "low": 103.0832,
+          "close": 103.3892,
+          "adjusted_close": 103.3892,
+          "volume": 3514707,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-02-06",
+          "open": 103.4163,
+          "high": 104.3697,
+          "low": 101.7785,
+          "close": 102.9524,
+          "adjusted_close": 102.9524,
+          "volume": 2816649,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-02-07",
+          "open": 103.4617,
+          "high": 104.3221,
+          "low": 101.9217,
+          "close": 102.4713,
+          "adjusted_close": 102.4713,
+          "volume": 3763424,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-02-08",
+          "open": 102.2943,
+          "high": 106.7396,
+          "low": 100.3597,
+          "close": 105.3573,
+          "adjusted_close": 105.3573,
+          "volume": 4784541,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-02-09",
+          "open": 105.7573,
+          "high": 106.212,
+          "low": 104.5515,
+          "close": 105.0332,
+          "adjusted_close": 105.0332,
+          "volume": 4331578,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-02-12",
+          "open": 104.6741,
+          "high": 105.3713,
+          "low": 102.7394,
+          "close": 103.3998,
+          "adjusted_close": 103.3998,
+          "volume": 4059064,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-02-13",
+          "open": 103.6165,
+          "high": 104.1283,
+          "low": 102.7881,
+          "close": 103.6999,
+          "adjusted_close": 103.6999,
+          "volume": 1594444,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-02-14",
+          "open": 103.7399,
+          "high": 105.7921,
+          "low": 97.7088,
+          "close": 99.8234,
+          "adjusted_close": 99.8234,
+          "volume": 4299955,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-02-15",
+          "open": 99.9599,
+          "high": 101.4416,
+          "low": 95.7006,
+          "close": 97.2487,
+          "adjusted_close": 97.2487,
+          "volume": 4199747,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-02-16",
+          "open": 97.2449,
+          "high": 98.4017,
+          "low": 96.4379,
+          "close": 97.7428,
+          "adjusted_close": 97.7428,
+          "volume": 2019731,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-02-19",
+          "open": 97.8515,
+          "high": 100.4351,
+          "low": 90.8133,
+          "close": 93.1493,
+          "adjusted_close": 93.1493,
+          "volume": 1667011,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-02-20",
+          "open": 93.5793,
+          "high": 94.3977,
+          "low": 93.2722,
+          "close": 93.9894,
+          "adjusted_close": 93.9894,
+          "volume": 1578240,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-02-21",
+          "open": 94.1758,
+          "high": 95.4121,
+          "low": 90.1804,
+          "close": 91.1996,
+          "adjusted_close": 91.1996,
+          "volume": 1470210,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-02-22",
+          "open": 91.236,
+          "high": 92.0236,
+          "low": 90.3636,
+          "close": 90.9707,
+          "adjusted_close": 90.9707,
+          "volume": 4848095,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-02-23",
+          "open": 91.2518,
+          "high": 91.5807,
+          "low": 90.4958,
+          "close": 90.8163,
+          "adjusted_close": 90.8163,
+          "volume": 4064778,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-02-26",
+          "open": 90.5809,
+          "high": 91.3854,
+          "low": 89.8713,
+          "close": 90.7834,
+          "adjusted_close": 90.7834,
+          "volume": 3297852,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-02-27",
+          "open": 90.9443,
+          "high": 92.9423,
+          "low": 90.3968,
+          "close": 92.211,
+          "adjusted_close": 92.211,
+          "volume": 4081311,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-02-28",
+          "open": 92.3399,
+          "high": 93.493,
+          "low": 90.2229,
+          "close": 90.6895,
+          "adjusted_close": 90.6895,
+          "volume": 4284316,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-02-29",
+          "open": 90.4378,
+          "high": 91.9579,
+          "low": 86.349,
+          "close": 87.699,
+          "adjusted_close": 87.699,
+          "volume": 3756234,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-03-01",
+          "open": 87.5165,
+          "high": 91.2576,
+          "low": 86.3119,
+          "close": 89.7912,
+          "adjusted_close": 89.7912,
+          "volume": 1331705,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-03-04",
+          "open": 90.179,
+          "high": 91.127,
+          "low": 87.4477,
+          "close": 88.7515,
+          "adjusted_close": 88.7515,
+          "volume": 4201362,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-03-05",
+          "open": 89.1606,
+          "high": 91.0748,
+          "low": 88.5815,
+          "close": 89.9311,
+          "adjusted_close": 89.9311,
+          "volume": 3716325,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-03-06",
+          "open": 89.0816,
+          "high": 90.1057,
+          "low": 88.1632,
+          "close": 88.6736,
+          "adjusted_close": 88.6736,
+          "volume": 4669024,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-03-07",
+          "open": 88.8398,
+          "high": 89.813,
+          "low": 85.9519,
+          "close": 87.3441,
+          "adjusted_close": 87.3441,
+          "volume": 3513608,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-03-08",
+          "open": 87.5982,
+          "high": 88.1498,
+          "low": 86.652,
+          "close": 87.1066,
+          "adjusted_close": 87.1066,
+          "volume": 4359656,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-03-11",
+          "open": 87.0392,
+          "high": 88.2255,
+          "low": 86.189,
+          "close": 87.6974,
+          "adjusted_close": 87.6974,
+          "volume": 3280885,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-03-12",
+          "open": 87.689,
+          "high": 88.3539,
+          "low": 85.637,
+          "close": 86.1423,
+          "adjusted_close": 86.1423,
+          "volume": 2899982,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-03-13",
+          "open": 85.5545,
+          "high": 86.3782,
+          "low": 84.9534,
+          "close": 85.9891,
+          "adjusted_close": 85.9891,
+          "volume": 3892175,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-03-14",
+          "open": 85.8733,
+          "high": 86.8091,
+          "low": 85.4283,
+          "close": 86.2268,
+          "adjusted_close": 86.2268,
+          "volume": 4147139,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-03-15",
+          "open": 85.7978,
+          "high": 87.3435,
+          "low": 85.4012,
+          "close": 86.6903,
+          "adjusted_close": 86.6903,
+          "volume": 846959,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-03-18",
+          "open": 86.5473,
+          "high": 89.1526,
+          "low": 85.6111,
+          "close": 88.3268,
+          "adjusted_close": 88.3268,
+          "volume": 3534049,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-03-19",
+          "open": 88.1308,
+          "high": 88.5287,
+          "low": 87.4721,
+          "close": 87.9523,
+          "adjusted_close": 87.9523,
+          "volume": 4741889,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-03-20",
+          "open": 87.8573,
+          "high": 88.8343,
+          "low": 83.8209,
+          "close": 85.1621,
+          "adjusted_close": 85.1621,
+          "volume": 1992392,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-03-21",
+          "open": 84.9127,
+          "high": 86.4993,
+          "low": 80.7767,
+          "close": 82.0154,
+          "adjusted_close": 82.0154,
+          "volume": 4979441,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-03-22",
+          "open": 82.4937,
+          "high": 83.8842,
+          "low": 81.7598,
+          "close": 83.435,
+          "adjusted_close": 83.435,
+          "volume": 1911774,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-03-25",
+          "open": 83.3823,
+          "high": 83.9823,
+          "low": 81.2671,
+          "close": 82.1473,
+          "adjusted_close": 82.1473,
+          "volume": 2851941,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-03-26",
+          "open": 82.2118,
+          "high": 83.0385,
+          "low": 80.5293,
+          "close": 81.4909,
+          "adjusted_close": 81.4909,
+          "volume": 4840618,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-03-27",
+          "open": 80.7185,
+          "high": 81.5104,
+          "low": 78.7754,
+          "close": 79.4159,
+          "adjusted_close": 79.4159,
+          "volume": 2944496,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-03-28",
+          "open": 79.3947,
+          "high": 80.7402,
+          "low": 76.5716,
+          "close": 77.3758,
+          "adjusted_close": 77.3758,
+          "volume": 3916675,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-03-29",
+          "open": 77.0163,
+          "high": 78.4882,
+          "low": 72.2822,
+          "close": 73.6177,
+          "adjusted_close": 73.6177,
+          "volume": 2850742,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-04-01",
+          "open": 73.727,
+          "high": 75.5261,
+          "low": 73.0536,
+          "close": 74.9918,
+          "adjusted_close": 74.9918,
+          "volume": 4464975,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-04-02",
+          "open": 75.1997,
+          "high": 75.7505,
+          "low": 74.8351,
+          "close": 75.4076,
+          "adjusted_close": 75.4076,
+          "volume": 961568,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-04-03",
+          "open": 75.6374,
+          "high": 76.1052,
+          "low": 75.2666,
+          "close": 75.5827,
+          "adjusted_close": 75.5827,
+          "volume": 4418084,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-04-04",
+          "open": 75.6569,
+          "high": 76.4871,
+          "low": 73.7469,
+          "close": 74.3557,
+          "adjusted_close": 74.3557,
+          "volume": 4127390,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-04-05",
+          "open": 74.5217,
+          "high": 74.9534,
+          "low": 74.1349,
+          "close": 74.545,
+          "adjusted_close": 74.545,
+          "volume": 4072729,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-04-08",
+          "open": 74.6059,
+          "high": 75.8893,
+          "low": 69.3738,
+          "close": 71.3185,
+          "adjusted_close": 71.3185,
+          "volume": 4839305,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-04-09",
+          "open": 71.792,
+          "high": 72.0061,
+          "low": 71.2449,
+          "close": 71.4883,
+          "adjusted_close": 71.4883,
+          "volume": 1921130,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-04-10",
+          "open": 71.5951,
+          "high": 73.1885,
+          "low": 70.7633,
+          "close": 72.4361,
+          "adjusted_close": 72.4361,
+          "volume": 1950191,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-04-11",
+          "open": 72.6734,
+          "high": 73.3212,
+          "low": 70.959,
+          "close": 71.5148,
+          "adjusted_close": 71.5148,
+          "volume": 2581963,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-04-12",
+          "open": 71.7021,
+          "high": 74.9357,
+          "low": 70.7752,
+          "close": 73.9206,
+          "adjusted_close": 73.9206,
+          "volume": 2824561,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-04-15",
+          "open": 73.6942,
+          "high": 75.7799,
+          "low": 73.1255,
+          "close": 75.1298,
+          "adjusted_close": 75.1298,
+          "volume": 530408,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-04-16",
+          "open": 75.0956,
+          "high": 76.5335,
+          "low": 73.9879,
+          "close": 75.9393,
+          "adjusted_close": 75.9393,
+          "volume": 884805,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-04-17",
+          "open": 75.8811,
+          "high": 76.6261,
+          "low": 75.3392,
+          "close": 76.3433,
+          "adjusted_close": 76.3433,
+          "volume": 4583930,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-04-18",
+          "open": 76.6907,
+          "high": 77.2995,
+          "low": 74.9947,
+          "close": 75.7554,
+          "adjusted_close": 75.7554,
+          "volume": 850817,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-04-19",
+          "open": 75.7941,
+          "high": 76.3289,
+          "low": 75.1657,
+          "close": 75.94,
+          "adjusted_close": 75.94,
+          "volume": 4584968,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-04-22",
+          "open": 75.6371,
+          "high": 77.2769,
+          "low": 74.7353,
+          "close": 76.5215,
+          "adjusted_close": 76.5215,
+          "volume": 3082176,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-04-23",
+          "open": 76.2716,
+          "high": 76.8363,
+          "low": 75.5404,
+          "close": 76.4795,
+          "adjusted_close": 76.4795,
+          "volume": 616783,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-04-24",
+          "open": 76.4571,
+          "high": 79.8555,
+          "low": 75.6138,
+          "close": 78.4977,
+          "adjusted_close": 78.4977,
+          "volume": 2621452,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-04-25",
+          "open": 78.6166,
+          "high": 79.0884,
+          "low": 77.5857,
+          "close": 78.0492,
+          "adjusted_close": 78.0492,
+          "volume": 915417,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-04-26",
+          "open": 78.0719,
+          "high": 78.4201,
+          "low": 77.5634,
+          "close": 78.0341,
+          "adjusted_close": 78.0341,
+          "volume": 1575906,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-04-29",
+          "open": 78.3727,
+          "high": 79.7396,
+          "low": 77.9841,
+          "close": 79.1201,
+          "adjusted_close": 79.1201,
+          "volume": 933942,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-04-30",
+          "open": 78.9295,
+          "high": 79.3622,
+          "low": 78.5555,
+          "close": 78.8756,
+          "adjusted_close": 78.8756,
+          "volume": 3721502,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-05-01",
+          "open": 78.8238,
+          "high": 79.687,
+          "low": 78.5121,
+          "close": 79.1959,
+          "adjusted_close": 79.1959,
+          "volume": 902842,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-05-02",
+          "open": 79.4883,
+          "high": 79.8179,
+          "low": 78.5601,
+          "close": 78.8884,
+          "adjusted_close": 78.8884,
+          "volume": 4297013,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-05-03",
+          "open": 79.2986,
+          "high": 79.8578,
+          "low": 78.2081,
+          "close": 78.9262,
+          "adjusted_close": 78.9262,
+          "volume": 4034899,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-05-06",
+          "open": 78.8752,
+          "high": 81.4859,
+          "low": 77.9767,
+          "close": 80.411,
+          "adjusted_close": 80.411,
+          "volume": 4263237,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-05-07",
+          "open": 80.5814,
+          "high": 81.7652,
+          "low": 80.1778,
+          "close": 81.1859,
+          "adjusted_close": 81.1859,
+          "volume": 4372721,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-05-08",
+          "open": 81.0805,
+          "high": 81.8956,
+          "low": 78.5884,
+          "close": 79.423,
+          "adjusted_close": 79.423,
+          "volume": 1965278,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-05-09",
+          "open": 79.0801,
+          "high": 82.389,
+          "low": 77.5701,
+          "close": 81.2233,
+          "adjusted_close": 81.2233,
+          "volume": 2465339,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-05-10",
+          "open": 81.0644,
+          "high": 82.3384,
+          "low": 80.421,
+          "close": 81.5365,
+          "adjusted_close": 81.5365,
+          "volume": 920693,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-05-13",
+          "open": 80.9537,
+          "high": 82.8694,
+          "low": 80.0042,
+          "close": 81.8962,
+          "adjusted_close": 81.8962,
+          "volume": 4885698,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-05-14",
+          "open": 82.0477,
+          "high": 84.4856,
+          "low": 81.0393,
+          "close": 83.613,
+          "adjusted_close": 83.613,
+          "volume": 582540,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-05-15",
+          "open": 83.7146,
+          "high": 86.1566,
+          "low": 82.7421,
+          "close": 84.907,
+          "adjusted_close": 84.907,
+          "volume": 2117707,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-05-16",
+          "open": 85.1656,
+          "high": 86.3277,
+          "low": 82.894,
+          "close": 83.6893,
+          "adjusted_close": 83.6893,
+          "volume": 4005277,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-05-17",
+          "open": 84.0077,
+          "high": 87.2548,
+          "low": 82.7275,
+          "close": 85.8962,
+          "adjusted_close": 85.8962,
+          "volume": 2936615,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-05-20",
+          "open": 85.5018,
+          "high": 87.5954,
+          "low": 84.4002,
+          "close": 86.4163,
+          "adjusted_close": 86.4163,
+          "volume": 4524189,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-05-21",
+          "open": 86.3556,
+          "high": 87.278,
+          "low": 84.3537,
+          "close": 85.4122,
+          "adjusted_close": 85.4122,
+          "volume": 3042126,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-05-22",
+          "open": 85.7085,
+          "high": 86.0828,
+          "low": 85.1663,
+          "close": 85.5515,
+          "adjusted_close": 85.5515,
+          "volume": 1050618,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-05-23",
+          "open": 85.4841,
+          "high": 85.8012,
+          "low": 84.767,
+          "close": 85.0715,
+          "adjusted_close": 85.0715,
+          "volume": 2183051,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-05-24",
+          "open": 85.1838,
+          "high": 86.1009,
+          "low": 83.4554,
+          "close": 84.2012,
+          "adjusted_close": 84.2012,
+          "volume": 3424567,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-05-27",
+          "open": 84.3682,
+          "high": 84.8185,
+          "low": 82.7482,
+          "close": 83.3082,
+          "adjusted_close": 83.3082,
+          "volume": 1416892,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-05-28",
+          "open": 83.6724,
+          "high": 84.0326,
+          "low": 83.1479,
+          "close": 83.5562,
+          "adjusted_close": 83.5562,
+          "volume": 4040540,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-05-29",
+          "open": 83.5853,
+          "high": 84.1366,
+          "low": 82.6639,
+          "close": 83.0625,
+          "adjusted_close": 83.0625,
+          "volume": 3146502,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-05-30",
+          "open": 83.5704,
+          "high": 83.974,
+          "low": 83.3527,
+          "close": 83.7667,
+          "adjusted_close": 83.7667,
+          "volume": 3624404,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-05-31",
+          "open": 83.5233,
+          "high": 84.2395,
+          "low": 82.8761,
+          "close": 83.7654,
+          "adjusted_close": 83.7654,
+          "volume": 3470530,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-06-03",
+          "open": 83.5008,
+          "high": 83.8829,
+          "low": 82.6845,
+          "close": 83.2097,
+          "adjusted_close": 83.2097,
+          "volume": 929584,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-06-04",
+          "open": 83.4117,
+          "high": 84.1597,
+          "low": 82.7186,
+          "close": 83.5733,
+          "adjusted_close": 83.5733,
+          "volume": 4533105,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-06-05",
+          "open": 83.5153,
+          "high": 83.7236,
+          "low": 83.3369,
+          "close": 83.5415,
+          "adjusted_close": 83.5415,
+          "volume": 2081352,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-06-06",
+          "open": 83.6313,
+          "high": 84.6445,
+          "low": 81.751,
+          "close": 82.5781,
+          "adjusted_close": 82.5781,
+          "volume": 3964413,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-06-07",
+          "open": 82.6979,
+          "high": 83.5053,
+          "low": 81.9989,
+          "close": 82.8629,
+          "adjusted_close": 82.8629,
+          "volume": 3084558,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-06-10",
+          "open": 82.9447,
+          "high": 83.4419,
+          "low": 81.9837,
+          "close": 82.7595,
+          "adjusted_close": 82.7595,
+          "volume": 1316013,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-06-11",
+          "open": 83.1352,
+          "high": 83.8702,
+          "low": 82.6927,
+          "close": 83.565,
+          "adjusted_close": 83.565,
+          "volume": 3148092,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-06-12",
+          "open": 83.3071,
+          "high": 84.191,
+          "low": 81.7154,
+          "close": 82.624,
+          "adjusted_close": 82.624,
+          "volume": 710935,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-06-13",
+          "open": 82.7291,
+          "high": 83.8535,
+          "low": 81.9042,
+          "close": 83.3211,
+          "adjusted_close": 83.3211,
+          "volume": 3566863,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-06-14",
+          "open": 82.8366,
+          "high": 83.7648,
+          "low": 82.3309,
+          "close": 83.0502,
+          "adjusted_close": 83.0502,
+          "volume": 4591097,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-06-17",
+          "open": 82.9008,
+          "high": 84.3681,
+          "low": 80.0273,
+          "close": 81.2801,
+          "adjusted_close": 81.2801,
+          "volume": 2864911,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-06-18",
+          "open": 81.1847,
+          "high": 82.0555,
+          "low": 80.106,
+          "close": 80.6278,
+          "adjusted_close": 80.6278,
+          "volume": 4567157,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-06-19",
+          "open": 80.7105,
+          "high": 82.999,
+          "low": 79.6426,
+          "close": 81.9873,
+          "adjusted_close": 81.9873,
+          "volume": 2256387,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-06-20",
+          "open": 82.3753,
+          "high": 83.0203,
+          "low": 81.7096,
+          "close": 82.6451,
+          "adjusted_close": 82.6451,
+          "volume": 1756114,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-06-21",
+          "open": 82.3257,
+          "high": 82.9801,
+          "low": 81.9061,
+          "close": 82.7636,
+          "adjusted_close": 82.7636,
+          "volume": 1854632,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-06-24",
+          "open": 82.9208,
+          "high": 83.5894,
+          "low": 81.2655,
+          "close": 82.215,
+          "adjusted_close": 82.215,
+          "volume": 1743716,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        },
+        {
+          "date": "2024-06-25",
+          "open": 82.1548,
+          "high": 82.658,
+          "low": 80.7439,
+          "close": 81.2144,
+          "adjusted_close": 81.2144,
+          "volume": 4452089,
+          "dividend_per_share": 0.0,
+          "split_coefficient": 1.0
+        }
+      ]
+    },
+    "weights": {
+      "BEAR": 1.0
+    },
+    "initial_cash": 10000.0,
+    "commission_rate": 0.0,
+    "strategy": "BuyAndHold"
+  },
+  "expected": {
+    "equity_curve": {
+      "2024-01-02": 10000.0,
+      "2024-01-03": 9992.1592,
+      "2024-01-04": 10100.4058,
+      "2024-01-05": 10158.647500000001,
+      "2024-01-08": 10225.3636,
+      "2024-01-09": 10343.3122,
+      "2024-01-10": 10202.623300000001,
+      "2024-01-11": 10147.213000000002,
+      "2024-01-12": 10252.2916,
+      "2024-01-15": 10242.9757,
+      "2024-01-16": 10194.861700000001,
+      "2024-01-17": 10073.448100000001,
+      "2024-01-18": 10190.971000000001,
+      "2024-01-19": 10166.003200000001,
+      "2024-01-22": 10187.902,
+      "2024-01-23": 10185.7834,
+      "2024-01-24": 10214.067700000001,
+      "2024-01-25": 10215.295300000002,
+      "2024-01-26": 10327.5712,
+      "2024-01-29": 10450.628200000001,
+      "2024-01-30": 10338.4117,
+      "2024-01-31": 10183.2391,
+      "2024-02-01": 10119.522700000001,
+      "2024-02-02": 10313.414200000001,
+      "2024-02-05": 10325.323900000001,
+      "2024-02-06": 10282.0807,
+      "2024-02-07": 10234.4518,
+      "2024-02-08": 10520.1658,
+      "2024-02-09": 10488.0799,
+      "2024-02-12": 10326.373300000001,
+      "2024-02-13": 10356.083200000001,
+      "2024-02-14": 9972.309700000002,
+      "2024-02-15": 9717.414400000001,
+      "2024-02-16": 9766.330300000001,
+      "2024-02-19": 9311.5738,
+      "2024-02-20": 9394.7437,
+      "2024-02-21": 9118.553500000002,
+      "2024-02-22": 9095.8924,
+      "2024-02-23": 9080.606800000001,
+      "2024-02-26": 9077.3497,
+      "2024-02-27": 9218.6821,
+      "2024-02-28": 9068.053600000001,
+      "2024-02-29": 8771.9941,
+      "2024-03-01": 8979.121900000002,
+      "2024-03-04": 8876.1916,
+      "2024-03-05": 8992.972000000002,
+      "2024-03-06": 8868.4795,
+      "2024-03-07": 8736.859,
+      "2024-03-08": 8713.346500000001,
+      "2024-03-11": 8771.835700000001,
+      "2024-03-12": 8617.8808,
+      "2024-03-13": 8602.714,
+      "2024-03-14": 8626.2463,
+      "2024-03-15": 8672.1328,
+      "2024-03-18": 8834.146300000002,
+      "2024-03-19": 8797.0708,
+      "2024-03-20": 8520.841,
+      "2024-03-21": 8209.3177,
+      "2024-03-22": 8349.858100000001,
+      "2024-03-25": 8222.375800000002,
+      "2024-03-26": 8157.3922,
+      "2024-03-27": 7951.9672,
+      "2024-03-28": 7749.997300000001,
+      "2024-03-29": 7377.9454000000005,
+      "2024-04-01": 7513.9813,
+      "2024-04-02": 7555.1455000000005,
+      "2024-04-03": 7572.480400000001,
+      "2024-04-04": 7451.0074,
+      "2024-04-05": 7469.748100000001,
+      "2024-04-08": 7150.324600000001,
+      "2024-04-09": 7167.134800000001,
+      "2024-04-10": 7260.967000000001,
+      "2024-04-11": 7169.7583,
+      "2024-04-12": 7407.9325,
+      "2024-04-15": 7527.643300000001,
+      "2024-04-16": 7607.783800000001,
+      "2024-04-17": 7647.7798,
+      "2024-04-18": 7589.5777,
+      "2024-04-19": 7607.8531,
+      "2024-04-22": 7665.4216000000015,
+      "2024-04-23": 7661.263600000001,
+      "2024-04-24": 7861.0654,
+      "2024-04-25": 7816.6639000000005,
+      "2024-04-26": 7815.169,
+      "2024-04-29": 7922.683,
+      "2024-04-30": 7898.477500000002,
+      "2024-05-01": 7930.1872,
+      "2024-05-02": 7899.744700000001,
+      "2024-05-03": 7903.4869,
+      "2024-05-06": 8050.482100000001,
+      "2024-05-07": 8127.197200000001,
+      "2024-05-08": 7952.670100000001,
+      "2024-05-09": 8130.8998,
+      "2024-05-10": 8161.906600000001,
+      "2024-05-13": 8197.5169,
+      "2024-05-14": 8367.4801,
+      "2024-05-15": 8495.5861,
+      "2024-05-16": 8375.033800000001,
+      "2024-05-17": 8593.5169,
+      "2024-05-20": 8645.006800000001,
+      "2024-05-21": 8545.600900000001,
+      "2024-05-22": 8559.3916,
+      "2024-05-23": 8511.8716,
+      "2024-05-24": 8425.7119,
+      "2024-05-27": 8337.304900000001,
+      "2024-05-28": 8361.8569,
+      "2024-05-29": 8312.9806,
+      "2024-05-30": 8382.6964,
+      "2024-05-31": 8382.567700000001,
+      "2024-06-03": 8327.5534,
+      "2024-06-04": 8363.5498,
+      "2024-06-05": 8360.401600000001,
+      "2024-06-06": 8265.025000000001,
+      "2024-06-07": 8293.2202,
+      "2024-06-10": 8282.983600000001,
+      "2024-06-11": 8362.7281,
+      "2024-06-12": 8269.5691,
+      "2024-06-13": 8338.582,
+      "2024-06-14": 8311.762900000002,
+      "2024-06-17": 8136.523000000001,
+      "2024-06-18": 8071.9453,
+      "2024-06-19": 8206.535800000001,
+      "2024-06-20": 8271.658,
+      "2024-06-21": 8283.389500000001,
+      "2024-06-24": 8229.078100000002,
+      "2024-06-25": 8130.0187000000005
+    },
+    "trades": [
+      {
+        "date": "2024-01-03",
+        "ticker": "BEAR",
+        "action": "Buy",
+        "quantity": 99,
+        "fill_price": 100.1031,
+        "commission": 0.0
+      }
+    ],
+    "positions": {
+      "2024-01-02": {
+        "BEAR": 0
+      },
+      "2024-01-03": {
+        "BEAR": 99
+      },
+      "2024-01-04": {
+        "BEAR": 99
+      },
+      "2024-01-05": {
+        "BEAR": 99
+      },
+      "2024-01-08": {
+        "BEAR": 99
+      },
+      "2024-01-09": {
+        "BEAR": 99
+      },
+      "2024-01-10": {
+        "BEAR": 99
+      },
+      "2024-01-11": {
+        "BEAR": 99
+      },
+      "2024-01-12": {
+        "BEAR": 99
+      },
+      "2024-01-15": {
+        "BEAR": 99
+      },
+      "2024-01-16": {
+        "BEAR": 99
+      },
+      "2024-01-17": {
+        "BEAR": 99
+      },
+      "2024-01-18": {
+        "BEAR": 99
+      },
+      "2024-01-19": {
+        "BEAR": 99
+      },
+      "2024-01-22": {
+        "BEAR": 99
+      },
+      "2024-01-23": {
+        "BEAR": 99
+      },
+      "2024-01-24": {
+        "BEAR": 99
+      },
+      "2024-01-25": {
+        "BEAR": 99
+      },
+      "2024-01-26": {
+        "BEAR": 99
+      },
+      "2024-01-29": {
+        "BEAR": 99
+      },
+      "2024-01-30": {
+        "BEAR": 99
+      },
+      "2024-01-31": {
+        "BEAR": 99
+      },
+      "2024-02-01": {
+        "BEAR": 99
+      },
+      "2024-02-02": {
+        "BEAR": 99
+      },
+      "2024-02-05": {
+        "BEAR": 99
+      },
+      "2024-02-06": {
+        "BEAR": 99
+      },
+      "2024-02-07": {
+        "BEAR": 99
+      },
+      "2024-02-08": {
+        "BEAR": 99
+      },
+      "2024-02-09": {
+        "BEAR": 99
+      },
+      "2024-02-12": {
+        "BEAR": 99
+      },
+      "2024-02-13": {
+        "BEAR": 99
+      },
+      "2024-02-14": {
+        "BEAR": 99
+      },
+      "2024-02-15": {
+        "BEAR": 99
+      },
+      "2024-02-16": {
+        "BEAR": 99
+      },
+      "2024-02-19": {
+        "BEAR": 99
+      },
+      "2024-02-20": {
+        "BEAR": 99
+      },
+      "2024-02-21": {
+        "BEAR": 99
+      },
+      "2024-02-22": {
+        "BEAR": 99
+      },
+      "2024-02-23": {
+        "BEAR": 99
+      },
+      "2024-02-26": {
+        "BEAR": 99
+      },
+      "2024-02-27": {
+        "BEAR": 99
+      },
+      "2024-02-28": {
+        "BEAR": 99
+      },
+      "2024-02-29": {
+        "BEAR": 99
+      },
+      "2024-03-01": {
+        "BEAR": 99
+      },
+      "2024-03-04": {
+        "BEAR": 99
+      },
+      "2024-03-05": {
+        "BEAR": 99
+      },
+      "2024-03-06": {
+        "BEAR": 99
+      },
+      "2024-03-07": {
+        "BEAR": 99
+      },
+      "2024-03-08": {
+        "BEAR": 99
+      },
+      "2024-03-11": {
+        "BEAR": 99
+      },
+      "2024-03-12": {
+        "BEAR": 99
+      },
+      "2024-03-13": {
+        "BEAR": 99
+      },
+      "2024-03-14": {
+        "BEAR": 99
+      },
+      "2024-03-15": {
+        "BEAR": 99
+      },
+      "2024-03-18": {
+        "BEAR": 99
+      },
+      "2024-03-19": {
+        "BEAR": 99
+      },
+      "2024-03-20": {
+        "BEAR": 99
+      },
+      "2024-03-21": {
+        "BEAR": 99
+      },
+      "2024-03-22": {
+        "BEAR": 99
+      },
+      "2024-03-25": {
+        "BEAR": 99
+      },
+      "2024-03-26": {
+        "BEAR": 99
+      },
+      "2024-03-27": {
+        "BEAR": 99
+      },
+      "2024-03-28": {
+        "BEAR": 99
+      },
+      "2024-03-29": {
+        "BEAR": 99
+      },
+      "2024-04-01": {
+        "BEAR": 99
+      },
+      "2024-04-02": {
+        "BEAR": 99
+      },
+      "2024-04-03": {
+        "BEAR": 99
+      },
+      "2024-04-04": {
+        "BEAR": 99
+      },
+      "2024-04-05": {
+        "BEAR": 99
+      },
+      "2024-04-08": {
+        "BEAR": 99
+      },
+      "2024-04-09": {
+        "BEAR": 99
+      },
+      "2024-04-10": {
+        "BEAR": 99
+      },
+      "2024-04-11": {
+        "BEAR": 99
+      },
+      "2024-04-12": {
+        "BEAR": 99
+      },
+      "2024-04-15": {
+        "BEAR": 99
+      },
+      "2024-04-16": {
+        "BEAR": 99
+      },
+      "2024-04-17": {
+        "BEAR": 99
+      },
+      "2024-04-18": {
+        "BEAR": 99
+      },
+      "2024-04-19": {
+        "BEAR": 99
+      },
+      "2024-04-22": {
+        "BEAR": 99
+      },
+      "2024-04-23": {
+        "BEAR": 99
+      },
+      "2024-04-24": {
+        "BEAR": 99
+      },
+      "2024-04-25": {
+        "BEAR": 99
+      },
+      "2024-04-26": {
+        "BEAR": 99
+      },
+      "2024-04-29": {
+        "BEAR": 99
+      },
+      "2024-04-30": {
+        "BEAR": 99
+      },
+      "2024-05-01": {
+        "BEAR": 99
+      },
+      "2024-05-02": {
+        "BEAR": 99
+      },
+      "2024-05-03": {
+        "BEAR": 99
+      },
+      "2024-05-06": {
+        "BEAR": 99
+      },
+      "2024-05-07": {
+        "BEAR": 99
+      },
+      "2024-05-08": {
+        "BEAR": 99
+      },
+      "2024-05-09": {
+        "BEAR": 99
+      },
+      "2024-05-10": {
+        "BEAR": 99
+      },
+      "2024-05-13": {
+        "BEAR": 99
+      },
+      "2024-05-14": {
+        "BEAR": 99
+      },
+      "2024-05-15": {
+        "BEAR": 99
+      },
+      "2024-05-16": {
+        "BEAR": 99
+      },
+      "2024-05-17": {
+        "BEAR": 99
+      },
+      "2024-05-20": {
+        "BEAR": 99
+      },
+      "2024-05-21": {
+        "BEAR": 99
+      },
+      "2024-05-22": {
+        "BEAR": 99
+      },
+      "2024-05-23": {
+        "BEAR": 99
+      },
+      "2024-05-24": {
+        "BEAR": 99
+      },
+      "2024-05-27": {
+        "BEAR": 99
+      },
+      "2024-05-28": {
+        "BEAR": 99
+      },
+      "2024-05-29": {
+        "BEAR": 99
+      },
+      "2024-05-30": {
+        "BEAR": 99
+      },
+      "2024-05-31": {
+        "BEAR": 99
+      },
+      "2024-06-03": {
+        "BEAR": 99
+      },
+      "2024-06-04": {
+        "BEAR": 99
+      },
+      "2024-06-05": {
+        "BEAR": 99
+      },
+      "2024-06-06": {
+        "BEAR": 99
+      },
+      "2024-06-07": {
+        "BEAR": 99
+      },
+      "2024-06-10": {
+        "BEAR": 99
+      },
+      "2024-06-11": {
+        "BEAR": 99
+      },
+      "2024-06-12": {
+        "BEAR": 99
+      },
+      "2024-06-13": {
+        "BEAR": 99
+      },
+      "2024-06-14": {
+        "BEAR": 99
+      },
+      "2024-06-17": {
+        "BEAR": 99
+      },
+      "2024-06-18": {
+        "BEAR": 99
+      },
+      "2024-06-19": {
+        "BEAR": 99
+      },
+      "2024-06-20": {
+        "BEAR": 99
+      },
+      "2024-06-21": {
+        "BEAR": 99
+      },
+      "2024-06-24": {
+        "BEAR": 99
+      },
+      "2024-06-25": {
+        "BEAR": 99
+      }
+    },
+    "cash": {
+      "2024-01-02": 10000.0,
+      "2024-01-03": 89.79310000000078,
+      "2024-01-04": 89.79310000000078,
+      "2024-01-05": 89.79310000000078,
+      "2024-01-08": 89.79310000000078,
+      "2024-01-09": 89.79310000000078,
+      "2024-01-10": 89.79310000000078,
+      "2024-01-11": 89.79310000000078,
+      "2024-01-12": 89.79310000000078,
+      "2024-01-15": 89.79310000000078,
+      "2024-01-16": 89.79310000000078,
+      "2024-01-17": 89.79310000000078,
+      "2024-01-18": 89.79310000000078,
+      "2024-01-19": 89.79310000000078,
+      "2024-01-22": 89.79310000000078,
+      "2024-01-23": 89.79310000000078,
+      "2024-01-24": 89.79310000000078,
+      "2024-01-25": 89.79310000000078,
+      "2024-01-26": 89.79310000000078,
+      "2024-01-29": 89.79310000000078,
+      "2024-01-30": 89.79310000000078,
+      "2024-01-31": 89.79310000000078,
+      "2024-02-01": 89.79310000000078,
+      "2024-02-02": 89.79310000000078,
+      "2024-02-05": 89.79310000000078,
+      "2024-02-06": 89.79310000000078,
+      "2024-02-07": 89.79310000000078,
+      "2024-02-08": 89.79310000000078,
+      "2024-02-09": 89.79310000000078,
+      "2024-02-12": 89.79310000000078,
+      "2024-02-13": 89.79310000000078,
+      "2024-02-14": 89.79310000000078,
+      "2024-02-15": 89.79310000000078,
+      "2024-02-16": 89.79310000000078,
+      "2024-02-19": 89.79310000000078,
+      "2024-02-20": 89.79310000000078,
+      "2024-02-21": 89.79310000000078,
+      "2024-02-22": 89.79310000000078,
+      "2024-02-23": 89.79310000000078,
+      "2024-02-26": 89.79310000000078,
+      "2024-02-27": 89.79310000000078,
+      "2024-02-28": 89.79310000000078,
+      "2024-02-29": 89.79310000000078,
+      "2024-03-01": 89.79310000000078,
+      "2024-03-04": 89.79310000000078,
+      "2024-03-05": 89.79310000000078,
+      "2024-03-06": 89.79310000000078,
+      "2024-03-07": 89.79310000000078,
+      "2024-03-08": 89.79310000000078,
+      "2024-03-11": 89.79310000000078,
+      "2024-03-12": 89.79310000000078,
+      "2024-03-13": 89.79310000000078,
+      "2024-03-14": 89.79310000000078,
+      "2024-03-15": 89.79310000000078,
+      "2024-03-18": 89.79310000000078,
+      "2024-03-19": 89.79310000000078,
+      "2024-03-20": 89.79310000000078,
+      "2024-03-21": 89.79310000000078,
+      "2024-03-22": 89.79310000000078,
+      "2024-03-25": 89.79310000000078,
+      "2024-03-26": 89.79310000000078,
+      "2024-03-27": 89.79310000000078,
+      "2024-03-28": 89.79310000000078,
+      "2024-03-29": 89.79310000000078,
+      "2024-04-01": 89.79310000000078,
+      "2024-04-02": 89.79310000000078,
+      "2024-04-03": 89.79310000000078,
+      "2024-04-04": 89.79310000000078,
+      "2024-04-05": 89.79310000000078,
+      "2024-04-08": 89.79310000000078,
+      "2024-04-09": 89.79310000000078,
+      "2024-04-10": 89.79310000000078,
+      "2024-04-11": 89.79310000000078,
+      "2024-04-12": 89.79310000000078,
+      "2024-04-15": 89.79310000000078,
+      "2024-04-16": 89.79310000000078,
+      "2024-04-17": 89.79310000000078,
+      "2024-04-18": 89.79310000000078,
+      "2024-04-19": 89.79310000000078,
+      "2024-04-22": 89.79310000000078,
+      "2024-04-23": 89.79310000000078,
+      "2024-04-24": 89.79310000000078,
+      "2024-04-25": 89.79310000000078,
+      "2024-04-26": 89.79310000000078,
+      "2024-04-29": 89.79310000000078,
+      "2024-04-30": 89.79310000000078,
+      "2024-05-01": 89.79310000000078,
+      "2024-05-02": 89.79310000000078,
+      "2024-05-03": 89.79310000000078,
+      "2024-05-06": 89.79310000000078,
+      "2024-05-07": 89.79310000000078,
+      "2024-05-08": 89.79310000000078,
+      "2024-05-09": 89.79310000000078,
+      "2024-05-10": 89.79310000000078,
+      "2024-05-13": 89.79310000000078,
+      "2024-05-14": 89.79310000000078,
+      "2024-05-15": 89.79310000000078,
+      "2024-05-16": 89.79310000000078,
+      "2024-05-17": 89.79310000000078,
+      "2024-05-20": 89.79310000000078,
+      "2024-05-21": 89.79310000000078,
+      "2024-05-22": 89.79310000000078,
+      "2024-05-23": 89.79310000000078,
+      "2024-05-24": 89.79310000000078,
+      "2024-05-27": 89.79310000000078,
+      "2024-05-28": 89.79310000000078,
+      "2024-05-29": 89.79310000000078,
+      "2024-05-30": 89.79310000000078,
+      "2024-05-31": 89.79310000000078,
+      "2024-06-03": 89.79310000000078,
+      "2024-06-04": 89.79310000000078,
+      "2024-06-05": 89.79310000000078,
+      "2024-06-06": 89.79310000000078,
+      "2024-06-07": 89.79310000000078,
+      "2024-06-10": 89.79310000000078,
+      "2024-06-11": 89.79310000000078,
+      "2024-06-12": 89.79310000000078,
+      "2024-06-13": 89.79310000000078,
+      "2024-06-14": 89.79310000000078,
+      "2024-06-17": 89.79310000000078,
+      "2024-06-18": 89.79310000000078,
+      "2024-06-19": 89.79310000000078,
+      "2024-06-20": 89.79310000000078,
+      "2024-06-21": 89.79310000000078,
+      "2024-06-24": 89.79310000000078,
+      "2024-06-25": 89.79310000000078
+    },
+    "daily_returns": [
+      -0.0007840799999999945,
+      0.010833154059434962,
+      0.005766273271911559,
+      0.006567419530995601,
+      0.011534905223321321,
+      -0.013601919508916998,
+      -0.005430985577993411,
+      0.010355414831638885,
+      -0.0009086651417522694,
+      -0.004697267806658916,
+      -0.011909293482617801,
+      0.011666601032073608,
+      -0.0024499922529462943,
+      0.002154120903680123,
+      -0.00020795253036393435,
+      0.0027768409055312494,
+      0.00012018718066653952,
+      0.010990959801230485,
+      0.011915386262357669,
+      -0.010737775553052442,
+      -0.015009326819515213,
+      -0.00625698752374373,
+      0.019160142800015628,
+      0.001154777629313109,
+      -0.0041880720080849755,
+      -0.004632223903864099,
+      0.027916883638066468,
+      -0.003049942425812342,
+      -0.015418131969036537,
+      0.002877089481163714,
+      -0.037057784549278175,
+      -0.02556030725760554,
+      0.005033839042616105,
+      -0.046563702642742,
+      0.008931884317987231,
+      -0.029398375178664966,
+      -0.0024851639023668794,
+      -0.0016804948132411119,
+      -0.0003586874833079127,
+      0.015569786850890995,
+      -0.016339483059080527,
+      -0.03264862704384557,
+      0.023612396182528445,
+      -0.011463292418382447,
+      0.013156588463007204,
+      -0.013843310087032639,
+      -0.014841382899966008,
+      -0.0026911845549984163,
+      0.006712598884940473,
+      -0.017551046926243798,
+      -0.0017599222305326938,
+      0.0027354506961408645,
+      0.0053194052666915735,
+      0.01868208245150521,
+      -0.004196840163265424,
+      -0.03140020198541532,
+      -0.03656015879183765,
+      0.017119620062944048,
+      -0.015267600775155645,
+      -0.00790326319067068,
+      -0.025182680317859446,
+      -0.025398734039043715,
+      -0.04800671349911313,
+      0.018438181990341085,
+      0.005478347410845987,
+      0.0022944495244996595,
+      -0.01604137529362253,
+      0.002515190093624157,
+      -0.04276228538416173,
+      0.0023509701923182472,
+      0.013092009934011542,
+      -0.012561508680593112,
+      0.033219278814461496,
+      0.01615981247129354,
+      0.010646160664918915,
+      0.0052572471893850585,
+      -0.0076103263328790435,
+      0.002407960063443378,
+      0.0075669836474630695,
+      -0.0005424359176800341,
+      0.026079483807344685,
+      -0.005648280193674504,
+      -0.00019124527024893547,
+      0.013757092137099034,
+      -0.0030552150073400904,
+      0.004014659787281601,
+      -0.0038388122792358797,
+      0.0004737115112085552,
+      0.018598778217751105,
+      0.009529255397015334,
+      -0.02147445124132096,
+      0.022411303091775293,
+      0.0038134524791464067,
+      0.0043629879322558485,
+      0.020733497969366813,
+      0.015309985619206882,
+      -0.014189992141919364,
+      0.026087429044166895,
+      0.0059917145214435415,
+      -0.011498649139292723,
+      0.0016137776806309265,
+      -0.005551796461795302,
+      -0.010122297897444805,
+      -0.010492525860040295,
+      0.002944836526249589,
+      -0.005845149060132791,
+      0.008386378286507722,
+      -1.5353055133822882e-05,
+      -0.0065629413288246655,
+      0.004322566097264533,
+      -0.00037641911332908344,
+      -0.011408136183314398,
+      0.003411387140389568,
+      -0.0012343335583924761,
+      0.009627509101913333,
+      -0.011139785831372378,
+      0.008345404599134399,
+      -0.00321626626685434,
+      -0.021083361268642596,
+      -0.007936768568097297,
+      0.016673861751763996,
+      0.00793540680100341,
+      0.0014182767227563916,
+      -0.006556663790830876,
+      -0.012037727531107267
+    ],
+    "metrics": {
+      "annualized_return": -0.34121370807443663,
+      "cagr": -0.34121370807443663,
+      "annualized_volatility": 0.24048939382869125,
+      "annualized_sharpe_ratio": -1.6137305438045961,
+      "annualized_sortino_ratio": -1.9765809687506664,
+      "max_drawdown": -0.32032206184431045,
+      "max_drawdown_duration": 98,
+      "calmar_ratio": -1.0652207534811649,
+      "omega_ratio": 0.759502823874929,
+      "win_rate": 0.48,
+      "profit_factor": 0.7595028238749287,
+      "recovery_factor": -0.5837816131780764,
+      "historical_var": -0.03099983662406524,
+      "conditional_var": -0.03928563912805622,
+      "skewness": -0.6433561393384342,
+      "kurtosis": 0.9096650117092668
+    }
+  },
+  "library": "numpy 2.4.3",
+  "notes": "Bear market scenario: rally \u2192 crash \u2192 partial recovery \u2192 flat. Verifies MaxDrawdown depth and duration. No commission to isolate drawdown calculation from cost effects."
+}

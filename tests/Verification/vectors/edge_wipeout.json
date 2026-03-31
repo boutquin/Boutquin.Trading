@@ -1,0 +1,48 @@
+{
+  "inputs": {
+    "daily_returns": [
+      0.01,
+      -0.02,
+      0.005,
+      -1.0
+    ],
+    "trading_days_per_year": 252
+  },
+  "expected": {
+    "cumulative_return": -1.0,
+    "annualized_return": "EXCEPTION:CalculationException",
+    "cagr": "EXCEPTION:CalculationException",
+    "equity_curve": [
+      10000.0,
+      10100.0,
+      9898.0,
+      9947.49,
+      0.0
+    ],
+    "daily_returns_from_equity": [
+      0.01,
+      -0.02,
+      0.0049999999999999776,
+      -1.0
+    ],
+    "volatility": 0.49933914660612516,
+    "annualized_volatility": 7.926763210794177,
+    "downside_deviation": 0.5774657276987671,
+    "sharpe_ratio": -0.503165036644291,
+    "annualized_sharpe_ratio": -7.987497332300975,
+    "sortino_ratio": -0.43509075595056546,
+    "annualized_sortino_ratio": -6.906851627929755,
+    "max_drawdown": -1.0,
+    "calmar_ratio": "EXCEPTION:CalculationException",
+    "omega_ratio": 0.014705882352941176,
+    "win_rate": 0.5,
+    "profit_factor": 0.014705882352941176,
+    "recovery_factor": -1.0,
+    "historical_var": -0.8529999999999999,
+    "parametric_var": -1.0725898063739376,
+    "conditional_var": -1.0,
+    "skewness": -1.9958796979817317,
+    "kurtosis": 3.985965102454692
+  },
+  "notes": "Cumulative return = -100% (total wipeout). AnnualizedReturn and CAGR should throw."
+}

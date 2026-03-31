@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Title>Boutquin.Trading.Data.Fred</Title>
+    <Description>FRED (Federal Reserve Economic Data) fetcher for the Boutquin.Trading quantitative trading framework. Provides treasury yields, inflation indicators, GDP, and economic time series via the FRED REST API.</Description>
+    <PackageTags>trading;fred;treasury;risk-free-rate;economic-data;backtesting;quantitative-finance</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\..\Resources\icon.png" Link="icon.png" Pack="True" PackagePath="\" />
+    <None Include=".\doc\README.md" Pack="True" PackagePath="\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MinVer" Version="7.0.0" PrivateAssets="All" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Domain\Boutquin.Trading.Domain.csproj" />
+  </ItemGroup>
+</Project>
