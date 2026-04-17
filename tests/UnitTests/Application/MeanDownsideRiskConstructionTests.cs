@@ -18,7 +18,6 @@ namespace Boutquin.Trading.Tests.UnitTests.Application;
 
 using Boutquin.Trading.Application.DownsideRisk;
 using Boutquin.Trading.Application.PortfolioConstruction;
-using Boutquin.Trading.Domain.ValueObjects;
 using FluentAssertions;
 
 /// <summary>
@@ -26,10 +25,10 @@ using FluentAssertions;
 /// </summary>
 public sealed class MeanDownsideRiskConstructionTests
 {
-    private static readonly Asset s_vti = new("VTI");
-    private static readonly Asset s_tlt = new("TLT");
-    private static readonly Asset s_gld = new("GLD");
-    private static readonly Asset s_vnq = new("VNQ");
+    private static readonly Symbol s_vti = new("VTI");
+    private static readonly Symbol s_tlt = new("TLT");
+    private static readonly Symbol s_gld = new("GLD");
+    private static readonly Symbol s_vnq = new("VNQ");
 
     // VTI: high vol symmetric, TLT: low vol, GLD: medium vol, VNQ: high vol with negative skew
     private static decimal[][] FourAssetReturns =>
@@ -40,7 +39,7 @@ public sealed class MeanDownsideRiskConstructionTests
         [0.03m, -0.04m, 0.05m, -0.02m, 0.04m, -0.03m, 0.02m, 0.06m, -0.05m, 0.03m]  // VNQ
     ];
 
-    private static IReadOnlyList<Asset> FourAssets => [s_vti, s_tlt, s_gld, s_vnq];
+    private static IReadOnlyList<Symbol> FourAssets => [s_vti, s_tlt, s_gld, s_vnq];
 
     // Asymmetric returns: equity has positive skew (big upside, small downside),
     // bond has negative skew (small upside, occasional big loss)
@@ -52,16 +51,16 @@ public sealed class MeanDownsideRiskConstructionTests
         [0.003m, 0.002m, 0.004m, -0.06m, 0.003m, 0.002m, -0.05m, 0.004m, 0.003m, -0.07m]
     ];
 
-    private static IReadOnlyList<Asset> TwoAssets => [new Asset("EQUITY"), new Asset("BOND")];
+    private static IReadOnlyList<Symbol> TwoAssets => [new Symbol("EQUITY"), new Symbol("BOND")];
 
     // --- Helpers ---
 
-    private static void AssertWeightsSumToOne(IReadOnlyDictionary<Asset, decimal> weights)
+    private static void AssertWeightsSumToOne(IReadOnlyDictionary<Symbol, decimal> weights)
     {
         weights.Values.Sum().Should().BeApproximately(1.0m, 1e-8m, "Weights must sum to 1.0");
     }
 
-    private static void AssertAllWeightsNonNegative(IReadOnlyDictionary<Asset, decimal> weights)
+    private static void AssertAllWeightsNonNegative(IReadOnlyDictionary<Symbol, decimal> weights)
     {
         foreach (var (asset, weight) in weights)
         {
@@ -97,7 +96,7 @@ public sealed class MeanDownsideRiskConstructionTests
     public void MeanCVaR_SingleAsset_ShouldReturn100Percent()
     {
         var model = new MeanDownsideRiskConstruction(new CVaRRiskMeasure());
-        var assets = new List<Asset> { s_vti };
+        var assets = new List<Symbol> { s_vti };
 
         var weights = model.ComputeTargetWeights(assets, [FourAssetReturns[0]]);
 
@@ -193,7 +192,7 @@ public sealed class MeanDownsideRiskConstructionTests
     public void MeanCVaR_InsufficientReturns_ShouldThrow()
     {
         var model = new MeanDownsideRiskConstruction(new CVaRRiskMeasure());
-        var assets = new List<Asset> { s_vti };
+        var assets = new List<Symbol> { s_vti };
 
         var act = () => model.ComputeTargetWeights(assets, [new[] { 0.01m }]);
 
@@ -228,7 +227,7 @@ public sealed class MeanDownsideRiskConstructionTests
     public void MeanSortino_SingleAsset_ShouldReturn100Percent()
     {
         var model = new MeanDownsideRiskConstruction(new DownsideDeviationRiskMeasure());
-        var assets = new List<Asset> { s_vti };
+        var assets = new List<Symbol> { s_vti };
 
         var weights = model.ComputeTargetWeights(assets, [FourAssetReturns[0]]);
 
@@ -244,8 +243,8 @@ public sealed class MeanDownsideRiskConstructionTests
 
         var weights = model.ComputeTargetWeights(TwoAssets, AsymmetricReturns);
 
-        var equity = new Asset("EQUITY");
-        var bond = new Asset("BOND");
+        var equity = new Symbol("EQUITY");
+        var bond = new Symbol("BOND");
 
         // Equity has positive skew (small losses, big gains) → favored by Sortino
         // Bond has negative skew (small gains, big losses) → penalized by Sortino
@@ -335,7 +334,7 @@ public sealed class MeanDownsideRiskConstructionTests
     {
         // All returns positive → no downside risk → should converge to max-return portfolio
         var model = new MeanDownsideRiskConstruction(new DownsideDeviationRiskMeasure());
-        var assets = new List<Asset> { new("A"), new("B") };
+        var assets = new List<Symbol> { new("A"), new("B") };
 
         decimal[][] returns =
         [
@@ -349,7 +348,7 @@ public sealed class MeanDownsideRiskConstructionTests
         AssertAllWeightsNonNegative(weights);
 
         // With no downside risk, should favor higher-return asset
-        weights[new Asset("B")].Should().BeGreaterThanOrEqualTo(weights[new Asset("A")],
+        weights[new Symbol("B")].Should().BeGreaterThanOrEqualTo(weights[new Symbol("A")],
             "With zero downside risk, higher-return asset should get equal or higher weight");
     }
 
@@ -448,9 +447,9 @@ public sealed class MeanDownsideRiskConstructionTests
 
         AssertWeightsSumToOne(weights);
 
-        weights[new Asset("SAFE")].Should().BeGreaterThan(0.38m,
+        weights[new Symbol("SAFE")].Should().BeGreaterThan(0.38m,
             "SAFE asset should be meaningfully overweight vs 1/N=33%");
-        weights[new Asset("RISKY")].Should().BeLessThan(0.28m,
+        weights[new Symbol("RISKY")].Should().BeLessThan(0.28m,
             "RISKY asset should be meaningfully underweight vs 1/N=33%");
     }
 
@@ -526,7 +525,7 @@ public sealed class MeanDownsideRiskConstructionTests
     /// <summary>
     /// 3-asset, 100-scenario dataset with clearly separated risk profiles.
     /// </summary>
-    private static (IReadOnlyList<Asset> Assets, decimal[][] Returns) MakeThreeAssetIncomeScenarios()
+    private static (IReadOnlyList<Symbol> Assets, decimal[][] Returns) MakeThreeAssetIncomeScenarios()
     {
         const int s = 100;
         const int tailCount = 5; // 5% tail
@@ -551,7 +550,7 @@ public sealed class MeanDownsideRiskConstructionTests
             }
         }
 
-        IReadOnlyList<Asset> assets = [new("SAFE"), new("MODERATE"), new("RISKY")];
+        IReadOnlyList<Symbol> assets = [new("SAFE"), new("MODERATE"), new("RISKY")];
         return (assets, [safeReturns, moderateReturns, riskyReturns]);
     }
 
@@ -564,7 +563,7 @@ public sealed class MeanDownsideRiskConstructionTests
     ///   SCHD-like:  high vol, moderate drift, fat left tail (dividend equity)
     /// Seeded RNG for deterministic reproducibility.
     /// </summary>
-    private static (IReadOnlyList<Asset> Assets, decimal[][] Returns) MakeIncomeLikeFiveAssetScenarios()
+    private static (IReadOnlyList<Symbol> Assets, decimal[][] Returns) MakeIncomeLikeFiveAssetScenarios()
     {
         const int s = 252;
         const int tailCount = 13; // ~5% of 252
@@ -598,7 +597,7 @@ public sealed class MeanDownsideRiskConstructionTests
             }
         }
 
-        IReadOnlyList<Asset> assets = [new("VGSH"), new("FLOT"), new("SCHP"), new("JEPQ"), new("SCHD")];
+        IReadOnlyList<Symbol> assets = [new("VGSH"), new("FLOT"), new("SCHP"), new("JEPQ"), new("SCHD")];
         return (assets, [vgsh, flot, schp, jepq, schd]);
     }
 }

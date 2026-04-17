@@ -15,9 +15,6 @@
 //
 
 namespace Boutquin.Trading.Domain.Events;
-
-using ValueObjects;
-
 /// <summary>
 /// Order represents a request submitted to the broker for execution.
 /// The Order record represents a request to execute a trade for a specified
@@ -30,7 +27,7 @@ using ValueObjects;
 /// <param name="StrategyName">The name of the strategy that associated
 /// with the order, represented as a string.
 /// </param>
-/// <param name="Asset">The name of the financial asset associated
+/// <param name="Symbol">The name of the financial asset associated
 /// with the order, represented as a string.
 /// </param>
 /// <param name="TradeAction">The action to be performed in the trade,
@@ -54,7 +51,7 @@ using ValueObjects;
 public sealed record Order(
     DateOnly Timestamp,
     string StrategyName,
-    Asset Asset,
+    Symbol Symbol,
     TradeAction TradeAction,
     OrderType OrderType,
     int Quantity,

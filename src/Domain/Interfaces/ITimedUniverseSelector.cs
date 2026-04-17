@@ -15,9 +15,6 @@
 //
 
 namespace Boutquin.Trading.Domain.Interfaces;
-
-using ValueObjects;
-
 /// <summary>
 /// Extends <see cref="IUniverseSelector"/> with time-aware filtering.
 /// Returns assets eligible as of a given date.
@@ -30,5 +27,5 @@ public interface ITimedUniverseSelector : IUniverseSelector
     /// <param name="candidates">The candidate assets to filter.</param>
     /// <param name="asOfDate">The date to evaluate eligibility against.</param>
     /// <returns>The filtered assets eligible as of the given date.</returns>
-    IReadOnlyList<Asset> SelectAsOf(IReadOnlyList<Asset> candidates, DateOnly asOfDate);
+    IReadOnlyList<Symbol> SelectAsOf(IReadOnlyList<Symbol> candidates, DateOnly asOfDate);
 }

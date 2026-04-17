@@ -91,9 +91,9 @@ public sealed class VolumeShareSlippage : ISlippageModel
             return theoreticalPrice;
         }
 
-        // Cap quantity at volume limit
-        var maxQuantity = (int)(barVolume * _volumeLimit);
-        var effectiveQuantity = Math.Min(quantity, Math.Max(maxQuantity, 1));
+        // Cap quantity at volume limit (use long to avoid overflow for high-volume securities)
+        var maxQuantity = (long)(barVolume * _volumeLimit);
+        var effectiveQuantity = (int)Math.Min((long)quantity, Math.Max(maxQuantity, 1L));
 
         // Price impact proportional to fraction of volume consumed
         var volumeFraction = (decimal)effectiveQuantity / barVolume;

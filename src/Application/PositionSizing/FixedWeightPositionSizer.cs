@@ -15,16 +15,13 @@
 //
 
 namespace Boutquin.Trading.Application.PositionSizing;
-
-using Domain.ValueObjects;
-
 /// <summary>
 /// The FixedWeightPositionSizer class implements the IPositionSizer interface, using fixed asset weights to determine
 /// the desired positions. The weights are expressed as a percentage of the total strategy value in the base currency.
 /// </summary>
 public sealed class FixedWeightPositionSizer : IPositionSizer
 {
-    private readonly IReadOnlyDictionary<Asset, decimal> _fixedAssetWeights;
+    private readonly IReadOnlyDictionary<Symbol, decimal> _fixedAssetWeights;
     private readonly CurrencyCode _baseCurrency;
     private readonly decimal _cashBufferPercent;
     private readonly bool _renormalizeForSignaledAssets;
@@ -44,7 +41,7 @@ public sealed class FixedWeightPositionSizer : IPositionSizer
     /// Throws this exception if the base currency is undefined or cashBufferPercent is out of range.
     /// </exception>
     public FixedWeightPositionSizer(
-        IReadOnlyDictionary<Asset, decimal> fixedAssetWeights,
+        IReadOnlyDictionary<Symbol, decimal> fixedAssetWeights,
         CurrencyCode baseCurrency,
         decimal cashBufferPercent = 0m,
         bool renormalizeForSignaledAssets = false)
@@ -63,7 +60,7 @@ public sealed class FixedWeightPositionSizer : IPositionSizer
         {
             if (weight < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(fixedAssetWeights), "Asset weights must be non-negative.");
+                throw new ArgumentOutOfRangeException(nameof(fixedAssetWeights), "Symbol weights must be non-negative.");
             }
         }
 
@@ -88,11 +85,11 @@ public sealed class FixedWeightPositionSizer : IPositionSizer
     /// <exception cref="EmptyOrNullDictionaryException">
     /// Throws this exception if the historical market data or historical FX conversion rates dictionaries are empty or null.
     /// </exception>
-    public IReadOnlyDictionary<Asset, int> ComputePositionSizes(
+    public IReadOnlyDictionary<Symbol, int> ComputePositionSizes(
         DateOnly timestamp,
-        IReadOnlyDictionary<Asset, SignalType> signalType,
+        IReadOnlyDictionary<Symbol, SignalType> signalType,
         IStrategy strategy,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>> historicalMarketData,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> historicalMarketData,
         IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
     {
         // Validate parameters
@@ -101,7 +98,7 @@ public sealed class FixedWeightPositionSizer : IPositionSizer
         Guard.AgainstEmptyOrNullReadOnlyDictionary(() => historicalMarketData); // Throws EmptyOrNullDictionaryException
         Guard.AgainstEmptyOrNullReadOnlyDictionary(() => historicalFxConversionRates); // Throws EmptyOrNullDictionaryException
 
-        var positionSizes = new Dictionary<Asset, int>();
+        var positionSizes = new Dictionary<Symbol, int>();
 
         // Compute the total value of the strategy in the base currency
         var totalStrategyValue = strategy.ComputeTotalValue(

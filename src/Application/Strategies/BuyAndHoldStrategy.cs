@@ -15,9 +15,6 @@
 //
 
 namespace Boutquin.Trading.Application.Strategies;
-
-using Domain.ValueObjects;
-
 /// <summary>
 /// Represents a simple buy and hold strategy that generates buy signals on the initial timestamp and holds the positions throughout.
 /// </summary>
@@ -36,7 +33,7 @@ public sealed class BuyAndHoldStrategy : StrategyBase
     /// <param name="positionSizer">An instance of IPositionSizer to compute position sizes.</param>
     public BuyAndHoldStrategy(
         string name,
-        IReadOnlyDictionary<Asset, CurrencyCode> assets,
+        IReadOnlyDictionary<Symbol, CurrencyCode> assets,
         SortedDictionary<CurrencyCode, decimal> cash,
         DateOnly initialTimestamp,
         IOrderPriceCalculationStrategy orderPriceCalculationStrategy,
@@ -52,14 +49,14 @@ public sealed class BuyAndHoldStrategy : StrategyBase
     public override SignalEvent GenerateSignals(
         DateOnly timestamp,
         CurrencyCode baseCurrency,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>> historicalMarketData,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> historicalMarketData,
         IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
     {
         Guard.AgainstUndefinedEnumValue(() => baseCurrency);
         Guard.AgainstEmptyOrNullReadOnlyDictionary(() => historicalMarketData);
         Guard.AgainstEmptyOrNullReadOnlyDictionary(() => historicalFxConversionRates);
 
-        var signalEvents = new SortedDictionary<Asset, SignalType>();
+        var signalEvents = new SortedDictionary<Symbol, SignalType>();
 
         if (timestamp != _initialTimestamp)
         {

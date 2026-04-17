@@ -1,0 +1,56 @@
+#nullable enable
+Boutquin.Trading.Recipes.BacktestDataset
+Boutquin.Trading.Recipes.BacktestDataset.BacktestDataset(System.Collections.Generic.SortedDictionary<System.DateOnly, System.Collections.Generic.SortedDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, Boutquin.MarketData.Abstractions.Records.Bar!>!>! prices, System.Collections.Generic.SortedDictionary<System.DateOnly, System.Collections.Generic.SortedDictionary<Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode, decimal>!>! fxRates, System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.Records.DividendPayment!>!>! dividends, System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.Records.CorporateAction!>!>! corporateActions, System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.SortedDictionary<System.DateOnly, decimal>!>! economicSeries, System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.SortedDictionary<System.DateOnly, System.Collections.Generic.IReadOnlyDictionary<string!, decimal>!>!>! factorSeries, System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.Results.DataProvenance!>! provenance, System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.Results.DataIssue!>! issues) -> void
+Boutquin.Trading.Recipes.BacktestDataset.CorporateActions.get -> System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.Records.CorporateAction!>!>!
+Boutquin.Trading.Recipes.BacktestDataset.Dividends.get -> System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.Records.DividendPayment!>!>!
+Boutquin.Trading.Recipes.BacktestDataset.EconomicSeries.get -> System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.SortedDictionary<System.DateOnly, decimal>!>!
+Boutquin.Trading.Recipes.BacktestDataset.FactorSeries.get -> System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.SortedDictionary<System.DateOnly, System.Collections.Generic.IReadOnlyDictionary<string!, decimal>!>!>!
+Boutquin.Trading.Recipes.BacktestDataset.FxRates.get -> System.Collections.Generic.SortedDictionary<System.DateOnly, System.Collections.Generic.SortedDictionary<Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode, decimal>!>!
+Boutquin.Trading.Recipes.BacktestDataset.Issues.get -> System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.Results.DataIssue!>!
+Boutquin.Trading.Recipes.BacktestDataset.Prices.get -> System.Collections.Generic.SortedDictionary<System.DateOnly, System.Collections.Generic.SortedDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, Boutquin.MarketData.Abstractions.Records.Bar!>!>!
+Boutquin.Trading.Recipes.BacktestDataset.Provenance.get -> System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.Results.DataProvenance!>!
+Boutquin.Trading.Recipes.BacktestDatasetBuilder
+Boutquin.Trading.Recipes.BacktestDatasetBuilder.BacktestDatasetBuilder(Boutquin.MarketData.Abstractions.Contracts.IDataPipeline! pipeline, Microsoft.Extensions.Logging.ILogger<Boutquin.Trading.Recipes.BacktestDatasetBuilder!>! logger) -> void
+Boutquin.Trading.Recipes.BacktestDatasetBuilder.BuildAsync(Boutquin.Trading.Recipes.BacktestDatasetSpec! spec, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Boutquin.Trading.Recipes.IBacktestDataset!>!
+Boutquin.Trading.Recipes.BacktestDatasetSpec
+Boutquin.Trading.Recipes.BacktestDatasetSpec.BaseCurrency.get -> Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode
+Boutquin.Trading.Recipes.BacktestDatasetSpec.BaseCurrency.init -> void
+Boutquin.Trading.Recipes.BacktestDatasetSpec.EconomicSeriesIds.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Boutquin.Trading.Recipes.BacktestDatasetSpec.EconomicSeriesIds.init -> void
+Boutquin.Trading.Recipes.BacktestDatasetSpec.EndDate.get -> System.DateOnly
+Boutquin.Trading.Recipes.BacktestDatasetSpec.EndDate.init -> void
+Boutquin.Trading.Recipes.BacktestDatasetSpec.FactorDatasets.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Boutquin.Trading.Recipes.BacktestDatasetSpec.FactorDatasets.init -> void
+Boutquin.Trading.Recipes.BacktestDatasetSpec.ForeignCurrencies.get -> System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode>!
+Boutquin.Trading.Recipes.BacktestDatasetSpec.ForeignCurrencies.init -> void
+Boutquin.Trading.Recipes.BacktestDatasetSpec.StartDate.get -> System.DateOnly
+Boutquin.Trading.Recipes.BacktestDatasetSpec.StartDate.init -> void
+Boutquin.Trading.Recipes.BacktestDatasetSpec.Symbols.get -> System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>!
+Boutquin.Trading.Recipes.BacktestDatasetSpec.Symbols.init -> void
+Boutquin.Trading.Recipes.IBacktestDataset
+Boutquin.Trading.Recipes.IBacktestDataset.CorporateActions.get -> System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.Records.CorporateAction!>!>!
+Boutquin.Trading.Recipes.IBacktestDataset.Dividends.get -> System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.Records.DividendPayment!>!>!
+Boutquin.Trading.Recipes.IBacktestDataset.EconomicSeries.get -> System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.SortedDictionary<System.DateOnly, decimal>!>!
+Boutquin.Trading.Recipes.IBacktestDataset.FactorSeries.get -> System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.SortedDictionary<System.DateOnly, System.Collections.Generic.IReadOnlyDictionary<string!, decimal>!>!>!
+Boutquin.Trading.Recipes.IBacktestDataset.FxRates.get -> System.Collections.Generic.SortedDictionary<System.DateOnly, System.Collections.Generic.SortedDictionary<Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode, decimal>!>!
+Boutquin.Trading.Recipes.IBacktestDataset.Issues.get -> System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.Results.DataIssue!>!
+Boutquin.Trading.Recipes.IBacktestDataset.Prices.get -> System.Collections.Generic.SortedDictionary<System.DateOnly, System.Collections.Generic.SortedDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, Boutquin.MarketData.Abstractions.Records.Bar!>!>!
+Boutquin.Trading.Recipes.IBacktestDataset.Provenance.get -> System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.Results.DataProvenance!>!
+Boutquin.Trading.Recipes.Testing.FakeBacktestDataset
+Boutquin.Trading.Recipes.Testing.FakeBacktestDataset.CorporateActions.get -> System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.Records.CorporateAction!>!>!
+Boutquin.Trading.Recipes.Testing.FakeBacktestDataset.CorporateActions.init -> void
+Boutquin.Trading.Recipes.Testing.FakeBacktestDataset.Dividends.get -> System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.Records.DividendPayment!>!>!
+Boutquin.Trading.Recipes.Testing.FakeBacktestDataset.Dividends.init -> void
+Boutquin.Trading.Recipes.Testing.FakeBacktestDataset.EconomicSeries.get -> System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.SortedDictionary<System.DateOnly, decimal>!>!
+Boutquin.Trading.Recipes.Testing.FakeBacktestDataset.EconomicSeries.init -> void
+Boutquin.Trading.Recipes.Testing.FakeBacktestDataset.FactorSeries.get -> System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.SortedDictionary<System.DateOnly, System.Collections.Generic.IReadOnlyDictionary<string!, decimal>!>!>!
+Boutquin.Trading.Recipes.Testing.FakeBacktestDataset.FactorSeries.init -> void
+Boutquin.Trading.Recipes.Testing.FakeBacktestDataset.FakeBacktestDataset() -> void
+Boutquin.Trading.Recipes.Testing.FakeBacktestDataset.FxRates.get -> System.Collections.Generic.SortedDictionary<System.DateOnly, System.Collections.Generic.SortedDictionary<Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode, decimal>!>!
+Boutquin.Trading.Recipes.Testing.FakeBacktestDataset.FxRates.init -> void
+Boutquin.Trading.Recipes.Testing.FakeBacktestDataset.Issues.get -> System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.Results.DataIssue!>!
+Boutquin.Trading.Recipes.Testing.FakeBacktestDataset.Issues.init -> void
+Boutquin.Trading.Recipes.Testing.FakeBacktestDataset.Prices.get -> System.Collections.Generic.SortedDictionary<System.DateOnly, System.Collections.Generic.SortedDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, Boutquin.MarketData.Abstractions.Records.Bar!>!>!
+Boutquin.Trading.Recipes.Testing.FakeBacktestDataset.Prices.init -> void
+Boutquin.Trading.Recipes.Testing.FakeBacktestDataset.Provenance.get -> System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.Results.DataProvenance!>!
+Boutquin.Trading.Recipes.Testing.FakeBacktestDataset.Provenance.init -> void

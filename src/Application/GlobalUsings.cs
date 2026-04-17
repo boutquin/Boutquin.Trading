@@ -16,12 +16,17 @@
 
 global using Boutquin.Domain.Exceptions;
 global using Boutquin.Domain.Helpers;
-global using Boutquin.Trading.Domain.Data;
+global using Boutquin.MarketData.Abstractions.Calendars;
+global using Boutquin.MarketData.Abstractions.Diagnostics;
+global using Boutquin.MarketData.Abstractions.Records;
+global using Boutquin.MarketData.Abstractions.ReferenceData;
+global using Boutquin.MarketData.Calendars;
+global using Boutquin.MarketData.Calendars.Holidays;
+global using Boutquin.Numerics.Solvers;
 global using Boutquin.Trading.Domain.Enums;
 global using Boutquin.Trading.Domain.Events;
 global using Boutquin.Trading.Domain.Extensions;
 global using Boutquin.Trading.Domain.Helpers;
 global using Boutquin.Trading.Domain.Interfaces;
-
 global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Logging.Abstractions;

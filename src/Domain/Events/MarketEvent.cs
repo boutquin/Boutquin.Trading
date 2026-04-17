@@ -15,18 +15,15 @@
 //
 
 namespace Boutquin.Trading.Domain.Events;
-
-using ValueObjects;
-
 /// <summary>
 /// The MarketEvent record encapsulates the historical market data for multiple assets and historical foreign exchange (FX) conversion rates
 /// at a specific point in time, represented by the Timestamp property.
 /// </summary>
 /// <param name="Timestamp">The timestamp of the market event, represented as a DateOnly object.</param>
-/// <param name="HistoricalMarketData">A sorted dictionary containing the historical market data for multiple assets, with asset symbols as keys and MarketData objects as values.</param>
+/// <param name="HistoricalMarketData">A sorted dictionary containing the historical market data for multiple assets, with asset symbols as keys and Bar records as values.</param>
 /// <param name="HistoricalFxConversionRates">A sorted dictionary containing the historical foreign exchange (FX) conversion rates for multiple currency pairs, with DateOnly as keys and a SortedDictionary of CurrencyCode and decimal pairs as values.</param>
 public sealed record MarketEvent(
     DateOnly Timestamp,
-    SortedDictionary<Asset, MarketData> HistoricalMarketData,
+    SortedDictionary<Symbol, Bar> HistoricalMarketData,
     SortedDictionary<CurrencyCode, decimal> HistoricalFxConversionRates) : IFinancialEvent;
 

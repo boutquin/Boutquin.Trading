@@ -49,15 +49,15 @@ public sealed class RemainingConstructionCrossLanguageTests : CrossLanguageVerif
             .Select(e => (decimal)e.GetDouble())
             .ToArray();
 
-    private static IReadOnlyList<Asset> MakeAssets(int n) =>
+    private static IReadOnlyList<Symbol> MakeAssets(int n) =>
         Enumerable.Range(0, n)
-            .Select(i => new Asset($"ASSET{i}"))
+            .Select(i => new Symbol($"ASSET{i}"))
             .ToList();
 
     private static void AssertWeightsMatch(
-        IReadOnlyDictionary<Asset, decimal> actual,
+        IReadOnlyDictionary<Symbol, decimal> actual,
         decimal[] expected,
-        IReadOnlyList<Asset> assets,
+        IReadOnlyList<Symbol> assets,
         decimal tolerance,
         string label)
     {
@@ -69,14 +69,14 @@ public sealed class RemainingConstructionCrossLanguageTests : CrossLanguageVerif
         }
     }
 
-    private static void AssertWeightsSumToOne(IReadOnlyDictionary<Asset, decimal> weights, string label)
+    private static void AssertWeightsSumToOne(IReadOnlyDictionary<Symbol, decimal> weights, string label)
     {
         var sum = weights.Values.Sum();
         AssertWithinTolerance(sum, 1m, PrecisionNumeric,
             $"{label} weights sum: ");
     }
 
-    private static void AssertWeightsNonNegative(IReadOnlyDictionary<Asset, decimal> weights, string label)
+    private static void AssertWeightsNonNegative(IReadOnlyDictionary<Symbol, decimal> weights, string label)
     {
         foreach (var (asset, w) in weights)
         {
@@ -172,7 +172,7 @@ public sealed class RemainingConstructionCrossLanguageTests : CrossLanguageVerif
         {
             new BlackLittermanViewSpec(
                 BlackLittermanViewType.Absolute,
-                Asset: "ASSET0",
+                Symbol: "ASSET0",
                 LongAsset: null,
                 ShortAsset: null,
                 ExpectedReturn: 0.08m,
@@ -210,7 +210,7 @@ public sealed class RemainingConstructionCrossLanguageTests : CrossLanguageVerif
         {
             new BlackLittermanViewSpec(
                 BlackLittermanViewType.Relative,
-                Asset: null,
+                Symbol: null,
                 LongAsset: "ASSET1",
                 ShortAsset: "ASSET2",
                 ExpectedReturn: 0.03m,
@@ -245,7 +245,7 @@ public sealed class RemainingConstructionCrossLanguageTests : CrossLanguageVerif
         {
             new BlackLittermanViewSpec(
                 BlackLittermanViewType.Absolute,
-                Asset: "ASSET0",
+                Symbol: "ASSET0",
                 LongAsset: null,
                 ShortAsset: null,
                 ExpectedReturn: 0.08m,
@@ -287,7 +287,7 @@ public sealed class RemainingConstructionCrossLanguageTests : CrossLanguageVerif
 
         // Extract tilts
         var tiltsElement = c.GetProperty("tilts");
-        var tilts = new Dictionary<Asset, decimal>();
+        var tilts = new Dictionary<Symbol, decimal>();
         foreach (var prop in tiltsElement.EnumerateObject())
         {
             var idx = int.Parse(prop.Name);
@@ -295,11 +295,11 @@ public sealed class RemainingConstructionCrossLanguageTests : CrossLanguageVerif
         }
 
         // Extract momentum scores (nullable)
-        IReadOnlyDictionary<Asset, decimal>? momentumScores = null;
+        IReadOnlyDictionary<Symbol, decimal>? momentumScores = null;
         if (c.TryGetProperty("momentum_scores", out var msElement) &&
             msElement.ValueKind != JsonValueKind.Null)
         {
-            var scores = new Dictionary<Asset, decimal>();
+            var scores = new Dictionary<Symbol, decimal>();
             foreach (var prop in msElement.EnumerateObject())
             {
                 var idx = int.Parse(prop.Name);
@@ -312,7 +312,7 @@ public sealed class RemainingConstructionCrossLanguageTests : CrossLanguageVerif
         var momentumStrength = (decimal)c.GetProperty("momentum_strength").GetDouble();
 
         // Build stub inner model that returns base weights
-        var innerWeightsDict = new Dictionary<Asset, decimal>();
+        var innerWeightsDict = new Dictionary<Symbol, decimal>();
         for (var i = 0; i < n; i++)
         {
             innerWeightsDict[assets[i]] = baseWeights[i];
@@ -322,7 +322,7 @@ public sealed class RemainingConstructionCrossLanguageTests : CrossLanguageVerif
 
         // Build regime tilts (single regime — use RisingGrowthRisingInflation)
         var regime = EconomicRegime.RisingGrowthRisingInflation;
-        var regimeTilts = new Dictionary<EconomicRegime, IReadOnlyDictionary<Asset, decimal>>
+        var regimeTilts = new Dictionary<EconomicRegime, IReadOnlyDictionary<Symbol, decimal>>
         {
             [regime] = tilts,
         };
@@ -345,13 +345,13 @@ public sealed class RemainingConstructionCrossLanguageTests : CrossLanguageVerif
 
     private sealed class StubConstructionModel : IPortfolioConstructionModel
     {
-        private readonly IReadOnlyDictionary<Asset, decimal> _weights;
+        private readonly IReadOnlyDictionary<Symbol, decimal> _weights;
 
-        public StubConstructionModel(IReadOnlyDictionary<Asset, decimal> weights) =>
+        public StubConstructionModel(IReadOnlyDictionary<Symbol, decimal> weights) =>
             _weights = weights;
 
-        public IReadOnlyDictionary<Asset, decimal> ComputeTargetWeights(
-            IReadOnlyList<Asset> assets, decimal[][] returns) =>
+        public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
+            IReadOnlyList<Symbol> assets, decimal[][] returns) =>
             _weights;
     }
 }

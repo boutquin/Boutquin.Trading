@@ -18,7 +18,6 @@ namespace Boutquin.Trading.Tests.UnitTests.Application;
 
 using Boutquin.Trading.Application.DownsideRisk;
 using Boutquin.Trading.Application.PortfolioConstruction;
-using Boutquin.Trading.Domain.ValueObjects;
 using FluentAssertions;
 
 /// <summary>
@@ -26,10 +25,10 @@ using FluentAssertions;
 /// </summary>
 public sealed class CDaRRiskMeasureTests
 {
-    private static readonly Asset s_vti = new("VTI");
-    private static readonly Asset s_tlt = new("TLT");
-    private static readonly Asset s_gld = new("GLD");
-    private static readonly Asset s_vnq = new("VNQ");
+    private static readonly Symbol s_vti = new("VTI");
+    private static readonly Symbol s_tlt = new("TLT");
+    private static readonly Symbol s_gld = new("GLD");
+    private static readonly Symbol s_vnq = new("VNQ");
 
     private static decimal[][] FourAssetReturns =>
     [
@@ -39,7 +38,7 @@ public sealed class CDaRRiskMeasureTests
         [0.03m, -0.04m, 0.05m, -0.02m, 0.04m, -0.03m, 0.02m, 0.06m, -0.05m, 0.03m]  // VNQ
     ];
 
-    private static IReadOnlyList<Asset> FourAssets => [s_vti, s_tlt, s_gld, s_vnq];
+    private static IReadOnlyList<Symbol> FourAssets => [s_vti, s_tlt, s_gld, s_vnq];
 
     // Transpose returns for scenario format: scenarios[t][i] instead of returns[i][t]
     private static decimal[][] FourAssetScenarios
@@ -63,12 +62,12 @@ public sealed class CDaRRiskMeasureTests
         }
     }
 
-    private static void AssertWeightsSumToOne(IReadOnlyDictionary<Asset, decimal> weights)
+    private static void AssertWeightsSumToOne(IReadOnlyDictionary<Symbol, decimal> weights)
     {
         weights.Values.Sum().Should().BeApproximately(1.0m, 1e-8m, "Weights must sum to 1.0");
     }
 
-    private static void AssertAllWeightsNonNegative(IReadOnlyDictionary<Asset, decimal> weights)
+    private static void AssertAllWeightsNonNegative(IReadOnlyDictionary<Symbol, decimal> weights)
     {
         foreach (var (asset, weight) in weights)
         {
@@ -221,7 +220,7 @@ public sealed class CDaRRiskMeasureTests
     public void MeanCDaR_SingleAsset_ShouldReturn100Percent()
     {
         var model = new MeanDownsideRiskConstruction(new CDaRRiskMeasure());
-        var assets = new List<Asset> { s_vti };
+        var assets = new List<Symbol> { s_vti };
         decimal[][] returns = [FourAssetReturns[0]];
 
         var weights = model.ComputeTargetWeights(assets, returns);

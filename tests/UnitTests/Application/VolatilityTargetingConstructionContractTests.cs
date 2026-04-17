@@ -24,11 +24,11 @@ public sealed class VolatilityTargetingConstructionContractTests
     [MemberData(nameof(VolatilityTargetingConstructionContractTestData.ScaleUpCases),
         MemberType = typeof(VolatilityTargetingConstructionContractTestData))]
     public void ComputeTargetWeights_WithScaleFactor_WeightsSumMayExceedOne(
-        List<Asset> assets, decimal[][] returns, decimal targetVol, decimal maxLeverage)
+        List<Symbol> assets, decimal[][] returns, decimal targetVol, decimal maxLeverage)
     {
         var baseModel = new Mock<IPortfolioConstructionModel>();
         baseModel.Setup(m => m.ComputeTargetWeights(assets, It.IsAny<decimal[][]>()))
-            .Returns(new Dictionary<Asset, decimal> { [assets[0]] = 1.0m });
+            .Returns(new Dictionary<Symbol, decimal> { [assets[0]] = 1.0m });
 
         var model = new VolatilityTargetingConstruction(
             baseModel.Object, targetVol, maxLeverage);
@@ -43,11 +43,11 @@ public sealed class VolatilityTargetingConstructionContractTests
     [MemberData(nameof(VolatilityTargetingConstructionContractTestData.ScaleDownCases),
         MemberType = typeof(VolatilityTargetingConstructionContractTestData))]
     public void ComputeTargetWeights_WithScaleDown_WeightsSumLessThanOne(
-        List<Asset> assets, decimal[][] returns, decimal targetVol, decimal maxLeverage)
+        List<Symbol> assets, decimal[][] returns, decimal targetVol, decimal maxLeverage)
     {
         var baseModel = new Mock<IPortfolioConstructionModel>();
         baseModel.Setup(m => m.ComputeTargetWeights(assets, It.IsAny<decimal[][]>()))
-            .Returns(new Dictionary<Asset, decimal> { [assets[0]] = 1.0m });
+            .Returns(new Dictionary<Symbol, decimal> { [assets[0]] = 1.0m });
 
         var model = new VolatilityTargetingConstruction(
             baseModel.Object, targetVol, maxLeverage);

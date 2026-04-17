@@ -18,8 +18,6 @@ namespace Boutquin.Trading.Application.PortfolioConstruction;
 
 using Boutquin.Trading.Application.CovarianceEstimators;
 using Boutquin.Trading.Domain.Exceptions;
-using Boutquin.Trading.Domain.Helpers;
-using Domain.ValueObjects;
 
 /// <summary>
 /// Maximizes the diversification ratio DR(w) = Σ(w_i × σ_i) / σ_portfolio
@@ -63,15 +61,15 @@ public sealed class MaximumDiversificationConstruction : IPortfolioConstructionM
     }
 
     /// <inheritdoc />
-    public IReadOnlyDictionary<Asset, decimal> ComputeTargetWeights(
-        IReadOnlyList<Asset> assets,
+    public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
+        IReadOnlyList<Symbol> assets,
         decimal[][] returns)
     {
         Guard.AgainstNull(() => assets);
 
         if (assets.Count == 0)
         {
-            return new Dictionary<Asset, decimal>();
+            return new Dictionary<Symbol, decimal>();
         }
 
         if (returns is null || returns.Length != assets.Count)
@@ -83,7 +81,7 @@ public sealed class MaximumDiversificationConstruction : IPortfolioConstructionM
 
         if (n == 1)
         {
-            return new Dictionary<Asset, decimal> { [assets[0]] = 1m };
+            return new Dictionary<Symbol, decimal> { [assets[0]] = 1m };
         }
 
         var cov = _covarianceEstimator.Estimate(returns);
@@ -116,9 +114,9 @@ public sealed class MaximumDiversificationConstruction : IPortfolioConstructionM
         decimal[] y;
         try
         {
-            y = CholeskyQpSolver.SolveMinVarianceQP(corr, n, 0m, 1.0m);
+            y = ActiveSetQpSolver.SolveMinVariance(corr, 0m, 1.0m);
         }
-        catch (CalculationException)
+        catch (InvalidOperationException)
         {
             // Fallback to gradient descent for non-positive-definite correlation matrices
             y = SolveMinVarGradientDescent(corr, n);
@@ -161,15 +159,15 @@ public sealed class MaximumDiversificationConstruction : IPortfolioConstructionM
             // the original covariance with the outer bounds as a good approximation.
             try
             {
-                rawW = CholeskyQpSolver.SolveMinVarianceQP(cov, n, _minWeight, _maxWeight);
+                rawW = ActiveSetQpSolver.SolveMinVariance(cov, _minWeight, _maxWeight);
             }
-            catch (CalculationException)
+            catch (InvalidOperationException)
             {
                 ProjectOntoSimplex(rawW, _minWeight, _maxWeight);
             }
         }
 
-        var weights = new Dictionary<Asset, decimal>(n);
+        var weights = new Dictionary<Symbol, decimal>(n);
         for (var i = 0; i < n; i++)
         {
             weights[assets[i]] = rawW[i];

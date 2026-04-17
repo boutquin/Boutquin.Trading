@@ -32,7 +32,7 @@ namespace Boutquin.Trading.Domain.Helpers;
 /// <param name="InformationRatio">The information ratio of the strategy.</param>
 /// <param name="EquityCurve">The equity curve of the strategy over time.</param>
 /// <param name="Drawdowns">The drawdowns of the strategy over time.</param>
-/// <param name="MaxDrawdownDuration">The maximum drawdown duration in days.</param>
+/// <param name="MaxDrawdownDuration">The maximum drawdown duration in trading days.</param>
 /// <param name="CalmarRatio">The Calmar Ratio: CAGR / |MaxDrawdown|.</param>
 /// <param name="OmegaRatio">The Omega Ratio: gains above threshold / losses below threshold.</param>
 /// <param name="HistoricalVaR">The Historical Value at Risk at 95% confidence.</param>
@@ -90,6 +90,6 @@ public sealed record Tearsheet(
                $"Win Rate: {WinRate:P2}\n" +
                $"Profit Factor: {ProfitFactor:F2}\n" +
                $"Recovery Factor: {RecoveryFactor:F2}\n" +
-               $"Max Drawdown Duration: {MaxDrawdownDuration} days";
+               $"Max Drawdown Duration: {MaxDrawdownDuration} trading days";
     }
 }

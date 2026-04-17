@@ -17,7 +17,6 @@
 namespace Boutquin.Trading.Tests.UnitTests.Application;
 
 using Boutquin.Trading.Application.Regime;
-using Boutquin.Trading.Domain.Enums;
 
 public sealed class RegimeClassifierTests
 {

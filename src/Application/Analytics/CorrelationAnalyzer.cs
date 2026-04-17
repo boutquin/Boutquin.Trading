@@ -15,7 +15,8 @@
 //
 
 using Boutquin.Trading.Domain.Analytics;
-using Boutquin.Trading.Domain.ValueObjects;
+
+using NumericsStats = Boutquin.Numerics.Statistics;
 
 namespace Boutquin.Trading.Application.Analytics;
 
@@ -24,6 +25,8 @@ namespace Boutquin.Trading.Application.Analytics;
 /// </summary>
 public static class CorrelationAnalyzer
 {
+    private static readonly NumericsStats.SampleCovarianceEstimator s_covEstimator = new();
+
     /// <summary>
     /// Computes the full correlation matrix and diversification ratio for a set of assets.
     /// </summary>
@@ -32,7 +35,7 @@ public static class CorrelationAnalyzer
     /// <param name="weights">N portfolio weights (must sum to 1).</param>
     /// <returns>A <see cref="CorrelationAnalysisResult"/> with the correlation matrix and diversification ratio.</returns>
     public static CorrelationAnalysisResult Analyze(
-        IReadOnlyList<Asset> assetNames,
+        IReadOnlyList<Symbol> assetNames,
         decimal[][] returns,
         decimal[] weights)
     {
@@ -61,7 +64,6 @@ public static class CorrelationAnalyzer
                 nameof(returns));
         }
 
-        // Validate all return arrays have equal length
         for (var i = 1; i < returns.Length; i++)
         {
             if (returns[i].Length != returns[0].Length)
@@ -73,59 +75,29 @@ public static class CorrelationAnalyzer
         }
 
         var n = assetNames.Count;
-        var t = returns[0].Length;
 
-        // Compute means
-        var means = new decimal[n];
-        for (var i = 0; i < n; i++)
-        {
-            means[i] = returns[i].Average();
-        }
+        var cov = s_covEstimator.Estimate(new NumericsStats.ReturnsMatrix(returns).AsTimeByAsset());
 
-        // Compute covariance matrix (sample, N-1 divisor)
-        var cov = new decimal[n, n];
-        for (var i = 0; i < n; i++)
-        {
-            for (var j = i; j < n; j++)
-            {
-                var sum = 0m;
-                for (var k = 0; k < t; k++)
-                {
-                    sum += (returns[i][k] - means[i]) * (returns[j][k] - means[j]);
-                }
-
-                cov[i, j] = sum / (t - 1);
-                cov[j, i] = cov[i, j];
-            }
-        }
-
-        // Compute standard deviations
+        // Std devs from covariance diagonal
         var stdDevs = new decimal[n];
         for (var i = 0; i < n; i++)
         {
             stdDevs[i] = (decimal)Math.Sqrt((double)cov[i, i]);
         }
 
-        // Compute correlation matrix
+        // Correlation matrix: normalize covariance by pair-wise std devs
         var corr = new decimal[n, n];
         for (var i = 0; i < n; i++)
         {
             for (var j = i; j < n; j++)
             {
-                if (stdDevs[i] == 0m || stdDevs[j] == 0m)
-                {
-                    corr[i, j] = i == j ? 1.0m : 0m;
-                }
-                else
-                {
-                    corr[i, j] = cov[i, j] / (stdDevs[i] * stdDevs[j]);
-                }
-
+                corr[i, j] = stdDevs[i] == 0m || stdDevs[j] == 0m
+                    ? (i == j ? 1m : 0m)
+                    : cov[i, j] / (stdDevs[i] * stdDevs[j]);
                 corr[j, i] = corr[i, j];
             }
         }
 
-        // Compute diversification ratio:
         // DR = Σ(w_i * σ_i) / σ_portfolio
         var weightedAvgVol = 0m;
         for (var i = 0; i < n; i++)
@@ -133,7 +105,6 @@ public static class CorrelationAnalyzer
             weightedAvgVol += weights[i] * stdDevs[i];
         }
 
-        // Portfolio variance = w' * Cov * w
         var portfolioVariance = 0m;
         for (var i = 0; i < n; i++)
         {
@@ -144,68 +115,18 @@ public static class CorrelationAnalyzer
         }
 
         var portfolioVol = (decimal)Math.Sqrt((double)portfolioVariance);
-        var diversificationRatio = portfolioVol > 0m ? weightedAvgVol / portfolioVol : 1.0m;
+        var diversificationRatio = portfolioVol > 0m ? weightedAvgVol / portfolioVol : 1m;
 
         return new CorrelationAnalysisResult(corr, assetNames, diversificationRatio);
     }
 
     /// <summary>
     /// Computes a rolling correlation time series between two return series.
-    /// Note: This implementation recomputes each window from scratch. An incremental (online)
-    /// algorithm is a future optimization for very large series.
     /// </summary>
     /// <param name="returnsA">First asset return series.</param>
     /// <param name="returnsB">Second asset return series.</param>
     /// <param name="windowSize">The rolling window size.</param>
     /// <returns>An array of rolling correlation values. Length = T - windowSize + 1.</returns>
     public static decimal[] RollingCorrelation(decimal[] returnsA, decimal[] returnsB, int windowSize)
-    {
-        if (returnsA.Length != returnsB.Length)
-        {
-            throw new ArgumentException("Return series must have the same length.", nameof(returnsB));
-        }
-
-        if (windowSize < 2 || windowSize > returnsA.Length)
-        {
-            throw new ArgumentException(
-                $"Window size must be between 2 and {returnsA.Length}, but got {windowSize}.",
-                nameof(windowSize));
-        }
-
-        var resultCount = returnsA.Length - windowSize + 1;
-        var result = new decimal[resultCount];
-
-        for (var start = 0; start < resultCount; start++)
-        {
-            var meanA = 0m;
-            var meanB = 0m;
-
-            for (var i = start; i < start + windowSize; i++)
-            {
-                meanA += returnsA[i];
-                meanB += returnsB[i];
-            }
-
-            meanA /= windowSize;
-            meanB /= windowSize;
-
-            var covAB = 0m;
-            var varA = 0m;
-            var varB = 0m;
-
-            for (var i = start; i < start + windowSize; i++)
-            {
-                var dA = returnsA[i] - meanA;
-                var dB = returnsB[i] - meanB;
-                covAB += dA * dB;
-                varA += dA * dA;
-                varB += dB * dB;
-            }
-
-            var denominator = (decimal)Math.Sqrt((double)(varA * varB));
-            result[start] = denominator > 0m ? covAB / denominator : 0m;
-        }
-
-        return result;
-    }
+        => NumericsStats.PearsonCorrelation.Rolling(returnsA, returnsB, windowSize);
 }

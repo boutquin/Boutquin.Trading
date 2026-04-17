@@ -21,10 +21,10 @@ using Boutquin.Trading.Domain.Analytics;
 
 public sealed class CompositeTimedUniverseSelectorTests
 {
-    private static readonly Asset s_vti = new("VTI");
-    private static readonly Asset s_tlt = new("TLT");
-    private static readonly Asset s_gld = new("GLD");
-    private static readonly Asset s_spy = new("SPY");
+    private static readonly Symbol s_vti = new("VTI");
+    private static readonly Symbol s_tlt = new("TLT");
+    private static readonly Symbol s_gld = new("GLD");
+    private static readonly Symbol s_spy = new("SPY");
 
     // ============================================================
     // Basic composition with AND logic
@@ -34,7 +34,7 @@ public sealed class CompositeTimedUniverseSelectorTests
     public void SelectAsOf_WithTwoFilters_ShouldApplyBothAsAnd()
     {
         // Filter 1: MinAum 500M (excludes GLD with 100M)
-        var metadata = new Dictionary<Asset, AssetMetadata>
+        var metadata = new Dictionary<Symbol, AssetMetadata>
         {
             [s_vti] = new(s_vti, AumMillions: 1000m, InceptionDate: new DateOnly(2010, 1, 1), AverageDailyVolume: 5_000_000m),
             [s_tlt] = new(s_tlt, AumMillions: 800m, InceptionDate: new DateOnly(2012, 1, 1), AverageDailyVolume: 3_000_000m),
@@ -44,7 +44,7 @@ public sealed class CompositeTimedUniverseSelectorTests
         var aumFilter = new MinAumFilter(500m, metadata);
 
         // Filter 2: DynamicUniverse (VTI available from 2010, TLT from 2012)
-        var entryDates = new Dictionary<Asset, DateOnly>
+        var entryDates = new Dictionary<Symbol, DateOnly>
         {
             [s_vti] = new DateOnly(2010, 1, 1),
             [s_tlt] = new DateOnly(2012, 1, 1),
@@ -53,7 +53,7 @@ public sealed class CompositeTimedUniverseSelectorTests
         var dynamicUniverse = new DynamicUniverse(entryDates);
 
         var composite = new CompositeTimedUniverseSelector(new IUniverseSelector[] { aumFilter, dynamicUniverse });
-        var candidates = new List<Asset> { s_vti, s_tlt, s_gld };
+        var candidates = new List<Symbol> { s_vti, s_tlt, s_gld };
 
         // As of 2011-01-01: AUM filter keeps VTI, TLT; DynamicUniverse keeps only VTI (TLT not yet)
         var result = composite.SelectAsOf(candidates, new DateOnly(2011, 1, 1));
@@ -63,14 +63,14 @@ public sealed class CompositeTimedUniverseSelectorTests
     [Fact]
     public void SelectAsOf_AllPass_ShouldReturnAll()
     {
-        var entryDates = new Dictionary<Asset, DateOnly>
+        var entryDates = new Dictionary<Symbol, DateOnly>
         {
             [s_vti] = new DateOnly(2010, 1, 1),
             [s_tlt] = new DateOnly(2010, 1, 1),
         };
         var dynamicUniverse = new DynamicUniverse(entryDates);
         var composite = new CompositeTimedUniverseSelector(new IUniverseSelector[] { dynamicUniverse });
-        var candidates = new List<Asset> { s_vti, s_tlt };
+        var candidates = new List<Symbol> { s_vti, s_tlt };
 
         var result = composite.SelectAsOf(candidates, new DateOnly(2025, 1, 1));
         result.Should().HaveCount(2);
@@ -83,14 +83,14 @@ public sealed class CompositeTimedUniverseSelectorTests
     [Fact]
     public void Select_ShouldDelegateToSelectAsOfWithMaxValue()
     {
-        var entryDates = new Dictionary<Asset, DateOnly>
+        var entryDates = new Dictionary<Symbol, DateOnly>
         {
             [s_vti] = new DateOnly(2010, 1, 1),
             [s_tlt] = new DateOnly(2030, 1, 1), // far future — would be excluded with earlier date
         };
         var dynamicUniverse = new DynamicUniverse(entryDates);
         var composite = new CompositeTimedUniverseSelector(new IUniverseSelector[] { dynamicUniverse });
-        var candidates = new List<Asset> { s_vti, s_tlt };
+        var candidates = new List<Symbol> { s_vti, s_tlt };
 
         // Select() uses DateOnly.MaxValue, so both should pass
         var result = composite.Select(candidates);
@@ -105,7 +105,7 @@ public sealed class CompositeTimedUniverseSelectorTests
     public void SelectAsOf_MixedTimedAndPlain_ShouldApplyCorrectly()
     {
         // Plain selector: SupersessionFilter
-        var metadata = new Dictionary<Asset, AssetMetadata>
+        var metadata = new Dictionary<Symbol, AssetMetadata>
         {
             [s_vti] = new(s_vti, 1000m, new DateOnly(2010, 1, 1), 5_000_000m, SupersededBy: s_spy),
             [s_spy] = new(s_spy, 2000m, new DateOnly(2010, 1, 1), 10_000_000m),
@@ -114,7 +114,7 @@ public sealed class CompositeTimedUniverseSelectorTests
         var supersessionFilter = new SupersessionFilter(metadata);
 
         // Timed selector: DynamicUniverse
-        var entryDates = new Dictionary<Asset, DateOnly>
+        var entryDates = new Dictionary<Symbol, DateOnly>
         {
             [s_vti] = new DateOnly(2010, 1, 1),
             [s_spy] = new DateOnly(2010, 1, 1),
@@ -124,7 +124,7 @@ public sealed class CompositeTimedUniverseSelectorTests
 
         var composite = new CompositeTimedUniverseSelector(
             new IUniverseSelector[] { supersessionFilter, dynamicUniverse });
-        var candidates = new List<Asset> { s_vti, s_spy, s_tlt };
+        var candidates = new List<Symbol> { s_vti, s_spy, s_tlt };
 
         // As of 2015: SupersessionFilter removes VTI (s_spy present), DynamicUniverse removes TLT (2020)
         var result = composite.SelectAsOf(candidates, new DateOnly(2015, 1, 1));
@@ -139,7 +139,7 @@ public sealed class CompositeTimedUniverseSelectorTests
     public void SelectAsOf_NoSelectors_ShouldReturnAllCandidates()
     {
         var composite = new CompositeTimedUniverseSelector(Array.Empty<IUniverseSelector>());
-        var candidates = new List<Asset> { s_vti, s_tlt };
+        var candidates = new List<Symbol> { s_vti, s_tlt };
 
         var result = composite.SelectAsOf(candidates, new DateOnly(2025, 1, 1));
         result.Should().HaveCount(2);
@@ -148,11 +148,11 @@ public sealed class CompositeTimedUniverseSelectorTests
     [Fact]
     public void SelectAsOf_EmptyCandidates_ShouldReturnEmpty()
     {
-        var entryDates = new Dictionary<Asset, DateOnly> { [s_vti] = new DateOnly(2010, 1, 1) };
+        var entryDates = new Dictionary<Symbol, DateOnly> { [s_vti] = new DateOnly(2010, 1, 1) };
         var dynamicUniverse = new DynamicUniverse(entryDates);
         var composite = new CompositeTimedUniverseSelector(new IUniverseSelector[] { dynamicUniverse });
 
-        var result = composite.SelectAsOf(new List<Asset>(), new DateOnly(2025, 1, 1));
+        var result = composite.SelectAsOf(new List<Symbol>(), new DateOnly(2025, 1, 1));
         result.Should().BeEmpty();
     }
 }

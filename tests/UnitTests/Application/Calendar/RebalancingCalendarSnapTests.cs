@@ -18,7 +18,6 @@ namespace Boutquin.Trading.Tests.UnitTests.Application.Calendar;
 
 using Boutquin.Trading.Application.PositionSizing;
 using Boutquin.Trading.Application.Strategies;
-using Boutquin.Trading.Domain.ValueObjects;
 using FluentAssertions;
 
 /// <summary>
@@ -26,11 +25,11 @@ using FluentAssertions;
 /// </summary>
 public sealed class RebalancingCalendarSnapTests
 {
-    private static readonly Asset s_aapl = new("AAPL");
-    private static readonly Asset s_msft = new("MSFT");
+    private static readonly Symbol s_aapl = new("AAPL");
+    private static readonly Symbol s_msft = new("MSFT");
 
-    private static IReadOnlyDictionary<Asset, CurrencyCode> CreateAssets() =>
-        new Dictionary<Asset, CurrencyCode>
+    private static IReadOnlyDictionary<Symbol, CurrencyCode> CreateAssets() =>
+        new Dictionary<Symbol, CurrencyCode>
         {
             [s_aapl] = CurrencyCode.USD,
             [s_msft] = CurrencyCode.USD,
@@ -39,17 +38,17 @@ public sealed class RebalancingCalendarSnapTests
     private static SortedDictionary<CurrencyCode, decimal> CreateCash() =>
         new() { [CurrencyCode.USD] = 100_000m };
 
-    private static IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>> CreateMarketData(
+    private static IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> CreateMarketData(
         DateOnly start, int days)
     {
-        var data = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>();
+        var data = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>();
         for (var i = 0; i < days; i++)
         {
             var date = start.AddDays(i);
-            data[date] = new SortedDictionary<Asset, MarketData>
+            data[date] = new SortedDictionary<Symbol, Bar>
             {
-                [s_aapl] = new(date, 100m + i, 105m + i, 95m + i, 100m + i, 100m + i, 1_000_000L, 0m, 1m),
-                [s_msft] = new(date, 200m + i, 205m + i, 195m + i, 200m + i, 200m + i, 1_000_000L, 0m, 1m),
+                [s_aapl] = new(date, 100m + i, 105m + i, 95m + i, 100m + i, 100m + i, 1_000_000L),
+                [s_msft] = new(date, 200m + i, 205m + i, 195m + i, 200m + i, 200m + i, 1_000_000L),
             };
         }
 
@@ -81,7 +80,7 @@ public sealed class RebalancingCalendarSnapTests
         var strategy = new ConstructionModelStrategy(
             "test", CreateAssets(), CreateCash(),
             new ClosePriceOrderPriceCalculationStrategy(),
-            new FixedWeightPositionSizer(new Dictionary<Asset, decimal>
+            new FixedWeightPositionSizer(new Dictionary<Symbol, decimal>
             {
                 [s_aapl] = 0.5m,
                 [s_msft] = 0.5m,
@@ -119,15 +118,15 @@ public sealed class RebalancingCalendarSnapTests
     {
         // Monthly rebalance: Jan 2 + 1 month = Feb 2 (Sunday in 2025)
         // Calendar should snap to Feb 3 (Monday)
-        var mockCalendar = new Mock<ITradingCalendar>();
-        mockCalendar.Setup(c => c.IsTradingDay(new DateOnly(2025, 2, 2))).Returns(false); // Sunday
-        mockCalendar.Setup(c => c.NextTradingDay(new DateOnly(2025, 2, 2))).Returns(new DateOnly(2025, 2, 3)); // Monday
-        mockCalendar.Setup(c => c.IsTradingDay(It.Is<DateOnly>(d => d != new DateOnly(2025, 2, 2)))).Returns(true);
+        var mockCalendar = new Mock<IBusinessCalendar>();
+        mockCalendar.Setup(c => c.IsBusinessDay(new DateOnly(2025, 2, 2))).Returns(false); // Sunday
+        mockCalendar.Setup(c => c.Adjust(new DateOnly(2025, 2, 2), BusinessDayAdjustment.Following)).Returns(new DateOnly(2025, 2, 3)); // Monday
+        mockCalendar.Setup(c => c.IsBusinessDay(It.Is<DateOnly>(d => d != new DateOnly(2025, 2, 2)))).Returns(true);
 
         var strategy = new ConstructionModelStrategy(
             "test", CreateAssets(), CreateCash(),
             new ClosePriceOrderPriceCalculationStrategy(),
-            new FixedWeightPositionSizer(new Dictionary<Asset, decimal>
+            new FixedWeightPositionSizer(new Dictionary<Symbol, decimal>
             {
                 [s_aapl] = 0.5m,
                 [s_msft] = 0.5m,
@@ -157,13 +156,13 @@ public sealed class RebalancingCalendarSnapTests
     public void ConstructionModel_WithCalendar_TradingDayUnchanged()
     {
         // If next rebalance date is already a trading day, no snap needed
-        var mockCalendar = new Mock<ITradingCalendar>();
-        mockCalendar.Setup(c => c.IsTradingDay(It.IsAny<DateOnly>())).Returns(true);
+        var mockCalendar = new Mock<IBusinessCalendar>();
+        mockCalendar.Setup(c => c.IsBusinessDay(It.IsAny<DateOnly>())).Returns(true);
 
         var strategy = new ConstructionModelStrategy(
             "test", CreateAssets(), CreateCash(),
             new ClosePriceOrderPriceCalculationStrategy(),
-            new FixedWeightPositionSizer(new Dictionary<Asset, decimal>
+            new FixedWeightPositionSizer(new Dictionary<Symbol, decimal>
             {
                 [s_aapl] = 0.5m,
                 [s_msft] = 0.5m,
@@ -182,8 +181,8 @@ public sealed class RebalancingCalendarSnapTests
             new DateOnly(2025, 2, 2), CurrencyCode.USD, marketData, fxRates);
         feb2.Signals.Should().NotBeEmpty("Feb 2 is a trading day, triggers normally");
 
-        // NextTradingDay should NOT be called since IsTradingDay returns true
-        mockCalendar.Verify(c => c.NextTradingDay(It.IsAny<DateOnly>()), Times.Never);
+        // Adjust(Following) should NOT be called since IsBusinessDay returns true
+        mockCalendar.Verify(c => c.Adjust(It.IsAny<DateOnly>(), BusinessDayAdjustment.Following), Times.Never);
     }
 
     [Fact]
@@ -191,15 +190,15 @@ public sealed class RebalancingCalendarSnapTests
     {
         // Quarterly rebalance: Jan 2 + 3 months = Apr 2 (Wednesday in 2025)
         // Suppose Apr 2 is a holiday — snap to Apr 3
-        var mockCalendar = new Mock<ITradingCalendar>();
-        mockCalendar.Setup(c => c.IsTradingDay(new DateOnly(2025, 4, 2))).Returns(false);
-        mockCalendar.Setup(c => c.NextTradingDay(new DateOnly(2025, 4, 2))).Returns(new DateOnly(2025, 4, 3));
-        mockCalendar.Setup(c => c.IsTradingDay(It.Is<DateOnly>(d => d != new DateOnly(2025, 4, 2)))).Returns(true);
+        var mockCalendar = new Mock<IBusinessCalendar>();
+        mockCalendar.Setup(c => c.IsBusinessDay(new DateOnly(2025, 4, 2))).Returns(false);
+        mockCalendar.Setup(c => c.Adjust(new DateOnly(2025, 4, 2), BusinessDayAdjustment.Following)).Returns(new DateOnly(2025, 4, 3));
+        mockCalendar.Setup(c => c.IsBusinessDay(It.Is<DateOnly>(d => d != new DateOnly(2025, 4, 2)))).Returns(true);
 
         var strategy = new ConstructionModelStrategy(
             "test", CreateAssets(), CreateCash(),
             new ClosePriceOrderPriceCalculationStrategy(),
-            new FixedWeightPositionSizer(new Dictionary<Asset, decimal>
+            new FixedWeightPositionSizer(new Dictionary<Symbol, decimal>
             {
                 [s_aapl] = 0.5m,
                 [s_msft] = 0.5m,
@@ -232,7 +231,7 @@ public sealed class RebalancingCalendarSnapTests
         var strategy = new RebalancingBuyAndHoldStrategy(
             "test", CreateAssets(), CreateCash(),
             new ClosePriceOrderPriceCalculationStrategy(),
-            new FixedWeightPositionSizer(new Dictionary<Asset, decimal>
+            new FixedWeightPositionSizer(new Dictionary<Symbol, decimal>
             {
                 [s_aapl] = 0.5m,
                 [s_msft] = 0.5m,
@@ -256,15 +255,15 @@ public sealed class RebalancingCalendarSnapTests
     [Fact]
     public void RebalancingBuyAndHold_WithCalendar_SnapsWeekendToMonday()
     {
-        var mockCalendar = new Mock<ITradingCalendar>();
-        mockCalendar.Setup(c => c.IsTradingDay(new DateOnly(2025, 2, 2))).Returns(false);
-        mockCalendar.Setup(c => c.NextTradingDay(new DateOnly(2025, 2, 2))).Returns(new DateOnly(2025, 2, 3));
-        mockCalendar.Setup(c => c.IsTradingDay(It.Is<DateOnly>(d => d != new DateOnly(2025, 2, 2)))).Returns(true);
+        var mockCalendar = new Mock<IBusinessCalendar>();
+        mockCalendar.Setup(c => c.IsBusinessDay(new DateOnly(2025, 2, 2))).Returns(false);
+        mockCalendar.Setup(c => c.Adjust(new DateOnly(2025, 2, 2), BusinessDayAdjustment.Following)).Returns(new DateOnly(2025, 2, 3));
+        mockCalendar.Setup(c => c.IsBusinessDay(It.Is<DateOnly>(d => d != new DateOnly(2025, 2, 2)))).Returns(true);
 
         var strategy = new RebalancingBuyAndHoldStrategy(
             "test", CreateAssets(), CreateCash(),
             new ClosePriceOrderPriceCalculationStrategy(),
-            new FixedWeightPositionSizer(new Dictionary<Asset, decimal>
+            new FixedWeightPositionSizer(new Dictionary<Symbol, decimal>
             {
                 [s_aapl] = 0.5m,
                 [s_msft] = 0.5m,
@@ -295,7 +294,7 @@ public sealed class RebalancingCalendarSnapTests
         var strategy = new RebalancingBuyAndHoldStrategy(
             "test", CreateAssets(), CreateCash(),
             new ClosePriceOrderPriceCalculationStrategy(),
-            new FixedWeightPositionSizer(new Dictionary<Asset, decimal>
+            new FixedWeightPositionSizer(new Dictionary<Symbol, decimal>
             {
                 [s_aapl] = 0.5m,
                 [s_msft] = 0.5m,

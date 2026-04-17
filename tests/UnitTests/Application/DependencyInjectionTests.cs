@@ -260,8 +260,8 @@ public sealed class DependencyInjectionTests
     {
         var strategyMock = new Mock<IStrategy>();
         strategyMock.Setup(s => s.Name).Returns("Test");
-        strategyMock.Setup(s => s.Assets).Returns(new Dictionary<Asset, CurrencyCode> { [new Asset("VTI")] = CurrencyCode.USD });
-        strategyMock.Setup(s => s.Positions).Returns(new Dictionary<Asset, int>());
+        strategyMock.Setup(s => s.Assets).Returns(new Dictionary<Symbol, CurrencyCode> { [new Symbol("VTI")] = CurrencyCode.USD });
+        strategyMock.Setup(s => s.Positions).Returns(new Dictionary<Symbol, int>());
 
         var brokerMock = new Mock<IBrokerage>();
         var handlerMock = new Mock<IEventHandler>();
@@ -270,7 +270,7 @@ public sealed class DependencyInjectionTests
         var act = () => new Portfolio(
             CurrencyCode.USD,
             new Dictionary<string, IStrategy> { ["Test"] = strategyMock.Object },
-            new Dictionary<Asset, CurrencyCode> { [new Asset("VTI")] = CurrencyCode.USD },
+            new Dictionary<Symbol, CurrencyCode> { [new Symbol("VTI")] = CurrencyCode.USD },
             new Dictionary<Type, IEventHandler> { [typeof(MarketEvent)] = handlerMock.Object },
             brokerMock.Object);
 
@@ -284,10 +284,8 @@ public sealed class DependencyInjectionTests
         portfolioMock.Setup(p => p.Strategies).Returns(new Dictionary<string, IStrategy>());
         portfolioMock.Setup(p => p.EquityCurve).Returns(new SortedDictionary<DateOnly, decimal>());
 
-        var fetcherMock = new Mock<IMarketDataFetcher>();
-
         // This uses the backward-compatible constructor that defaults to NullLogger
-        var act = () => new BackTest(portfolioMock.Object, portfolioMock.Object, fetcherMock.Object, CurrencyCode.USD);
+        var act = () => new BackTest(portfolioMock.Object, portfolioMock.Object, CurrencyCode.USD);
         act.Should().NotThrow();
     }
 
@@ -308,7 +306,7 @@ public sealed class DependencyInjectionTests
         var manager = sp.GetRequiredService<IRiskManager>();
         // With all rules disabled, any order should be allowed
         var order = new Order(
-            new DateOnly(2026, 1, 1), "Test", new Asset("VTI"),
+            new DateOnly(2026, 1, 1), "Test", new Symbol("VTI"),
             TradeAction.Buy, OrderType.Market, 100);
 
         var portfolioMock = new Mock<IPortfolio>();
@@ -432,11 +430,11 @@ public sealed class DependencyInjectionTests
 
         var services = new ServiceCollection();
         // Register the required asset class mapping
-        var mapping = new Dictionary<Asset, AssetClassCode>
+        var mapping = new Dictionary<Symbol, AssetClassCode>
         {
-            [new Asset("VTI")] = AssetClassCode.Equities,
+            [new Symbol("VTI")] = AssetClassCode.Equities,
         };
-        services.AddSingleton<IReadOnlyDictionary<Asset, AssetClassCode>>(mapping);
+        services.AddSingleton<IReadOnlyDictionary<Symbol, AssetClassCode>>(mapping);
         services.AddBoutquinTrading(configuration);
 
         var sp = services.BuildServiceProvider();
@@ -456,7 +454,7 @@ public sealed class DependencyInjectionTests
 
         var act = sp.GetRequiredService<IRiskManager>;
         act.Should().Throw<InvalidOperationException>()
-            .WithMessage("*IReadOnlyDictionary<Asset, AssetClassCode>*");
+            .WithMessage("*IReadOnlyDictionary<Symbol, AssetClassCode>*");
     }
 
     [Fact]
@@ -470,7 +468,7 @@ public sealed class DependencyInjectionTests
         var manager = sp.GetRequiredService<IRiskManager>();
         // With rule disabled, any order should be allowed
         var order = new Order(
-            new DateOnly(2026, 1, 1), "Test", new Asset("VTI"),
+            new DateOnly(2026, 1, 1), "Test", new Symbol("VTI"),
             TradeAction.Buy, OrderType.Market, 100);
         var portfolioMock = new Mock<IPortfolio>();
         portfolioMock.Setup(p => p.EquityCurve).Returns(new SortedDictionary<DateOnly, decimal>());

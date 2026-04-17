@@ -3,9 +3,10 @@
     <TargetFramework>net10.0</TargetFramework>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <!-- NU5104: NuGet version warnings; CA1305/CA2007/CA2208/xUnit1030: already excluded in CI format checks;
-         CS86xx: nullable reference type warnings (pre-existing, gradual cleanup);
-         CS0168/CS0414: unused variables/fields (EF backing fields, catch vars) -->
-    <NoWarn>$(NoWarn);NU5104;CA1305;CA2007;CA2208;xUnit1030;CS8600;CS8601;CS8602;CS8603;CS8604;CS8618;CS8619;CS8620;CS8622;CS8625;CS0168;CS0414</NoWarn>
+         CS0168/CS0414: unused variables/fields (EF backing fields, catch vars);
+         RS0026: backward-compat constructor overloads with optional logger params (documented pattern in CLAUDE.md);
+         RS0041: oblivious reference types in auto-generated EF migration files (#nullable disable) -->
+    <NoWarn>$(NoWarn);NU5104;CA1305;CA2007;CA2208;xUnit1030;CS0168;CS0414;RS0026;RS0041</NoWarn>
     <LangVersion>14.0</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -35,6 +36,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.201" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
+  </ItemGroup>
+
+  <!-- Public API snapshot: enforce explicit declaration of all public type and member additions.
+       Note: PublicApiAnalyzers 3.x auto-includes PublicAPI.Shipped.txt and PublicAPI.Unshipped.txt
+       via its own .props file — do NOT add <AdditionalFiles> here or they will be registered twice. -->
+  <ItemGroup Condition="$([System.String]::Copy('$(MSBuildProjectDirectory)').Contains('/src/')) and '$(IsPackable)' != 'false'">
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="All" />
   </ItemGroup>
 </Project>

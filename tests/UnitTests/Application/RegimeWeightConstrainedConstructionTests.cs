@@ -22,9 +22,9 @@ public sealed class RegimeWeightConstrainedConstructionTests
 {
     private const decimal Precision = 1e-10m;
 
-    private static readonly Asset s_vti = new("VTI");
-    private static readonly Asset s_tlt = new("TLT");
-    private static readonly Asset s_gld = new("GLD");
+    private static readonly Symbol s_vti = new("VTI");
+    private static readonly Symbol s_tlt = new("TLT");
+    private static readonly Symbol s_gld = new("GLD");
 
     private static decimal[][] ThreeAssetReturns =>
     [
@@ -46,12 +46,12 @@ public sealed class RegimeWeightConstrainedConstructionTests
         var regimeConstraints = new Dictionary<EconomicRegime, AssetWeightConstraints>
         {
             [regime] = new AssetWeightConstraints(
-                Floors: new Dictionary<Asset, decimal> { [s_gld] = 0.50m },
-                Caps: new Dictionary<Asset, decimal> { [s_vti] = 0.20m }),
+                Floors: new Dictionary<Symbol, decimal> { [s_gld] = 0.50m },
+                Caps: new Dictionary<Symbol, decimal> { [s_vti] = 0.20m }),
         };
 
         var sut = new RegimeWeightConstrainedConstruction(inner, regimeConstraints, regime);
-        var assets = new List<Asset> { s_vti, s_tlt, s_gld };
+        var assets = new List<Symbol> { s_vti, s_tlt, s_gld };
         var weights = sut.ComputeTargetWeights(assets, ThreeAssetReturns);
 
         weights[s_gld].Should().BeGreaterThanOrEqualTo(0.50m - Precision);
@@ -69,14 +69,14 @@ public sealed class RegimeWeightConstrainedConstructionTests
         var regimeConstraints = new Dictionary<EconomicRegime, AssetWeightConstraints>
         {
             [EconomicRegime.RisingGrowthRisingInflation] = new AssetWeightConstraints(
-                Floors: new Dictionary<Asset, decimal> { [s_gld] = 0.80m }),
+                Floors: new Dictionary<Symbol, decimal> { [s_gld] = 0.80m }),
             [EconomicRegime.RisingGrowthFallingInflation] = new AssetWeightConstraints(),
             [EconomicRegime.FallingGrowthRisingInflation] = new AssetWeightConstraints(),
             [EconomicRegime.FallingGrowthFallingInflation] = new AssetWeightConstraints(),
         };
 
         var sut = new RegimeWeightConstrainedConstruction(inner, regimeConstraints, regime);
-        var assets = new List<Asset> { s_vti, s_tlt, s_gld };
+        var assets = new List<Symbol> { s_vti, s_tlt, s_gld };
         var weights = sut.ComputeTargetWeights(assets, ThreeAssetReturns);
 
         weights[s_vti].Should().BeApproximately(1m / 3m, Precision);
@@ -88,18 +88,18 @@ public sealed class RegimeWeightConstrainedConstructionTests
     public void ComputeTargetWeights_AllFourRegimes_ShouldApplyCorrectly()
     {
         var inner = new EqualWeightConstruction();
-        var assets = new List<Asset> { s_vti, s_tlt, s_gld };
+        var assets = new List<Symbol> { s_vti, s_tlt, s_gld };
 
         var regimeConstraints = new Dictionary<EconomicRegime, AssetWeightConstraints>
         {
             [EconomicRegime.RisingGrowthRisingInflation] = new AssetWeightConstraints(
-                Caps: new Dictionary<Asset, decimal> { [s_tlt] = 0.10m }),
+                Caps: new Dictionary<Symbol, decimal> { [s_tlt] = 0.10m }),
             [EconomicRegime.RisingGrowthFallingInflation] = new AssetWeightConstraints(
-                Floors: new Dictionary<Asset, decimal> { [s_vti] = 0.60m }),
+                Floors: new Dictionary<Symbol, decimal> { [s_vti] = 0.60m }),
             [EconomicRegime.FallingGrowthRisingInflation] = new AssetWeightConstraints(
-                Floors: new Dictionary<Asset, decimal> { [s_gld] = 0.60m }),
+                Floors: new Dictionary<Symbol, decimal> { [s_gld] = 0.60m }),
             [EconomicRegime.FallingGrowthFallingInflation] = new AssetWeightConstraints(
-                Floors: new Dictionary<Asset, decimal> { [s_tlt] = 0.60m }),
+                Floors: new Dictionary<Symbol, decimal> { [s_tlt] = 0.60m }),
         };
 
         foreach (var regime in Enum.GetValues<EconomicRegime>())

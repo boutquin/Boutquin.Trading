@@ -63,10 +63,10 @@ public sealed class AnalyticsCrossLanguageTests : CrossLanguageVerificationBase
         return result;
     }
 
-    private static IReadOnlyList<Asset> MakeAssets(int n)
+    private static IReadOnlyList<Symbol> MakeAssets(int n)
     {
         return Enumerable.Range(0, n)
-            .Select(i => new Asset($"ASSET{i}"))
+            .Select(i => new Symbol($"ASSET{i}"))
             .ToList();
     }
 
@@ -86,13 +86,13 @@ public sealed class AnalyticsCrossLanguageTests : CrossLanguageVerificationBase
         var testCase = root.GetProperty("cases").GetProperty(caseName);
 
         var assetNames = testCase.GetProperty("assets").EnumerateArray()
-            .Select(e => new Asset(e.GetString()!))
+            .Select(e => new Symbol(e.GetString()!))
             .ToList();
 
-        var portfolioWeights = new Dictionary<Asset, decimal>();
-        var benchmarkWeights = new Dictionary<Asset, decimal>();
-        var portfolioReturns = new Dictionary<Asset, decimal>();
-        var benchmarkReturns = new Dictionary<Asset, decimal>();
+        var portfolioWeights = new Dictionary<Symbol, decimal>();
+        var benchmarkWeights = new Dictionary<Symbol, decimal>();
+        var portfolioReturns = new Dictionary<Symbol, decimal>();
+        var benchmarkReturns = new Dictionary<Symbol, decimal>();
 
         foreach (var asset in assetNames)
         {

@@ -15,9 +15,6 @@
 //
 
 namespace Boutquin.Trading.Application.Helpers;
-
-using Domain.ValueObjects;
-
 /// <summary>
 /// Computes rebalance orders by diffing target weights against current holdings.
 /// Returns sells first, then buys (frees cash before allocating).
@@ -37,9 +34,9 @@ public static class TargetPortfolioDiffer
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="totalPortfolioValue"/> is &lt;= 0 or <paramref name="minimumTradeValue"/> is negative.</exception>
     /// <exception cref="InvalidOperationException">Thrown when a target asset has no price entry.</exception>
     public static IReadOnlyList<RebalanceOrder> ComputeRebalanceOrders(
-        IReadOnlyDictionary<Asset, decimal> targetWeights,
-        IReadOnlyDictionary<Asset, int> currentPositions,
-        IReadOnlyDictionary<Asset, decimal> currentPrices,
+        IReadOnlyDictionary<Symbol, decimal> targetWeights,
+        IReadOnlyDictionary<Symbol, int> currentPositions,
+        IReadOnlyDictionary<Symbol, decimal> currentPrices,
         decimal totalPortfolioValue,
         decimal minimumTradeValue = 0m)
     {
@@ -54,7 +51,7 @@ public static class TargetPortfolioDiffer
         }
 
         // Union of all assets in target and current
-        var allAssets = new HashSet<Asset>(targetWeights.Keys);
+        var allAssets = new HashSet<Symbol>(targetWeights.Keys);
         foreach (var asset in currentPositions.Keys)
         {
             allAssets.Add(asset);
@@ -67,17 +64,34 @@ public static class TargetPortfolioDiffer
             var targetWeight = targetWeights.TryGetValue(asset, out var tw) ? tw : 0m;
             var currentShares = currentPositions.TryGetValue(asset, out var cs) ? cs : 0;
 
-            // Price is required for assets with non-zero target weight
-            if (targetWeight != 0m && !currentPrices.ContainsKey(asset))
-            {
-                throw new InvalidOperationException($"Missing price for asset '{asset}' which has a non-zero target weight.");
-            }
-
             // For exit-only positions, price is needed to compute current weight
             if (!currentPrices.TryGetValue(asset, out var price))
             {
-                // Asset being exited with no price — use 0 for current weight, target is 0
+                // Price is required for assets with non-zero target weight
+                if (targetWeight != 0m)
+                {
+                    throw new InvalidOperationException($"Missing price for asset '{asset}' which has a non-zero target weight.");
+                }
+
+                // Symbol being exited with no price — use 0 for current weight, target is 0
                 // We still need to generate the sell order based on current shares
+                if (currentShares > 0)
+                {
+                    orders.Add(new RebalanceOrder(asset, TradeAction.Sell, currentShares, 0m, 0m));
+                }
+                continue;
+            }
+
+            if (price == 0m && targetWeight != 0m)
+            {
+                throw new InvalidOperationException(
+                    $"Price is zero for asset '{asset}' which has a non-zero target weight.");
+            }
+
+            if (price == 0m)
+            {
+                // targetWeight is 0 (guarded above) and price is 0 — cannot compute target shares.
+                // Generate sell order for any remaining position.
                 if (currentShares > 0)
                 {
                     orders.Add(new RebalanceOrder(asset, TradeAction.Sell, currentShares, 0m, 0m));
@@ -109,7 +123,7 @@ public static class TargetPortfolioDiffer
         // Sort: sells first, then buys (reverse enum order since Buy=0, Sell=1)
         orders.Sort((a, b) => b.TradeAction.CompareTo(a.TradeAction) is var cmp && cmp != 0
             ? cmp
-            : a.Asset.CompareTo(b.Asset));
+            : a.Symbol.CompareTo(b.Symbol));
 
         return orders;
     }

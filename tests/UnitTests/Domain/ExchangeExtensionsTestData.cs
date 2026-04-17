@@ -97,7 +97,7 @@ public static class ExchangeExtensionsTestData
                 exchange,
                 new DateTime(2023, 1, 1), // Sunday (holiday)
                 0, // No additional closed minutes
-                null // Exchange closed on holiday
+                null! // Exchange closed on holiday — test case expects method to return null
             ];
 
             // ... Add more test cases.

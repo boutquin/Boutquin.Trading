@@ -21,7 +21,7 @@ The core application layer for a multi-asset, multi-currency, multi-strategy, ev
 - `RebalancingBuyAndHoldStrategy` — Periodic rebalancing to target weights
 - `ConstructionModelStrategy` — Dynamic weights from portfolio construction models with rolling returns
 
-### Portfolio Construction (18 Models + 1 Decorator)
+### Portfolio Construction (19 Models + 2 Decorators)
 
 | Model | Algorithm |
 |-------|-----------|
@@ -38,20 +38,22 @@ The core application layer for a multi-asset, multi-currency, multi-strategy, ev
 | `DynamicBlackLittermanConstruction` | Time-varying views with adaptive confidence; omega clamped to prevent singularity at confidence=1.0 |
 | `MeanDownsideRiskConstruction` | Pluggable downside risk: CVaR or Sortino via `IDownsideRiskMeasure` |
 | `RobustMeanVarianceConstruction` | Minimax across covariance scenarios (regime-resilient) |
+| `PrincipalComponentRiskParityConstruction` | Equalizes risk across PCs via inverse-risk (1/√λ) with Marcenko-Pastur signal filtering (Meucci, 2009) |
 | `TacticalOverlayConstruction` | Regime-specific tilts + momentum scoring |
 | `VolatilityTargetingConstruction` | Scale weights to target portfolio vol, capped leverage |
 | `WeightConstrainedConstruction` | Min/max weight bounds on any inner model |
 | `RegimeWeightConstrainedConstruction` | Regime-dependent weight constraints |
 | `TurnoverPenalizedConstruction` | L1 turnover penalty decorator (stateful) |
+| `PcaConstrainedConstruction` | PCA decorator — projects returns to signal PC subspace before delegating to inner model |
 
-### Covariance Estimators (4)
-`SampleCovarianceEstimator`, `ExponentiallyWeightedCovarianceEstimator`, `LedoitWolfShrinkageEstimator`, `DenoisedCovarianceEstimator`
+### Covariance Estimators (5)
+`SampleCovarianceEstimator`, `ExponentiallyWeightedCovarianceEstimator`, `LedoitWolfShrinkageEstimator`, `DenoisedCovarianceEstimator`, `DetonedCovarianceEstimator`
 
 ### Downside Risk Measures (3)
 `CVaRRiskMeasure`, `DownsideDeviationRiskMeasure`, `CDaRRiskMeasure` — all guard against empty scenarios with `CalculationException`
 
-### Analytics (7)
-`BrinsonFachlerAttributor`, `FactorRegressor`, `CorrelationAnalyzer`, `DrawdownAnalyzer`, `EffectiveNumberOfBets`, `WalkForwardOptimizer`, `MonteCarloSimulator`
+### Analytics (9)
+`BrinsonFachlerAttributor`, `FactorRegressor`, `CorrelationAnalyzer`, `DrawdownAnalyzer`, `EffectiveNumberOfBets`, `WalkForwardOptimizer`, `MonteCarloSimulator`, `PrincipalPortfolioAnalyzer`, `PcaRegimeSignal`
 
 ### Risk Management (5)
 `RiskManager` (composite, first-rejection short-circuit) with `MaxDrawdownRule`, `MaxPositionSizeRule`, `MaxSectorExposureRule`, `DrawdownCircuitBreaker`

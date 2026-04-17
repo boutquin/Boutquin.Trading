@@ -39,6 +39,15 @@ public sealed class BacktestOptions
     public string ConstructionModel { get; set; } = "EqualWeight";
 
     /// <summary>
+    /// The covariance estimator to use for construction models that require one.
+    /// Valid values: Sample, EWMA, LedoitWolf, LedoitWolfConstantCorrelation,
+    /// LedoitWolfSingleFactor, OAS, QIS, Denoised, DenoisedLW, TracyWidomDenoised,
+    /// Detoned, NERCOME, POET, DoublySparse.
+    /// Defaults to "LedoitWolfConstantCorrelation" — a well-suited equity target.
+    /// </summary>
+    public string CovarianceEstimator { get; set; } = "LedoitWolfConstantCorrelation";
+
+    /// <summary>
     /// When true, dividends are automatically reinvested into the paying asset
     /// at the current Close price (whole shares only, fractional cash remains).
     /// Only effective in live mode where raw Close is used for valuation.

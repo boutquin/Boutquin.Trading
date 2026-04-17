@@ -21,12 +21,12 @@ namespace Boutquin.Trading.Tests.UnitTests.Domain;
 /// </summary>
 public sealed class EventProcessorTests
 {
-    private static readonly Asset s_testAsset = new("AAPL");
+    private static readonly Symbol s_testAsset = new("AAPL");
     private static readonly DateOnly s_testDate = new(2024, 1, 15);
 
     private static MarketEvent CreateMarketEvent() =>
         new(s_testDate,
-            new SortedDictionary<Asset, MarketData>(),
+            new SortedDictionary<Symbol, Bar>(),
             new SortedDictionary<CurrencyCode, decimal>());
 
     [Fact]

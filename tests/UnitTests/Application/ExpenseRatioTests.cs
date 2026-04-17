@@ -14,6 +14,8 @@
 //   limitations under the License.
 //
 
+using Boutquin.Trading.Recipes.Testing;
+
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Boutquin.Trading.Tests.UnitTests.Application;
@@ -23,23 +25,20 @@ namespace Boutquin.Trading.Tests.UnitTests.Application;
 /// </summary>
 public sealed class ExpenseRatioTests
 {
-    private static readonly DateOnly s_start = new(2024, 1, 2);
-    private static readonly DateOnly s_end = new(2024, 1, 8);
-
     [Fact]
     public async Task RunAsync_ZeroExpenseRatio_ShouldNotAffectEquityCurve()
     {
         // Arrange
-        var (portfolioZero, benchmarkZero, fetcher) = CreateSetup();
+        var (portfolioZero, benchmarkZero, dataset) = CreateSetup();
         var (portfolioBase, benchmarkBase, _) = CreateSetup();
 
-        var btZero = new BackTest(portfolioZero, benchmarkZero, fetcher, CurrencyCode.USD,
+        var btZero = new BackTest(portfolioZero, benchmarkZero, CurrencyCode.USD,
             NullLogger<BackTest>.Instance, 0m, null, null, annualExpenseRatioBps: 0m);
-        var btBase = new BackTest(portfolioBase, benchmarkBase, fetcher, CurrencyCode.USD);
+        var btBase = new BackTest(portfolioBase, benchmarkBase, CurrencyCode.USD);
 
         // Act
-        await btZero.RunAsync(s_start, s_end);
-        await btBase.RunAsync(s_start, s_end);
+        await btZero.RunAsync(dataset);
+        await btBase.RunAsync(dataset);
 
         // Assert — identical equity curves
         foreach (var date in portfolioZero.EquityCurve.Keys)
@@ -52,16 +51,16 @@ public sealed class ExpenseRatioTests
     public async Task RunAsync_PositiveExpenseRatio_ShouldReduceEquityCurve()
     {
         // Arrange
-        var (portfolioFee, benchmarkFee, fetcher) = CreateSetup();
+        var (portfolioFee, benchmarkFee, dataset) = CreateSetup();
         var (portfolioNoFee, benchmarkNoFee, _) = CreateSetup();
 
-        var btFee = new BackTest(portfolioFee, benchmarkFee, fetcher, CurrencyCode.USD,
+        var btFee = new BackTest(portfolioFee, benchmarkFee, CurrencyCode.USD,
             NullLogger<BackTest>.Instance, 0m, null, null, annualExpenseRatioBps: 100m);
-        var btNoFee = new BackTest(portfolioNoFee, benchmarkNoFee, fetcher, CurrencyCode.USD);
+        var btNoFee = new BackTest(portfolioNoFee, benchmarkNoFee, CurrencyCode.USD);
 
         // Act
-        await btFee.RunAsync(s_start, s_end);
-        await btNoFee.RunAsync(s_start, s_end);
+        await btFee.RunAsync(dataset);
+        await btNoFee.RunAsync(dataset);
 
         // Assert — with-fee equity strictly lower on every date
         foreach (var date in portfolioFee.EquityCurve.Keys)
@@ -74,16 +73,16 @@ public sealed class ExpenseRatioTests
     public async Task RunAsync_HighExpenseRatio_ShouldProduceMeasurableDrag()
     {
         // Arrange — 100bps annual
-        var (portfolioFee, benchmarkFee, fetcher) = CreateSetup();
+        var (portfolioFee, benchmarkFee, dataset) = CreateSetup();
         var (portfolioNoFee, benchmarkNoFee, _) = CreateSetup();
 
-        var btFee = new BackTest(portfolioFee, benchmarkFee, fetcher, CurrencyCode.USD,
+        var btFee = new BackTest(portfolioFee, benchmarkFee, CurrencyCode.USD,
             NullLogger<BackTest>.Instance, 0m, null, null, annualExpenseRatioBps: 100m);
-        var btNoFee = new BackTest(portfolioNoFee, benchmarkNoFee, fetcher, CurrencyCode.USD);
+        var btNoFee = new BackTest(portfolioNoFee, benchmarkNoFee, CurrencyCode.USD);
 
         // Act
-        await btFee.RunAsync(s_start, s_end);
-        await btNoFee.RunAsync(s_start, s_end);
+        await btFee.RunAsync(dataset);
+        await btNoFee.RunAsync(dataset);
 
         // Assert
         var lastDate = portfolioFee.EquityCurve.Keys.Last();
@@ -94,8 +93,8 @@ public sealed class ExpenseRatioTests
     [Fact]
     public void Constructor_NegativeExpenseRatio_ShouldThrow()
     {
-        var (portfolio, benchmark, fetcher) = CreateSetup();
-        var act = () => new BackTest(portfolio, benchmark, fetcher, CurrencyCode.USD,
+        var (portfolio, benchmark, _) = CreateSetup();
+        var act = () => new BackTest(portfolio, benchmark, CurrencyCode.USD,
             NullLogger<BackTest>.Instance, 0m, null, null, annualExpenseRatioBps: -10m);
         act.Should().Throw<ArgumentOutOfRangeException>();
     }
@@ -103,8 +102,8 @@ public sealed class ExpenseRatioTests
     [Fact]
     public void Constructor_ExcessiveExpenseRatio_ShouldThrow()
     {
-        var (portfolio, benchmark, fetcher) = CreateSetup();
-        var act = () => new BackTest(portfolio, benchmark, fetcher, CurrencyCode.USD,
+        var (portfolio, benchmark, _) = CreateSetup();
+        var act = () => new BackTest(portfolio, benchmark, CurrencyCode.USD,
             NullLogger<BackTest>.Instance, 0m, null, null, annualExpenseRatioBps: 1001m);
         act.Should().Throw<ArgumentOutOfRangeException>();
     }
@@ -112,9 +111,9 @@ public sealed class ExpenseRatioTests
     [Fact]
     public void Constructor_NegativePerAssetExpenseRatio_ShouldThrow()
     {
-        var (portfolio, benchmark, fetcher) = CreateSetup();
+        var (portfolio, benchmark, _) = CreateSetup();
         var perAsset = new Dictionary<string, decimal> { { "AAPL", -5m } };
-        var act = () => new BackTest(portfolio, benchmark, fetcher, CurrencyCode.USD,
+        var act = () => new BackTest(portfolio, benchmark, CurrencyCode.USD,
             NullLogger<BackTest>.Instance, 0m, null, null, annualExpenseRatioBps: 10m, assetExpenseRatiosBps: perAsset);
         act.Should().Throw<ArgumentOutOfRangeException>();
     }
@@ -123,16 +122,16 @@ public sealed class ExpenseRatioTests
     public async Task RunAsync_ExpenseRatio_ShouldNotApplyToBenchmark()
     {
         // Arrange
-        var (portfolioFee, benchmarkFee, fetcherFee) = CreateSetup();
+        var (portfolioFee, benchmarkFee, dataset) = CreateSetup();
         var (_, benchmarkNoFee, _) = CreateSetup();
 
-        var btFee = new BackTest(portfolioFee, benchmarkFee, fetcherFee, CurrencyCode.USD,
+        var btFee = new BackTest(portfolioFee, benchmarkFee, CurrencyCode.USD,
             NullLogger<BackTest>.Instance, 0m, null, null, annualExpenseRatioBps: 100m);
-        var btNoFee = new BackTest(portfolioFee, benchmarkNoFee, fetcherFee, CurrencyCode.USD);
+        var btNoFee = new BackTest(portfolioFee, benchmarkNoFee, CurrencyCode.USD);
 
         // Act
-        await btFee.RunAsync(s_start, s_end);
-        await btNoFee.RunAsync(s_start, s_end);
+        await btFee.RunAsync(dataset);
+        await btNoFee.RunAsync(dataset);
 
         // Assert — benchmark equity curves should be identical (no expense applied)
         foreach (var date in benchmarkFee.EquityCurve.Keys)
@@ -145,22 +144,22 @@ public sealed class ExpenseRatioTests
     public async Task RunAsync_PerAssetExpenseRatio_ShouldOverrideDefault()
     {
         // Arrange — default 10bps, AAPL override 50bps
-        var (portfolioPerAsset, benchmarkPerAsset, fetcher) = CreateSetup();
+        var (portfolioPerAsset, benchmarkPerAsset, dataset) = CreateSetup();
         var (portfolioDefault, benchmarkDefault, _) = CreateSetup();
 
         var perAssetRates = new Dictionary<string, decimal> { { "AAPL", 50m } };
 
-        var btPerAsset = new BackTest(portfolioPerAsset, benchmarkPerAsset, fetcher, CurrencyCode.USD,
+        var btPerAsset = new BackTest(portfolioPerAsset, benchmarkPerAsset, CurrencyCode.USD,
             NullLogger<BackTest>.Instance, 0m, null, null,
             annualExpenseRatioBps: 10m, assetExpenseRatiosBps: perAssetRates);
 
-        var btDefault = new BackTest(portfolioDefault, benchmarkDefault, fetcher, CurrencyCode.USD,
+        var btDefault = new BackTest(portfolioDefault, benchmarkDefault, CurrencyCode.USD,
             NullLogger<BackTest>.Instance, 0m, null, null,
             annualExpenseRatioBps: 10m);
 
         // Act
-        await btPerAsset.RunAsync(s_start, s_end);
-        await btDefault.RunAsync(s_start, s_end);
+        await btPerAsset.RunAsync(dataset);
+        await btDefault.RunAsync(dataset);
 
         // Assert — per-asset (50bps on AAPL) should drag more than uniform 10bps
         var lastDate = portfolioPerAsset.EquityCurve.Keys.Last();
@@ -171,20 +170,20 @@ public sealed class ExpenseRatioTests
     public async Task RunAsync_PerAssetZeroOverride_ShouldExemptAssetFromFee()
     {
         // Arrange — default 50bps, but AAPL explicitly overridden to 0bps
-        var (portfolioZeroOverride, benchmarkZeroOverride, fetcher) = CreateSetup();
+        var (portfolioZeroOverride, benchmarkZeroOverride, dataset) = CreateSetup();
         var (portfolioNoFee, benchmarkNoFee, _) = CreateSetup();
 
         var perAssetRates = new Dictionary<string, decimal> { { "AAPL", 0m } };
 
-        var btZeroOverride = new BackTest(portfolioZeroOverride, benchmarkZeroOverride, fetcher, CurrencyCode.USD,
+        var btZeroOverride = new BackTest(portfolioZeroOverride, benchmarkZeroOverride, CurrencyCode.USD,
             NullLogger<BackTest>.Instance, 0m, null, null,
             annualExpenseRatioBps: 50m, assetExpenseRatiosBps: perAssetRates);
 
-        var btNoFee = new BackTest(portfolioNoFee, benchmarkNoFee, fetcher, CurrencyCode.USD);
+        var btNoFee = new BackTest(portfolioNoFee, benchmarkNoFee, CurrencyCode.USD);
 
         // Act
-        await btZeroOverride.RunAsync(s_start, s_end);
-        await btNoFee.RunAsync(s_start, s_end);
+        await btZeroOverride.RunAsync(dataset);
+        await btNoFee.RunAsync(dataset);
 
         // Assert — AAPL position fee is 0 (overridden), only cash fee at default 50bps applies.
         // Cash drag should be very small compared to position-level fee, so equity curves
@@ -203,10 +202,10 @@ public sealed class ExpenseRatioTests
     /// Creates portfolio (AAPL) + benchmark (SPY) with different price series
     /// to ensure non-zero tracking error for InformationRatio calculation.
     /// </summary>
-    private static (IPortfolio portfolio, IPortfolio benchmark, IMarketDataFetcher fetcher) CreateSetup()
+    private static (IPortfolio portfolio, IPortfolio benchmark, FakeBacktestDataset dataset) CreateSetup()
     {
-        var assetPortfolio = new Asset("AAPL");
-        var assetBenchmark = new Asset("SPY");
+        var assetPortfolio = new Symbol("AAPL");
+        var assetBenchmark = new Symbol("SPY");
 
         var mockBroker = new Mock<IBrokerage>();
         mockBroker.Setup(b => b.SubmitOrderAsync(It.IsAny<Order>(), It.IsAny<CancellationToken>()))
@@ -220,16 +219,16 @@ public sealed class ExpenseRatioTests
             { typeof(SignalEvent), new SignalEventHandler() }
         };
 
-        var portfolioWeights = new Dictionary<Asset, decimal> { { assetPortfolio, 1.0m } };
-        var benchmarkWeights = new Dictionary<Asset, decimal> { { assetBenchmark, 1.0m } };
+        var portfolioWeights = new Dictionary<Symbol, decimal> { { assetPortfolio, 1.0m } };
+        var benchmarkWeights = new Dictionary<Symbol, decimal> { { assetBenchmark, 1.0m } };
         var orderPriceCalc = new ClosePriceOrderPriceCalculationStrategy();
 
         var strategy = new TestStrategy
         {
             Name = "Main",
-            Positions = new SortedDictionary<Asset, int> { { assetPortfolio, 100 } },
+            Positions = new SortedDictionary<Symbol, int> { { assetPortfolio, 100 } },
             Cash = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 10_000m } },
-            Assets = new Dictionary<Asset, CurrencyCode> { { assetPortfolio, CurrencyCode.USD } },
+            Assets = new Dictionary<Symbol, CurrencyCode> { { assetPortfolio, CurrencyCode.USD } },
             PositionSizer = new FixedWeightPositionSizer(portfolioWeights, CurrencyCode.USD),
             OrderPriceCalculationStrategy = orderPriceCalc
         };
@@ -237,9 +236,9 @@ public sealed class ExpenseRatioTests
         var bmStrategy = new TestStrategy
         {
             Name = "Benchmark",
-            Positions = new SortedDictionary<Asset, int> { { assetBenchmark, 100 } },
+            Positions = new SortedDictionary<Symbol, int> { { assetBenchmark, 100 } },
             Cash = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 10_000m } },
-            Assets = new Dictionary<Asset, CurrencyCode> { { assetBenchmark, CurrencyCode.USD } },
+            Assets = new Dictionary<Symbol, CurrencyCode> { { assetBenchmark, CurrencyCode.USD } },
             PositionSizer = new FixedWeightPositionSizer(benchmarkWeights, CurrencyCode.USD),
             OrderPriceCalculationStrategy = orderPriceCalc
         };
@@ -247,13 +246,13 @@ public sealed class ExpenseRatioTests
         var portfolio = new Portfolio(
             CurrencyCode.USD,
             new ReadOnlyDictionary<string, IStrategy>(new Dictionary<string, IStrategy> { { "Main", strategy } }),
-            new Dictionary<Asset, CurrencyCode> { { assetPortfolio, CurrencyCode.USD } },
+            new Dictionary<Symbol, CurrencyCode> { { assetPortfolio, CurrencyCode.USD } },
             handlers, mockBroker.Object, isLive: false);
 
         var benchmark = new Portfolio(
             CurrencyCode.USD,
             new ReadOnlyDictionary<string, IStrategy>(new Dictionary<string, IStrategy> { { "Benchmark", bmStrategy } }),
-            new Dictionary<Asset, CurrencyCode> { { assetBenchmark, CurrencyCode.USD } },
+            new Dictionary<Symbol, CurrencyCode> { { assetBenchmark, CurrencyCode.USD } },
             handlers, mockBroker.Object, isLive: false);
 
         // Different price series → non-zero tracking error
@@ -266,34 +265,22 @@ public sealed class ExpenseRatioTests
         var aaplPrices = new[] { 100.00m, 100.50m, 99.80m, 100.20m, 100.60m };
         var spyPrices = new[] { 450.00m, 451.00m, 449.50m, 450.50m, 452.00m };
 
-        var fetcher = new Mock<IMarketDataFetcher>();
-        fetcher.Setup(f => f.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>(), It.IsAny<CancellationToken>()))
-            .Returns(CreateTwoAssetStream(assetPortfolio, aaplPrices, assetBenchmark, spyPrices, dates));
-        fetcher.Setup(f => f.FetchFxRatesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
-            .Returns(AsyncEnumerable.Empty<KeyValuePair<DateOnly, SortedDictionary<CurrencyCode, decimal>>>());
-
-        return (portfolio, benchmark, fetcher.Object);
-    }
-
-    private static async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>> CreateTwoAssetStream(
-        Asset asset1, decimal[] prices1, Asset asset2, decimal[] prices2, DateOnly[] dates)
-    {
+        var prices = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>();
         for (var i = 0; i < dates.Length; i++)
         {
-            var dict = new SortedDictionary<Asset, MarketData>
+            prices[dates[i]] = new SortedDictionary<Symbol, Bar>
             {
-                {
-                    asset1, new MarketData(dates[i], prices1[i], prices1[i] + 0.5m, prices1[i] - 0.5m,
-                        prices1[i], prices1[i], 1_000_000, 0m, 1m)
-                },
-                {
-                    asset2, new MarketData(dates[i], prices2[i], prices2[i] + 1m, prices2[i] - 1m,
-                        prices2[i], prices2[i], 2_000_000, 0m, 1m)
-                }
+                { assetPortfolio, new Bar(dates[i], aaplPrices[i], aaplPrices[i] + 0.5m, aaplPrices[i] - 0.5m, aaplPrices[i], aaplPrices[i], 1_000_000) },
+                { assetBenchmark, new Bar(dates[i], spyPrices[i], spyPrices[i] + 1m, spyPrices[i] - 1m, spyPrices[i], spyPrices[i], 2_000_000) },
             };
-            yield return new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(dates[i], dict);
         }
 
-        await Task.CompletedTask;
+        var dataset = new FakeBacktestDataset
+        {
+            Prices = prices,
+            FxRates = [],
+        };
+
+        return (portfolio, benchmark, dataset);
     }
 }

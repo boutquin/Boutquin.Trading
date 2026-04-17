@@ -17,7 +17,6 @@
 namespace Boutquin.Trading.Tests.UnitTests.Application;
 
 using Boutquin.Trading.Application.PortfolioConstruction;
-using Boutquin.Trading.Domain.Enums;
 using Boutquin.Trading.Domain.ValueObjects;
 using FluentAssertions;
 
@@ -28,10 +27,10 @@ public sealed class PortfolioConstructionModelTests
 {
     private const decimal Precision = 1e-10m;
 
-    private static readonly Asset s_vti = new("VTI");
-    private static readonly Asset s_tlt = new("TLT");
-    private static readonly Asset s_gld = new("GLD");
-    private static readonly Asset s_vnq = new("VNQ");
+    private static readonly Symbol s_vti = new("VTI");
+    private static readonly Symbol s_tlt = new("TLT");
+    private static readonly Symbol s_gld = new("GLD");
+    private static readonly Symbol s_vnq = new("VNQ");
 
     // Return series with different volatilities:
     // VTI: high vol, TLT: low vol, GLD: medium vol, VNQ: high vol
@@ -43,16 +42,16 @@ public sealed class PortfolioConstructionModelTests
         [0.03m, -0.04m, 0.05m, -0.02m, 0.04m, -0.03m, 0.02m, 0.06m, -0.05m, 0.03m]  // VNQ
     ];
 
-    private static IReadOnlyList<Asset> FourAssets => [s_vti, s_tlt, s_gld, s_vnq];
+    private static IReadOnlyList<Symbol> FourAssets => [s_vti, s_tlt, s_gld, s_vnq];
 
     // --- Helper ---
 
-    private static void AssertWeightsSumToOne(IReadOnlyDictionary<Asset, decimal> weights)
+    private static void AssertWeightsSumToOne(IReadOnlyDictionary<Symbol, decimal> weights)
     {
         weights.Values.Sum().Should().BeApproximately(1.0m, 1e-8m, "Weights must sum to 1.0");
     }
 
-    private static void AssertAllWeightsNonNegative(IReadOnlyDictionary<Asset, decimal> weights)
+    private static void AssertAllWeightsNonNegative(IReadOnlyDictionary<Symbol, decimal> weights)
     {
         foreach (var (asset, weight) in weights)
         {
@@ -82,7 +81,7 @@ public sealed class PortfolioConstructionModelTests
     public void EqualWeight_SingleETF_ShouldReturn100Percent()
     {
         var model = new EqualWeightConstruction();
-        var assets = new List<Asset> { s_vti };
+        var assets = new List<Symbol> { s_vti };
 
         var weights = model.ComputeTargetWeights(assets, [FourAssetReturns[0]]);
 
@@ -120,8 +119,8 @@ public sealed class PortfolioConstructionModelTests
     {
         // Two assets: A has σ, B has 2σ → B gets weight 1/2 of A's weight
         var model = new InverseVolatilityConstruction();
-        var a = new Asset("A");
-        var b = new Asset("B");
+        var a = new Symbol("A");
+        var b = new Symbol("B");
 
         // B = 2*A, so vol(B) = 2*vol(A)
         var returnsA = new[] { 0.01m, -0.01m, 0.02m, -0.02m, 0.01m };
@@ -131,7 +130,7 @@ public sealed class PortfolioConstructionModelTests
 
         // w_A / w_B should be approx 2
         var ratio = weights[a] / weights[b];
-        ratio.Should().BeApproximately(2.0m, 0.01m, "Asset with half the vol should get double the weight");
+        ratio.Should().BeApproximately(2.0m, 0.01m, "Symbol with half the vol should get double the weight");
         AssertWeightsSumToOne(weights);
     }
 
@@ -139,7 +138,7 @@ public sealed class PortfolioConstructionModelTests
     public void InverseVolatility_ZeroVol_ShouldThrowCalculationException()
     {
         var model = new InverseVolatilityConstruction();
-        var a = new Asset("A");
+        var a = new Symbol("A");
         var constantReturns = new[] { 0.01m, 0.01m, 0.01m, 0.01m };
 
         var act = () => model.ComputeTargetWeights([a], [constantReturns]);
@@ -318,10 +317,10 @@ public sealed class PortfolioConstructionModelTests
     [Fact]
     public void MeanVariance_TwoAssetCase_HigherReturnAssetGetsMoreWeight()
     {
-        // Asset A has higher mean return than B
+        // Symbol A has higher mean return than B
         var model = new MeanVarianceConstruction();
-        var a = new Asset("HIGH");
-        var b = new Asset("LOW");
+        var a = new Symbol("HIGH");
+        var b = new Symbol("LOW");
 
         var returnsA = new[] { 0.05m, 0.04m, 0.06m, 0.03m, 0.05m };
         var returnsB = new[] { 0.01m, 0.005m, 0.008m, 0.012m, 0.009m };
@@ -337,8 +336,8 @@ public sealed class PortfolioConstructionModelTests
     public void MeanVariance_IdenticalAssets_ShouldReturnEqualWeight()
     {
         var model = new MeanVarianceConstruction();
-        var a = new Asset("A");
-        var b = new Asset("B");
+        var a = new Symbol("A");
+        var b = new Symbol("B");
         var returns = new[] { 0.01m, -0.01m, 0.02m, -0.02m, 0.01m };
 
         var weights = model.ComputeTargetWeights([a, b], [returns, returns]);
@@ -788,7 +787,7 @@ public sealed class PortfolioConstructionModelTests
     public void MaxDiversification_SingleAsset_ShouldReturn100Percent()
     {
         var model = new MaximumDiversificationConstruction();
-        var assets = new List<Asset> { s_vti };
+        var assets = new List<Symbol> { s_vti };
 
         var weights = model.ComputeTargetWeights(assets, [FourAssetReturns[0]]);
 
@@ -798,11 +797,11 @@ public sealed class PortfolioConstructionModelTests
     [Fact]
     public void MaxDiversification_LowCorrelationAsset_ShouldGetMeaningfulWeight()
     {
-        // Asset C has low correlation to A and B but higher volatility
+        // Symbol C has low correlation to A and B but higher volatility
         // MDP should give C meaningful weight due to diversification benefit
-        var a = new Asset("A");
-        var b = new Asset("B");
-        var c = new Asset("C");
+        var a = new Symbol("A");
+        var b = new Symbol("B");
+        var c = new Symbol("C");
 
         var returnsA = new[] { 0.01m, -0.01m, 0.02m, -0.02m, 0.015m, -0.005m, 0.01m, -0.01m, 0.005m, -0.015m };
         var returnsB = new[] { 0.012m, -0.008m, 0.018m, -0.022m, 0.013m, -0.007m, 0.011m, -0.009m, 0.006m, -0.014m };
@@ -852,7 +851,7 @@ public sealed class PortfolioConstructionModelTests
     public void HRP_SingleAsset_ShouldReturn100Percent()
     {
         var model = new HierarchicalRiskParityConstruction();
-        var assets = new List<Asset> { s_vti };
+        var assets = new List<Symbol> { s_vti };
 
         var weights = model.ComputeTargetWeights(assets, [FourAssetReturns[0]]);
 
@@ -864,8 +863,8 @@ public sealed class PortfolioConstructionModelTests
     {
         // With only 2 assets, HRP reduces to inverse-variance allocation
         var model = new HierarchicalRiskParityConstruction();
-        var a = new Asset("A");
-        var b = new Asset("B");
+        var a = new Symbol("A");
+        var b = new Symbol("B");
 
         var returnsA = new[] { 0.01m, -0.01m, 0.02m, -0.02m, 0.01m };
         var returnsB = new[] { 0.02m, -0.02m, 0.04m, -0.04m, 0.02m }; // 2x vol
@@ -907,10 +906,10 @@ public sealed class PortfolioConstructionModelTests
     {
         // Create two clusters: (A, B) highly correlated, (C, D) highly correlated
         // but inter-cluster correlation low
-        var a = new Asset("A");
-        var b = new Asset("B");
-        var c = new Asset("C");
-        var d = new Asset("D");
+        var a = new Symbol("A");
+        var b = new Symbol("B");
+        var c = new Symbol("C");
+        var d = new Symbol("D");
 
         var baseAB = new[] { 0.01m, -0.01m, 0.02m, -0.02m, 0.015m, -0.005m, 0.01m, -0.01m, 0.005m, -0.015m };
         var returnsA = baseAB;
@@ -941,9 +940,9 @@ public sealed class PortfolioConstructionModelTests
         // Create nearly-singular scenario: assets that are near-identical
         // HRP should handle this without matrix inversion issues
         var model = new HierarchicalRiskParityConstruction();
-        var a = new Asset("A");
-        var b = new Asset("B");
-        var c = new Asset("C");
+        var a = new Symbol("A");
+        var b = new Symbol("B");
+        var c = new Symbol("C");
 
         var returns1 = new[] { 0.01m, -0.01m, 0.02m, -0.02m, 0.01m };
         var returns2 = new[] { 0.01m, -0.01m, 0.02m, -0.02m, 0.0100001m }; // nearly identical to 1
@@ -1023,8 +1022,8 @@ public sealed class PortfolioConstructionModelTests
     public void ReturnTiltedHRP_Kappa1_ShouldTiltTowardHigherReturns()
     {
         // Create assets with clearly different mean returns but similar volatility
-        var high = new Asset("HIGH");
-        var low = new Asset("LOW");
+        var high = new Symbol("HIGH");
+        var low = new Symbol("LOW");
 
         var returnsHigh = new[] { 0.02m, 0.01m, 0.03m, 0.015m, 0.025m };
         var returnsLow = new[] { 0.001m, -0.001m, 0.002m, 0.0m, 0.001m };
@@ -1053,7 +1052,7 @@ public sealed class PortfolioConstructionModelTests
     public void ReturnTiltedHRP_SingleAsset_ShouldReturn100Percent()
     {
         var model = new ReturnTiltedHrpConstruction();
-        var assets = new List<Asset> { s_vti };
+        var assets = new List<Symbol> { s_vti };
 
         var weights = model.ComputeTargetWeights(assets, [FourAssetReturns[0]]);
 
@@ -1063,8 +1062,8 @@ public sealed class PortfolioConstructionModelTests
     [Fact]
     public void ReturnTiltedHRP_AllNegativeReturns_ShouldStillProduceValidWeights()
     {
-        var a = new Asset("A");
-        var b = new Asset("B");
+        var a = new Symbol("A");
+        var b = new Symbol("B");
 
         var returnsA = new[] { -0.02m, -0.01m, -0.03m, -0.015m, -0.025m };
         var returnsB = new[] { -0.04m, -0.02m, -0.06m, -0.03m, -0.05m };
@@ -1103,7 +1102,7 @@ public sealed class PortfolioConstructionModelTests
             [-0.02m, -0.03m, -0.02m, -0.01m, -0.02m, -0.03m, -0.02m, -0.025m, -0.015m, -0.02m], // C: moderate loss
         ];
 
-        IReadOnlyList<Asset> assets = [new("A"), new("B"), new("C")];
+        IReadOnlyList<Symbol> assets = [new("A"), new("B"), new("C")];
 
         var wRisk = riskOnly.ComputeTargetWeights(assets, returns);
         var wTilted = tilted.ComputeTargetWeights(assets, returns);
@@ -1146,8 +1145,8 @@ public sealed class PortfolioConstructionModelTests
     // --- Helpers ---
 
     private static decimal ComputePortfolioVariance(
-        IReadOnlyList<Asset> assets,
-        IReadOnlyDictionary<Asset, decimal> weights,
+        IReadOnlyList<Symbol> assets,
+        IReadOnlyDictionary<Symbol, decimal> weights,
         decimal[,] cov)
     {
         var n = assets.Count;
@@ -1164,8 +1163,8 @@ public sealed class PortfolioConstructionModelTests
     }
 
     private static decimal ComputeDiversificationRatio(
-        IReadOnlyList<Asset> assets,
-        IReadOnlyDictionary<Asset, decimal> weights,
+        IReadOnlyList<Symbol> assets,
+        IReadOnlyDictionary<Symbol, decimal> weights,
         decimal[,] cov)
     {
         var n = assets.Count;
@@ -1195,7 +1194,7 @@ public sealed class PortfolioConstructionModelTests
     {
         var model = new MaximumDiversificationConstruction(
             maxWeight: 0.30m, minWeight: 0.05m);
-        var assets = new List<Asset> { s_vti, s_tlt };
+        var assets = new List<Symbol> { s_vti, s_tlt };
         decimal[][] returns = [FourAssetReturns[0], FourAssetReturns[1]];
 
         var weights = model.ComputeTargetWeights(assets, returns);
@@ -1209,7 +1208,7 @@ public sealed class PortfolioConstructionModelTests
     {
         var model = new RiskParityConstruction(
             maxWeight: 0.25m, minWeight: 0.05m);
-        var assets = new List<Asset> { s_vti, s_tlt };
+        var assets = new List<Symbol> { s_vti, s_tlt };
         decimal[][] returns = [FourAssetReturns[0], FourAssetReturns[1]];
 
         var weights = model.ComputeTargetWeights(assets, returns);
@@ -1223,7 +1222,7 @@ public sealed class PortfolioConstructionModelTests
     {
         var model = new HierarchicalRiskParityConstruction(
             maxWeight: 0.30m, minWeight: 0.05m);
-        var assets = new List<Asset> { s_vti, s_tlt };
+        var assets = new List<Symbol> { s_vti, s_tlt };
         decimal[][] returns = [FourAssetReturns[0], FourAssetReturns[1]];
 
         var weights = model.ComputeTargetWeights(assets, returns);
@@ -1237,7 +1236,7 @@ public sealed class PortfolioConstructionModelTests
     {
         var model = new MinimumVarianceConstruction(
             maxWeight: 0.30m, minWeight: 0.05m);
-        var assets = new List<Asset> { s_vti, s_tlt, s_gld };
+        var assets = new List<Symbol> { s_vti, s_tlt, s_gld };
         decimal[][] returns = [FourAssetReturns[0], FourAssetReturns[1], FourAssetReturns[2]];
 
         var weights = model.ComputeTargetWeights(assets, returns);
@@ -1282,7 +1281,7 @@ public sealed class PortfolioConstructionModelTests
         // Inner model gives InverseVol weights (TLT gets ~55% due to low vol).
         // Cap TLT at 30% — remaining weight redistributed.
         var inner = new InverseVolatilityConstruction();
-        var caps = new Dictionary<Asset, decimal> { [s_tlt] = 0.30m };
+        var caps = new Dictionary<Symbol, decimal> { [s_tlt] = 0.30m };
         var model = new WeightConstrainedConstruction(inner, caps: caps);
 
         var weights = model.ComputeTargetWeights(FourAssets, FourAssetReturns);
@@ -1298,7 +1297,7 @@ public sealed class PortfolioConstructionModelTests
         // Inner model gives InverseVol weights (VNQ gets lowest weight ~8%).
         // Floor VNQ at 20%.
         var inner = new InverseVolatilityConstruction();
-        var floors = new Dictionary<Asset, decimal> { [s_vnq] = 0.20m };
+        var floors = new Dictionary<Symbol, decimal> { [s_vnq] = 0.20m };
         var model = new WeightConstrainedConstruction(inner, floors: floors);
 
         var weights = model.ComputeTargetWeights(FourAssets, FourAssetReturns);
@@ -1312,8 +1311,8 @@ public sealed class PortfolioConstructionModelTests
     public void WeightConstrained_CombinedFloorAndCap_ShouldRespectBoth()
     {
         var inner = new InverseVolatilityConstruction();
-        var floors = new Dictionary<Asset, decimal> { [s_vnq] = 0.15m };
-        var caps = new Dictionary<Asset, decimal> { [s_tlt] = 0.35m };
+        var floors = new Dictionary<Symbol, decimal> { [s_vnq] = 0.15m };
+        var caps = new Dictionary<Symbol, decimal> { [s_tlt] = 0.35m };
         var model = new WeightConstrainedConstruction(inner, floors: floors, caps: caps);
 
         var weights = model.ComputeTargetWeights(FourAssets, FourAssetReturns);
@@ -1328,8 +1327,8 @@ public sealed class PortfolioConstructionModelTests
     public void WeightConstrained_FloorExceedsCap_ShouldThrow()
     {
         var inner = new EqualWeightConstruction();
-        var floors = new Dictionary<Asset, decimal> { [s_vti] = 0.50m };
-        var caps = new Dictionary<Asset, decimal> { [s_vti] = 0.30m };
+        var floors = new Dictionary<Symbol, decimal> { [s_vti] = 0.50m };
+        var caps = new Dictionary<Symbol, decimal> { [s_vti] = 0.30m };
 
         var act = () => new WeightConstrainedConstruction(inner, floors: floors, caps: caps);
 
@@ -1340,7 +1339,7 @@ public sealed class PortfolioConstructionModelTests
     public void WeightConstrained_FloorsExceedOne_ShouldThrow()
     {
         var inner = new EqualWeightConstruction();
-        var floors = new Dictionary<Asset, decimal>
+        var floors = new Dictionary<Symbol, decimal>
         {
             [s_vti] = 0.40m,
             [s_tlt] = 0.40m,
@@ -1356,7 +1355,7 @@ public sealed class PortfolioConstructionModelTests
     public void WeightConstrained_InvalidFloor_ShouldThrow()
     {
         var inner = new EqualWeightConstruction();
-        var floors = new Dictionary<Asset, decimal> { [s_vti] = -0.1m };
+        var floors = new Dictionary<Symbol, decimal> { [s_vti] = -0.1m };
 
         var act = () => new WeightConstrainedConstruction(inner, floors: floors);
 
@@ -1367,7 +1366,7 @@ public sealed class PortfolioConstructionModelTests
     public void WeightConstrained_InvalidCap_ShouldThrow()
     {
         var inner = new EqualWeightConstruction();
-        var caps = new Dictionary<Asset, decimal> { [s_vti] = 1.5m };
+        var caps = new Dictionary<Symbol, decimal> { [s_vti] = 1.5m };
 
         var act = () => new WeightConstrainedConstruction(inner, caps: caps);
 
@@ -1379,8 +1378,8 @@ public sealed class PortfolioConstructionModelTests
     {
         var inner = new InverseVolatilityConstruction();
         var constraints = new AssetWeightConstraints(
-            Floors: new Dictionary<Asset, decimal> { [s_vnq] = 0.15m },
-            Caps: new Dictionary<Asset, decimal> { [s_tlt] = 0.35m });
+            Floors: new Dictionary<Symbol, decimal> { [s_vnq] = 0.15m },
+            Caps: new Dictionary<Symbol, decimal> { [s_tlt] = 0.35m });
         var model = new WeightConstrainedConstruction(inner, constraints);
 
         var weights = model.ComputeTargetWeights(FourAssets, FourAssetReturns);
@@ -1400,9 +1399,9 @@ public sealed class PortfolioConstructionModelTests
         var regimeConstraints = new Dictionary<EconomicRegime, AssetWeightConstraints>
         {
             [EconomicRegime.RisingGrowthRisingInflation] = new(
-                Caps: new Dictionary<Asset, decimal> { [s_tlt] = 0.20m }),
+                Caps: new Dictionary<Symbol, decimal> { [s_tlt] = 0.20m }),
             [EconomicRegime.FallingGrowthFallingInflation] = new(
-                Floors: new Dictionary<Asset, decimal> { [s_tlt] = 0.40m })
+                Floors: new Dictionary<Symbol, decimal> { [s_tlt] = 0.40m })
         };
 
         // Rising growth: TLT capped at 20%
@@ -1470,7 +1469,7 @@ public sealed class PortfolioConstructionModelTests
         var regimeConstraints = new Dictionary<EconomicRegime, AssetWeightConstraints>
         {
             [EconomicRegime.RisingGrowthRisingInflation] = new(
-                Caps: new Dictionary<Asset, decimal> { [s_tlt] = 0.30m })
+                Caps: new Dictionary<Symbol, decimal> { [s_tlt] = 0.30m })
         };
 
         var model = new RegimeWeightConstrainedConstruction(
@@ -1489,8 +1488,8 @@ public sealed class PortfolioConstructionModelTests
         var regimeConstraints = new Dictionary<EconomicRegime, AssetWeightConstraints>
         {
             [EconomicRegime.RisingGrowthRisingInflation] = new(
-                Floors: new Dictionary<Asset, decimal> { [s_vti] = 0.60m },
-                Caps: new Dictionary<Asset, decimal> { [s_vti] = 0.30m })
+                Floors: new Dictionary<Symbol, decimal> { [s_vti] = 0.60m },
+                Caps: new Dictionary<Symbol, decimal> { [s_vti] = 0.30m })
         };
 
         var act = () => new RegimeWeightConstrainedConstruction(
@@ -1528,7 +1527,7 @@ public sealed class PortfolioConstructionModelTests
     public void HERC_SingleAsset_ShouldReturn100Percent()
     {
         var model = new HierarchicalEqualRiskContributionConstruction();
-        var assets = new List<Asset> { s_vti };
+        var assets = new List<Symbol> { s_vti };
         decimal[][] returns = [FourAssetReturns[0]];
 
         var weights = model.ComputeTargetWeights(assets, returns);
@@ -1601,7 +1600,7 @@ public sealed class PortfolioConstructionModelTests
     public void HERC_TwoAssets_ShouldSumToOne()
     {
         var model = new HierarchicalEqualRiskContributionConstruction();
-        var assets = new List<Asset> { s_vti, s_tlt };
+        var assets = new List<Symbol> { s_vti, s_tlt };
         decimal[][] returns = [FourAssetReturns[0], FourAssetReturns[1]];
 
         var weights = model.ComputeTargetWeights(assets, returns);

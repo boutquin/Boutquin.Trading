@@ -14,6 +14,8 @@
 //   limitations under the License.
 //
 
+using NumericsStats = Boutquin.Numerics.Statistics;
+
 namespace Boutquin.Trading.Application.CovarianceEstimators;
 
 /// <summary>
@@ -21,37 +23,13 @@ namespace Boutquin.Trading.Application.CovarianceEstimators;
 /// </summary>
 public sealed class SampleCovarianceEstimator : ICovarianceEstimator
 {
+    private static readonly NumericsStats.SampleCovarianceEstimator s_inner = new();
+
     /// <inheritdoc />
     public decimal[,] Estimate(decimal[][] returns)
     {
         ValidateReturns(returns);
-
-        var n = returns.Length;
-        var t = returns[0].Length;
-        var means = new decimal[n];
-
-        for (var i = 0; i < n; i++)
-        {
-            means[i] = returns[i].Average();
-        }
-
-        var cov = new decimal[n, n];
-        for (var i = 0; i < n; i++)
-        {
-            for (var j = i; j < n; j++)
-            {
-                var sum = 0m;
-                for (var k = 0; k < t; k++)
-                {
-                    sum += (returns[i][k] - means[i]) * (returns[j][k] - means[j]);
-                }
-
-                cov[i, j] = sum / (t - 1);
-                cov[j, i] = cov[i, j];
-            }
-        }
-
-        return cov;
+        return s_inner.Estimate(new NumericsStats.ReturnsMatrix(returns).AsTimeByAsset());
     }
 
     internal static void ValidateReturns(decimal[][] returns)

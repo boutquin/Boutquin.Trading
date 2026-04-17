@@ -17,7 +17,6 @@
 namespace Boutquin.Trading.Application.Universe;
 
 using Boutquin.Trading.Domain.Analytics;
-using Domain.ValueObjects;
 
 /// <summary>
 /// Filters assets by minimum assets under management (AUM).
@@ -25,12 +24,12 @@ using Domain.ValueObjects;
 public sealed class MinAumFilter : IUniverseSelector
 {
     private readonly decimal _minAumMillions;
-    private readonly IReadOnlyDictionary<Asset, AssetMetadata> _metadata;
+    private readonly IReadOnlyDictionary<Symbol, AssetMetadata> _metadata;
 
     /// <summary>Initializes a new instance with the specified minimum AUM threshold and metadata.</summary>
     /// <param name="minAumMillions">The minimum AUM in millions.</param>
-    /// <param name="metadata">Asset metadata containing AUM data.</param>
-    public MinAumFilter(decimal minAumMillions, IReadOnlyDictionary<Asset, AssetMetadata> metadata)
+    /// <param name="metadata">Symbol metadata containing AUM data.</param>
+    public MinAumFilter(decimal minAumMillions, IReadOnlyDictionary<Symbol, AssetMetadata> metadata)
     {
         if (minAumMillions < 0m)
         {
@@ -44,7 +43,7 @@ public sealed class MinAumFilter : IUniverseSelector
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<Asset> Select(IReadOnlyList<Asset> candidates)
+    public IReadOnlyList<Symbol> Select(IReadOnlyList<Symbol> candidates)
     {
         Guard.AgainstNull(() => candidates);
 

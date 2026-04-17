@@ -18,7 +18,7 @@ namespace Boutquin.Trading.Tests.UnitTests.Application;
 
 public static class VolatilityTargetingConstructionContractTestData
 {
-    private static readonly Asset s_vti = new("VTI");
+    private static readonly Symbol s_vti = new("VTI");
 
     /// <summary>
     /// Returns with known ~2% daily vol (annualized ~31.7%).
@@ -34,7 +34,7 @@ public static class VolatilityTargetingConstructionContractTestData
                 returns[i] = i % 2 == 0 ? 0.02m : -0.02m;
             }
 
-            yield return [new List<Asset> { s_vti }, new[] { returns }, 0.50m, 2.0m];
+            yield return [new List<Symbol> { s_vti }, new[] { returns }, 0.50m, 2.0m];
         }
     }
 
@@ -52,7 +52,7 @@ public static class VolatilityTargetingConstructionContractTestData
                 returns[i] = i % 2 == 0 ? 0.02m : -0.02m;
             }
 
-            yield return [new List<Asset> { s_vti }, new[] { returns }, 0.10m, 1.0m];
+            yield return [new List<Symbol> { s_vti }, new[] { returns }, 0.10m, 1.0m];
         }
     }
 }

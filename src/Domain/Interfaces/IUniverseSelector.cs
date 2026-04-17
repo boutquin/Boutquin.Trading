@@ -15,9 +15,6 @@
 //
 
 namespace Boutquin.Trading.Domain.Interfaces;
-
-using ValueObjects;
-
 /// <summary>
 /// Filters a universe of assets based on configurable criteria (AUM, age, liquidity, etc.).
 /// </summary>
@@ -28,5 +25,5 @@ public interface IUniverseSelector
     /// </summary>
     /// <param name="candidates">The candidate assets to filter.</param>
     /// <returns>The filtered assets that pass all criteria.</returns>
-    IReadOnlyList<Asset> Select(IReadOnlyList<Asset> candidates);
+    IReadOnlyList<Symbol> Select(IReadOnlyList<Symbol> candidates);
 }

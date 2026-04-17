@@ -27,7 +27,7 @@ public sealed record BlackLittermanViewSpec
     public BlackLittermanViewType Type { get; }
 
     /// <summary>For absolute views: the single asset ticker.</summary>
-    public string? Asset { get; }
+    public string? Symbol { get; }
 
     /// <summary>For relative views: the overweight asset ticker.</summary>
     public string? LongAsset { get; }
@@ -45,14 +45,14 @@ public sealed record BlackLittermanViewSpec
     /// Initializes a new instance of the <see cref="BlackLittermanViewSpec"/> record.
     /// </summary>
     /// <param name="Type">Absolute (single asset) or Relative (long-short pair).</param>
-    /// <param name="Asset">For absolute views: the single asset ticker.</param>
+    /// <param name="Symbol">For absolute views: the single asset ticker.</param>
     /// <param name="LongAsset">For relative views: the overweight asset ticker.</param>
     /// <param name="ShortAsset">For relative views: the underweight asset ticker.</param>
     /// <param name="ExpectedReturn">The expected return (absolute) or return spread (relative).</param>
     /// <param name="Confidence">View confidence in (0, 1]. Higher = more certain.</param>
     public BlackLittermanViewSpec(
         BlackLittermanViewType Type,
-        string? Asset,
+        string? Symbol,
         string? LongAsset,
         string? ShortAsset,
         decimal ExpectedReturn,
@@ -65,7 +65,7 @@ public sealed record BlackLittermanViewSpec
         }
 
         this.Type = Type;
-        this.Asset = Asset;
+        this.Symbol = Symbol;
         this.LongAsset = LongAsset;
         this.ShortAsset = ShortAsset;
         this.ExpectedReturn = ExpectedReturn;

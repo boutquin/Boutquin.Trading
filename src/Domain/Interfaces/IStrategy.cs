@@ -15,9 +15,6 @@
 //
 
 namespace Boutquin.Trading.Domain.Interfaces;
-
-using ValueObjects;
-
 /// <summary>
 /// The IStrategy interface defines the structure and behavior of a trading
 /// strategy, providing methods for generating trading signals, managing
@@ -39,13 +36,13 @@ public interface IStrategy
     /// dictionary where the key is the asset symbol and the value is the
     /// quantity of the asset held.
     /// </summary>
-    IReadOnlyDictionary<Asset, int> Positions { get; }
+    IReadOnlyDictionary<Symbol, int> Positions { get; }
 
     /// <summary>
     /// Gets a read-only dictionary of assets and their associated currency codes.
     /// The key is the asset symbol and the value is the asset's currency code.
     /// </summary>
-    IReadOnlyDictionary<Asset, CurrencyCode> Assets { get; }
+    IReadOnlyDictionary<Symbol, CurrencyCode> Assets { get; }
 
     /// <summary>
     /// Gets the available cash for this strategy as a read-only dictionary, where the key
@@ -75,7 +72,7 @@ public interface IStrategy
     SignalEvent GenerateSignals(
         DateOnly timestamp,
         CurrencyCode baseCurrency,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>> historicalMarketData,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> historicalMarketData,
         IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates);
 
     /// <summary>
@@ -89,7 +86,7 @@ public interface IStrategy
     decimal ComputeTotalValue(
         DateOnly timestamp,
         CurrencyCode baseCurrency,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>> historicalMarketData,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> historicalMarketData,
         IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates);
 
     /// <summary>
@@ -108,7 +105,7 @@ public interface IStrategy
     /// </summary>
     /// <param name="asset">The asset whose position quantity needs to be updated.</param>
     /// <param name="quantity">The quantity by which the position in the specified asset should be updated.</param>
-    void UpdatePositions(Asset asset, int quantity);
+    void UpdatePositions(Symbol asset, int quantity);
 
     /// <summary>
     /// Sets the position quantity for a particular asset to an absolute value.
@@ -116,7 +113,7 @@ public interface IStrategy
     /// </summary>
     /// <param name="asset">The asset whose position should be set.</param>
     /// <param name="quantity">The absolute quantity to set.</param>
-    void SetPosition(Asset asset, int quantity);
+    void SetPosition(Symbol asset, int quantity);
 
     /// <summary>
     /// Gets the current position quantity for a specific asset.
@@ -124,5 +121,5 @@ public interface IStrategy
     /// </summary>
     /// <param name="asset">The asset to query.</param>
     /// <returns>The current position quantity, or zero if no position exists.</returns>
-    int GetPositionQuantity(Asset asset);
+    int GetPositionQuantity(Symbol asset);
 }

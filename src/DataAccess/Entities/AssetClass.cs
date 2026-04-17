@@ -40,14 +40,14 @@ public sealed class AssetClass
     {
         // Validate parameters
         Guard.AgainstUndefinedEnumValue(() => id); // Throws ArgumentOutOfRangeException
-        if (!description.IsNullOrWhiteSpace())
+        if (!string.IsNullOrWhiteSpace(description))
         {
             Guard.AgainstOverflow(() => description,
                 ColumnConstants.AssetClass_Description_Length); // Throws ArgumentOutOfRangeException
         }
 
         Id = id;
-        Description = description.IsNullOrWhiteSpace() ? id.GetDescription() : description;
+        Description = string.IsNullOrWhiteSpace(description) ? id.GetDescription() : description!;
     }
 
     /// <summary>

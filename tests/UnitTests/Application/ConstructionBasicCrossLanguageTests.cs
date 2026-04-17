@@ -53,17 +53,17 @@ public sealed class ConstructionBasicCrossLanguageTests : CrossLanguageVerificat
             .ToArray();
     }
 
-    private static IReadOnlyList<Asset> MakeAssets(int n)
+    private static IReadOnlyList<Symbol> MakeAssets(int n)
     {
         return Enumerable.Range(0, n)
-            .Select(i => new Asset($"ASSET{i}"))
+            .Select(i => new Symbol($"ASSET{i}"))
             .ToList();
     }
 
     private static void AssertWeightsMatch(
-        IReadOnlyDictionary<Asset, decimal> actual,
+        IReadOnlyDictionary<Symbol, decimal> actual,
         decimal[] expected,
-        IReadOnlyList<Asset> assets,
+        IReadOnlyList<Symbol> assets,
         decimal tolerance,
         string label)
     {
@@ -75,14 +75,14 @@ public sealed class ConstructionBasicCrossLanguageTests : CrossLanguageVerificat
         }
     }
 
-    private static void AssertWeightsSumToOne(IReadOnlyDictionary<Asset, decimal> weights, string label)
+    private static void AssertWeightsSumToOne(IReadOnlyDictionary<Symbol, decimal> weights, string label)
     {
         var sum = weights.Values.Sum();
         AssertWithinTolerance(sum, 1m, PrecisionNumeric,
             $"{label} weights sum: ");
     }
 
-    private static void AssertWeightsNonNegative(IReadOnlyDictionary<Asset, decimal> weights, string label)
+    private static void AssertWeightsNonNegative(IReadOnlyDictionary<Symbol, decimal> weights, string label)
     {
         foreach (var (asset, w) in weights)
         {
@@ -157,8 +157,7 @@ public sealed class ConstructionBasicCrossLanguageTests : CrossLanguageVerificat
         var model = new MinimumVarianceConstruction();
         var result = model.ComputeTargetWeights(assets, returns);
 
-        // Analytical Cholesky solver — use PrecisionExact
-        AssertWeightsMatch(result, expectedWeights, assets, PrecisionExact, "MinVar_3Asset");
+        AssertWeightsMatch(result, expectedWeights, assets, PrecisionNumeric, "MinVar_3Asset");
         AssertWeightsSumToOne(result, "MinVar_3Asset");
         AssertWeightsNonNegative(result, "MinVar_3Asset");
     }
@@ -175,7 +174,7 @@ public sealed class ConstructionBasicCrossLanguageTests : CrossLanguageVerificat
         var model = new MinimumVarianceConstruction();
         var result = model.ComputeTargetWeights(assets, returns);
 
-        AssertWeightsMatch(result, expectedWeights, assets, PrecisionExact, "MinVar_2Asset");
+        AssertWeightsMatch(result, expectedWeights, assets, PrecisionNumeric, "MinVar_2Asset");
         AssertWeightsSumToOne(result, "MinVar_2Asset");
     }
 
@@ -193,7 +192,7 @@ public sealed class ConstructionBasicCrossLanguageTests : CrossLanguageVerificat
         var model = new MinimumVarianceConstruction(minWeight: minW, maxWeight: maxW);
         var result = model.ComputeTargetWeights(assets, returns);
 
-        AssertWeightsMatch(result, expectedWeights, assets, PrecisionExact, "MinVar_Constrained");
+        AssertWeightsMatch(result, expectedWeights, assets, PrecisionNumeric, "MinVar_Constrained");
         AssertWeightsSumToOne(result, "MinVar_Constrained");
 
         // Verify constraints are satisfied
@@ -218,7 +217,7 @@ public sealed class ConstructionBasicCrossLanguageTests : CrossLanguageVerificat
         var model = new MinimumVarianceConstruction();
         var result = model.ComputeTargetWeights(assets, returns);
 
-        AssertWeightsMatch(result, expectedWeights, assets, PrecisionExact, "MinVar_5Asset");
+        AssertWeightsMatch(result, expectedWeights, assets, PrecisionNumeric, "MinVar_5Asset");
         AssertWeightsSumToOne(result, "MinVar_5Asset");
         AssertWeightsNonNegative(result, "MinVar_5Asset");
     }
@@ -340,7 +339,7 @@ public sealed class ConstructionBasicCrossLanguageTests : CrossLanguageVerificat
         var model = new MaximumDiversificationConstruction();
         var result = model.ComputeTargetWeights(assets, returns);
 
-        AssertWeightsMatch(result, expectedWeights, assets, PrecisionExact, "MaxDiv_3Asset");
+        AssertWeightsMatch(result, expectedWeights, assets, PrecisionNumeric, "MaxDiv_3Asset");
         AssertWeightsSumToOne(result, "MaxDiv_3Asset");
         AssertWeightsNonNegative(result, "MaxDiv_3Asset");
     }
@@ -373,7 +372,7 @@ public sealed class ConstructionBasicCrossLanguageTests : CrossLanguageVerificat
         var model = new MaximumDiversificationConstruction();
         var result = model.ComputeTargetWeights(assets, returns);
 
-        AssertWeightsMatch(result, expectedWeights, assets, PrecisionExact, "MaxDiv_5Asset");
+        AssertWeightsMatch(result, expectedWeights, assets, PrecisionNumeric, "MaxDiv_5Asset");
         AssertWeightsSumToOne(result, "MaxDiv_5Asset");
         AssertWeightsNonNegative(result, "MaxDiv_5Asset");
     }

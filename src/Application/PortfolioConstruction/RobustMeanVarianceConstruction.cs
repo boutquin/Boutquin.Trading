@@ -15,9 +15,6 @@
 //
 
 namespace Boutquin.Trading.Application.PortfolioConstruction;
-
-using Domain.ValueObjects;
-
 /// <summary>
 /// Robust mean-variance portfolio construction that maximizes the worst-case Sharpe ratio
 /// across a set of covariance scenarios (minimax optimization).
@@ -75,15 +72,20 @@ public sealed class RobustMeanVarianceConstruction : IRobustConstructionModel
     /// <remarks>
     /// Single-scenario fallback: estimates covariance from returns and optimizes mean-variance.
     /// </remarks>
-    public IReadOnlyDictionary<Asset, decimal> ComputeTargetWeights(
-        IReadOnlyList<Asset> assets,
+    public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
+        IReadOnlyList<Symbol> assets,
         decimal[][] returns)
     {
         Guard.AgainstNull(() => assets);
 
         if (assets.Count == 0)
         {
-            return new Dictionary<Asset, decimal>();
+            return new Dictionary<Symbol, decimal>();
+        }
+
+        if (returns is null || returns.Length != assets.Count)
+        {
+            throw new ArgumentException("Returns array must have one series per asset.", nameof(returns));
         }
 
         var cov = _covarianceEstimator.Estimate(returns);
@@ -91,8 +93,8 @@ public sealed class RobustMeanVarianceConstruction : IRobustConstructionModel
     }
 
     /// <inheritdoc />
-    public IReadOnlyDictionary<Asset, decimal> ComputeTargetWeights(
-        IReadOnlyList<Asset> assets,
+    public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
+        IReadOnlyList<Symbol> assets,
         decimal[][] returns,
         IReadOnlyList<decimal[,]> covarianceScenarios)
     {
@@ -102,7 +104,7 @@ public sealed class RobustMeanVarianceConstruction : IRobustConstructionModel
         var n = assets.Count;
         if (n == 0)
         {
-            return new Dictionary<Asset, decimal>();
+            return new Dictionary<Symbol, decimal>();
         }
 
         if (covarianceScenarios.Count == 0)
@@ -175,7 +177,7 @@ public sealed class RobustMeanVarianceConstruction : IRobustConstructionModel
             }
         }
 
-        var result = new Dictionary<Asset, decimal>(n);
+        var result = new Dictionary<Symbol, decimal>(n);
         for (var i = 0; i < n; i++)
         {
             result[assets[i]] = bestW[i];
@@ -184,12 +186,12 @@ public sealed class RobustMeanVarianceConstruction : IRobustConstructionModel
         return result;
     }
 
-    private IReadOnlyDictionary<Asset, decimal> OptimizeMeanVariance(
-        IReadOnlyList<Asset> assets, decimal[] means, decimal[,] cov, decimal[] w, int n)
+    private IReadOnlyDictionary<Symbol, decimal> OptimizeMeanVariance(
+        IReadOnlyList<Symbol> assets, decimal[] means, decimal[,] cov, decimal[] w, int n)
     {
         OptimizeForScenario(w, means, cov, n);
 
-        var result = new Dictionary<Asset, decimal>(n);
+        var result = new Dictionary<Symbol, decimal>(n);
         for (var i = 0; i < n; i++)
         {
             result[assets[i]] = w[i];

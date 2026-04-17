@@ -15,10 +15,6 @@
 //
 
 namespace Boutquin.Trading.Domain.Interfaces;
-
-using Enums;
-using ValueObjects;
-
 /// <summary>
 /// Classifies a raw dividend based on asset metadata and investor jurisdiction.
 /// </summary>
@@ -27,5 +23,5 @@ public interface IDividendClassifier
     /// <summary>
     /// Classifies a raw dividend based on asset metadata and investor jurisdiction.
     /// </summary>
-    DividendType Classify(Asset asset, CurrencyCode assetCurrency, CurrencyCode investorBaseCurrency);
+    DividendType Classify(Symbol asset, CurrencyCode assetCurrency, CurrencyCode investorBaseCurrency);
 }

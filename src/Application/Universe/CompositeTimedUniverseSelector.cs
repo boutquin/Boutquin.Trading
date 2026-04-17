@@ -15,9 +15,6 @@
 //
 
 namespace Boutquin.Trading.Application.Universe;
-
-using Domain.ValueObjects;
-
 /// <summary>
 /// Composes multiple universe selectors (timed and plain) with AND logic.
 /// For <see cref="ITimedUniverseSelector"/> instances, <see cref="SelectAsOf"/> is used;
@@ -36,7 +33,7 @@ public sealed class CompositeTimedUniverseSelector : ITimedUniverseSelector
     }
 
     /// <inheritdoc />
-    public IReadOnlyList<Asset> SelectAsOf(IReadOnlyList<Asset> candidates, DateOnly asOfDate)
+    public IReadOnlyList<Symbol> SelectAsOf(IReadOnlyList<Symbol> candidates, DateOnly asOfDate)
     {
         Guard.AgainstNull(() => candidates);
 
@@ -55,6 +52,6 @@ public sealed class CompositeTimedUniverseSelector : ITimedUniverseSelector
     /// <remarks>
     /// Delegates to <see cref="SelectAsOf"/> with <see cref="DateOnly.MaxValue"/>.
     /// </remarks>
-    public IReadOnlyList<Asset> Select(IReadOnlyList<Asset> candidates) =>
+    public IReadOnlyList<Symbol> Select(IReadOnlyList<Symbol> candidates) =>
         SelectAsOf(candidates, DateOnly.MaxValue);
 }

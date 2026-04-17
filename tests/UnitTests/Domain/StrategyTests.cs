@@ -31,19 +31,17 @@ public sealed class StrategyTests
         IStrategy strategy = new TestStrategy();
         var timestamp = new DateOnly(2024, 1, 15);
         var baseCurrency = CurrencyCode.USD;
-        var marketData = new SortedDictionary<Asset, MarketData>
+        var marketData = new SortedDictionary<Symbol, Bar>
         {
-            { new Asset("AAPL"),
-                new MarketData(
-                    Timestamp: timestamp,
+            { new Symbol("AAPL"),
+                new Bar(
+                    Date: timestamp,
                     Open: 100,
                     High: 200,
                     Low: 50,
                     Close: 150,
                     AdjustedClose: 150,
-                    Volume: 1000000,
-                    DividendPerShare: 0,
-                    SplitCoefficient: 1)
+                    Volume: 1000000)
             }
         };
         var fxRates = new SortedDictionary<CurrencyCode, decimal>
@@ -51,11 +49,11 @@ public sealed class StrategyTests
             { CurrencyCode.EUR, 0.85m }
         };
 
-        strategy.SetPosition(new Asset("AAPL"), 10);
-        ((TestStrategy)strategy).Assets = new Dictionary<Asset, CurrencyCode> { { new Asset("AAPL"), CurrencyCode.USD } };
+        strategy.SetPosition(new Symbol("AAPL"), 10);
+        ((TestStrategy)strategy).Assets = new Dictionary<Symbol, CurrencyCode> { { new Symbol("AAPL"), CurrencyCode.USD } };
         strategy.UpdateCash(CurrencyCode.USD, 1000);
 
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>> { { timestamp, marketData } };
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Symbol, Bar>> { { timestamp, marketData } };
         var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> { { timestamp, fxRates } };
 
         // Act
@@ -80,10 +78,10 @@ public sealed class StrategyTests
             { CurrencyCode.EUR, 0.85m }
         };
 
-        strategy.SetPosition(new Asset("AAPL"), 10);
-        ((TestStrategy)strategy).Assets = new Dictionary<Asset, CurrencyCode> { { new Asset("AAPL"), CurrencyCode.USD } };
+        strategy.SetPosition(new Symbol("AAPL"), 10);
+        ((TestStrategy)strategy).Assets = new Dictionary<Symbol, CurrencyCode> { { new Symbol("AAPL"), CurrencyCode.USD } };
 
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>();
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Symbol, Bar>>();
         var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> { { date, fxRates } };
 
         // Act
@@ -137,7 +135,7 @@ public sealed class StrategyTests
     {
         // Arrange
         IStrategy strategy = new TestStrategy();
-        var asset = new Asset("AAPL");
+        var asset = new Symbol("AAPL");
 
         // Act
         strategy.UpdatePositions(asset, 10);
@@ -155,12 +153,12 @@ public sealed class StrategyTests
         // Arrange
         IStrategy strategy = new TestStrategy();
 
-        // Act — Asset guard now throws at construction
-        var act = () => strategy.UpdatePositions(new Asset("   "), 10);
+        // Act — Symbol guard now throws at construction
+        var act = () => strategy.UpdatePositions(new Symbol("   "), 10);
 
         // Assert
         act.Should().Throw<ArgumentException>()
-            .WithMessage("Parameter 'Ticker' cannot be null, empty or contain only white-space characters. (Parameter 'Ticker')");
+            .WithMessage("*cannot be an empty string or composed entirely of whitespace*");
     }
 
     /// <summary>
@@ -171,7 +169,7 @@ public sealed class StrategyTests
     {
         // Arrange
         IStrategy strategy = new TestStrategy();
-        var asset = new Asset("AAPL");
+        var asset = new Symbol("AAPL");
         strategy.SetPosition(asset, 10);
 
         // Act
@@ -189,7 +187,7 @@ public sealed class StrategyTests
     {
         // Arrange
         IStrategy strategy = new TestStrategy();
-        var asset = new Asset("AAPL");
+        var asset = new Symbol("AAPL");
 
         // Act
         var quantity = strategy.GetPositionQuantity(asset);

@@ -20,10 +20,10 @@ using Boutquin.Trading.Application.RiskManagement;
 
 public sealed class MaxSectorExposureRuleSellTests
 {
-    private static readonly Asset s_vti = new("VTI");
+    private static readonly Symbol s_vti = new("VTI");
     private static Mock<IPortfolio> CreatePortfolioMock(
         SortedDictionary<DateOnly, decimal> equityCurve,
-        SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>> historicalData,
+        SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>> historicalData,
         Dictionary<string, IStrategy> strategies)
     {
         var mock = new Mock<IPortfolio>();
@@ -34,11 +34,11 @@ public sealed class MaxSectorExposureRuleSellTests
         return mock;
     }
 
-    private static Mock<IStrategy> CreateStrategyMock(Dictionary<Asset, int> positions)
+    private static Mock<IStrategy> CreateStrategyMock(Dictionary<Symbol, int> positions)
     {
         var mock = new Mock<IStrategy>();
         mock.Setup(s => s.Positions)
-            .Returns((IReadOnlyDictionary<Asset, int>)positions);
+            .Returns((IReadOnlyDictionary<Symbol, int>)positions);
         return mock;
     }
 
@@ -52,20 +52,20 @@ public sealed class MaxSectorExposureRuleSellTests
             [new DateOnly(2026, 1, 1)] = 100_000m,
         };
 
-        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
             [new DateOnly(2026, 1, 1)] = new()
             {
-                [s_vti] = new MarketData(new DateOnly(2026, 1, 1), 100m, 101m, 99m, 100m, 100m, 1_000_000, 0m),
+                [s_vti] = new Bar(new DateOnly(2026, 1, 1), 100m, 101m, 99m, 100m, 100m, 1_000_000),
             },
         };
 
-        var assetClassMap = new Dictionary<Asset, AssetClassCode>
+        var assetClassMap = new Dictionary<Symbol, AssetClassCode>
         {
             [s_vti] = AssetClassCode.Equities,
         };
 
-        var strategyMock = CreateStrategyMock(new Dictionary<Asset, int> { [s_vti] = 450 });
+        var strategyMock = CreateStrategyMock(new Dictionary<Symbol, int> { [s_vti] = 450 });
         var strategies = new Dictionary<string, IStrategy> { ["TestStrategy"] = strategyMock.Object };
         var portfolio = CreatePortfolioMock(equityCurve, marketData, strategies);
 
@@ -73,7 +73,7 @@ public sealed class MaxSectorExposureRuleSellTests
         var order = new Order(
             Timestamp: new DateOnly(2026, 1, 1),
             StrategyName: "TestStrategy",
-            Asset: s_vti,
+            Symbol: s_vti,
             TradeAction: TradeAction.Sell,
             OrderType: OrderType.Market,
             Quantity: 100);
@@ -92,20 +92,20 @@ public sealed class MaxSectorExposureRuleSellTests
             [new DateOnly(2026, 1, 1)] = 100_000m,
         };
 
-        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
             [new DateOnly(2026, 1, 1)] = new()
             {
-                [s_vti] = new MarketData(new DateOnly(2026, 1, 1), 100m, 101m, 99m, 100m, 100m, 1_000_000, 0m),
+                [s_vti] = new Bar(new DateOnly(2026, 1, 1), 100m, 101m, 99m, 100m, 100m, 1_000_000),
             },
         };
 
-        var assetClassMap = new Dictionary<Asset, AssetClassCode>
+        var assetClassMap = new Dictionary<Symbol, AssetClassCode>
         {
             [s_vti] = AssetClassCode.Equities,
         };
 
-        var strategyMock = CreateStrategyMock(new Dictionary<Asset, int> { [s_vti] = 500 });
+        var strategyMock = CreateStrategyMock(new Dictionary<Symbol, int> { [s_vti] = 500 });
         var strategies = new Dictionary<string, IStrategy> { ["TestStrategy"] = strategyMock.Object };
         var portfolio = CreatePortfolioMock(equityCurve, marketData, strategies);
 
@@ -113,7 +113,7 @@ public sealed class MaxSectorExposureRuleSellTests
         var order = new Order(
             Timestamp: new DateOnly(2026, 1, 1),
             StrategyName: "TestStrategy",
-            Asset: s_vti,
+            Symbol: s_vti,
             TradeAction: TradeAction.Sell,
             OrderType: OrderType.Market,
             Quantity: 50);

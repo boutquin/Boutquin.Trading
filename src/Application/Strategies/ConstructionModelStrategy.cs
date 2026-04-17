@@ -17,7 +17,6 @@
 namespace Boutquin.Trading.Application.Strategies;
 
 using Boutquin.Trading.Application.Rebalancing;
-using Domain.ValueObjects;
 
 /// <summary>
 /// A strategy that uses an <see cref="IPortfolioConstructionModel"/> to compute
@@ -32,9 +31,9 @@ public sealed class ConstructionModelStrategy : StrategyBase
     private readonly RebalancingFrequency _rebalancingFrequency;
     private readonly int _lookbackWindow;
     private readonly ILogger<ConstructionModelStrategy> _logger;
-    private readonly ITradingCalendar? _tradingCalendar;
+    private readonly IBusinessCalendar? _tradingCalendar;
     private readonly ITimedUniverseSelector? _universeSelector;
-    private readonly SortedDictionary<DateOnly, IReadOnlyDictionary<Asset, decimal>> _targetWeightHistory = [];
+    private readonly SortedDictionary<DateOnly, IReadOnlyDictionary<Symbol, decimal>> _targetWeightHistory = [];
     private DateOnly? _lastRebalancingDate;
 
     /// <summary>
@@ -42,7 +41,7 @@ public sealed class ConstructionModelStrategy : StrategyBase
     /// </summary>
     public ConstructionModelStrategy(
         string name,
-        IReadOnlyDictionary<Asset, CurrencyCode> assets,
+        IReadOnlyDictionary<Symbol, CurrencyCode> assets,
         SortedDictionary<CurrencyCode, decimal> cash,
         IOrderPriceCalculationStrategy orderPriceCalculationStrategy,
         IPositionSizer positionSizer,
@@ -51,7 +50,7 @@ public sealed class ConstructionModelStrategy : StrategyBase
         IRebalancingTrigger? rebalancingTrigger = null,
         int lookbackWindow = 60,
         ITimedUniverseSelector? universeSelector = null,
-        ITradingCalendar? tradingCalendar = null)
+        IBusinessCalendar? tradingCalendar = null)
         : this(name, assets, cash, orderPriceCalculationStrategy, positionSizer, constructionModel,
                rebalancingFrequency, NullLogger<ConstructionModelStrategy>.Instance, rebalancingTrigger, lookbackWindow, universeSelector, tradingCalendar)
     {
@@ -62,7 +61,7 @@ public sealed class ConstructionModelStrategy : StrategyBase
     /// </summary>
     public ConstructionModelStrategy(
         string name,
-        IReadOnlyDictionary<Asset, CurrencyCode> assets,
+        IReadOnlyDictionary<Symbol, CurrencyCode> assets,
         SortedDictionary<CurrencyCode, decimal> cash,
         IOrderPriceCalculationStrategy orderPriceCalculationStrategy,
         IPositionSizer positionSizer,
@@ -72,7 +71,7 @@ public sealed class ConstructionModelStrategy : StrategyBase
         IRebalancingTrigger? rebalancingTrigger = null,
         int lookbackWindow = 60,
         ITimedUniverseSelector? universeSelector = null,
-        ITradingCalendar? tradingCalendar = null)
+        IBusinessCalendar? tradingCalendar = null)
         : base(name, assets, cash, orderPriceCalculationStrategy, positionSizer)
     {
         Guard.AgainstNull(() => constructionModel);
@@ -89,26 +88,26 @@ public sealed class ConstructionModelStrategy : StrategyBase
     /// <summary>
     /// Gets the most recently computed target weights.
     /// </summary>
-    public IReadOnlyDictionary<Asset, decimal>? LastComputedWeights { get; private set; }
+    public IReadOnlyDictionary<Symbol, decimal>? LastComputedWeights { get; private set; }
 
     /// <summary>
     /// Gets the full history of target allocations keyed by rebalance date.
     /// Each entry is the set of weights that was assigned to <see cref="LastComputedWeights"/> on that date.
     /// </summary>
-    public IReadOnlyDictionary<DateOnly, IReadOnlyDictionary<Asset, decimal>> TargetWeightHistory => _targetWeightHistory;
+    public IReadOnlyDictionary<DateOnly, IReadOnlyDictionary<Symbol, decimal>> TargetWeightHistory => _targetWeightHistory;
 
     /// <inheritdoc />
     public override SignalEvent GenerateSignals(
         DateOnly timestamp,
         CurrencyCode baseCurrency,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>> historicalMarketData,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> historicalMarketData,
         IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
     {
         Guard.AgainstUndefinedEnumValue(() => baseCurrency);
         Guard.AgainstEmptyOrNullReadOnlyDictionary(() => historicalMarketData);
         Guard.AgainstEmptyOrNullReadOnlyDictionary(() => historicalFxConversionRates);
 
-        var signalEvents = new SortedDictionary<Asset, SignalType>();
+        var signalEvents = new SortedDictionary<Symbol, SignalType>();
 
         // Check if it's a rebalancing date
         if (_lastRebalancingDate != null && !IsRebalancingDate(timestamp))
@@ -135,7 +134,7 @@ public sealed class ConstructionModelStrategy : StrategyBase
                 timestamp, string.Join(", ", targetWeights.Select(kv => $"{kv.Key}={kv.Value:P2}")));
 
             // M9: Wrap ComputeCurrentWeights in try-catch — failure should fall back, not abort
-            Dictionary<Asset, decimal> currentWeights;
+            Dictionary<Symbol, decimal> currentWeights;
             try
             {
                 currentWeights = ComputeCurrentWeights(timestamp, baseCurrency, historicalMarketData, historicalFxConversionRates);
@@ -166,7 +165,7 @@ public sealed class ConstructionModelStrategy : StrategyBase
                         {
                             signalEvents[asset] = SignalType.Rebalance;
                             // Set zero weight so position sizer produces a sell
-                            targetWeights = new Dictionary<Asset, decimal>(targetWeights) { [asset] = 0m };
+                            targetWeights = new Dictionary<Symbol, decimal>(targetWeights) { [asset] = 0m };
                         }
                     }
 
@@ -208,8 +207,8 @@ public sealed class ConstructionModelStrategy : StrategyBase
     }
 
     private decimal[][]? ExtractReturns(
-        List<Asset> assetList,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>> historicalMarketData,
+        List<Symbol> assetList,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> historicalMarketData,
         DateOnly asOf)
     {
         // Get sorted dates up to and including asOf
@@ -265,14 +264,14 @@ public sealed class ConstructionModelStrategy : StrategyBase
         return returns;
     }
 
-    private Dictionary<Asset, decimal> ComputeCurrentWeights(
+    private Dictionary<Symbol, decimal> ComputeCurrentWeights(
         DateOnly timestamp,
         CurrencyCode baseCurrency,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>> historicalMarketData,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> historicalMarketData,
         IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
     {
         var totalValue = ComputeTotalValue(timestamp, baseCurrency, historicalMarketData, historicalFxConversionRates);
-        var weights = new Dictionary<Asset, decimal>();
+        var weights = new Dictionary<Symbol, decimal>();
 
         if (totalValue <= 0m)
         {
@@ -328,10 +327,10 @@ public sealed class ConstructionModelStrategy : StrategyBase
             _ => throw new InvalidOperationException($"Unsupported rebalancing frequency: {_rebalancingFrequency}")
         };
 
-        // Snap to next trading day if the computed date falls on a weekend or holiday
-        if (_tradingCalendar is not null && nextDate != DateOnly.MaxValue && !_tradingCalendar.IsTradingDay(nextDate))
+        // Snap to next business day if the computed date falls on a weekend or holiday
+        if (_tradingCalendar is not null && nextDate != DateOnly.MaxValue && !_tradingCalendar.IsBusinessDay(nextDate))
         {
-            nextDate = _tradingCalendar.NextTradingDay(nextDate);
+            nextDate = _tradingCalendar.Adjust(nextDate, BusinessDayAdjustment.Following);
         }
 
         return timestamp >= nextDate;

@@ -20,11 +20,11 @@ using Boutquin.Trading.Application.PortfolioConstruction;
 
 public sealed class DynamicBlackLittermanTests
 {
-    private static readonly Asset s_vti = new("VTI");
-    private static readonly Asset s_agg = new("AGG");
-    private static readonly Asset s_gld = new("GLD");
-    private static readonly Asset s_vnq = new("VNQ");
-    private static readonly Asset s_vglt = new("VGLT");
+    private static readonly Symbol s_vti = new("VTI");
+    private static readonly Symbol s_agg = new("AGG");
+    private static readonly Symbol s_gld = new("GLD");
+    private static readonly Symbol s_vnq = new("VNQ");
+    private static readonly Symbol s_vglt = new("VGLT");
 
     /// <summary>
     /// Generates synthetic return series with distinct means and some noise.
@@ -42,9 +42,9 @@ public sealed class DynamicBlackLittermanTests
 
     private static IReadOnlyList<BlackLittermanViewSpec> StandardViews() =>
     [
-        new(BlackLittermanViewType.Absolute, Asset: "VTI", null, null, 0.07m, 0.6m),
+        new(BlackLittermanViewType.Absolute, Symbol: "VTI", null, null, 0.07m, 0.6m),
         new(BlackLittermanViewType.Relative, null, LongAsset: "VTI", ShortAsset: "AGG", 0.04m, 0.5m),
-        new(BlackLittermanViewType.Absolute, Asset: "GLD", null, null, 0.03m, 0.4m),
+        new(BlackLittermanViewType.Absolute, Symbol: "GLD", null, null, 0.03m, 0.4m),
     ];
 
     [Fact]
@@ -64,7 +64,7 @@ public sealed class DynamicBlackLittermanTests
 
         // Call with only 3 assets — VNQ and VGLT views should be filtered out,
         // VTI-AGG relative view should work.
-        var assets = new List<Asset> { s_vti, s_agg, s_gld };
+        var assets = new List<Symbol> { s_vti, s_agg, s_gld };
         var returns = new[]
         {
             MakeReturns(60, 0.0004m, 0.01m),
@@ -89,7 +89,7 @@ public sealed class DynamicBlackLittermanTests
         // Call with only [VTI, GLD] — AGG absent, so VTI-AGG view should be filtered out.
         var model = new DynamicBlackLittermanConstruction(StandardViews());
 
-        var assets = new List<Asset> { s_vti, s_gld };
+        var assets = new List<Symbol> { s_vti, s_gld };
         var returns = new[]
         {
             MakeReturns(60, 0.0004m, 0.01m),
@@ -110,7 +110,7 @@ public sealed class DynamicBlackLittermanTests
     {
         var model = new DynamicBlackLittermanConstruction(StandardViews());
 
-        var assets = new List<Asset> { s_vti, s_agg, s_gld };
+        var assets = new List<Symbol> { s_vti, s_agg, s_gld };
         var returns = new[]
         {
             MakeReturns(60, 0.0004m, 0.01m),
@@ -135,7 +135,7 @@ public sealed class DynamicBlackLittermanTests
         // Views reference VTI, AGG, GLD — but we pass VNQ and VGLT only.
         var model = new DynamicBlackLittermanConstruction(StandardViews());
 
-        var assets = new List<Asset> { s_vnq, s_vglt };
+        var assets = new List<Symbol> { s_vnq, s_vglt };
         var returns = new[]
         {
             MakeReturns(60, 0.0003m, 0.012m),
@@ -155,7 +155,7 @@ public sealed class DynamicBlackLittermanTests
     {
         var model = new DynamicBlackLittermanConstruction(StandardViews());
 
-        var weights = model.ComputeTargetWeights(new List<Asset>(), []);
+        var weights = model.ComputeTargetWeights(new List<Symbol>(), []);
 
         weights.Should().BeEmpty();
     }
@@ -168,7 +168,7 @@ public sealed class DynamicBlackLittermanTests
             minWeight: 0.10m,
             maxWeight: 0.40m);
 
-        var assets = new List<Asset> { s_vti, s_agg, s_gld };
+        var assets = new List<Symbol> { s_vti, s_agg, s_gld };
         var returns = new[]
         {
             MakeReturns(60, 0.0004m, 0.01m),
@@ -213,12 +213,12 @@ public sealed class DynamicBlackLittermanTests
         // the mean-variance step should allocate more to VTI.
         var views = new List<BlackLittermanViewSpec>
         {
-            new(BlackLittermanViewType.Absolute, Asset: "VTI", null, null, 0.10m, 0.8m),
+            new(BlackLittermanViewType.Absolute, Symbol: "VTI", null, null, 0.10m, 0.8m),
         };
 
         var model = new DynamicBlackLittermanConstruction(views);
 
-        var assets = new List<Asset> { s_vti, s_agg, s_gld };
+        var assets = new List<Symbol> { s_vti, s_agg, s_gld };
         // Independent return series with different risk profiles
         var returns = new[]
         {
@@ -245,12 +245,12 @@ public sealed class DynamicBlackLittermanTests
         // and the M matrix singular. The fix clamps omega to a small positive floor.
         var views = new List<BlackLittermanViewSpec>
         {
-            new(BlackLittermanViewType.Absolute, Asset: "VTI", null, null, 0.10m, 1.0m),
+            new(BlackLittermanViewType.Absolute, Symbol: "VTI", null, null, 0.10m, 1.0m),
         };
 
         var model = new DynamicBlackLittermanConstruction(views);
 
-        var assets = new List<Asset> { s_vti, s_agg, s_gld };
+        var assets = new List<Symbol> { s_vti, s_agg, s_gld };
         var returns = new[]
         {
             MakeIndependentReturns(252, 0.0004m, 0.012m, seed: 42),
@@ -292,17 +292,17 @@ public sealed class DynamicBlackLittermanTests
         // Monotonicity: higher confidence → stronger tilt away from 1/N.
         var lowConfViews = new List<BlackLittermanViewSpec>
         {
-            new(BlackLittermanViewType.Absolute, Asset: "VTI", null, null, 0.10m, 0.3m),
+            new(BlackLittermanViewType.Absolute, Symbol: "VTI", null, null, 0.10m, 0.3m),
         };
         var highConfViews = new List<BlackLittermanViewSpec>
         {
-            new(BlackLittermanViewType.Absolute, Asset: "VTI", null, null, 0.10m, 0.8m),
+            new(BlackLittermanViewType.Absolute, Symbol: "VTI", null, null, 0.10m, 0.8m),
         };
 
         var lowModel = new DynamicBlackLittermanConstruction(lowConfViews);
         var highModel = new DynamicBlackLittermanConstruction(highConfViews);
 
-        var assets = new List<Asset> { s_vti, s_agg, s_gld };
+        var assets = new List<Symbol> { s_vti, s_agg, s_gld };
         var returns = new[]
         {
             MakeIndependentReturns(252, 0.0004m, 0.012m, seed: 42),

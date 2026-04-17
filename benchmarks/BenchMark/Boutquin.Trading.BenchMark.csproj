@@ -3,15 +3,16 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <IsPackable>false</IsPackable>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.15.8" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.5" />
+    <PackageReference Include="BenchmarkDotNet" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Domain\Boutquin.Trading.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Application\Boutquin.Trading.Application.csproj" />
+    <ProjectReference Include="..\..\src\Recipes\Boutquin.Trading.Recipes.csproj" />
   </ItemGroup>
 
 </Project>

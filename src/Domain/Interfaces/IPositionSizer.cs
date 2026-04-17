@@ -15,9 +15,6 @@
 //
 
 namespace Boutquin.Trading.Domain.Interfaces;
-
-using ValueObjects;
-
 /// <summary>
 /// Represents the strategy for determining the position size of assets.
 /// </summary>
@@ -38,10 +35,10 @@ public interface IPositionSizer
     /// <param name="historicalMarketData">A read-only dictionary containing the historical market data for the assets.</param>
     /// <param name="historicalFxConversionRates">A read-only dictionary containing the historical FX conversion rates.</param>
     /// <returns>A dictionary containing the position sizes for all assets in the strategy.</returns>
-    IReadOnlyDictionary<Asset, int> ComputePositionSizes(
+    IReadOnlyDictionary<Symbol, int> ComputePositionSizes(
         DateOnly timestamp,
-        IReadOnlyDictionary<Asset, SignalType> signalType,
+        IReadOnlyDictionary<Symbol, SignalType> signalType,
         IStrategy strategy,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>> historicalMarketData,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> historicalMarketData,
         IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates);
 }

@@ -16,7 +16,7 @@
 
 namespace Boutquin.Trading.Tests.UnitTests.Domain;
 
-using Boutquin.Trading.Domain.Helpers;
+using Boutquin.Numerics.Collections;
 using FluentAssertions;
 
 /// <summary>

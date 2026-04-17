@@ -28,7 +28,7 @@ public sealed class BlackLittermanValidationTests
         var eqWeights = new[] { 0.6m, 0.4m };
         var model = new BlackLittermanConstruction(equilibriumWeights: eqWeights);
 
-        var assets = new List<Asset> { new("AAPL"), new("MSFT") };
+        var assets = new List<Symbol> { new("AAPL"), new("MSFT") };
         var returns = new[]
         {
             new decimal[] { 0.01m, 0.02m, -0.01m, 0.015m },
@@ -38,8 +38,8 @@ public sealed class BlackLittermanValidationTests
         var weights = model.ComputeTargetWeights(assets, returns);
 
         weights.Should().HaveCount(2);
-        weights[new Asset("AAPL")].Should().Be(0.6m);
-        weights[new Asset("MSFT")].Should().Be(0.4m);
+        weights[new Symbol("AAPL")].Should().Be(0.6m);
+        weights[new Symbol("MSFT")].Should().Be(0.4m);
     }
 
     [Fact]
@@ -49,7 +49,7 @@ public sealed class BlackLittermanValidationTests
         var eqWeights = new[] { 0.5m, 0.3m, 0.2m };
         var model = new BlackLittermanConstruction(equilibriumWeights: eqWeights);
 
-        var assets = new List<Asset> { new("A"), new("B"), new("C") };
+        var assets = new List<Symbol> { new("A"), new("B"), new("C") };
         var returns = new[]
         {
             new decimal[] { 0.01m, 0.02m, -0.01m },
@@ -60,16 +60,16 @@ public sealed class BlackLittermanValidationTests
         var weights = model.ComputeTargetWeights(assets, returns);
 
         weights.Should().HaveCount(3);
-        weights[new Asset("A")].Should().Be(0.5m);
-        weights[new Asset("B")].Should().Be(0.3m);
-        weights[new Asset("C")].Should().Be(0.2m);
+        weights[new Symbol("A")].Should().Be(0.5m);
+        weights[new Symbol("B")].Should().Be(0.3m);
+        weights[new Symbol("C")].Should().Be(0.2m);
     }
 
     [Fact]
     public void ComputeTargetWeights_EquilibriumWeightsLengthMismatch_ThrowsArgumentException()
     {
         // 3-asset list but 2-element equilibrium weights
-        var assets = new List<Asset> { new("A"), new("B"), new("C") };
+        var assets = new List<Symbol> { new("A"), new("B"), new("C") };
         var equilibriumWeights = new[] { 0.5m, 0.5m }; // Mismatch: 2 vs 3
 
         var returns = new[]

@@ -15,30 +15,27 @@
 //
 
 namespace Boutquin.Trading.Application.Universe;
-
-using Domain.ValueObjects;
-
 /// <summary>
 /// A time-aware universe selector that tracks assets keyed by their eligibility start date.
 /// At any given date, only assets whose entry date is on or before the query date are in the universe.
 /// </summary>
 public sealed class DynamicUniverse : ITimedUniverseSelector
 {
-    private readonly IReadOnlyDictionary<Asset, DateOnly> _entryDates;
+    private readonly IReadOnlyDictionary<Symbol, DateOnly> _entryDates;
 
     /// <summary>
     /// Creates a new <see cref="DynamicUniverse"/> with the given entry dates.
     /// </summary>
     /// <param name="entryDates">Map of assets to their eligibility start dates. Must not be null or empty.</param>
     /// <exception cref="EmptyOrNullDictionaryException">Thrown when <paramref name="entryDates"/> is null or empty.</exception>
-    public DynamicUniverse(IReadOnlyDictionary<Asset, DateOnly> entryDates)
+    public DynamicUniverse(IReadOnlyDictionary<Symbol, DateOnly> entryDates)
     {
         Guard.AgainstEmptyOrNullReadOnlyDictionary(() => entryDates);
         _entryDates = entryDates;
     }
 
     /// <inheritdoc />
-    public IReadOnlyList<Asset> SelectAsOf(IReadOnlyList<Asset> candidates, DateOnly asOfDate)
+    public IReadOnlyList<Symbol> SelectAsOf(IReadOnlyList<Symbol> candidates, DateOnly asOfDate)
     {
         Guard.AgainstNull(() => candidates);
 
@@ -52,6 +49,6 @@ public sealed class DynamicUniverse : ITimedUniverseSelector
     /// Delegates to <see cref="SelectAsOf"/> with <see cref="DateOnly.MaxValue"/>,
     /// returning all assets that will ever be eligible.
     /// </remarks>
-    public IReadOnlyList<Asset> Select(IReadOnlyList<Asset> candidates) =>
+    public IReadOnlyList<Symbol> Select(IReadOnlyList<Symbol> candidates) =>
         SelectAsOf(candidates, DateOnly.MaxValue);
 }

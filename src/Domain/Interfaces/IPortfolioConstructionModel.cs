@@ -15,9 +15,6 @@
 //
 
 namespace Boutquin.Trading.Domain.Interfaces;
-
-using ValueObjects;
-
 /// <summary>
 /// Computes target portfolio weights for a set of assets based on their return history
 /// and optional constraints.
@@ -38,7 +35,7 @@ public interface IPortfolioConstructionModel
     /// Models that intentionally produce leveraged weights (sum != 1.0) should implement
     /// <see cref="ILeveragedConstructionModel"/> instead, which relaxes this constraint.
     /// </returns>
-    IReadOnlyDictionary<Asset, decimal> ComputeTargetWeights(
-        IReadOnlyList<Asset> assets,
+    IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
+        IReadOnlyList<Symbol> assets,
         decimal[][] returns);
 }

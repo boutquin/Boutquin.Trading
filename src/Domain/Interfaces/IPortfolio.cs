@@ -15,9 +15,6 @@
 //
 
 namespace Boutquin.Trading.Domain.Interfaces;
-
-using ValueObjects;
-
 /// <summary>
 /// The IPortfolio interface defines the structure and behavior of a portfolio in a trading system.
 /// It provides methods and properties to manage the portfolio's strategies, assets, historical data, 
@@ -73,12 +70,12 @@ public interface IPortfolio
     /// <summary>
     /// The AssetCurrencies property represents a read-only dictionary of assets and their respective currencies used in the portfolio.
     /// </summary>
-    IReadOnlyDictionary<Asset, CurrencyCode> AssetCurrencies { get; }
+    IReadOnlyDictionary<Symbol, CurrencyCode> AssetCurrencies { get; }
 
     /// <summary>
     /// The HistoricalMarketData property represents a sorted dictionary of historical market data used by the portfolio.
     /// </summary>
-    SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>> HistoricalMarketData { get; }
+    SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>> HistoricalMarketData { get; }
 
     /// <summary>
     /// The HistoricalFxConversionRates property represents a sorted dictionary of historical foreign exchange conversion rates used by the portfolio.
@@ -124,7 +121,7 @@ public interface IPortfolio
     /// <param name="currentPrice">The current Close price of the asset, used for DRIP reinvestment. Default 0 disables reinvestment.</param>
     /// <exception cref="System.ArgumentException">Thrown when the asset parameter is null, empty, or consists only of white-space characters.</exception>
     void UpdateCashForDividend(
-        Asset asset,
+        Symbol asset,
         decimal dividendPerShare,
         decimal currentPrice = 0m);
 
@@ -169,7 +166,7 @@ public interface IPortfolio
     /// </remarks>
     void UpdatePosition(
         string strategyName,
-        Asset asset,
+        Symbol asset,
         int quantity);
 
     /// <summary>
@@ -211,7 +208,7 @@ public interface IPortfolio
     /// The method implementation should ensure that the positions are adjusted correctly and that the adjusted positions do not lead to an inconsistent portfolio state.
     /// </remarks>
     void AdjustPositionForSplit(
-        Asset asset,
+        Symbol asset,
         decimal splitRatio);
 
     /// <summary>
@@ -225,7 +222,7 @@ public interface IPortfolio
     /// The method implementation should ensure that the historical data is adjusted correctly.
     /// </remarks>
     void AdjustHistoricalDataForSplit(
-        Asset asset,
+        Symbol asset,
         decimal splitRatio);
 
     /// <summary>
@@ -237,7 +234,7 @@ public interface IPortfolio
     /// <param name="cancellationToken">Cancellation token.</param>
     Task ProcessPendingOrdersAsync(
         DateOnly date,
-        SortedDictionary<Asset, MarketData> dayData,
+        SortedDictionary<Symbol, Bar> dayData,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -262,7 +259,7 @@ public interface IPortfolio
     /// This method is called when the currency of a specific asset needs to be retrieved.
     /// The method implementation should ensure that the correct currency is returned, or an appropriate error is thrown if the currency cannot be found.
     /// </remarks>
-    CurrencyCode GetAssetCurrency(Asset asset);
+    CurrencyCode GetAssetCurrency(Symbol asset);
 
     /// <summary>
     /// Calculates the total value of the portfolio.

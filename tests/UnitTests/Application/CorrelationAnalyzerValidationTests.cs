@@ -20,7 +20,7 @@ using Boutquin.Trading.Application.Analytics;
 
 public sealed class CorrelationAnalyzerValidationTests
 {
-    private static readonly Asset s_a = new("A");
+    private static readonly Symbol s_a = new("A");
 
     [Fact]
     public void Analyze_NullAssetNames_ThrowsArgumentNullException()
@@ -35,7 +35,7 @@ public sealed class CorrelationAnalyzerValidationTests
     public void Analyze_NullReturns_ThrowsArgumentNullException()
     {
         var act = () => CorrelationAnalyzer.Analyze(
-            new List<Asset> { s_a }, null!, new[] { 1.0m });
+            new List<Symbol> { s_a }, null!, new[] { 1.0m });
 
         act.Should().Throw<ArgumentNullException>();
     }
@@ -44,7 +44,7 @@ public sealed class CorrelationAnalyzerValidationTests
     public void Analyze_NullWeights_ThrowsArgumentNullException()
     {
         var act = () => CorrelationAnalyzer.Analyze(
-            new List<Asset> { s_a }, new[] { new[] { 0.01m, 0.02m } }, null!);
+            new List<Symbol> { s_a }, new[] { new[] { 0.01m, 0.02m } }, null!);
 
         act.Should().Throw<ArgumentNullException>();
     }
@@ -53,7 +53,7 @@ public sealed class CorrelationAnalyzerValidationTests
     [MemberData(nameof(CorrelationAnalyzerValidationTestData.DimensionMismatch_ReturnsVsAssets),
         MemberType = typeof(CorrelationAnalyzerValidationTestData))]
     public void Analyze_DimensionMismatch_ReturnsVsAssets_ThrowsArgumentException(
-        IReadOnlyList<Asset> assetNames, decimal[][] returns, decimal[] weights)
+        IReadOnlyList<Symbol> assetNames, decimal[][] returns, decimal[] weights)
     {
         var act = () => CorrelationAnalyzer.Analyze(assetNames, returns, weights);
 
@@ -64,7 +64,7 @@ public sealed class CorrelationAnalyzerValidationTests
     [MemberData(nameof(CorrelationAnalyzerValidationTestData.DimensionMismatch_WeightsVsAssets),
         MemberType = typeof(CorrelationAnalyzerValidationTestData))]
     public void Analyze_DimensionMismatch_WeightsVsAssets_ThrowsArgumentException(
-        IReadOnlyList<Asset> assetNames, decimal[][] returns, decimal[] weights)
+        IReadOnlyList<Symbol> assetNames, decimal[][] returns, decimal[] weights)
     {
         var act = () => CorrelationAnalyzer.Analyze(assetNames, returns, weights);
 
@@ -75,7 +75,7 @@ public sealed class CorrelationAnalyzerValidationTests
     [MemberData(nameof(CorrelationAnalyzerValidationTestData.InsufficientObservations),
         MemberType = typeof(CorrelationAnalyzerValidationTestData))]
     public void Analyze_InsufficientObservations_ThrowsArgumentException(
-        IReadOnlyList<Asset> assetNames, decimal[][] returns, decimal[] weights)
+        IReadOnlyList<Symbol> assetNames, decimal[][] returns, decimal[] weights)
     {
         var act = () => CorrelationAnalyzer.Analyze(assetNames, returns, weights);
 

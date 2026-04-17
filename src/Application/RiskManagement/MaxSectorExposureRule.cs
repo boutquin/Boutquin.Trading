@@ -21,7 +21,7 @@ using Domain.ValueObjects;
 /// <summary>
 /// Rejects orders that would cause total exposure to any asset class
 /// to exceed a configured percentage of total portfolio value.
-/// Asset classes are determined by a user-provided mapping.
+/// Symbol classes are determined by a user-provided mapping.
 /// </summary>
 public sealed class MaxSectorExposureRule : IRiskRule
 {
@@ -36,7 +36,7 @@ public sealed class MaxSectorExposureRule : IRiskRule
     private const decimal Tolerance = 0.001m;
 
     private readonly decimal _maxExposurePercent;
-    private readonly IReadOnlyDictionary<Asset, AssetClassCode> _assetClassMap;
+    private readonly IReadOnlyDictionary<Symbol, AssetClassCode> _assetClassMap;
 
     /// <summary>
     /// Initializes a new instance of <see cref="MaxSectorExposureRule"/>.
@@ -55,7 +55,7 @@ public sealed class MaxSectorExposureRule : IRiskRule
     /// </exception>
     public MaxSectorExposureRule(
         decimal maxExposurePercent,
-        IReadOnlyDictionary<Asset, AssetClassCode> assetClassMap)
+        IReadOnlyDictionary<Symbol, AssetClassCode> assetClassMap)
     {
         if (maxExposurePercent is <= 0 or > 1)
         {
@@ -91,10 +91,10 @@ public sealed class MaxSectorExposureRule : IRiskRule
         }
 
         // Determine the asset class of the order's asset
-        if (!_assetClassMap.TryGetValue(order.Asset, out var orderAssetClass))
+        if (!_assetClassMap.TryGetValue(order.Symbol, out var orderAssetClass))
         {
             return RiskEvaluation.Rejected(
-                $"Asset '{order.Asset}' has no asset class mapping; cannot evaluate sector exposure.");
+                $"Symbol '{order.Symbol}' has no asset class mapping; cannot evaluate sector exposure.");
         }
 
         var latestMarketData = portfolio.HistoricalMarketData.Values.LastOrDefault();
@@ -119,7 +119,7 @@ public sealed class MaxSectorExposureRule : IRiskRule
                 {
                     sectorExposure += Math.Abs(qty * md.AdjustedClose);
 
-                    if (asset == order.Asset)
+                    if (asset == order.Symbol)
                     {
                         existingOrderAssetQty += qty;
                     }
@@ -128,7 +128,7 @@ public sealed class MaxSectorExposureRule : IRiskRule
         }
 
         // Compute post-trade exposure: adjust the order's asset from existing to post-trade quantity.
-        if (latestMarketData.TryGetValue(order.Asset, out var orderMarketData))
+        if (latestMarketData.TryGetValue(order.Symbol, out var orderMarketData))
         {
             var postTradeQty = order.TradeAction == TradeAction.Buy
                 ? existingOrderAssetQty + order.Quantity
@@ -182,15 +182,15 @@ public sealed class MaxSectorExposureRule : IRiskRule
         // Verify all orders have asset class mappings
         foreach (var order in orders)
         {
-            if (!_assetClassMap.ContainsKey(order.Asset))
+            if (!_assetClassMap.ContainsKey(order.Symbol))
             {
                 return RiskEvaluation.Rejected(
-                    $"Asset '{order.Asset}' has no asset class mapping; cannot evaluate sector exposure.");
+                    $"Symbol '{order.Symbol}' has no asset class mapping; cannot evaluate sector exposure.");
             }
         }
 
         // 1. Collect current positions across all strategies
-        var currentPositions = new Dictionary<Asset, int>();
+        var currentPositions = new Dictionary<Symbol, int>();
         foreach (var strategy in portfolio.Strategies.Values)
         {
             foreach (var (asset, qty) in strategy.Positions)
@@ -200,17 +200,17 @@ public sealed class MaxSectorExposureRule : IRiskRule
         }
 
         // 2. Compute net deltas from the entire batch
-        var deltas = new Dictionary<Asset, int>();
+        var deltas = new Dictionary<Symbol, int>();
         foreach (var order in orders)
         {
             var delta = order.TradeAction == TradeAction.Buy
                 ? order.Quantity
                 : -order.Quantity;
-            deltas[order.Asset] = deltas.GetValueOrDefault(order.Asset) + delta;
+            deltas[order.Symbol] = deltas.GetValueOrDefault(order.Symbol) + delta;
         }
 
         // 3. Compute projected positions
-        var projectedPositions = new Dictionary<Asset, int>(currentPositions);
+        var projectedPositions = new Dictionary<Symbol, int>(currentPositions);
         foreach (var (asset, delta) in deltas)
         {
             projectedPositions[asset] = projectedPositions.GetValueOrDefault(asset) + delta;

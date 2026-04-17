@@ -20,7 +20,7 @@ using Boutquin.Trading.Application;
 
 public sealed class CancellationTokenTests
 {
-    private static readonly Asset s_vti = new("VTI");
+    private static readonly Symbol s_vti = new("VTI");
 
     [Fact]
     public async Task BackTest_RunAsync_CancelledToken_ShouldThrowOperationCancelledException()
@@ -28,8 +28,8 @@ public sealed class CancellationTokenTests
         // Arrange: create a minimal backtest setup
         var strategyMock = new Mock<IStrategy>();
         strategyMock.Setup(s => s.Name).Returns("Test");
-        strategyMock.Setup(s => s.Assets).Returns(new Dictionary<Asset, CurrencyCode> { [s_vti] = CurrencyCode.USD });
-        strategyMock.Setup(s => s.Positions).Returns(new Dictionary<Asset, int>());
+        strategyMock.Setup(s => s.Assets).Returns(new Dictionary<Symbol, CurrencyCode> { [s_vti] = CurrencyCode.USD });
+        strategyMock.Setup(s => s.Positions).Returns(new Dictionary<Symbol, int>());
         strategyMock.Setup(s => s.Cash).Returns(new Dictionary<CurrencyCode, decimal> { [CurrencyCode.USD] = 100_000m });
 
         var portfolioMock = new Mock<IPortfolio>();
@@ -46,20 +46,26 @@ public sealed class CancellationTokenTests
         var marketData = CreateMarketDataStream();
         var fxData = CreateEmptyFxStream();
 
-        var fetcherMock = new Mock<IMarketDataFetcher>();
-        fetcherMock.Setup(f => f.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>(), It.IsAny<CancellationToken>()))
-                   .Returns(marketData);
-        fetcherMock.Setup(f => f.FetchFxRatesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
-                   .Returns(fxData);
+        var backtest = new BackTest(portfolioMock.Object, benchmarkMock.Object, CurrencyCode.USD);
 
-        var backtest = new BackTest(portfolioMock.Object, benchmarkMock.Object, fetcherMock.Object, CurrencyCode.USD);
+        // Build dataset from market data stream
+        var prices = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>();
+        await foreach (var kvp in marketData)
+        {
+            prices[kvp.Key] = kvp.Value;
+        }
+        var dataset = new Boutquin.Trading.Recipes.Testing.FakeBacktestDataset
+        {
+            Prices = prices,
+            FxRates = [],
+        };
 
         // Act: cancel immediately
         using var cts = new CancellationTokenSource();
         cts.Cancel();
 
         // Assert
-        var act = () => backtest.RunAsync(new DateOnly(2026, 1, 1), new DateOnly(2026, 12, 31), cts.Token);
+        var act = () => backtest.RunAsync(dataset, cts.Token);
         await act.Should().ThrowAsync<OperationCanceledException>();
     }
 
@@ -73,15 +79,15 @@ public sealed class CancellationTokenTests
 
         var strategyMock = new Mock<IStrategy>();
         strategyMock.Setup(s => s.Name).Returns("Test");
-        strategyMock.Setup(s => s.Assets).Returns(new Dictionary<Asset, CurrencyCode> { [s_vti] = CurrencyCode.USD });
-        strategyMock.Setup(s => s.Positions).Returns(new Dictionary<Asset, int>());
+        strategyMock.Setup(s => s.Assets).Returns(new Dictionary<Symbol, CurrencyCode> { [s_vti] = CurrencyCode.USD });
+        strategyMock.Setup(s => s.Positions).Returns(new Dictionary<Symbol, int>());
 
         var brokerMock = new Mock<IBrokerage>();
 
         var portfolio = new Portfolio(
             CurrencyCode.USD,
             new Dictionary<string, IStrategy> { ["Test"] = strategyMock.Object },
-            new Dictionary<Asset, CurrencyCode> { [s_vti] = CurrencyCode.USD },
+            new Dictionary<Symbol, CurrencyCode> { [s_vti] = CurrencyCode.USD },
             new Dictionary<Type, IEventHandler> { [typeof(MarketEvent)] = handlerMock.Object },
             brokerMock.Object);
 
@@ -90,7 +96,7 @@ public sealed class CancellationTokenTests
 
         var marketEvent = new MarketEvent(
             new DateOnly(2026, 1, 1),
-            new SortedDictionary<Asset, MarketData>(),
+            new SortedDictionary<Symbol, Bar>(),
             new SortedDictionary<CurrencyCode, decimal>());
 
         // Act & Assert
@@ -103,8 +109,8 @@ public sealed class CancellationTokenTests
     {
         var strategyMock = new Mock<IStrategy>();
         strategyMock.Setup(s => s.Name).Returns("Test");
-        strategyMock.Setup(s => s.Assets).Returns(new Dictionary<Asset, CurrencyCode> { [s_vti] = CurrencyCode.USD });
-        strategyMock.Setup(s => s.Positions).Returns(new Dictionary<Asset, int>());
+        strategyMock.Setup(s => s.Assets).Returns(new Dictionary<Symbol, CurrencyCode> { [s_vti] = CurrencyCode.USD });
+        strategyMock.Setup(s => s.Positions).Returns(new Dictionary<Symbol, int>());
 
         var brokerMock = new Mock<IBrokerage>();
         brokerMock.Setup(b => b.SubmitOrderAsync(It.IsAny<Order>(), It.IsAny<CancellationToken>()))
@@ -114,7 +120,7 @@ public sealed class CancellationTokenTests
         var portfolio = new Portfolio(
             CurrencyCode.USD,
             new Dictionary<string, IStrategy> { ["Test"] = strategyMock.Object },
-            new Dictionary<Asset, CurrencyCode> { [s_vti] = CurrencyCode.USD },
+            new Dictionary<Symbol, CurrencyCode> { [s_vti] = CurrencyCode.USD },
             new Dictionary<Type, IEventHandler> { [typeof(MarketEvent)] = handlerMock.Object },
             brokerMock.Object);
 
@@ -134,16 +140,16 @@ public sealed class CancellationTokenTests
     }
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators
-    private static async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>> CreateMarketDataStream()
+    private static async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<Symbol, Bar>>> CreateMarketDataStream()
     {
         for (var i = 0; i < 252; i++)
         {
             var date = new DateOnly(2026, 1, 1).AddDays(i);
-            yield return new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(
+            yield return new KeyValuePair<DateOnly, SortedDictionary<Symbol, Bar>>(
                 date,
-                new SortedDictionary<Asset, MarketData>
+                new SortedDictionary<Symbol, Bar>
                 {
-                    [s_vti] = new MarketData(date, 100m, 101m, 99m, 100m, 100m, 1_000_000, 0m),
+                    [s_vti] = new Bar(date, 100m, 101m, 99m, 100m, 100m, 1_000_000),
                 });
         }
     }

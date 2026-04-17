@@ -23,10 +23,10 @@ namespace Boutquin.Trading.Domain.Enums;
 /// </summary>
 public enum HoldingPeriod
 {
-    /// <summary>Asset held for one year or less (US: taxed at ordinary income rates).</summary>
+    /// <summary>Symbol held for one year or less (US: taxed at ordinary income rates).</summary>
     ShortTerm,
 
-    /// <summary>Asset held for more than one year (US: taxed at preferential capital gains rates).</summary>
+    /// <summary>Symbol held for more than one year (US: taxed at preferential capital gains rates).</summary>
     LongTerm,
 
     /// <summary>Holding period not applicable (e.g., Canadian disposals where no distinction is made).</summary>

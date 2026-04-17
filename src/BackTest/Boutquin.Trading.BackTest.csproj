@@ -7,11 +7,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.5" />
+    <PackageReference Include="Boutquin.MarketData.DependencyInjection" />
+    <PackageReference Include="Boutquin.MarketData.Adapter.Tiingo" />
+    <PackageReference Include="Boutquin.MarketData.Adapter.Frankfurter" />
+    <PackageReference Include="Boutquin.MarketData.Adapter.Fred" />
+    <PackageReference Include="Boutquin.MarketData.Adapter.FamaFrench" />
+    <PackageReference Include="Boutquin.MarketData.Adapter.TwelveData" />
+    <PackageReference Include="Boutquin.MarketData.Adapter.BankOfCanada" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Application\Boutquin.Trading.Application.csproj" />
+    <ProjectReference Include="..\Recipes\Boutquin.Trading.Recipes.csproj" />
   </ItemGroup>
 
 </Project>

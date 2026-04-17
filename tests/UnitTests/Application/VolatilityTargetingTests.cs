@@ -23,8 +23,8 @@ public sealed class VolatilityTargetingTests
     [Fact]
     public void VolTarget_HigherVolThanTarget_ShouldScaleDown()
     {
-        var vti = new Asset("VTI");
-        var assets = new List<Asset> { vti };
+        var vti = new Symbol("VTI");
+        var assets = new List<Symbol> { vti };
 
         // Create returns with known volatility
         // 20 days of alternating +2%/-2% → daily vol ≈ 2%
@@ -36,7 +36,7 @@ public sealed class VolatilityTargetingTests
 
         var baseModel = new Mock<IPortfolioConstructionModel>();
         baseModel.Setup(m => m.ComputeTargetWeights(assets, It.IsAny<decimal[][]>()))
-            .Returns(new Dictionary<Asset, decimal> { [vti] = 1.0m });
+            .Returns(new Dictionary<Symbol, decimal> { [vti] = 1.0m });
 
         // Target 10% vol. Realized ≈ 2% daily → ~31.7% annualized
         // Scale factor = 10/31.7 ≈ 0.316
@@ -52,8 +52,8 @@ public sealed class VolatilityTargetingTests
     [Fact]
     public void VolTarget_LowerVolThanTarget_ShouldScaleUpWithinLeverage()
     {
-        var a = new Asset("A");
-        var assets = new List<Asset> { a };
+        var a = new Symbol("A");
+        var assets = new List<Symbol> { a };
 
         // Very low vol returns: 0.001, -0.001 alternating (0.1% daily)
         var returns = new decimal[60];
@@ -64,7 +64,7 @@ public sealed class VolatilityTargetingTests
 
         var baseModel = new Mock<IPortfolioConstructionModel>();
         baseModel.Setup(m => m.ComputeTargetWeights(assets, It.IsAny<decimal[][]>()))
-            .Returns(new Dictionary<Asset, decimal> { [a] = 1.0m });
+            .Returns(new Dictionary<Symbol, decimal> { [a] = 1.0m });
 
         // Target 20% vol, max leverage 1.5
         var volTarget = new VolatilityTargetingConstruction(
@@ -83,20 +83,20 @@ public sealed class VolatilityTargetingTests
         var baseModel = new Mock<IPortfolioConstructionModel>();
         var volTarget = new VolatilityTargetingConstruction(baseModel.Object, 0.10m);
 
-        var weights = volTarget.ComputeTargetWeights(new List<Asset>(), Array.Empty<decimal[]>());
+        var weights = volTarget.ComputeTargetWeights(new List<Symbol>(), Array.Empty<decimal[]>());
         weights.Should().BeEmpty();
     }
 
     [Fact]
     public void VolTarget_InsufficientReturns_ShouldReturnBaseWeights()
     {
-        var a = new Asset("A");
-        var assets = new List<Asset> { a };
+        var a = new Symbol("A");
+        var assets = new List<Symbol> { a };
         var returns = new[] { new[] { 0.01m } }; // Only 1 return
 
         var baseModel = new Mock<IPortfolioConstructionModel>();
         baseModel.Setup(m => m.ComputeTargetWeights(assets, returns))
-            .Returns(new Dictionary<Asset, decimal> { [a] = 1.0m });
+            .Returns(new Dictionary<Symbol, decimal> { [a] = 1.0m });
 
         var volTarget = new VolatilityTargetingConstruction(baseModel.Object, 0.10m);
 
@@ -121,9 +121,9 @@ public sealed class VolatilityTargetingTests
     public void VolTarget_ShouldThrow_WhenBaseModelMissesAsset()
     {
         // Arrange — 2 input assets, but base model only returns weight for one
-        var vti = new Asset("VTI");
-        var tlt = new Asset("TLT");
-        var assets = new List<Asset> { vti, tlt };
+        var vti = new Symbol("VTI");
+        var tlt = new Symbol("TLT");
+        var assets = new List<Symbol> { vti, tlt };
 
         var returns = new[]
         {
@@ -133,7 +133,7 @@ public sealed class VolatilityTargetingTests
 
         var baseModel = new Mock<IPortfolioConstructionModel>();
         baseModel.Setup(m => m.ComputeTargetWeights(assets, returns))
-            .Returns(new Dictionary<Asset, decimal> { [vti] = 1.0m }); // Missing TLT
+            .Returns(new Dictionary<Symbol, decimal> { [vti] = 1.0m }); // Missing TLT
 
         var volTarget = new VolatilityTargetingConstruction(
             baseModel.Object, targetVolatility: 0.10m);

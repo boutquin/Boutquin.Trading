@@ -18,7 +18,6 @@ namespace Boutquin.Trading.Tests.UnitTests.Application.Calendar;
 
 using Boutquin.Trading.Application.Brokers;
 using Boutquin.Trading.Application.CostModels;
-using Boutquin.Trading.Domain.ValueObjects;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 
@@ -27,19 +26,18 @@ using Microsoft.Extensions.Logging;
 /// </summary>
 public sealed class SimulatedBrokerageCalendarTests
 {
-    private static readonly Asset s_aapl = new("AAPL");
+    private static readonly Symbol s_aapl = new("AAPL");
 
-    private static SortedDictionary<Asset, MarketData> CreateDayData(DateOnly date) =>
+    private static SortedDictionary<Symbol, Bar> CreateDayData(DateOnly date) =>
         new()
         {
-            [s_aapl] = new(date, 100m, 105m, 95m, 100m, 100m, 1_000_000L, 0m, 1m),
+            [s_aapl] = new(date, 100m, 105m, 95m, 100m, 100m, 1_000_000L),
         };
 
     [Fact]
     public async Task ProcessPendingOrders_NoCalendar_ProcessesNormally()
     {
-        var mockFetcher = new Mock<IMarketDataFetcher>();
-        var brokerage = new SimulatedBrokerage(mockFetcher.Object, new PercentageOfValueCostModel(0.001m));
+        var brokerage = new SimulatedBrokerage(new PercentageOfValueCostModel(0.001m));
 
         var order = new Order(new DateOnly(2025, 1, 6), "test", s_aapl, TradeAction.Buy, OrderType.Market, 10);
         await brokerage.SubmitOrderAsync(order, CancellationToken.None).ConfigureAwait(true);
@@ -54,14 +52,11 @@ public sealed class SimulatedBrokerageCalendarTests
     [Fact]
     public async Task ProcessPendingOrders_TradingDay_NoWarning()
     {
-        var mockCalendar = new Mock<ITradingCalendar>();
-        mockCalendar.Setup(c => c.IsTradingDay(It.IsAny<DateOnly>())).Returns(true);
+        var mockCalendar = new Mock<IBusinessCalendar>();
+        mockCalendar.Setup(c => c.IsBusinessDay(It.IsAny<DateOnly>())).Returns(true);
 
         var mockLogger = new Mock<ILogger<SimulatedBrokerage>>();
-        var mockFetcher = new Mock<IMarketDataFetcher>();
-
         var brokerage = new SimulatedBrokerage(
-            mockFetcher.Object,
             new PercentageOfValueCostModel(0.001m),
             tradingCalendar: mockCalendar.Object,
             logger: mockLogger.Object);
@@ -88,14 +83,11 @@ public sealed class SimulatedBrokerageCalendarTests
     [Fact]
     public async Task ProcessPendingOrders_NonTradingDay_LogsWarning()
     {
-        var mockCalendar = new Mock<ITradingCalendar>();
-        mockCalendar.Setup(c => c.IsTradingDay(It.IsAny<DateOnly>())).Returns(false);
+        var mockCalendar = new Mock<IBusinessCalendar>();
+        mockCalendar.Setup(c => c.IsBusinessDay(It.IsAny<DateOnly>())).Returns(false);
 
         var mockLogger = new Mock<ILogger<SimulatedBrokerage>>();
-        var mockFetcher = new Mock<IMarketDataFetcher>();
-
         var brokerage = new SimulatedBrokerage(
-            mockFetcher.Object,
             new PercentageOfValueCostModel(0.001m),
             tradingCalendar: mockCalendar.Object,
             logger: mockLogger.Object);
@@ -122,12 +114,10 @@ public sealed class SimulatedBrokerageCalendarTests
     [Fact]
     public async Task ProcessPendingOrders_NonTradingDay_SkipsProcessing()
     {
-        var mockCalendar = new Mock<ITradingCalendar>();
-        mockCalendar.Setup(c => c.IsTradingDay(It.IsAny<DateOnly>())).Returns(false);
+        var mockCalendar = new Mock<IBusinessCalendar>();
+        mockCalendar.Setup(c => c.IsBusinessDay(It.IsAny<DateOnly>())).Returns(false);
 
-        var mockFetcher = new Mock<IMarketDataFetcher>();
         var brokerage = new SimulatedBrokerage(
-            mockFetcher.Object,
             new PercentageOfValueCostModel(0.001m),
             tradingCalendar: mockCalendar.Object);
 

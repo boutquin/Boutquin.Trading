@@ -20,13 +20,13 @@ using Boutquin.Trading.Application.RiskManagement;
 
 public sealed class MaxDrawdownRuleCurrentDDTests
 {
-    private static readonly Asset s_vti = new("VTI");
+    private static readonly Symbol s_vti = new("VTI");
 
     private static Order CreateBuyOrder() =>
         new(
             Timestamp: new DateOnly(2026, 3, 16),
             StrategyName: "TestStrategy",
-            Asset: s_vti,
+            Symbol: s_vti,
             TradeAction: TradeAction.Buy,
             OrderType: OrderType.Market,
             Quantity: 100);

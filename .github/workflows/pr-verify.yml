@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    name: PR Review
+    name: PR Verify
     runs-on: ubuntu-latest
 
     steps:
@@ -23,8 +23,9 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', 'Directory.Build.props') }}
-          restore-keys: ${{ runner.os }}-nuget-
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/Directory.Build.props') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
 
       - name: dotnet restore
         run: dotnet restore
@@ -32,8 +33,15 @@ jobs:
       - name: Build with dotnet
         run: dotnet build --configuration Release --no-restore
 
-      - name: dotnet test
-        run: dotnet test --configuration Release --no-build --collect:"XPlat Code Coverage"
+      - name: dotnet test with coverage
+        run: dotnet test --configuration Release --no-build --collect:"XPlat Code Coverage" --results-directory ./coverage
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-report
+          path: coverage/
+        if: always()
 
       - name: dotnet format (whitespace)
         run: dotnet format whitespace --verify-no-changes
@@ -43,3 +51,38 @@ jobs:
 
       - name: dotnet format (analyzers)
         run: dotnet format analyzers --verify-no-changes --exclude-diagnostics CA1305 CA2007 CA2208 xUnit1030
+
+      - name: Doc quality — prohibited phrase scan
+        run: |
+          MATCHES=$(grep -rn \
+            -e 'Provides the .* functionality' \
+            -e 'Executes the .* operation' \
+            -e 'Gets or sets the .* for this instance' \
+            --include='*.cs' src/ || true)
+          if [ -n "$MATCHES" ]; then
+            echo "::error::Prohibited documentation phrases found:"
+            echo "$MATCHES"
+            exit 1
+          fi
+
+      - name: Doc quality — low-signal phrase scan
+        run: |
+          MATCHES=$(grep -rn \
+            -e 'Input value for <paramref name=' \
+            -e '/// Executes ' \
+            -e 'Operation result\.' \
+            --include='*.cs' src/ || true)
+          if [ -n "$MATCHES" ]; then
+            echo "::error::Low-signal documentation phrases found:"
+            echo "$MATCHES"
+            exit 1
+          fi
+
+      - name: Doc quality — accessor-verb scan
+        run: |
+          MATCHES=$(grep -rn '/// Gets \w' --include='*.cs' src/ || true)
+          if [ -n "$MATCHES" ]; then
+            echo "::error::Accessor-verb property summaries found (use semantic descriptions instead):"
+            echo "$MATCHES"
+            exit 1
+          fi

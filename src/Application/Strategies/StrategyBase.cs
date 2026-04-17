@@ -15,9 +15,6 @@
 //
 
 namespace Boutquin.Trading.Application.Strategies;
-
-using Domain.ValueObjects;
-
 /// <summary>
 /// Abstract base class for trading strategies that provides common functionality
 /// for position management, cash management, and total value computation.
@@ -32,7 +29,7 @@ using Domain.ValueObjects;
 /// </remarks>
 public abstract class StrategyBase : IStrategy
 {
-    private readonly SortedDictionary<Asset, int> _positions = [];
+    private readonly SortedDictionary<Symbol, int> _positions = [];
     private readonly SortedDictionary<CurrencyCode, decimal> _cash;
 
     /// <summary>
@@ -48,7 +45,7 @@ public abstract class StrategyBase : IStrategy
     /// <exception cref="EmptyOrNullDictionaryException">Thrown when assets or cash dictionaries are empty or null.</exception>
     protected StrategyBase(
         string name,
-        IReadOnlyDictionary<Asset, CurrencyCode> assets,
+        IReadOnlyDictionary<Symbol, CurrencyCode> assets,
         SortedDictionary<CurrencyCode, decimal> cash,
         IOrderPriceCalculationStrategy orderPriceCalculationStrategy,
         IPositionSizer positionSizer)
@@ -71,10 +68,10 @@ public abstract class StrategyBase : IStrategy
     public string Name { get; }
 
     /// <inheritdoc />
-    public IReadOnlyDictionary<Asset, int> Positions => _positions;
+    public IReadOnlyDictionary<Symbol, int> Positions => _positions;
 
     /// <inheritdoc />
-    public IReadOnlyDictionary<Asset, CurrencyCode> Assets { get; }
+    public IReadOnlyDictionary<Symbol, CurrencyCode> Assets { get; }
 
     /// <inheritdoc />
     public IReadOnlyDictionary<CurrencyCode, decimal> Cash => _cash;
@@ -89,14 +86,14 @@ public abstract class StrategyBase : IStrategy
     public abstract SignalEvent GenerateSignals(
         DateOnly timestamp,
         CurrencyCode baseCurrency,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>> historicalMarketData,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> historicalMarketData,
         IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates);
 
     /// <inheritdoc />
     public virtual decimal ComputeTotalValue(
         DateOnly timestamp,
         CurrencyCode baseCurrency,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>> historicalMarketData,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> historicalMarketData,
         IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
     {
         Guard.AgainstUndefinedEnumValue(() => baseCurrency);
@@ -173,7 +170,7 @@ public abstract class StrategyBase : IStrategy
     }
 
     /// <inheritdoc />
-    public void UpdatePositions(Asset asset, int quantity)
+    public void UpdatePositions(Symbol asset, int quantity)
     {
         Guard.AgainstNullOrWhiteSpace(() => asset.Ticker);
 
@@ -184,7 +181,7 @@ public abstract class StrategyBase : IStrategy
     }
 
     /// <inheritdoc />
-    public void SetPosition(Asset asset, int quantity)
+    public void SetPosition(Symbol asset, int quantity)
     {
         Guard.AgainstNullOrWhiteSpace(() => asset.Ticker);
 
@@ -192,7 +189,7 @@ public abstract class StrategyBase : IStrategy
     }
 
     /// <inheritdoc />
-    public int GetPositionQuantity(Asset asset)
+    public int GetPositionQuantity(Symbol asset)
     {
         Guard.AgainstNullOrWhiteSpace(() => asset.Ticker);
 

@@ -18,19 +18,19 @@ namespace Boutquin.Trading.Tests.UnitTests.Application;
 
 public static class BrinsonFachlerValidationTestData
 {
-    private static readonly Asset s_a = new("A");
-    private static readonly Asset s_x = new("X");
+    private static readonly Symbol s_a = new("A");
+    private static readonly Symbol s_x = new("X");
 
     public static IEnumerable<object[]> MissingKeyCases
     {
         get
         {
             // assetNames contains "X" but portfolioReturns dict doesn't have it
-            var assetNames = new List<Asset> { s_a, s_x };
-            var portfolioWeights = new Dictionary<Asset, decimal> { [s_a] = 0.5m, [s_x] = 0.5m };
-            var benchmarkWeights = new Dictionary<Asset, decimal> { [s_a] = 0.5m, [s_x] = 0.5m };
-            var portfolioReturns = new Dictionary<Asset, decimal> { [s_a] = 0.05m }; // Missing "X"
-            var benchmarkReturns = new Dictionary<Asset, decimal> { [s_a] = 0.03m, [s_x] = 0.02m };
+            var assetNames = new List<Symbol> { s_a, s_x };
+            var portfolioWeights = new Dictionary<Symbol, decimal> { [s_a] = 0.5m, [s_x] = 0.5m };
+            var benchmarkWeights = new Dictionary<Symbol, decimal> { [s_a] = 0.5m, [s_x] = 0.5m };
+            var portfolioReturns = new Dictionary<Symbol, decimal> { [s_a] = 0.05m }; // Missing "X"
+            var benchmarkReturns = new Dictionary<Symbol, decimal> { [s_a] = 0.03m, [s_x] = 0.02m };
 
             yield return [assetNames, portfolioWeights, benchmarkWeights, portfolioReturns, benchmarkReturns];
         }

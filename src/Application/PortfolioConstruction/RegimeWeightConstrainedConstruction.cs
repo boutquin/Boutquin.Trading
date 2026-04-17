@@ -64,13 +64,13 @@ public sealed class RegimeWeightConstrainedConstruction : IPortfolioConstruction
     }
 
     /// <inheritdoc />
-    public IReadOnlyDictionary<Asset, decimal> ComputeTargetWeights(
-        IReadOnlyList<Asset> assets,
+    public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
+        IReadOnlyList<Symbol> assets,
         decimal[][] returns)
     {
         if (assets.Count == 0)
         {
-            return new Dictionary<Asset, decimal>();
+            return new Dictionary<Symbol, decimal>();
         }
 
         var baseWeights = _inner.ComputeTargetWeights(assets, returns);
@@ -81,7 +81,7 @@ public sealed class RegimeWeightConstrainedConstruction : IPortfolioConstruction
             return baseWeights;
         }
 
-        var weights = new Dictionary<Asset, decimal>(assets.Count);
+        var weights = new Dictionary<Symbol, decimal>(assets.Count);
         foreach (var asset in assets)
         {
             weights[asset] = baseWeights.GetValueOrDefault(asset, 0m);

@@ -23,9 +23,9 @@ namespace Boutquin.Trading.Tests.UnitTests.Application;
 /// </summary>
 public sealed class MinimumTradeValueTests
 {
-    private static readonly Asset s_vti = new("VTI");
-    private static readonly Asset s_bnd = new("BND");
-    private static readonly Asset s_gld = new("GLD");
+    private static readonly Symbol s_vti = new("VTI");
+    private static readonly Symbol s_bnd = new("BND");
+    private static readonly Symbol s_gld = new("GLD");
 
     /// <summary>
     /// Zero threshold = current behavior, no orders suppressed.
@@ -33,9 +33,9 @@ public sealed class MinimumTradeValueTests
     [Fact]
     public void ComputeRebalanceOrders_ZeroThreshold_NoSuppression()
     {
-        var targetWeights = new Dictionary<Asset, decimal> { [s_vti] = 0.61m, [s_bnd] = 0.39m };
-        var currentPositions = new Dictionary<Asset, int> { [s_vti] = 600, [s_bnd] = 400 };
-        var prices = new Dictionary<Asset, decimal> { [s_vti] = 100m, [s_bnd] = 100m };
+        var targetWeights = new Dictionary<Symbol, decimal> { [s_vti] = 0.61m, [s_bnd] = 0.39m };
+        var currentPositions = new Dictionary<Symbol, int> { [s_vti] = 600, [s_bnd] = 400 };
+        var prices = new Dictionary<Symbol, decimal> { [s_vti] = 100m, [s_bnd] = 100m };
 
         var orders = TargetPortfolioDiffer.ComputeRebalanceOrders(
             targetWeights, currentPositions, prices, 100_000m, minimumTradeValue: 0m);
@@ -51,9 +51,9 @@ public sealed class MinimumTradeValueTests
     [Fact]
     public void ComputeRebalanceOrders_SmallTradesBelowThreshold_Suppressed()
     {
-        var targetWeights = new Dictionary<Asset, decimal> { [s_vti] = 0.61m, [s_bnd] = 0.39m };
-        var currentPositions = new Dictionary<Asset, int> { [s_vti] = 600, [s_bnd] = 400 };
-        var prices = new Dictionary<Asset, decimal> { [s_vti] = 100m, [s_bnd] = 100m };
+        var targetWeights = new Dictionary<Symbol, decimal> { [s_vti] = 0.61m, [s_bnd] = 0.39m };
+        var currentPositions = new Dictionary<Symbol, int> { [s_vti] = 600, [s_bnd] = 400 };
+        var prices = new Dictionary<Symbol, decimal> { [s_vti] = 100m, [s_bnd] = 100m };
 
         var orders = TargetPortfolioDiffer.ComputeRebalanceOrders(
             targetWeights, currentPositions, prices, 100_000m, minimumTradeValue: 1500m);
@@ -68,9 +68,9 @@ public sealed class MinimumTradeValueTests
     public void ComputeRebalanceOrders_LargeTradesAboveThreshold_NotSuppressed()
     {
         // VTI: target 50% of 100k = 500 shares, current 0 → buy 500 shares @ $100 = $50,000
-        var targetWeights = new Dictionary<Asset, decimal> { [s_vti] = 0.5m };
-        var currentPositions = new Dictionary<Asset, int>();
-        var prices = new Dictionary<Asset, decimal> { [s_vti] = 100m };
+        var targetWeights = new Dictionary<Symbol, decimal> { [s_vti] = 0.5m };
+        var currentPositions = new Dictionary<Symbol, int>();
+        var prices = new Dictionary<Symbol, decimal> { [s_vti] = 100m };
 
         var orders = TargetPortfolioDiffer.ComputeRebalanceOrders(
             targetWeights, currentPositions, prices, 100_000m, minimumTradeValue: 1000m);
@@ -89,17 +89,17 @@ public sealed class MinimumTradeValueTests
         // VTI: target 70% = 700, current 600 → buy 100 @ $100 = $10,000 (above)
         // BND: target 29% = 290, current 300 → sell 10 @ $100 = $1,000 (below $5000)
         // GLD: target 1% = 10, current 100 → sell 90 @ $100 = $9,000 (above)
-        var targetWeights = new Dictionary<Asset, decimal> { [s_vti] = 0.70m, [s_bnd] = 0.29m, [s_gld] = 0.01m };
-        var currentPositions = new Dictionary<Asset, int> { [s_vti] = 600, [s_bnd] = 300, [s_gld] = 100 };
-        var prices = new Dictionary<Asset, decimal> { [s_vti] = 100m, [s_bnd] = 100m, [s_gld] = 100m };
+        var targetWeights = new Dictionary<Symbol, decimal> { [s_vti] = 0.70m, [s_bnd] = 0.29m, [s_gld] = 0.01m };
+        var currentPositions = new Dictionary<Symbol, int> { [s_vti] = 600, [s_bnd] = 300, [s_gld] = 100 };
+        var prices = new Dictionary<Symbol, decimal> { [s_vti] = 100m, [s_bnd] = 100m, [s_gld] = 100m };
 
         var orders = TargetPortfolioDiffer.ComputeRebalanceOrders(
             targetWeights, currentPositions, prices, 100_000m, minimumTradeValue: 5000m);
 
         orders.Should().HaveCount(2);
-        orders.Should().Contain(o => o.Asset == s_vti && o.TradeAction == TradeAction.Buy);
-        orders.Should().Contain(o => o.Asset == s_gld && o.TradeAction == TradeAction.Sell);
-        orders.Should().NotContain(o => o.Asset == s_bnd);
+        orders.Should().Contain(o => o.Symbol == s_vti && o.TradeAction == TradeAction.Buy);
+        orders.Should().Contain(o => o.Symbol == s_gld && o.TradeAction == TradeAction.Sell);
+        orders.Should().NotContain(o => o.Symbol == s_bnd);
     }
 
     /// <summary>
@@ -108,9 +108,9 @@ public sealed class MinimumTradeValueTests
     [Fact]
     public void ComputeRebalanceOrders_NegativeThreshold_Throws()
     {
-        var targetWeights = new Dictionary<Asset, decimal> { [s_vti] = 1m };
-        var currentPositions = new Dictionary<Asset, int>();
-        var prices = new Dictionary<Asset, decimal> { [s_vti] = 100m };
+        var targetWeights = new Dictionary<Symbol, decimal> { [s_vti] = 1m };
+        var currentPositions = new Dictionary<Symbol, int>();
+        var prices = new Dictionary<Symbol, decimal> { [s_vti] = 100m };
 
         var act = () => TargetPortfolioDiffer.ComputeRebalanceOrders(
             targetWeights, currentPositions, prices, 100_000m, minimumTradeValue: -1m);

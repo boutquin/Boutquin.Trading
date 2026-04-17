@@ -21,7 +21,6 @@ using Boutquin.Trading.Application.CovarianceEstimators;
 using Boutquin.Trading.Application.PortfolioConstruction;
 using Boutquin.Trading.Application.Reporting;
 using Boutquin.Trading.Domain.Helpers;
-using Boutquin.Trading.Domain.ValueObjects;
 using FluentAssertions;
 
 /// <summary>
@@ -30,11 +29,11 @@ using FluentAssertions;
 /// </summary>
 public sealed class R2QuantReviewFixesTests
 {
-    private static readonly Asset s_assetA = new("A");
-    private static readonly Asset s_assetB = new("B");
-    private static readonly Asset s_assetC = new("C");
+    private static readonly Symbol s_assetA = new("A");
+    private static readonly Symbol s_assetB = new("B");
+    private static readonly Symbol s_assetC = new("C");
 
-    private static IReadOnlyList<Asset> ThreeAssets => [s_assetA, s_assetB, s_assetC];
+    private static IReadOnlyList<Symbol> ThreeAssets => [s_assetA, s_assetB, s_assetC];
 
     // ==================== R2Q-07: Matrix singularity epsilon check ====================
 
@@ -250,8 +249,8 @@ public sealed class R2QuantReviewFixesTests
     {
         // Two unconstrained assets: known closed-form solution exists.
         var model = new MeanVarianceConstruction(riskAversion: 1.0m);
-        var a = new Asset("H");
-        var b = new Asset("L");
+        var a = new Symbol("H");
+        var b = new Symbol("L");
 
         var returnsH = new[] { 0.05m, 0.04m, 0.06m, 0.03m, 0.05m, 0.04m, 0.06m, 0.03m, 0.05m, 0.04m };
         var returnsL = new[] { 0.01m, 0.005m, 0.008m, 0.012m, 0.009m, 0.01m, 0.005m, 0.008m, 0.012m, 0.009m };
@@ -290,10 +289,10 @@ public sealed class R2QuantReviewFixesTests
     public void R2Q03_ComputeTargetWeights_ConvergesToMinVariance_TwoAsset()
     {
         var model = new MinimumVarianceConstruction();
-        var a = new Asset("LOWVOL");
-        var b = new Asset("HIGHVOL");
+        var a = new Symbol("LOWVOL");
+        var b = new Symbol("HIGHVOL");
 
-        // Asset A has much lower vol
+        // Symbol A has much lower vol
         var returnsA = new[] { 0.001m, -0.001m, 0.001m, -0.001m, 0.001m, -0.001m, 0.001m, -0.001m, 0.001m, -0.001m };
         var returnsB = new[] { 0.05m, -0.05m, 0.05m, -0.05m, 0.05m, -0.05m, 0.05m, -0.05m, 0.05m, -0.05m };
 

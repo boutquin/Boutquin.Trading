@@ -18,7 +18,6 @@ namespace Boutquin.Trading.Application.PortfolioConstruction;
 
 using Boutquin.Trading.Application.CovarianceEstimators;
 using Boutquin.Trading.Domain.Exceptions;
-using Domain.ValueObjects;
 
 /// <summary>
 /// Implements the Black-Litterman model for portfolio construction.
@@ -80,15 +79,15 @@ public sealed class BlackLittermanConstruction : IPortfolioConstructionModel
     }
 
     /// <inheritdoc />
-    public IReadOnlyDictionary<Asset, decimal> ComputeTargetWeights(
-        IReadOnlyList<Asset> assets,
+    public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
+        IReadOnlyList<Symbol> assets,
         decimal[][] returns)
     {
         Guard.AgainstNull(() => assets);
 
         if (assets.Count == 0)
         {
-            return new Dictionary<Asset, decimal>();
+            return new Dictionary<Symbol, decimal>();
         }
 
         if (returns is null || returns.Length != assets.Count)
@@ -121,8 +120,8 @@ public sealed class BlackLittermanConstruction : IPortfolioConstructionModel
         // and introduces unnecessary numerical error.
         if (_pickMatrix is null || _viewReturns is null || _viewUncertainty is null)
         {
-            var result = new Dictionary<Asset, decimal>(n);
-            var assetList = assets is IList<Asset> list ? list : assets.ToList();
+            var result = new Dictionary<Symbol, decimal>(n);
+            var assetList = assets is IList<Symbol> list ? list : assets.ToList();
             for (var i = 0; i < n; i++)
             {
                 result[assetList[i]] = _equilibriumWeights[i];
@@ -289,7 +288,7 @@ public sealed class BlackLittermanConstruction : IPortfolioConstructionModel
             }
         }
 
-        var weights = new Dictionary<Asset, decimal>(n);
+        var weights = new Dictionary<Symbol, decimal>(n);
         for (var i = 0; i < n; i++)
         {
             weights[assets[i]] = rawWeights[i];

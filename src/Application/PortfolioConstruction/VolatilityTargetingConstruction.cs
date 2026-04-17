@@ -17,7 +17,6 @@
 namespace Boutquin.Trading.Application.PortfolioConstruction;
 
 using Boutquin.Trading.Domain.Exceptions;
-using Domain.ValueObjects;
 
 /// <summary>
 /// Scales a base construction model's weights so that the portfolio's expected volatility
@@ -66,13 +65,15 @@ public sealed class VolatilityTargetingConstruction : ILeveragedConstructionMode
     }
 
     /// <inheritdoc />
-    public IReadOnlyDictionary<Asset, decimal> ComputeTargetWeights(
-        IReadOnlyList<Asset> assets,
+    public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
+        IReadOnlyList<Symbol> assets,
         decimal[][] returns)
     {
+        ArgumentNullException.ThrowIfNull(returns);
+
         if (assets.Count == 0)
         {
-            return new Dictionary<Asset, decimal>();
+            return new Dictionary<Symbol, decimal>();
         }
 
         var baseWeights = _baseModel.ComputeTargetWeights(assets, returns);
@@ -121,7 +122,7 @@ public sealed class VolatilityTargetingConstruction : ILeveragedConstructionMode
 
         var scaleFactor = Math.Min(_targetVolatility / annualizedVol, _maxLeverage);
 
-        var scaled = new Dictionary<Asset, decimal>();
+        var scaled = new Dictionary<Symbol, decimal>();
         foreach (var asset in assets)
         {
             scaled[asset] = baseWeights[asset] * scaleFactor;

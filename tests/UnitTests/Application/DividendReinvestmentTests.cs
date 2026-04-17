@@ -36,14 +36,14 @@ public sealed class DividendReinvestmentTests
     public void UpdateCashForDividend_DripDisabled_ShouldOnlyCreditCash()
     {
         // Arrange
-        var asset = new Asset("VTI");
+        var asset = new Symbol("VTI");
         var testStrategy = new TestStrategy
         {
-            Positions = new SortedDictionary<Asset, int> { { asset, 100 } },
+            Positions = new SortedDictionary<Symbol, int> { { asset, 100 } },
             Cash = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 10_000m } }
         };
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", testStrategy } };
-        var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { asset, CurrencyCode.USD } };
+        var assetCurrencies = new Dictionary<Symbol, CurrencyCode> { { asset, CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
             CurrencyCode.USD,
@@ -68,14 +68,14 @@ public sealed class DividendReinvestmentTests
     public void UpdateCashForDividend_DripEnabled_ShouldReinvestWholeShares()
     {
         // Arrange
-        var asset = new Asset("VTI");
+        var asset = new Symbol("VTI");
         var testStrategy = new TestStrategy
         {
-            Positions = new SortedDictionary<Asset, int> { { asset, 100 } },
+            Positions = new SortedDictionary<Symbol, int> { { asset, 100 } },
             Cash = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 10_000m } }
         };
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", testStrategy } };
-        var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { asset, CurrencyCode.USD } };
+        var assetCurrencies = new Dictionary<Symbol, CurrencyCode> { { asset, CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
             CurrencyCode.USD,
@@ -103,14 +103,14 @@ public sealed class DividendReinvestmentTests
     public void UpdateCashForDividend_DripEnabled_ShouldKeepFractionalCash()
     {
         // Arrange
-        var asset = new Asset("VTI");
+        var asset = new Symbol("VTI");
         var testStrategy = new TestStrategy
         {
-            Positions = new SortedDictionary<Asset, int> { { asset, 100 } },
+            Positions = new SortedDictionary<Symbol, int> { { asset, 100 } },
             Cash = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 10_000m } }
         };
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", testStrategy } };
-        var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { asset, CurrencyCode.USD } };
+        var assetCurrencies = new Dictionary<Symbol, CurrencyCode> { { asset, CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
             CurrencyCode.USD,
@@ -138,14 +138,14 @@ public sealed class DividendReinvestmentTests
     public void UpdateCashForDividend_DripEnabled_DividendTooSmallForOneShare_ShouldOnlyCreditCash()
     {
         // Arrange
-        var asset = new Asset("VTI");
+        var asset = new Symbol("VTI");
         var testStrategy = new TestStrategy
         {
-            Positions = new SortedDictionary<Asset, int> { { asset, 10 } },
+            Positions = new SortedDictionary<Symbol, int> { { asset, 10 } },
             Cash = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 10_000m } }
         };
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", testStrategy } };
-        var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { asset, CurrencyCode.USD } };
+        var assetCurrencies = new Dictionary<Symbol, CurrencyCode> { { asset, CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
             CurrencyCode.USD,
@@ -171,15 +171,15 @@ public sealed class DividendReinvestmentTests
     public void UpdateCashForDividend_DripEnabled_MultipleStrategies_ShouldReinvestIndependently()
     {
         // Arrange
-        var asset = new Asset("VTI");
+        var asset = new Symbol("VTI");
         var strategy1 = new TestStrategy
         {
-            Positions = new SortedDictionary<Asset, int> { { asset, 100 } },
+            Positions = new SortedDictionary<Symbol, int> { { asset, 100 } },
             Cash = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 5_000m } }
         };
         var strategy2 = new TestStrategy
         {
-            Positions = new SortedDictionary<Asset, int> { { asset, 50 } },
+            Positions = new SortedDictionary<Symbol, int> { { asset, 50 } },
             Cash = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 3_000m } }
         };
         var strategies = new Dictionary<string, IStrategy>
@@ -187,7 +187,7 @@ public sealed class DividendReinvestmentTests
             { "Strategy1", strategy1 },
             { "Strategy2", strategy2 }
         };
-        var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { asset, CurrencyCode.USD } };
+        var assetCurrencies = new Dictionary<Symbol, CurrencyCode> { { asset, CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
             CurrencyCode.USD,
@@ -218,14 +218,14 @@ public sealed class DividendReinvestmentTests
     public void UpdateCashForDividend_DripEnabled_ZeroCurrentPrice_ShouldOnlyCreditCash()
     {
         // Arrange
-        var asset = new Asset("VTI");
+        var asset = new Symbol("VTI");
         var testStrategy = new TestStrategy
         {
-            Positions = new SortedDictionary<Asset, int> { { asset, 100 } },
+            Positions = new SortedDictionary<Symbol, int> { { asset, 100 } },
             Cash = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 10_000m } }
         };
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", testStrategy } };
-        var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { asset, CurrencyCode.USD } };
+        var assetCurrencies = new Dictionary<Symbol, CurrencyCode> { { asset, CurrencyCode.USD } };
 
         var portfolio = new Portfolio(
             CurrencyCode.USD,

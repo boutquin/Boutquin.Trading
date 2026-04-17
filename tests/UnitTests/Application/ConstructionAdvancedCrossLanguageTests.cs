@@ -73,17 +73,17 @@ public sealed class ConstructionAdvancedCrossLanguageTests : CrossLanguageVerifi
         return result;
     }
 
-    private static IReadOnlyList<Asset> MakeAssets(int n)
+    private static IReadOnlyList<Symbol> MakeAssets(int n)
     {
         return Enumerable.Range(0, n)
-            .Select(i => new Asset($"ASSET{i}"))
+            .Select(i => new Symbol($"ASSET{i}"))
             .ToList();
     }
 
     private static void AssertWeightsMatch(
-        IReadOnlyDictionary<Asset, decimal> actual,
+        IReadOnlyDictionary<Symbol, decimal> actual,
         decimal[] expected,
-        IReadOnlyList<Asset> assets,
+        IReadOnlyList<Symbol> assets,
         decimal tolerance,
         string label)
     {
@@ -95,14 +95,14 @@ public sealed class ConstructionAdvancedCrossLanguageTests : CrossLanguageVerifi
         }
     }
 
-    private static void AssertWeightsSumToOne(IReadOnlyDictionary<Asset, decimal> weights, string label)
+    private static void AssertWeightsSumToOne(IReadOnlyDictionary<Symbol, decimal> weights, string label)
     {
         var sum = weights.Values.Sum();
         AssertWithinTolerance(sum, 1m, PrecisionNumeric,
             $"{label} weights sum: ");
     }
 
-    private static void AssertWeightsNonNegative(IReadOnlyDictionary<Asset, decimal> weights, string label)
+    private static void AssertWeightsNonNegative(IReadOnlyDictionary<Symbol, decimal> weights, string label)
     {
         foreach (var (asset, w) in weights)
         {
@@ -463,18 +463,18 @@ public sealed class ConstructionAdvancedCrossLanguageTests : CrossLanguageVerifi
     private sealed class StubConstructionModel : IPortfolioConstructionModel
     {
         private readonly decimal[] _weights;
-        private readonly IReadOnlyList<Asset> _assets;
+        private readonly IReadOnlyList<Symbol> _assets;
 
-        public StubConstructionModel(decimal[] weights, IReadOnlyList<Asset> assets)
+        public StubConstructionModel(decimal[] weights, IReadOnlyList<Symbol> assets)
         {
             _weights = weights;
             _assets = assets;
         }
 
-        public IReadOnlyDictionary<Asset, decimal> ComputeTargetWeights(
-            IReadOnlyList<Asset> assets, decimal[][] returns)
+        public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
+            IReadOnlyList<Symbol> assets, decimal[][] returns)
         {
-            var result = new Dictionary<Asset, decimal>();
+            var result = new Dictionary<Symbol, decimal>();
             for (var i = 0; i < _assets.Count; i++)
             {
                 result[_assets[i]] = _weights[i];
@@ -490,21 +490,21 @@ public sealed class ConstructionAdvancedCrossLanguageTests : CrossLanguageVerifi
     private sealed class SequenceConstructionModel : IPortfolioConstructionModel
     {
         private readonly decimal[][] _weightSequence;
-        private readonly IReadOnlyList<Asset> _assets;
+        private readonly IReadOnlyList<Symbol> _assets;
         private int _callIndex;
 
-        public SequenceConstructionModel(decimal[][] weightSequence, IReadOnlyList<Asset> assets)
+        public SequenceConstructionModel(decimal[][] weightSequence, IReadOnlyList<Symbol> assets)
         {
             _weightSequence = weightSequence;
             _assets = assets;
         }
 
-        public IReadOnlyDictionary<Asset, decimal> ComputeTargetWeights(
-            IReadOnlyList<Asset> assets, decimal[][] returns)
+        public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
+            IReadOnlyList<Symbol> assets, decimal[][] returns)
         {
             var weights = _weightSequence[Math.Min(_callIndex, _weightSequence.Length - 1)];
             _callIndex++;
-            var result = new Dictionary<Asset, decimal>();
+            var result = new Dictionary<Symbol, decimal>();
             for (var i = 0; i < _assets.Count; i++)
             {
                 result[_assets[i]] = weights[i];

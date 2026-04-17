@@ -21,59 +21,8 @@ namespace Boutquin.Trading.Tests.UnitTests.Domain;
 /// </summary>
 public sealed class MediumSeverityDomainTests
 {
-    // ── BUG-D05: Zero split ratio must throw ──────────────────────────
-    [Fact]
-    public void MarketData_AdjustForSplit_ZeroRatio_Throws()
-    {
-        // Arrange
-        var md = new MarketData(
-            Timestamp: new DateOnly(2024, 1, 15),
-            Open: 100m, High: 110m, Low: 90m, Close: 105m,
-            AdjustedClose: 105m, Volume: 1_000_000,
-            DividendPerShare: 0m, SplitCoefficient: 1m);
-
-        // Act
-        var act = () => md.AdjustForSplit(0m);
-
-        // Assert
-        act.Should().Throw<ArgumentOutOfRangeException>();
-    }
-
-    [Fact]
-    public void MarketData_AdjustForSplit_NegativeRatio_Throws()
-    {
-        // Arrange
-        var md = new MarketData(
-            Timestamp: new DateOnly(2024, 1, 15),
-            Open: 100m, High: 110m, Low: 90m, Close: 105m,
-            AdjustedClose: 105m, Volume: 1_000_000,
-            DividendPerShare: 0m, SplitCoefficient: 1m);
-
-        // Act
-        var act = () => md.AdjustForSplit(-2m);
-
-        // Assert
-        act.Should().Throw<ArgumentOutOfRangeException>();
-    }
-
-    [Fact]
-    public void MarketData_AdjustForSplit_ValidRatio_Succeeds()
-    {
-        // Arrange
-        var md = new MarketData(
-            Timestamp: new DateOnly(2024, 1, 15),
-            Open: 200m, High: 220m, Low: 180m, Close: 210m,
-            AdjustedClose: 210m, Volume: 500_000,
-            DividendPerShare: 0m, SplitCoefficient: 1m);
-
-        // Act
-        var result = md.AdjustForSplit(2m);
-
-        // Assert
-        result.Open.Should().Be(100m);
-        result.Close.Should().Be(105m);
-        result.Volume.Should().Be(1_000_000);
-    }
+    // ── BUG-D05: AdjustForSplit removed — Bar is an immutable record;
+    // split adjustments are handled externally. Tests removed.
 
     // ── BUG-D06: Peak equity initialized to first curve value ─────────
     [Fact]
@@ -99,7 +48,7 @@ public sealed class MediumSeverityDomainTests
         drawdowns[new DateOnly(2024, 1, 3)].Should().Be(0m); // New peak at 110
     }
 
-    // ── TYP-D03: Asset with null/whitespace ticker throws ─────────────
+    // ── TYP-D03: Symbol with null/whitespace ticker throws ─────────────
     [Theory]
     [InlineData(null)]
     [InlineData("")]
@@ -107,7 +56,7 @@ public sealed class MediumSeverityDomainTests
     public void Asset_NullOrWhiteSpaceTicker_ThrowsArgumentException(string? ticker)
     {
         // Act
-        var act = () => new Asset(ticker!);
+        var act = () => new Symbol(ticker!);
 
         // Assert
         act.Should().Throw<ArgumentException>();
@@ -117,7 +66,7 @@ public sealed class MediumSeverityDomainTests
     public void Asset_ValidTicker_Succeeds()
     {
         // Act
-        var asset = new Asset("AAPL");
+        var asset = new Symbol("AAPL");
 
         // Assert
         asset.Ticker.Should().Be("AAPL");

@@ -15,9 +15,6 @@
 //
 
 namespace Boutquin.Trading.Domain.Events;
-
-using ValueObjects;
-
 /// <summary>
 /// OrderEvent represents a portfolio-internal event that triggers order creation.
 /// The OrderEvent record encapsulates the data points for an order
@@ -30,7 +27,7 @@ using ValueObjects;
 /// <param name="StrategyName">The name of the strategy that created the order,
 /// represented as a string.
 /// </param>
-/// <param name="Asset">The name of the financial asset associated
+/// <param name="Symbol">The name of the financial asset associated
 /// with the order event, represented as a string.
 /// </param>
 /// <param name="TradeAction">The trade action of the order, represented as a TradeAction enum value.
@@ -50,7 +47,7 @@ using ValueObjects;
 public sealed record OrderEvent(
     DateOnly Timestamp,
     string StrategyName,
-    Asset Asset,
+    Symbol Symbol,
     TradeAction TradeAction,
     OrderType OrderType,
     int Quantity,

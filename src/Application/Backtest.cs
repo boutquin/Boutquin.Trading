@@ -37,12 +37,6 @@ public sealed class BackTest
     private readonly IPortfolio _benchmarkPortfolio;
 
     /// <summary>
-    /// The market data source to use for loading historical market data
-    /// and dividend data, represented as an IMarketDataFetcher object.
-    /// </summary>
-    private readonly IMarketDataFetcher _marketDataFetcher;
-
-    /// <summary>
     /// The base currency for the backtesting simulation.
     /// </summary>
     private readonly CurrencyCode _baseCurrency;
@@ -53,7 +47,7 @@ public sealed class BackTest
 
     private readonly IDrawdownControl? _drawdownControl;
 
-    private readonly ITradingCalendar? _tradingCalendar;
+    private readonly IBusinessCalendar? _tradingCalendar;
 
     private readonly decimal _defaultDailyExpenseRate;
     private readonly IReadOnlyDictionary<string, decimal> _perAssetDailyExpenseRates;
@@ -61,8 +55,8 @@ public sealed class BackTest
     /// <summary>
     /// Initializes a new instance of the BackTest class (backward-compatible overload).
     /// </summary>
-    public BackTest(IPortfolio portfolio, IPortfolio benchmarkPortfolio, IMarketDataFetcher marketDataFetcher, CurrencyCode baseCurrency)
-        : this(portfolio, benchmarkPortfolio, marketDataFetcher, baseCurrency, NullLogger<BackTest>.Instance)
+    public BackTest(IPortfolio portfolio, IPortfolio benchmarkPortfolio, CurrencyCode baseCurrency)
+        : this(portfolio, benchmarkPortfolio, baseCurrency, NullLogger<BackTest>.Instance)
     {
     }
 
@@ -71,15 +65,13 @@ public sealed class BackTest
     /// </summary>
     /// <param name="portfolio">A Portfolio object representing the trading portfolio.</param>
     /// <param name="benchmarkPortfolio">A Portfolio object representing the benchmark portfolio.</param>
-    /// <param name="marketDataFetcher">An object implementing the IMarketDataFetcher interface, responsible for providing market data for the backtest.</param>
     /// <param name="baseCurrency">A CurrencyCode enum value representing the base currency for the backtest.</param>
     /// <param name="logger">A logger for structured logging.</param>
     /// <exception cref="ArgumentNullException">Thrown when any of the provided arguments are null.</exception>
-    public BackTest(IPortfolio portfolio, IPortfolio benchmarkPortfolio, IMarketDataFetcher marketDataFetcher, CurrencyCode baseCurrency, ILogger<BackTest> logger)
+    public BackTest(IPortfolio portfolio, IPortfolio benchmarkPortfolio, CurrencyCode baseCurrency, ILogger<BackTest> logger)
     {
         _portfolio = portfolio ?? throw new ArgumentNullException(nameof(portfolio), "The provided portfolio cannot be null.");
         _benchmarkPortfolio = benchmarkPortfolio ?? throw new ArgumentNullException(nameof(benchmarkPortfolio), "The provided benchmark portfolio cannot be null.");
-        _marketDataFetcher = marketDataFetcher ?? throw new ArgumentNullException(nameof(marketDataFetcher), "The provided market reader source cannot be null.");
         _baseCurrency = baseCurrency;
         _logger = logger ?? NullLogger<BackTest>.Instance;
         _perAssetDailyExpenseRates = new Dictionary<string, decimal>();
@@ -90,13 +82,12 @@ public sealed class BackTest
     /// </summary>
     /// <param name="portfolio">A Portfolio object representing the trading portfolio.</param>
     /// <param name="benchmarkPortfolio">A Portfolio object representing the benchmark portfolio.</param>
-    /// <param name="marketDataFetcher">An object implementing the IMarketDataFetcher interface, responsible for providing market data for the backtest.</param>
     /// <param name="baseCurrency">A CurrencyCode enum value representing the base currency for the backtest.</param>
     /// <param name="logger">A logger for structured logging.</param>
     /// <param name="dailyRiskFreeRate">The daily risk-free rate as a decimal (e.g., 0.05/252 for 5% annualized). Default: 0.</param>
     /// <exception cref="ArgumentNullException">Thrown when any of the provided arguments are null.</exception>
-    public BackTest(IPortfolio portfolio, IPortfolio benchmarkPortfolio, IMarketDataFetcher marketDataFetcher, CurrencyCode baseCurrency, ILogger<BackTest> logger, decimal dailyRiskFreeRate)
-        : this(portfolio, benchmarkPortfolio, marketDataFetcher, baseCurrency, logger)
+    public BackTest(IPortfolio portfolio, IPortfolio benchmarkPortfolio, CurrencyCode baseCurrency, ILogger<BackTest> logger, decimal dailyRiskFreeRate)
+        : this(portfolio, benchmarkPortfolio, baseCurrency, logger)
     {
         _dailyRiskFreeRate = dailyRiskFreeRate;
     }
@@ -106,13 +97,12 @@ public sealed class BackTest
     /// </summary>
     /// <param name="portfolio">A Portfolio object representing the trading portfolio.</param>
     /// <param name="benchmarkPortfolio">A Portfolio object representing the benchmark portfolio.</param>
-    /// <param name="marketDataFetcher">An object implementing the IMarketDataFetcher interface.</param>
     /// <param name="baseCurrency">A CurrencyCode enum value representing the base currency.</param>
     /// <param name="logger">A logger for structured logging.</param>
     /// <param name="dailyRiskFreeRate">The daily risk-free rate as a decimal.</param>
     /// <param name="drawdownControl">Optional daily drawdown monitor and circuit breaker.</param>
-    public BackTest(IPortfolio portfolio, IPortfolio benchmarkPortfolio, IMarketDataFetcher marketDataFetcher, CurrencyCode baseCurrency, ILogger<BackTest> logger, decimal dailyRiskFreeRate, IDrawdownControl? drawdownControl)
-        : this(portfolio, benchmarkPortfolio, marketDataFetcher, baseCurrency, logger, dailyRiskFreeRate)
+    public BackTest(IPortfolio portfolio, IPortfolio benchmarkPortfolio, CurrencyCode baseCurrency, ILogger<BackTest> logger, decimal dailyRiskFreeRate, IDrawdownControl? drawdownControl)
+        : this(portfolio, benchmarkPortfolio, baseCurrency, logger, dailyRiskFreeRate)
     {
         _drawdownControl = drawdownControl;
     }
@@ -122,14 +112,13 @@ public sealed class BackTest
     /// </summary>
     /// <param name="portfolio">A Portfolio object representing the trading portfolio.</param>
     /// <param name="benchmarkPortfolio">A Portfolio object representing the benchmark portfolio.</param>
-    /// <param name="marketDataFetcher">An object implementing the IMarketDataFetcher interface.</param>
     /// <param name="baseCurrency">A CurrencyCode enum value representing the base currency.</param>
     /// <param name="logger">A logger for structured logging.</param>
     /// <param name="dailyRiskFreeRate">The daily risk-free rate as a decimal.</param>
     /// <param name="drawdownControl">Optional daily drawdown monitor and circuit breaker.</param>
     /// <param name="tradingCalendar">Optional trading calendar for non-trading-day filtering and market-aware annualization.</param>
-    public BackTest(IPortfolio portfolio, IPortfolio benchmarkPortfolio, IMarketDataFetcher marketDataFetcher, CurrencyCode baseCurrency, ILogger<BackTest> logger, decimal dailyRiskFreeRate, IDrawdownControl? drawdownControl, ITradingCalendar? tradingCalendar)
-        : this(portfolio, benchmarkPortfolio, marketDataFetcher, baseCurrency, logger, dailyRiskFreeRate, drawdownControl)
+    public BackTest(IPortfolio portfolio, IPortfolio benchmarkPortfolio, CurrencyCode baseCurrency, ILogger<BackTest> logger, decimal dailyRiskFreeRate, IDrawdownControl? drawdownControl, IBusinessCalendar? tradingCalendar)
+        : this(portfolio, benchmarkPortfolio, baseCurrency, logger, dailyRiskFreeRate, drawdownControl)
     {
         _tradingCalendar = tradingCalendar;
     }
@@ -139,7 +128,6 @@ public sealed class BackTest
     /// </summary>
     /// <param name="portfolio">A Portfolio object representing the trading portfolio.</param>
     /// <param name="benchmarkPortfolio">A Portfolio object representing the benchmark portfolio.</param>
-    /// <param name="marketDataFetcher">An object implementing the IMarketDataFetcher interface.</param>
     /// <param name="baseCurrency">A CurrencyCode enum value representing the base currency.</param>
     /// <param name="logger">A logger for structured logging.</param>
     /// <param name="dailyRiskFreeRate">The daily risk-free rate as a decimal.</param>
@@ -147,8 +135,8 @@ public sealed class BackTest
     /// <param name="tradingCalendar">Optional trading calendar for non-trading-day filtering.</param>
     /// <param name="annualExpenseRatioBps">Default annual expense ratio in basis points (e.g., 20 = 0.20%). Applied to assets without a per-asset override.</param>
     /// <param name="assetExpenseRatiosBps">Per-asset annual expense ratios in basis points, keyed by ticker. Overrides the default for specified assets.</param>
-    public BackTest(IPortfolio portfolio, IPortfolio benchmarkPortfolio, IMarketDataFetcher marketDataFetcher, CurrencyCode baseCurrency, ILogger<BackTest> logger, decimal dailyRiskFreeRate, IDrawdownControl? drawdownControl, ITradingCalendar? tradingCalendar, decimal annualExpenseRatioBps, IReadOnlyDictionary<string, decimal>? assetExpenseRatiosBps = null)
-        : this(portfolio, benchmarkPortfolio, marketDataFetcher, baseCurrency, logger, dailyRiskFreeRate, drawdownControl, tradingCalendar)
+    public BackTest(IPortfolio portfolio, IPortfolio benchmarkPortfolio, CurrencyCode baseCurrency, ILogger<BackTest> logger, decimal dailyRiskFreeRate, IDrawdownControl? drawdownControl, IBusinessCalendar? tradingCalendar, decimal annualExpenseRatioBps, IReadOnlyDictionary<string, decimal>? assetExpenseRatiosBps = null)
+        : this(portfolio, benchmarkPortfolio, baseCurrency, logger, dailyRiskFreeRate, drawdownControl, tradingCalendar)
     {
         if (annualExpenseRatioBps < 0 || annualExpenseRatioBps > 1000)
         {
@@ -177,164 +165,133 @@ public sealed class BackTest
 
     /// <summary>
     /// Runs the backtest simulation asynchronously for the specified start and end dates.
+    /// This overload is no longer supported because the IMarketDataFetcher interface has been removed.
+    /// Use <see cref="RunAsync(Recipes.IBacktestDataset, CancellationToken, DateOnly?, Func{IPortfolio, CancellationToken, Task}?, bool)"/> instead.
     /// </summary>
-    /// <param name="startDate">A DateOnly object representing the start date of the backtest simulation.</param>
-    /// <param name="endDate">A DateOnly object representing the end date of the backtest simulation.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <param name="burnInEndDate">Optional burn-in end date. When set, the equity curve is only updated for dates
-    /// after this date, allowing indicators and strategies to warm up before official performance tracking begins.
-    /// Must satisfy: startDate &lt; burnInEndDate &lt; endDate.</param>
-    /// <param name="afterDayCallback">Optional callback invoked after each trading day is processed.</param>
-    /// <returns>A Task that represents the asynchronous operation. The task result contains a Tearsheet object containing various performance metrics for the backtested portfolio and benchmark portfolio.</returns>
-    /// <exception cref="ArgumentException">Thrown when the provided start date is greater than or equal to the end date, or when burnInEndDate is outside the valid range.</exception>
-    public async Task<Tearsheet> RunAsync(DateOnly startDate, DateOnly endDate, CancellationToken cancellationToken = default, DateOnly? burnInEndDate = null, Func<IPortfolio, CancellationToken, Task>? afterDayCallback = null)
+    [Obsolete("Use the RunAsync(IBacktestDataset) overload. The old IMarketDataFetcher-based overload is no longer supported.")]
+    public Task<Tearsheet> RunAsync(DateOnly startDate, DateOnly endDate, CancellationToken cancellationToken = default, DateOnly? burnInEndDate = null, Func<IPortfolio, CancellationToken, Task>? afterDayCallback = null)
     {
-        // Validate the start and end dates.
+        throw new NotSupportedException("Use the RunAsync(IBacktestDataset) overload. The old IMarketDataFetcher-based overload is no longer supported.");
+    }
+
+    /// <summary>
+    /// Runs the backtest simulation from a pre-materialized dataset.
+    /// No data fetching occurs — all data is provided by the <paramref name="dataset"/>.
+    /// </summary>
+    /// <param name="dataset">Pre-materialized backtest dataset from <see cref="Recipes.BacktestDatasetBuilder"/>.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <param name="burnInEndDate">Optional burn-in end date for equity curve tracking.</param>
+    /// <param name="afterDayCallback">Optional callback invoked after each trading day.</param>
+    /// <param name="ignoreDataQualityIssues">When <see langword="false"/> (default), the backtest
+    /// aborts with <see cref="InvalidOperationException"/> if the dataset contains Warning or Error
+    /// level data-quality issues (e.g., unexpected date gaps, fetch failures). Set to
+    /// <see langword="true"/> to log the issues and proceed anyway.</param>
+    /// <returns>A Tearsheet with performance metrics.</returns>
+    public async Task<Tearsheet> RunAsync(
+        Recipes.IBacktestDataset dataset,
+        CancellationToken cancellationToken = default,
+        DateOnly? burnInEndDate = null,
+        Func<IPortfolio, CancellationToken, Task>? afterDayCallback = null,
+        bool ignoreDataQualityIssues = false)
+    {
+        ArgumentNullException.ThrowIfNull(dataset);
+
+        var startDate = dataset.Prices.Keys.FirstOrDefault();
+        var endDate = dataset.Prices.Keys.LastOrDefault();
+
         if (startDate >= endDate)
         {
-            throw new ArgumentException("The start date must be earlier than the end date.", nameof(startDate));
+            throw new ArgumentException("Dataset must contain at least two distinct dates.");
         }
 
-        // Validate burn-in end date: must be strictly between startDate and endDate.
-        if (burnInEndDate.HasValue)
+        if (burnInEndDate.HasValue && (burnInEndDate.Value <= startDate || burnInEndDate.Value >= endDate))
         {
-            if (burnInEndDate.Value <= startDate || burnInEndDate.Value >= endDate)
-            {
-                throw new ArgumentException(
-                    $"The burn-in end date ({burnInEndDate.Value}) must be strictly between startDate ({startDate}) and endDate ({endDate}).",
-                    nameof(burnInEndDate));
-            }
+            throw new ArgumentException(
+                $"Burn-in end date ({burnInEndDate.Value}) must be strictly between {startDate} and {endDate}.",
+                nameof(burnInEndDate));
         }
 
         cancellationToken.ThrowIfCancellationRequested();
+        _logger.LogInformation("Backtest starting from dataset: {StartDate} to {EndDate}", startDate, endDate);
 
-        _logger.LogInformation("Backtest starting: {StartDate} to {EndDate}", startDate, endDate);
-
-        if (burnInEndDate.HasValue)
+        // Log data provenance so the user knows what sources the backtest runs on
+        foreach (var prov in dataset.Provenance.DistinctBy(p => p.Dataset))
         {
-            _logger.LogInformation("Burn-in period active: equity curve tracking starts after {BurnInEndDate}", burnInEndDate.Value);
+            var dateTag = prov.DataDate.HasValue ? $" {prov.DataDate.Value:yyyy-MM-dd}" : "";
+            _logger.LogInformation(
+                "Data source: {Dataset} via {Provider} [{RetrievalMode}, {Freshness}{DateTag}]",
+                prov.Dataset, prov.Provider, prov.RetrievalMode, prov.Freshness, dateTag);
         }
 
-        // Fetch the historical market data for the backtest period for both the portfolio and the benchmark portfolio.
-        // L1: .Union() already deduplicates — removed redundant .Distinct()
-        var symbols = _portfolio.Strategies.Values.SelectMany(s => s.Assets.Keys)
-                      .Union(_benchmarkPortfolio.Strategies.Values.SelectMany(s => s.Assets.Keys));
-
-        // Fetch and materialize market data once — eliminates double-streaming
-        // and enables the buffered dictionary to be passed to SimulatedBrokerage
-        var marketDataTimeline = _marketDataFetcher.FetchMarketDataAsync(symbols, cancellationToken);
-        var bufferedMarketData = new SortedDictionary<DateOnly, SortedDictionary<Domain.ValueObjects.Asset, MarketData>>();
-
-        await foreach (var kvp in marketDataTimeline.WithCancellation(cancellationToken).ConfigureAwait(false))
+        // Surface data-quality issues from the pipeline.
+        // "Info" issues (e.g., expected publication lags) are logged and allowed.
+        // "Warning"/"Error" issues (e.g., unexpected date gaps, fetch failures)
+        // abort the backtest unless ignoreDataQualityIssues is set.
+        foreach (var issue in dataset.Issues)
         {
-            // BUG-A07: Filter market data to startDate..endDate range
-            if (kvp.Key >= startDate && kvp.Key <= endDate)
+            if (issue.Severity is IssueSeverity.Error or IssueSeverity.Warning)
             {
-                // Merge — fetchers emit one-symbol-per-date entries; overwrite would drop all but the last.
-                if (bufferedMarketData.TryGetValue(kvp.Key, out var existing))
-                {
-                    foreach (var entry in kvp.Value)
-                    {
-                        existing[entry.Key] = entry.Value;
-                    }
-                }
-                else
-                {
-                    bufferedMarketData[kvp.Key] = kvp.Value;
-                }
+                _logger.LogWarning("Data quality [{Code}]: {Message}", issue.Code, issue.Message);
+            }
+            else
+            {
+                _logger.LogInformation("Data [{Code}]: {Message}", issue.Code, issue.Message);
             }
         }
 
-        // H3: Include both portfolio AND benchmark asset currencies for FX rate fetching.
-        // Filter out same-currency pairs (e.g. USD_USD) — FX providers reject them with HTTP 422.
-        var currencyPairList = _portfolio.Strategies.Values
-                                         .Concat(_benchmarkPortfolio.Strategies.Values)
-                                         .SelectMany(s => s.Assets.Values)
-                                         .Where(currencyCode => currencyCode != _baseCurrency)
-                                         .Select(currencyCode => $"{_baseCurrency}_{currencyCode}")
-                                         .Distinct()
-                                         .ToList();
+        var actionableIssues = dataset.Issues
+            .Where(i => i.Severity is IssueSeverity.Warning or IssueSeverity.Error)
+            .ToList();
 
-        // Create a dictionary to hold the FX rates for each date.
-        var fxRatesForDate = new SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>();
-
-        // Skip the FX fetch entirely for single-currency portfolios (e.g. all-USD) —
-        // passing an empty list to the fetcher throws ArgumentException.
-        if (currencyPairList.Count > 0)
+        if (actionableIssues.Count > 0 && !ignoreDataQualityIssues)
         {
-            var fxRatesTimeline = _marketDataFetcher.FetchFxRatesAsync(currencyPairList, cancellationToken);
-            await foreach (var fxRatesOnDate in fxRatesTimeline.WithCancellation(cancellationToken).ConfigureAwait(false))
-            {
-                fxRatesForDate[fxRatesOnDate.Key] = fxRatesOnDate.Value;
-            }
-
-            // M32: Warn when FX fetch was attempted but returned no rates — likely a data gap.
-            if (fxRatesForDate.Count == 0)
-            {
-                _logger.LogWarning("No FX conversion rates loaded. Foreign currency assets may fail valuation.");
-            }
+            var summary = string.Join("; ", actionableIssues.Select(i => $"[{i.Code}] {i.Message}"));
+            throw new InvalidOperationException(
+                $"Backtest aborted: {actionableIssues.Count} data quality issue(s). " +
+                $"Set ignoreDataQualityIssues=true to override. Issues: {summary}");
         }
 
-        // Event loop iterates buffered market data — single materialization
-        foreach (var marketData in bufferedMarketData)
+        // Event loop over pre-materialized data — no fetching
+        foreach (var marketData in dataset.Prices)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Skip non-trading days when calendar is provided (defensive filter)
-            if (_tradingCalendar is not null && !_tradingCalendar.IsTradingDay(marketData.Key))
+            if (_tradingCalendar is not null && !_tradingCalendar.IsBusinessDay(marketData.Key))
             {
-                _logger.LogWarning("Skipping non-trading day {Date} — market data present but date is not a trading day per calendar", marketData.Key);
+                _logger.LogWarning("Skipping non-trading day {Date}", marketData.Key);
                 continue;
             }
 
-            // Process pending orders from the previous bar at today's Open price.
-            // This eliminates look-ahead bias: signals generated on bar T fill at bar T+1.
             foreach (var portfolio in new[] { _portfolio, _benchmarkPortfolio })
             {
                 await portfolio.ProcessPendingOrdersAsync(marketData.Key, marketData.Value, cancellationToken).ConfigureAwait(false);
             }
 
-            // Get the FX rates for the current date.
-            var fxRates = fxRatesForDate.TryGetValue(marketData.Key, out var ratesForDate)
+            var fxRates = dataset.FxRates.TryGetValue(marketData.Key, out var ratesForDate)
                           ? ratesForDate
-                          : []; // Use an empty dictionary if there are no rates for this date.
+                          : new SortedDictionary<CurrencyCode, decimal>();
 
-            // Generate a MarketEvent for the current day's market data.
-            var marketEvent = new MarketEvent(
-                marketData.Key,
-                marketData.Value,
-                fxRates
-            );
+            var marketEvent = new MarketEvent(marketData.Key, marketData.Value, fxRates);
 
-            // Handle the MarketEvent for each strategy in the portfolio.
-            // This updates historical data, generates signals, and queues new orders for next bar.
             foreach (var portfolio in new[] { _portfolio, _benchmarkPortfolio })
             {
                 await portfolio.HandleEventAsync(marketEvent, cancellationToken).ConfigureAwait(false);
 
-                // Deduct daily expense ratio — portfolio only, not benchmark.
-                // Benchmark tracks index performance without the portfolio's fee structure.
                 if (portfolio == _portfolio && (_defaultDailyExpenseRate > 0 || _perAssetDailyExpenseRates.Count > 0))
                 {
                     ApplyDailyExpenseDeduction(portfolio, marketData.Key, marketData.Value);
                 }
 
-                // Only update equity curve after burn-in period ends (or always if no burn-in).
                 if (burnInEndDate is null || marketData.Key > burnInEndDate.Value)
                 {
                     portfolio.UpdateEquityCurve(marketData.Key);
                 }
 
-                // Daily drawdown check — main portfolio only, not benchmark.
-                // Runs after UpdateEquityCurve so current-day NAV is available.
-                // Liquidation orders queue for next-bar execution (no look-ahead bias).
                 if (portfolio == _portfolio && _drawdownControl is not null)
                 {
                     await _drawdownControl.CheckAsync(portfolio, marketData.Key, cancellationToken).ConfigureAwait(false);
                 }
 
-                // Post-day callback — allows callers to flush order handler buffers
-                // so risk evaluation uses same-day prices, not stale data from the next rebalance.
                 if (portfolio == _portfolio && afterDayCallback is not null)
                 {
                     await afterDayCallback(portfolio, cancellationToken).ConfigureAwait(false);
@@ -343,8 +300,6 @@ public sealed class BackTest
         }
 
         _logger.LogInformation("Backtest complete: {DataPoints} equity curve points", _portfolio.EquityCurve.Count);
-
-        // Calculate and analyze performance metrics for both the portfolio and the benchmark portfolio.
         return AnalyzePerformanceMetrics();
     }
 
@@ -362,7 +317,7 @@ public sealed class BackTest
         }
 
         // Use calendar-aware trading days per year when available
-        var tdpy = _tradingCalendar?.TradingDaysPerYear ?? 252;
+        var tdpy = _tradingCalendar?.BusinessDaysPerYear ?? 252;
 
         // Calculate the required performance metrics for the entire portfolio
         var dailyReturns = _portfolio.EquityCurve.Values.ToArray().DailyReturns().ToArray();
@@ -427,7 +382,7 @@ public sealed class BackTest
             throw new InvalidOperationException("Benchmark equity curve must contain at least 2 data points. Run the backtest first.");
         }
 
-        var tdpy = _tradingCalendar?.TradingDaysPerYear ?? 252;
+        var tdpy = _tradingCalendar?.BusinessDaysPerYear ?? 252;
 
         var dailyReturns = _benchmarkPortfolio.EquityCurve.Values.ToArray().DailyReturns().ToArray();
 
@@ -485,7 +440,7 @@ public sealed class BackTest
     /// Per-asset rates override the default rate. Fee is proportional to each position's value.
     /// Called once per trading day before UpdateEquityCurve.
     /// </summary>
-    private void ApplyDailyExpenseDeduction(IPortfolio portfolio, DateOnly _, SortedDictionary<Domain.ValueObjects.Asset, MarketData> dayData)
+    private void ApplyDailyExpenseDeduction(IPortfolio portfolio, DateOnly _, SortedDictionary<Symbol, Bar> dayData)
     {
         foreach (var (_, strategy) in portfolio.Strategies)
         {

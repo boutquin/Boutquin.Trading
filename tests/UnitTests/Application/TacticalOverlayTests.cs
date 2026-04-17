@@ -17,7 +17,6 @@
 namespace Boutquin.Trading.Tests.UnitTests.Application;
 
 using Boutquin.Trading.Application.PortfolioConstruction;
-using Boutquin.Trading.Domain.Enums;
 
 public sealed class TacticalOverlayTests
 {
@@ -26,18 +25,18 @@ public sealed class TacticalOverlayTests
     [Fact]
     public void TacticalOverlay_RiskOffRegime_ShouldReduceEquityWeight()
     {
-        var vti = new Asset("VTI");
-        var tlt = new Asset("TLT");
-        var assets = new List<Asset> { vti, tlt };
+        var vti = new Symbol("VTI");
+        var tlt = new Symbol("TLT");
+        var assets = new List<Symbol> { vti, tlt };
         var returns = new[] { new[] { 0.01m, -0.01m }, new[] { -0.005m, 0.005m } };
 
         var baseModel = new Mock<IPortfolioConstructionModel>();
         baseModel.Setup(m => m.ComputeTargetWeights(assets, returns))
-            .Returns(new Dictionary<Asset, decimal> { [vti] = 0.6m, [tlt] = 0.4m });
+            .Returns(new Dictionary<Symbol, decimal> { [vti] = 0.6m, [tlt] = 0.4m });
 
-        var regimeTilts = new Dictionary<EconomicRegime, IReadOnlyDictionary<Asset, decimal>>
+        var regimeTilts = new Dictionary<EconomicRegime, IReadOnlyDictionary<Symbol, decimal>>
         {
-            [EconomicRegime.FallingGrowthFallingInflation] = new Dictionary<Asset, decimal>
+            [EconomicRegime.FallingGrowthFallingInflation] = new Dictionary<Symbol, decimal>
             {
                 [vti] = -0.2m, // Reduce equity
                 [tlt] = 0.2m,  // Increase bonds
@@ -59,25 +58,25 @@ public sealed class TacticalOverlayTests
     [Fact]
     public void TacticalOverlay_MomentumOverweight_ShouldAdjustWeights()
     {
-        var vti = new Asset("VTI");
-        var tlt = new Asset("TLT");
-        var assets = new List<Asset> { vti, tlt };
+        var vti = new Symbol("VTI");
+        var tlt = new Symbol("TLT");
+        var assets = new List<Symbol> { vti, tlt };
         var returns = new[] { new[] { 0.01m }, new[] { -0.01m } };
 
         var baseModel = new Mock<IPortfolioConstructionModel>();
         baseModel.Setup(m => m.ComputeTargetWeights(assets, returns))
-            .Returns(new Dictionary<Asset, decimal> { [vti] = 0.5m, [tlt] = 0.5m });
+            .Returns(new Dictionary<Symbol, decimal> { [vti] = 0.5m, [tlt] = 0.5m });
 
-        var momentumScores = new Dictionary<Asset, decimal>
+        var momentumScores = new Dictionary<Symbol, decimal>
         {
             [vti] = 0.5m,  // Positive momentum
             [tlt] = -0.5m, // Negative momentum
         };
 
         // Must include current regime in tilts (empty tilts = no regime adjustment, momentum only)
-        var regimeTilts = new Dictionary<EconomicRegime, IReadOnlyDictionary<Asset, decimal>>
+        var regimeTilts = new Dictionary<EconomicRegime, IReadOnlyDictionary<Symbol, decimal>>
         {
-            [EconomicRegime.RisingGrowthRisingInflation] = new Dictionary<Asset, decimal>()
+            [EconomicRegime.RisingGrowthRisingInflation] = new Dictionary<Symbol, decimal>()
         };
 
         var overlay = new TacticalOverlayConstruction(
@@ -97,19 +96,19 @@ public sealed class TacticalOverlayTests
     [Fact]
     public void TacticalOverlay_WeightsSumToOne()
     {
-        var a = new Asset("A");
-        var b = new Asset("B");
-        var c = new Asset("C");
-        var assets = new List<Asset> { a, b, c };
+        var a = new Symbol("A");
+        var b = new Symbol("B");
+        var c = new Symbol("C");
+        var assets = new List<Symbol> { a, b, c };
         var returns = new[] { new[] { 0.01m }, new[] { -0.01m }, new[] { 0.005m } };
 
         var baseModel = new Mock<IPortfolioConstructionModel>();
         baseModel.Setup(m => m.ComputeTargetWeights(assets, returns))
-            .Returns(new Dictionary<Asset, decimal> { [a] = 0.5m, [b] = 0.3m, [c] = 0.2m });
+            .Returns(new Dictionary<Symbol, decimal> { [a] = 0.5m, [b] = 0.3m, [c] = 0.2m });
 
-        var regimeTilts = new Dictionary<EconomicRegime, IReadOnlyDictionary<Asset, decimal>>
+        var regimeTilts = new Dictionary<EconomicRegime, IReadOnlyDictionary<Symbol, decimal>>
         {
-            [EconomicRegime.RisingGrowthRisingInflation] = new Dictionary<Asset, decimal>
+            [EconomicRegime.RisingGrowthRisingInflation] = new Dictionary<Symbol, decimal>
             {
                 [a] = 0.1m,
                 [b] = -0.3m,
@@ -130,16 +129,16 @@ public sealed class TacticalOverlayTests
     {
         var baseModel = new Mock<IPortfolioConstructionModel>();
         // Must include current regime in tilts (empty tilts = no adjustment)
-        var regimeTilts = new Dictionary<EconomicRegime, IReadOnlyDictionary<Asset, decimal>>
+        var regimeTilts = new Dictionary<EconomicRegime, IReadOnlyDictionary<Symbol, decimal>>
         {
-            [EconomicRegime.RisingGrowthRisingInflation] = new Dictionary<Asset, decimal>()
+            [EconomicRegime.RisingGrowthRisingInflation] = new Dictionary<Symbol, decimal>()
         };
         var overlay = new TacticalOverlayConstruction(
             baseModel.Object,
             regimeTilts,
             EconomicRegime.RisingGrowthRisingInflation);
 
-        var weights = overlay.ComputeTargetWeights(new List<Asset>(), Array.Empty<decimal[]>());
+        var weights = overlay.ComputeTargetWeights(new List<Symbol>(), Array.Empty<decimal[]>());
         weights.Should().BeEmpty();
     }
 }

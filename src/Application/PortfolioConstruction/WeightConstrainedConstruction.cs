@@ -25,8 +25,8 @@ using Domain.ValueObjects;
 public sealed class WeightConstrainedConstruction : IPortfolioConstructionModel
 {
     private readonly IPortfolioConstructionModel _inner;
-    private readonly IReadOnlyDictionary<Asset, decimal>? _floors;
-    private readonly IReadOnlyDictionary<Asset, decimal>? _caps;
+    private readonly IReadOnlyDictionary<Symbol, decimal>? _floors;
+    private readonly IReadOnlyDictionary<Symbol, decimal>? _caps;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WeightConstrainedConstruction"/> class.
@@ -36,8 +36,8 @@ public sealed class WeightConstrainedConstruction : IPortfolioConstructionModel
     /// <param name="caps">Per-asset maximum weights. Null or empty means no caps.</param>
     public WeightConstrainedConstruction(
         IPortfolioConstructionModel inner,
-        IReadOnlyDictionary<Asset, decimal>? floors = null,
-        IReadOnlyDictionary<Asset, decimal>? caps = null)
+        IReadOnlyDictionary<Symbol, decimal>? floors = null,
+        IReadOnlyDictionary<Symbol, decimal>? caps = null)
     {
         Guard.AgainstNull(() => inner);
 
@@ -59,13 +59,13 @@ public sealed class WeightConstrainedConstruction : IPortfolioConstructionModel
     }
 
     /// <inheritdoc />
-    public IReadOnlyDictionary<Asset, decimal> ComputeTargetWeights(
-        IReadOnlyList<Asset> assets,
+    public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
+        IReadOnlyList<Symbol> assets,
         decimal[][] returns)
     {
         if (assets.Count == 0)
         {
-            return new Dictionary<Asset, decimal>();
+            return new Dictionary<Symbol, decimal>();
         }
 
         var baseWeights = _inner.ComputeTargetWeights(assets, returns);
@@ -79,8 +79,8 @@ public sealed class WeightConstrainedConstruction : IPortfolioConstructionModel
     }
 
     internal static void ValidateConstraints(
-        IReadOnlyDictionary<Asset, decimal>? floors,
-        IReadOnlyDictionary<Asset, decimal>? caps)
+        IReadOnlyDictionary<Symbol, decimal>? floors,
+        IReadOnlyDictionary<Symbol, decimal>? caps)
     {
         if (floors is not null)
         {
@@ -133,11 +133,11 @@ public sealed class WeightConstrainedConstruction : IPortfolioConstructionModel
         }
     }
 
-    internal static IReadOnlyDictionary<Asset, decimal> ClampAndRenormalize(
-        IReadOnlyList<Asset> assets,
-        Dictionary<Asset, decimal> weights,
-        IReadOnlyDictionary<Asset, decimal>? floors,
-        IReadOnlyDictionary<Asset, decimal>? caps)
+    internal static IReadOnlyDictionary<Symbol, decimal> ClampAndRenormalize(
+        IReadOnlyList<Symbol> assets,
+        Dictionary<Symbol, decimal> weights,
+        IReadOnlyDictionary<Symbol, decimal>? floors,
+        IReadOnlyDictionary<Symbol, decimal>? caps)
     {
         for (var round = 0; round < 50; round++)
         {
@@ -211,11 +211,11 @@ public sealed class WeightConstrainedConstruction : IPortfolioConstructionModel
         return weights;
     }
 
-    private IReadOnlyDictionary<Asset, decimal> ApplyConstraints(
-        IReadOnlyList<Asset> assets,
-        IReadOnlyDictionary<Asset, decimal> baseWeights)
+    private IReadOnlyDictionary<Symbol, decimal> ApplyConstraints(
+        IReadOnlyList<Symbol> assets,
+        IReadOnlyDictionary<Symbol, decimal> baseWeights)
     {
-        var weights = new Dictionary<Asset, decimal>(assets.Count);
+        var weights = new Dictionary<Symbol, decimal>(assets.Count);
         foreach (var asset in assets)
         {
             weights[asset] = baseWeights.GetValueOrDefault(asset, 0m);

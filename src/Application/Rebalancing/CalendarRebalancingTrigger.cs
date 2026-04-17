@@ -15,9 +15,6 @@
 //
 
 namespace Boutquin.Trading.Application.Rebalancing;
-
-using Domain.ValueObjects;
-
 /// <summary>
 /// Triggers rebalancing on a calendar schedule (always returns true).
 /// Used as the trigger component when calendar-based rebalancing is desired.
@@ -27,8 +24,8 @@ public sealed class CalendarRebalancingTrigger : IRebalancingTrigger
 {
     /// <inheritdoc />
     public bool ShouldRebalance(
-        IReadOnlyDictionary<Asset, decimal> currentWeights,
-        IReadOnlyDictionary<Asset, decimal> targetWeights)
+        IReadOnlyDictionary<Symbol, decimal> currentWeights,
+        IReadOnlyDictionary<Symbol, decimal> targetWeights)
     {
         return true;
     }

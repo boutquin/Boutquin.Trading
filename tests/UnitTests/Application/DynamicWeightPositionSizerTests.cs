@@ -34,23 +34,21 @@ public sealed class DynamicWeightPositionSizerTests
     {
         // Arrange
         var positionSizer = new DynamicWeightPositionSizer(CurrencyCode.USD);
-        var asset = new Asset("XYZ");
-        var signalType = new Dictionary<Asset, SignalType> { { asset, SignalType.Rebalance } };
+        var asset = new Symbol("XYZ");
+        var signalType = new Dictionary<Symbol, SignalType> { { asset, SignalType.Rebalance } };
 
-        var marketData = new MarketData(
-            Timestamp: _timestamp,
+        var marketData = new Bar(
+            Date: _timestamp,
             Open: 333,
             High: 340,
             Low: 330,
             Close: 333,
             AdjustedClose: 333,
-            Volume: 1000000,
-            DividendPerShare: 0,
-            SplitCoefficient: 1);
+            Volume: 1000000);
 
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
-            { _timestamp, new SortedDictionary<Asset, MarketData> { { asset, marketData } } }
+            { _timestamp, new SortedDictionary<Symbol, Bar> { { asset, marketData } } }
         };
         var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
         {
@@ -59,11 +57,11 @@ public sealed class DynamicWeightPositionSizerTests
 
         // Strategy with equal weight fallback — 1 asset gets 100% weight
         var strategyMock = new Mock<IStrategy>();
-        strategyMock.Setup(s => s.Assets).Returns(new Dictionary<Asset, CurrencyCode> { { asset, CurrencyCode.USD } });
+        strategyMock.Setup(s => s.Assets).Returns(new Dictionary<Symbol, CurrencyCode> { { asset, CurrencyCode.USD } });
         strategyMock.Setup(s => s.ComputeTotalValue(
             It.IsAny<DateOnly>(),
             It.IsAny<CurrencyCode>(),
-            It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>>>(),
+            It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>>>(),
             It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>>())).Returns(500m);
 
         // Act — desiredValue = 500 * 1.0 = 500; 500 / 333 = 1.5015... → rounds to 2
@@ -82,11 +80,11 @@ public sealed class DynamicWeightPositionSizerTests
     public void DynamicWeightPositionSizer_ShouldSkipUnsignaledAssets()
     {
         // Arrange — 3 assets, but only VTI has a signal and market data
-        var vti = new Asset("VTI");
-        var vea = new Asset("VEA");
-        var iemg = new Asset("IEMG");
+        var vti = new Symbol("VTI");
+        var vea = new Symbol("VEA");
+        var iemg = new Symbol("IEMG");
 
-        var assets = new Dictionary<Asset, CurrencyCode>
+        var assets = new Dictionary<Symbol, CurrencyCode>
         {
             { vti, CurrencyCode.USD },
             { vea, CurrencyCode.USD },
@@ -109,21 +107,21 @@ public sealed class DynamicWeightPositionSizerTests
         // by using reflection to set LastComputedWeights
         var weightsField = typeof(ConstructionModelStrategy)
             .GetProperty(nameof(ConstructionModelStrategy.LastComputedWeights));
-        weightsField!.SetValue(strategy, new Dictionary<Asset, decimal>
+        weightsField!.SetValue(strategy, new Dictionary<Symbol, decimal>
         {
             { vti, 1.0m }
         });
 
         // Only VTI is signaled (VEA and IEMG not yet incepted in dynamic universe)
-        var signals = new Dictionary<Asset, SignalType>
+        var signals = new Dictionary<Symbol, SignalType>
         {
             { vti, SignalType.Rebalance }
         };
 
-        var vtiMd = new MarketData(_timestamp, 200, 201, 199, 200, 200, 1_000_000, 0, 1);
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var vtiMd = new Bar(_timestamp, 200, 201, 199, 200, 200, 1_000_000);
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
-            { _timestamp, new SortedDictionary<Asset, MarketData> { { vti, vtiMd } } }
+            { _timestamp, new SortedDictionary<Symbol, Bar> { { vti, vtiMd } } }
         };
         var fxRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
         {
@@ -149,8 +147,8 @@ public sealed class DynamicWeightPositionSizerTests
     public void DynamicWeightPositionSizer_ShouldSizeSignaledAssetWithZeroWeight()
     {
         // Arrange
-        var vti = new Asset("VTI");
-        var assets = new Dictionary<Asset, CurrencyCode>
+        var vti = new Symbol("VTI");
+        var assets = new Dictionary<Symbol, CurrencyCode>
         {
             { vti, CurrencyCode.USD }
         };
@@ -170,20 +168,20 @@ public sealed class DynamicWeightPositionSizerTests
         // Set LastComputedWeights with weight = 0
         var weightsField = typeof(ConstructionModelStrategy)
             .GetProperty(nameof(ConstructionModelStrategy.LastComputedWeights));
-        weightsField!.SetValue(strategy, new Dictionary<Asset, decimal>
+        weightsField!.SetValue(strategy, new Dictionary<Symbol, decimal>
         {
             { vti, 0m }
         });
 
-        var signals = new Dictionary<Asset, SignalType>
+        var signals = new Dictionary<Symbol, SignalType>
         {
             { vti, SignalType.Rebalance }
         };
 
-        var vtiMd = new MarketData(_timestamp, 200, 201, 199, 200, 200, 1_000_000, 0, 1);
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var vtiMd = new Bar(_timestamp, 200, 201, 199, 200, 200, 1_000_000);
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
-            { _timestamp, new SortedDictionary<Asset, MarketData> { { vti, vtiMd } } }
+            { _timestamp, new SortedDictionary<Symbol, Bar> { { vti, vtiMd } } }
         };
         var fxRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
         {
@@ -211,9 +209,9 @@ public sealed class DynamicWeightPositionSizerTests
     public void DynamicWeightPositionSizer_ShouldThrow_WhenLastComputedWeightsIsNull()
     {
         // Arrange — ConstructionModelStrategy with no data means LastComputedWeights is null
-        var asset1 = new Asset("VTI");
-        var asset2 = new Asset("TLT");
-        var assets = new Dictionary<Asset, CurrencyCode>
+        var asset1 = new Symbol("VTI");
+        var asset2 = new Symbol("TLT");
+        var assets = new Dictionary<Symbol, CurrencyCode>
         {
             { asset1, CurrencyCode.USD },
             { asset2, CurrencyCode.USD }
@@ -233,17 +231,17 @@ public sealed class DynamicWeightPositionSizerTests
         // Verify precondition: no signals have been generated yet → weights are null
         strategy.LastComputedWeights.Should().BeNull("No signals generated yet");
 
-        var signals = new Dictionary<Asset, SignalType>
+        var signals = new Dictionary<Symbol, SignalType>
         {
             { asset1, SignalType.Rebalance },
             { asset2, SignalType.Rebalance }
         };
 
-        var md1 = new MarketData(_timestamp, 200, 201, 199, 200, 200, 1_000_000, 0, 1);
-        var md2 = new MarketData(_timestamp, 100, 101, 99, 100, 100, 500_000, 0, 1);
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var md1 = new Bar(_timestamp, 200, 201, 199, 200, 200, 1_000_000);
+        var md2 = new Bar(_timestamp, 100, 101, 99, 100, 100, 500_000);
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
-            { _timestamp, new SortedDictionary<Asset, MarketData> { { asset1, md1 }, { asset2, md2 } } }
+            { _timestamp, new SortedDictionary<Symbol, Bar> { { asset1, md1 }, { asset2, md2 } } }
         };
         var fxRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
         {

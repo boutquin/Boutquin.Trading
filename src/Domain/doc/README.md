@@ -8,7 +8,7 @@ Core domain contracts, events, value objects, enums, and extension methods for t
 
 This package defines all abstractions — Application and Data layer packages provide implementations.
 
-### Interfaces (33)
+### Interfaces (42)
 
 | Category | Interfaces |
 |----------|------------|
@@ -17,14 +17,15 @@ This package defines all abstractions — Application and Data layer packages pr
 | Risk | `IRiskManager`, `IRiskRule`, `IDrawdownControl` |
 | Tactical | `IIndicator`, `IMacroIndicator`, `IRegimeClassifier` |
 | Universe | `IUniverseSelector`, `ITimedUniverseSelector` |
-| Data | `IMarketDataFetcher`, `IMarketDataStorage`, `IMarketDataProcessor`, `IEconomicDataFetcher`, `IFactorDataFetcher`, `ICurrencyConversionService`, `ISymbolReader` |
+| Data | `IMarketDataFetcher`, `IMarketDataStorage`, `IMarketDataProcessor`, `IEconomicDataFetcher`, `IFactorDataFetcher`, `ICurrencyConversionService`, `ISymbolReader`, `ISecurityResolver` |
+| Tax | `ICostBasisMethod`, `ITaxJurisdiction`, `IDividendClassifier`, `ILossHarvestingRule`, `IWithholdingTaxSchedule`, `ITaxFxRateProvider`, `IAfterTaxReturnCalculator`, `IAssetLocationOptimizer` |
 | Infrastructure | `ITradingCalendar`, `ITransactionCostModel`, `ISlippageModel`, `IOrderPriceCalculationStrategy`, `ICapitalAllocationStrategy` |
 
 ### Events
 `MarketEvent`, `SignalEvent`, `OrderEvent`, `FillEvent` — the four-stage event pipeline driving the backtest engine.
 
-### Enums (14)
-`AssetClassCode`, `CalendarCompositionMode`, `ContinentCode`, `CountryCode`, `CurrencyCode`, `EconomicRegime`, `ExchangeCode`, `FamaFrenchDataset`, `OrderType`, `RebalancingFrequency`, `SecuritySymbolStandard`, `SignalType`, `TimeZoneCode`, `TradeAction`
+### Enums (19)
+`AccountType`, `AssetClassCode`, `CalendarCompositionMode`, `CanadianProvince`, `ContinentCode`, `CountryCode`, `CurrencyCode`, `DividendType`, `EconomicRegime`, `ExchangeCode`, `FamaFrenchDataset`, `HoldingPeriod`, `OrderType`, `RebalancingFrequency`, `SecuritySymbolStandard`, `SignalType`, `TimeZoneCode`, `TradeAction`, `UsState`
 
 ### Value Objects
 `Asset`, `SecurityId`, `StrategyName`, `RiskEvaluation`, `BatchRiskEvaluation`, `AssetWeightConstraints`

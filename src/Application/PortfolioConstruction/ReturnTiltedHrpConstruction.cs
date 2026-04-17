@@ -17,7 +17,6 @@
 namespace Boutquin.Trading.Application.PortfolioConstruction;
 
 using Boutquin.Trading.Application.CovarianceEstimators;
-using Domain.ValueObjects;
 
 /// <summary>
 /// Return-Tilted Hierarchical Risk Parity (Lohre, Rother, Schafer 2020).
@@ -62,15 +61,15 @@ public sealed class ReturnTiltedHrpConstruction : IPortfolioConstructionModel
     }
 
     /// <inheritdoc />
-    public IReadOnlyDictionary<Asset, decimal> ComputeTargetWeights(
-        IReadOnlyList<Asset> assets,
+    public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
+        IReadOnlyList<Symbol> assets,
         decimal[][] returns)
     {
         Guard.AgainstNull(() => assets);
 
         if (assets.Count == 0)
         {
-            return new Dictionary<Asset, decimal>();
+            return new Dictionary<Symbol, decimal>();
         }
 
         if (returns is null || returns.Length != assets.Count)
@@ -82,7 +81,7 @@ public sealed class ReturnTiltedHrpConstruction : IPortfolioConstructionModel
 
         if (n == 1)
         {
-            return new Dictionary<Asset, decimal> { [assets[0]] = 1m };
+            return new Dictionary<Symbol, decimal> { [assets[0]] = 1m };
         }
 
         // Compute per-asset mean returns for the return tilt signal.
@@ -148,7 +147,7 @@ public sealed class ReturnTiltedHrpConstruction : IPortfolioConstructionModel
             }
         }
 
-        var weights = new Dictionary<Asset, decimal>(n);
+        var weights = new Dictionary<Symbol, decimal>(n);
         for (var i = 0; i < n; i++)
         {
             weights[assets[i]] = w[i];

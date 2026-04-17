@@ -17,9 +17,6 @@
 namespace Boutquin.Trading.Application.PortfolioConstruction;
 
 using Boutquin.Trading.Application.CovarianceEstimators;
-using Boutquin.Trading.Domain.Exceptions;
-using Boutquin.Trading.Domain.Helpers;
-using Domain.ValueObjects;
 
 /// <summary>
 /// Computes mean-variance optimal (maximum Sharpe ratio) portfolio weights.
@@ -61,15 +58,15 @@ public sealed class MeanVarianceConstruction : IPortfolioConstructionModel
     }
 
     /// <inheritdoc />
-    public IReadOnlyDictionary<Asset, decimal> ComputeTargetWeights(
-        IReadOnlyList<Asset> assets,
+    public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
+        IReadOnlyList<Symbol> assets,
         decimal[][] returns)
     {
         Guard.AgainstNull(() => assets);
 
         if (assets.Count == 0)
         {
-            return new Dictionary<Asset, decimal>();
+            return new Dictionary<Symbol, decimal>();
         }
 
         if (returns is null || returns.Length != assets.Count)
@@ -89,7 +86,7 @@ public sealed class MeanVarianceConstruction : IPortfolioConstructionModel
         decimal[] w;
         try
         {
-            w = CholeskyQpSolver.SolveMeanVarianceQP(cov, means, n, _riskAversion, _minWeight, _maxWeight);
+            w = ActiveSetQpSolver.SolveMeanVariance(cov, means, _riskAversion, _minWeight, _maxWeight);
 
             // Verify bounds are satisfied (active-set cycling can produce slight violations)
             var effectiveMin = Math.Min(_minWeight, 1m / n);
@@ -109,13 +106,13 @@ public sealed class MeanVarianceConstruction : IPortfolioConstructionModel
                 w = SolveGradientAscent(cov, means, n);
             }
         }
-        catch (CalculationException)
+        catch (InvalidOperationException)
         {
             // Fallback to gradient ascent for non-positive-definite matrices
             w = SolveGradientAscent(cov, means, n);
         }
 
-        var weights = new Dictionary<Asset, decimal>(n);
+        var weights = new Dictionary<Symbol, decimal>(n);
         for (var i = 0; i < n; i++)
         {
             weights[assets[i]] = w[i];

@@ -17,7 +17,6 @@
 namespace Boutquin.Trading.Application.PortfolioConstruction;
 
 using Boutquin.Trading.Domain.Exceptions;
-using Domain.ValueObjects;
 
 /// <summary>
 /// Weights each asset inversely proportional to its sample volatility: w_i = (1/σ_i) / Σ(1/σ_j).
@@ -26,15 +25,15 @@ using Domain.ValueObjects;
 public sealed class InverseVolatilityConstruction : IPortfolioConstructionModel
 {
     /// <inheritdoc />
-    public IReadOnlyDictionary<Asset, decimal> ComputeTargetWeights(
-        IReadOnlyList<Asset> assets,
+    public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
+        IReadOnlyList<Symbol> assets,
         decimal[][] returns)
     {
         Guard.AgainstNull(() => assets);
 
         if (assets.Count == 0)
         {
-            return new Dictionary<Asset, decimal>();
+            return new Dictionary<Symbol, decimal>();
         }
 
         if (returns is null || returns.Length != assets.Count)
@@ -63,7 +62,7 @@ public sealed class InverseVolatilityConstruction : IPortfolioConstructionModel
             sumInverseVol += inverseVols[i];
         }
 
-        var weights = new Dictionary<Asset, decimal>(assets.Count);
+        var weights = new Dictionary<Symbol, decimal>(assets.Count);
         for (var i = 0; i < assets.Count; i++)
         {
             weights[assets[i]] = inverseVols[i] / sumInverseVol;

@@ -41,7 +41,7 @@ public sealed class OrderEventHandlerTests
         var orderEvent = new OrderEvent(
             new DateOnly(2024, 1, 15),
             "Strategy1",
-            new Asset("AAPL"),
+            new Symbol("AAPL"),
             TradeAction.Buy,
             OrderType.Market,
             100);
@@ -78,7 +78,7 @@ public sealed class OrderEventHandlerTests
         var orderEvent = new OrderEvent(
             new DateOnly(2024, 1, 15),
             "Strategy1",
-            new Asset("AAPL"),
+            new Symbol("AAPL"),
             TradeAction.Buy,
             OrderType.Market,
             100);

@@ -21,7 +21,6 @@ namespace Boutquin.Trading.Tests.UnitTests.Application;
 /// </summary>
 public sealed class SimulatedBrokerageTests
 {
-    private readonly Mock<IMarketDataFetcher> _marketDataFetcherMock;
     private readonly SimulatedBrokerage _simulatedBrokerage;
 
     /// <summary>
@@ -29,19 +28,17 @@ public sealed class SimulatedBrokerageTests
     /// </summary>
     public SimulatedBrokerageTests()
     {
-        _marketDataFetcherMock = new Mock<IMarketDataFetcher>();
-        _simulatedBrokerage = new SimulatedBrokerage(_marketDataFetcherMock.Object);
+        _simulatedBrokerage = new SimulatedBrokerage();
     }
 
-    // write a test to verify the constructor throws ArgumentNullException when the marketDataFetcher is null
     /// <summary>
-    /// Tests that the constructor of the SimulatedBrokerage class throws an ArgumentNullException when the marketDataFetcher is null.
+    /// Tests that the constructor of the SimulatedBrokerage class throws an ArgumentNullException when the cost model is null.
     /// </summary>
     [Fact]
-    public void Constructor_WithNullMarketDataFetcher_ShouldThrowArgumentNullException()
+    public void Constructor_WithNullCostModel_ShouldThrowArgumentNullException()
     {
         // Act
-        Action act = () => new SimulatedBrokerage(null);
+        Action act = () => new SimulatedBrokerage(null!);
 
         // Assert
         act.Should().Throw<ArgumentNullException>();
@@ -58,29 +55,24 @@ public sealed class SimulatedBrokerageTests
         var order = new Order(
             Timestamp: today,
             StrategyName: "Strategy1",
-            Asset: new Asset("AAPL"),
+            Symbol: new Symbol("AAPL"),
             TradeAction: TradeAction.Buy,
             OrderType: OrderType.Market,
             Quantity: 10);
-        var marketData = new SortedDictionary<Asset, MarketData>
+        var marketData = new SortedDictionary<Symbol, Bar>
         {
             {
-                new Asset("AAPL"),
-                new MarketData(
-                    Timestamp: today,
+                new Symbol("AAPL"),
+                new Bar(
+                    Date: today,
                     Open: 100,
                     High: 200,
                     Low: 50,
                     Close: 150,
                     AdjustedClose: 150,
-                    Volume: 1000000,
-                    DividendPerShare: 0,
-                    SplitCoefficient: 1)
+                    Volume: 1000000)
             }
         };
-
-        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>(), It.IsAny<CancellationToken>()))
-            .Returns(new[] { new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(today, marketData) }.ToAsyncEnumerable());
 
         // Act
         var result = await _simulatedBrokerage.SubmitOrderAsync(order, CancellationToken.None).ConfigureAwait(false);
@@ -101,12 +93,10 @@ public sealed class SimulatedBrokerageTests
         var order = new Order(
             Timestamp: today,
             StrategyName: "Strategy1",
-            Asset: new Asset("AAPL"),
+            Symbol: new Symbol("AAPL"),
             TradeAction: TradeAction.Buy,
             OrderType: OrderType.Market,
             Quantity: 10);
-        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>(), It.IsAny<CancellationToken>()))
-            .Returns(Enumerable.Empty<KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>>().ToAsyncEnumerable());
 
         var eventTriggered = false;
         _simulatedBrokerage.FillOccurred += (sender, args) => { eventTriggered = true; return Task.CompletedTask; };
@@ -114,7 +104,7 @@ public sealed class SimulatedBrokerageTests
         // Act — SubmitOrderAsync now always returns true (queuing succeeds)
         var result = await _simulatedBrokerage.SubmitOrderAsync(order, CancellationToken.None).ConfigureAwait(false);
         // ProcessPendingOrdersAsync with empty data — no fill should occur
-        await _simulatedBrokerage.ProcessPendingOrdersAsync(today, new SortedDictionary<Asset, MarketData>(), CancellationToken.None).ConfigureAwait(false);
+        await _simulatedBrokerage.ProcessPendingOrdersAsync(today, new SortedDictionary<Symbol, Bar>(), CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         result.Should().BeTrue();
@@ -132,30 +122,25 @@ public sealed class SimulatedBrokerageTests
         var order = new Order(
             Timestamp: today,
             StrategyName: "Strategy1",
-            Asset: new Asset("AAPL"),
+            Symbol: new Symbol("AAPL"),
             TradeAction: TradeAction.Buy,
             OrderType: OrderType.Limit,
             Quantity: 10,
             PrimaryPrice: 100);
-        var marketData = new SortedDictionary<Asset, MarketData>
+        var marketData = new SortedDictionary<Symbol, Bar>
         {
             {
-                new Asset("AAPL"),
-                new MarketData(
-                    Timestamp: today,
+                new Symbol("AAPL"),
+                new Bar(
+                    Date: today,
                     Open: 100,
                     High: 200,
                     Low: 50,
                     Close: 150,
                     AdjustedClose: 150,
-                    Volume: 1000000,
-                    DividendPerShare: 0,
-                    SplitCoefficient: 1)
+                    Volume: 1000000)
             }
         };
-
-        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>(), It.IsAny<CancellationToken>()))
-            .Returns(new[] { new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(today, marketData) }.ToAsyncEnumerable());
 
         // Act
         var result = await _simulatedBrokerage.SubmitOrderAsync(order, CancellationToken.None).ConfigureAwait(false);
@@ -176,30 +161,25 @@ public sealed class SimulatedBrokerageTests
         var order = new Order(
             Timestamp: today,
             StrategyName: "Strategy1",
-            Asset: new Asset("AAPL"),
+            Symbol: new Symbol("AAPL"),
             TradeAction: TradeAction.Buy,
             OrderType: OrderType.Limit,
             Quantity: 10,
             PrimaryPrice: 40);
-        var marketData = new SortedDictionary<Asset, MarketData>
+        var marketData = new SortedDictionary<Symbol, Bar>
         {
             {
-                new Asset("AAPL"),
-                new MarketData(
-                    Timestamp: today,
+                new Symbol("AAPL"),
+                new Bar(
+                    Date: today,
                     Open: 100,
                     High: 200,
                     Low: 50,
                     Close: 150,
                     AdjustedClose: 150,
-                    Volume: 1000000,
-                    DividendPerShare: 0,
-                    SplitCoefficient: 1)
+                    Volume: 1000000)
             }
         };
-
-        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>(), It.IsAny<CancellationToken>()))
-            .Returns(new[] { new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(today, marketData) }.ToAsyncEnumerable());
 
         var eventTriggered = false;
         _simulatedBrokerage.FillOccurred += (sender, args) => { eventTriggered = true; return Task.CompletedTask; };
@@ -224,30 +204,25 @@ public sealed class SimulatedBrokerageTests
         var order = new Order(
             Timestamp: today,
             StrategyName: "Strategy1",
-            Asset: new Asset("AAPL"),
+            Symbol: new Symbol("AAPL"),
             TradeAction: TradeAction.Buy,
             OrderType: OrderType.Limit,
             Quantity: 10,
             PrimaryPrice: 40);
-        var marketData = new SortedDictionary<Asset, MarketData>
+        var marketData = new SortedDictionary<Symbol, Bar>
         {
             {
-                new Asset("AAPL"),
-                new MarketData(
-                    Timestamp: today,
+                new Symbol("AAPL"),
+                new Bar(
+                    Date: today,
                     Open: 100,
                     High: 200,
                     Low: 50,
                     Close: 150,
                     AdjustedClose: 150,
-                    Volume: 1000000,
-                    DividendPerShare: 0,
-                    SplitCoefficient: 1)
+                    Volume: 1000000)
             }
         };
-
-        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>(), It.IsAny<CancellationToken>()))
-            .Returns(new[] { new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(today, marketData) }.ToAsyncEnumerable());
 
         var eventTriggered = false;
         _simulatedBrokerage.FillOccurred += (sender, args) => { eventTriggered = true; return Task.CompletedTask; };
@@ -272,7 +247,7 @@ public sealed class SimulatedBrokerageTests
         var order = new Order(
             Timestamp: today,
             StrategyName: "Strategy1",
-            Asset: new Asset("AAPL"),
+            Symbol: new Symbol("AAPL"),
             TradeAction: TradeAction.Buy,
             OrderType: OrderType.Market,
             Quantity: 10);
@@ -298,30 +273,25 @@ public sealed class SimulatedBrokerageTests
         var order = new Order(
             Timestamp: today,
             StrategyName: "Strategy1",
-            Asset: new Asset("AAPL"),
+            Symbol: new Symbol("AAPL"),
             TradeAction: TradeAction.Buy,
             OrderType: OrderType.Stop,
             Quantity: 10,
             PrimaryPrice: 105);
-        var marketData = new SortedDictionary<Asset, MarketData>
+        var marketData = new SortedDictionary<Symbol, Bar>
         {
             {
-                new Asset("AAPL"),
-                new MarketData(
-                    Timestamp: today,
+                new Symbol("AAPL"),
+                new Bar(
+                    Date: today,
                     Open: 100,
                     High: 106,
                     Low: 98,
                     Close: 100,
                     AdjustedClose: 100,
-                    Volume: 1000000,
-                    DividendPerShare: 0,
-                    SplitCoefficient: 1)
+                    Volume: 1000000)
             }
         };
-
-        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>(), It.IsAny<CancellationToken>()))
-            .Returns(new[] { new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(today, marketData) }.ToAsyncEnumerable());
 
         var eventTriggered = false;
         _simulatedBrokerage.FillOccurred += (sender, args) => { eventTriggered = true; return Task.CompletedTask; };
@@ -346,30 +316,25 @@ public sealed class SimulatedBrokerageTests
         var order = new Order(
             Timestamp: today,
             StrategyName: "Strategy1",
-            Asset: new Asset("AAPL"),
+            Symbol: new Symbol("AAPL"),
             TradeAction: TradeAction.Sell,
             OrderType: OrderType.Stop,
             Quantity: 10,
             PrimaryPrice: 95);
-        var marketData = new SortedDictionary<Asset, MarketData>
+        var marketData = new SortedDictionary<Symbol, Bar>
         {
             {
-                new Asset("AAPL"),
-                new MarketData(
-                    Timestamp: today,
+                new Symbol("AAPL"),
+                new Bar(
+                    Date: today,
                     Open: 100,
                     High: 106,
                     Low: 94,
                     Close: 100,
                     AdjustedClose: 100,
-                    Volume: 1000000,
-                    DividendPerShare: 0,
-                    SplitCoefficient: 1)
+                    Volume: 1000000)
             }
         };
-
-        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>(), It.IsAny<CancellationToken>()))
-            .Returns(new[] { new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(today, marketData) }.ToAsyncEnumerable());
 
         var eventTriggered = false;
         _simulatedBrokerage.FillOccurred += (sender, args) => { eventTriggered = true; return Task.CompletedTask; };
@@ -394,29 +359,24 @@ public sealed class SimulatedBrokerageTests
         var order = new Order(
             Timestamp: today,
             StrategyName: "Strategy1",
-            Asset: new Asset("AAPL"),
+            Symbol: new Symbol("AAPL"),
             TradeAction: TradeAction.Buy,
             OrderType: OrderType.Market,
             Quantity: 10);
-        var marketData = new SortedDictionary<Asset, MarketData>
+        var marketData = new SortedDictionary<Symbol, Bar>
         {
             {
-                new Asset("AAPL"),
-                new MarketData(
-                    Timestamp: today,
+                new Symbol("AAPL"),
+                new Bar(
+                    Date: today,
                     Open: 100,
                     High: 200,
                     Low: 50,
                     Close: 150,
                     AdjustedClose: 150,
-                    Volume: 1000000,
-                    DividendPerShare: 0,
-                    SplitCoefficient: 1)
+                    Volume: 1000000)
             }
         };
-
-        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>(), It.IsAny<CancellationToken>()))
-            .Returns(new[] { new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(today, marketData) }.ToAsyncEnumerable());
 
         FillEvent? capturedFill = null;
         _simulatedBrokerage.FillOccurred += (sender, fill) =>
@@ -431,7 +391,7 @@ public sealed class SimulatedBrokerageTests
 
         // Assert
         capturedFill.Should().NotBeNull();
-        capturedFill!.Asset.Should().Be(new Asset("AAPL"));
+        capturedFill!.Symbol.Should().Be(new Symbol("AAPL"));
         capturedFill.Quantity.Should().Be(10);
     }
 
@@ -446,30 +406,25 @@ public sealed class SimulatedBrokerageTests
         var order = new Order(
             Timestamp: today,
             StrategyName: "Strategy1",
-            Asset: new Asset("AAPL"),
+            Symbol: new Symbol("AAPL"),
             TradeAction: TradeAction.Buy,
             OrderType: OrderType.Stop,
             Quantity: 10,
             PrimaryPrice: 100);
-        var marketData = new SortedDictionary<Asset, MarketData>
+        var marketData = new SortedDictionary<Symbol, Bar>
         {
             {
-                new Asset("AAPL"),
-                new MarketData(
-                    Timestamp: today,
+                new Symbol("AAPL"),
+                new Bar(
+                    Date: today,
                     Open: 100,
                     High: 200,
                     Low: 50,
                     Close: 150,
                     AdjustedClose: 150,
-                    Volume: 1000000,
-                    DividendPerShare: 0,
-                    SplitCoefficient: 1)
+                    Volume: 1000000)
             }
         };
-
-        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>(), It.IsAny<CancellationToken>()))
-            .Returns(new[] { new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(today, marketData) }.ToAsyncEnumerable());
 
         var eventTriggered = false;
         _simulatedBrokerage.FillOccurred += (sender, args) => { eventTriggered = true; return Task.CompletedTask; };
@@ -494,31 +449,26 @@ public sealed class SimulatedBrokerageTests
         var order = new Order(
             Timestamp: today,
             StrategyName: "Strategy1",
-            Asset: new Asset("AAPL"),
+            Symbol: new Symbol("AAPL"),
             TradeAction: TradeAction.Buy,
             OrderType: OrderType.StopLimit,
             Quantity: 10,
             PrimaryPrice: 160,
             SecondaryPrice: 140);
-        var marketData = new SortedDictionary<Asset, MarketData>
+        var marketData = new SortedDictionary<Symbol, Bar>
         {
             {
-                new Asset("AAPL"),
-                new MarketData(
-                    Timestamp: today,
+                new Symbol("AAPL"),
+                new Bar(
+                    Date: today,
                     Open: 100,
                     High: 200,
                     Low: 50,
                     Close: 150,
                     AdjustedClose: 150,
-                    Volume: 1000000,
-                    DividendPerShare: 0,
-                    SplitCoefficient: 1)
+                    Volume: 1000000)
             }
         };
-
-        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>(), It.IsAny<CancellationToken>()))
-            .Returns(new[] { new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(today, marketData) }.ToAsyncEnumerable());
 
         var eventTriggered = false;
         _simulatedBrokerage.FillOccurred += (sender, args) => { eventTriggered = true; return Task.CompletedTask; };
@@ -543,31 +493,26 @@ public sealed class SimulatedBrokerageTests
         var order = new Order(
             Timestamp: today,
             StrategyName: "Strategy1",
-            Asset: new Asset("AAPL"),
+            Symbol: new Symbol("AAPL"),
             TradeAction: TradeAction.Buy,
             OrderType: OrderType.StopLimit,
             Quantity: 10,
             PrimaryPrice: 160,
             SecondaryPrice: 170);
-        var marketData = new SortedDictionary<Asset, MarketData>
+        var marketData = new SortedDictionary<Symbol, Bar>
         {
             {
-                new Asset("AAPL"),
-                new MarketData(
-                    Timestamp: today,
+                new Symbol("AAPL"),
+                new Bar(
+                    Date: today,
                     Open: 100,
                     High: 200,
                     Low: 50,
                     Close: 165,
                     AdjustedClose: 165,
-                    Volume: 1000000,
-                    DividendPerShare: 0,
-                    SplitCoefficient: 1)
+                    Volume: 1000000)
             }
         };
-
-        _marketDataFetcherMock.Setup(mdf => mdf.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>(), It.IsAny<CancellationToken>()))
-            .Returns(new[] { new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(today, marketData) }.ToAsyncEnumerable());
 
         var eventTriggered = false;
         _simulatedBrokerage.FillOccurred += (sender, args) => { eventTriggered = true; return Task.CompletedTask; };

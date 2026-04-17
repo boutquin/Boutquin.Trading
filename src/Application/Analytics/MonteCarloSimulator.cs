@@ -14,9 +14,10 @@
 //   limitations under the License.
 //
 
-namespace Boutquin.Trading.Application.Analytics;
-
+using Boutquin.Numerics.MonteCarlo;
 using Boutquin.Trading.Domain.Analytics;
+
+namespace Boutquin.Trading.Application.Analytics;
 
 /// <summary>
 /// Performs Monte Carlo bootstrap resampling of daily returns to produce
@@ -59,41 +60,27 @@ public sealed class MonteCarloSimulator
                 "Need at least 2 daily returns for Monte Carlo simulation.");
         }
 
-        var rng = _seed >= 0 ? new Random(_seed) : new Random();
-        var sharpes = new decimal[_simulationCount];
+        var sqrtDays = (decimal)Math.Sqrt(_tradingDaysPerYear);
 
-        for (var sim = 0; sim < _simulationCount; sim++)
+        decimal AnnualizedSharpe(decimal[] r)
         {
-            var resampled = new decimal[dailyReturns.Length];
-            for (var i = 0; i < resampled.Length; i++)
-            {
-                resampled[i] = dailyReturns[rng.Next(dailyReturns.Length)];
-            }
-
-            var mean = resampled.Average();
-            var sumSqDev = resampled.Sum(r => (r - mean) * (r - mean));
-            var stdDev = (decimal)Math.Sqrt((double)(sumSqDev / (resampled.Length - 1)));
-
-            sharpes[sim] = stdDev == 0m ? 0m : (mean / stdDev) * (decimal)Math.Sqrt(_tradingDaysPerYear);
+            var mean = r.Average();
+            var sumSq = r.Sum(x => (x - mean) * (x - mean));
+            var std = (decimal)Math.Sqrt((double)(sumSq / (r.Length - 1)));
+            return std == 0m ? 0m : (mean / std) * sqrtDays;
         }
 
-        Array.Sort(sharpes);
+        var result = BootstrapMonteCarloEngine.FromSeed(
+                _simulationCount,
+                _seed >= 0 ? _seed : null)
+            .Run(dailyReturns, AnnualizedSharpe);
 
         return new MonteCarloResult(
             SimulationCount: _simulationCount,
-            SharpeRatios: Array.AsReadOnly(sharpes),
-            MedianSharpe: Percentile(sharpes, 0.50m),
-            Percentile5Sharpe: Percentile(sharpes, 0.05m),
-            Percentile95Sharpe: Percentile(sharpes, 0.95m),
-            MeanSharpe: sharpes.Average());
-    }
-
-    private static decimal Percentile(decimal[] sortedValues, decimal percentile)
-    {
-        var index = (double)percentile * (sortedValues.Length - 1);
-        var lower = (int)Math.Floor(index);
-        var upper = Math.Min(lower + 1, sortedValues.Length - 1);
-        var fraction = (decimal)(index - lower);
-        return sortedValues[lower] + fraction * (sortedValues[upper] - sortedValues[lower]);
+            SharpeRatios: result.Statistics,
+            MedianSharpe: result.Median,
+            Percentile5Sharpe: result.Percentile5,
+            Percentile95Sharpe: result.Percentile95,
+            MeanSharpe: result.Mean);
     }
 }

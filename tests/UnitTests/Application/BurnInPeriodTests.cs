@@ -14,6 +14,8 @@
 //   limitations under the License.
 //
 
+using Boutquin.Trading.Recipes.Testing;
+
 namespace Boutquin.Trading.Tests.UnitTests.Application;
 
 /// <summary>
@@ -22,7 +24,7 @@ namespace Boutquin.Trading.Tests.UnitTests.Application;
 /// </summary>
 public sealed class BurnInPeriodTests
 {
-    private static readonly Asset s_spy = new("SPY");
+    private static readonly Symbol s_spy = new("SPY");
 
     // 10 trading days: 2024-01-02 through 2024-01-15 (skipping weekends)
     private static readonly DateOnly[] s_tradingDays =
@@ -33,7 +35,6 @@ public sealed class BurnInPeriodTests
     ];
 
     private static readonly DateOnly s_startDate = new(2024, 1, 2);
-    private static readonly DateOnly s_endDate = new(2024, 1, 15);
 
     /// <summary>
     /// No burnInEndDate. Verify UpdateEquityCurve called for all 10 days.
@@ -42,16 +43,15 @@ public sealed class BurnInPeriodTests
     public async Task RunAsync_WithNoBurnIn_RecordsAllEquityCurvePoints()
     {
         // Arrange
-        var (portfolioMock, benchmarkMock, fetcherMock) = BuildMocks();
+        var (portfolioMock, benchmarkMock, dataset) = BuildMocks();
 
         var backtest = new BackTest(
             portfolioMock.Object,
             benchmarkMock.Object,
-            fetcherMock.Object,
             CurrencyCode.USD);
 
         // Act
-        await backtest.RunAsync(s_startDate, s_endDate);
+        await backtest.RunAsync(dataset);
 
         // Assert — UpdateEquityCurve called once per trading day for the portfolio
         portfolioMock.Verify(
@@ -68,16 +68,15 @@ public sealed class BurnInPeriodTests
     {
         // Arrange
         var burnInEndDate = new DateOnly(2024, 1, 8);
-        var (portfolioMock, benchmarkMock, fetcherMock) = BuildMocks();
+        var (portfolioMock, benchmarkMock, dataset) = BuildMocks();
 
         var backtest = new BackTest(
             portfolioMock.Object,
             benchmarkMock.Object,
-            fetcherMock.Object,
             CurrencyCode.USD);
 
         // Act
-        await backtest.RunAsync(s_startDate, s_endDate, burnInEndDate: burnInEndDate);
+        await backtest.RunAsync(dataset, burnInEndDate: burnInEndDate);
 
         // Assert — only days after 2024-01-08: 2024-01-09, 10, 11, 12, 15 = 5 days
         var postBurnInDays = s_tradingDays.Where(d => d > burnInEndDate).ToArray();
@@ -110,16 +109,15 @@ public sealed class BurnInPeriodTests
     {
         // Arrange
         var burnInEndDate = new DateOnly(2024, 1, 8);
-        var (portfolioMock, benchmarkMock, fetcherMock) = BuildMocks();
+        var (portfolioMock, benchmarkMock, dataset) = BuildMocks();
 
         var backtest = new BackTest(
             portfolioMock.Object,
             benchmarkMock.Object,
-            fetcherMock.Object,
             CurrencyCode.USD);
 
         // Act
-        await backtest.RunAsync(s_startDate, s_endDate, burnInEndDate: burnInEndDate);
+        await backtest.RunAsync(dataset, burnInEndDate: burnInEndDate);
 
         // Assert — HandleEventAsync and ProcessPendingOrdersAsync called for ALL 10 days
         portfolioMock.Verify(
@@ -129,7 +127,7 @@ public sealed class BurnInPeriodTests
         portfolioMock.Verify(
             p => p.ProcessPendingOrdersAsync(
                 It.IsAny<DateOnly>(),
-                It.IsAny<SortedDictionary<Asset, MarketData>>(),
+                It.IsAny<SortedDictionary<Symbol, Bar>>(),
                 It.IsAny<CancellationToken>()),
             Times.Exactly(s_tradingDays.Length));
     }
@@ -141,17 +139,16 @@ public sealed class BurnInPeriodTests
     public async Task RunAsync_BurnInEndDateBeforeStartDate_ThrowsArgumentException()
     {
         // Arrange
-        var (portfolioMock, benchmarkMock, fetcherMock) = BuildMocks();
+        var (portfolioMock, benchmarkMock, dataset) = BuildMocks();
         var backtest = new BackTest(
             portfolioMock.Object,
             benchmarkMock.Object,
-            fetcherMock.Object,
             CurrencyCode.USD);
 
         var burnInEndDate = new DateOnly(2024, 1, 1); // Before startDate
 
         // Act & Assert
-        var act = async () => await backtest.RunAsync(s_startDate, s_endDate, burnInEndDate: burnInEndDate);
+        var act = async () => await backtest.RunAsync(dataset, burnInEndDate: burnInEndDate);
         await act.Should().ThrowAsync<ArgumentException>();
     }
 
@@ -162,17 +159,16 @@ public sealed class BurnInPeriodTests
     public async Task RunAsync_BurnInEndDateAfterEndDate_ThrowsArgumentException()
     {
         // Arrange
-        var (portfolioMock, benchmarkMock, fetcherMock) = BuildMocks();
+        var (portfolioMock, benchmarkMock, dataset) = BuildMocks();
         var backtest = new BackTest(
             portfolioMock.Object,
             benchmarkMock.Object,
-            fetcherMock.Object,
             CurrencyCode.USD);
 
         var burnInEndDate = new DateOnly(2024, 1, 16); // After endDate
 
         // Act & Assert
-        var act = async () => await backtest.RunAsync(s_startDate, s_endDate, burnInEndDate: burnInEndDate);
+        var act = async () => await backtest.RunAsync(dataset, burnInEndDate: burnInEndDate);
         await act.Should().ThrowAsync<ArgumentException>();
     }
 
@@ -183,36 +179,35 @@ public sealed class BurnInPeriodTests
     public async Task RunAsync_BurnInEndDateEqualsStartDate_ThrowsArgumentException()
     {
         // Arrange
-        var (portfolioMock, benchmarkMock, fetcherMock) = BuildMocks();
+        var (portfolioMock, benchmarkMock, dataset) = BuildMocks();
         var backtest = new BackTest(
             portfolioMock.Object,
             benchmarkMock.Object,
-            fetcherMock.Object,
             CurrencyCode.USD);
 
         var burnInEndDate = s_startDate; // Equal to startDate
 
         // Act & Assert
-        var act = async () => await backtest.RunAsync(s_startDate, s_endDate, burnInEndDate: burnInEndDate);
+        var act = async () => await backtest.RunAsync(dataset, burnInEndDate: burnInEndDate);
         await act.Should().ThrowAsync<ArgumentException>();
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
 
-    private static (Mock<IPortfolio> Portfolio, Mock<IPortfolio> Benchmark, Mock<IMarketDataFetcher> Fetcher) BuildMocks()
+    private static (Mock<IPortfolio> Portfolio, Mock<IPortfolio> Benchmark, FakeBacktestDataset Dataset) BuildMocks()
     {
         var portfolioMock = BuildPortfolioMock(upAmount: 200m, downAmount: -100m);
         var benchmarkMock = BuildPortfolioMock(upAmount: 150m, downAmount: -80m);
-        var fetcherMock = BuildFetcherMock();
+        var dataset = BuildDataset();
 
-        return (portfolioMock, benchmarkMock, fetcherMock);
+        return (portfolioMock, benchmarkMock, dataset);
     }
 
     private static Mock<IPortfolio> BuildPortfolioMock(decimal upAmount, decimal downAmount)
     {
         var mock = new Mock<IPortfolio>();
 
-        var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { s_spy, CurrencyCode.USD } };
+        var assetCurrencies = new Dictionary<Symbol, CurrencyCode> { { s_spy, CurrencyCode.USD } };
 
         // Strategy mock with SPY asset
         var strategyMock = new Mock<IStrategy>();
@@ -246,47 +241,38 @@ public sealed class BurnInPeriodTests
         // ProcessPendingOrdersAsync returns completed task
         mock.Setup(p => p.ProcessPendingOrdersAsync(
                 It.IsAny<DateOnly>(),
-                It.IsAny<SortedDictionary<Asset, MarketData>>(),
+                It.IsAny<SortedDictionary<Symbol, Bar>>(),
                 It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         return mock;
     }
 
-    private static Mock<IMarketDataFetcher> BuildFetcherMock()
+    private static FakeBacktestDataset BuildDataset()
     {
-        var mock = new Mock<IMarketDataFetcher>();
-
-        // Build market data for each trading day
-        var marketDataPairs = new List<KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>>();
+        var prices = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>();
         foreach (var day in s_tradingDays)
         {
-            var dayData = new SortedDictionary<Asset, MarketData>
+            prices[day] = new SortedDictionary<Symbol, Bar>
             {
                 {
                     s_spy,
-                    new MarketData(
-                        Timestamp: day,
+                    new Bar(
+                        Date: day,
                         Open: 100m,
                         High: 101m,
                         Low: 99m,
                         Close: 100.50m,
                         AdjustedClose: 100.50m,
-                        Volume: 1_000_000,
-                        DividendPerShare: 0,
-                        SplitCoefficient: 1)
+                        Volume: 1_000_000)
                 }
             };
-            marketDataPairs.Add(new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(day, dayData));
         }
 
-        mock.Setup(f => f.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>(), It.IsAny<CancellationToken>()))
-            .Returns(marketDataPairs.ToAsyncEnumerable());
-
-        // No FX rates needed for single-currency portfolio
-        mock.Setup(f => f.FetchFxRatesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
-            .Returns(AsyncEnumerable.Empty<KeyValuePair<DateOnly, SortedDictionary<CurrencyCode, decimal>>>());
-
-        return mock;
+        return new FakeBacktestDataset
+        {
+            Prices = prices,
+            FxRates = [],
+        };
     }
 }

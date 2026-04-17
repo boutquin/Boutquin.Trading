@@ -18,8 +18,6 @@ using Boutquin.Trading.Application.Analytics;
 using Boutquin.Trading.Application.Configuration;
 using Boutquin.Trading.Application.DownsideRisk;
 using Boutquin.Trading.Application.Regime;
-using Boutquin.Trading.Domain.Exceptions;
-using Boutquin.Trading.Domain.Helpers;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Boutquin.Trading.Tests.UnitTests;
@@ -31,27 +29,9 @@ namespace Boutquin.Trading.Tests.UnitTests;
 public sealed class CodeDeepReviewBlockerTests
 {
     // ══════════════════════════════════════════════════════════════════
-    // BLOCKER #1: MarketData.AdjustForSplit truncates fractional volume
-    // on reverse splits (should round, not truncate)
+    // BLOCKER #1: AdjustForSplit removed — Bar is an immutable record;
+    // split adjustments are handled externally. Test removed.
     // ══════════════════════════════════════════════════════════════════
-
-    [Fact]
-    public void AdjustForSplit_ReverseSplit_RoundsVolumeInsteadOfTruncating()
-    {
-        // Arrange — volume 500, ratio 1/3 → 500 * (1/3) = 166.666...
-        // Truncation gives 166; Math.Round(AwayFromZero) gives 167
-        var md = new MarketData(
-            Timestamp: new DateOnly(2024, 1, 15),
-            Open: 30m, High: 35m, Low: 28m, Close: 33m,
-            AdjustedClose: 33m, Volume: 500,
-            DividendPerShare: 0m, SplitCoefficient: 1m);
-
-        // Act — reverse split: 3 shares become 1 (ratio = 1/3)
-        var result = md.AdjustForSplit(1m / 3m);
-
-        // Assert — Volume * (1/3) = 166.666... should round to 167, not truncate to 166
-        result.Volume.Should().Be(167);
-    }
 
     // ══════════════════════════════════════════════════════════════════
     // BLOCKER #2: CAGR does not guard against negative cumulative return
@@ -168,112 +148,19 @@ public sealed class CodeDeepReviewBlockerTests
     }
 
     // ══════════════════════════════════════════════════════════════════
-    // BLOCKER #6 + #7: TwelveDataFetcher disposal + cancellation
+    // BLOCKER #6 + #7: TwelveDataFetcher removed — market data ingestion
+    // is now in Boutquin.MarketData. Test removed.
     // ══════════════════════════════════════════════════════════════════
 
-    [Fact]
-    public async Task TwelveDataFetcher_CancelledToken_PropagatesOperationCanceledException()
-    {
-        // Arrange
-        var handler = new MockHttpMessageHandler(_ =>
-            new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-            {
-                Content = new StringContent(
-                    """{"values":[{"datetime":"2024-01-15","open":"100","high":"110","low":"90","close":"105","volume":"1000000"}]}""",
-                    System.Text.Encoding.UTF8, "application/json")
-            });
-
-        using var httpClient = new HttpClient(handler);
-        using var fetcher = new Boutquin.Trading.Data.TwelveData.TwelveDataFetcher("test-key", httpClient, "https://api.example.com");
-
-        var cts = new CancellationTokenSource();
-        cts.Cancel();
-
-        // Act
-        var act = async () =>
-        {
-            await foreach (var _ in fetcher.FetchMarketDataAsync(
-                [new Asset("AAPL")], cts.Token))
-            {
-            }
-        };
-
-        // Assert — should throw OperationCanceledException, not silently return empty
-        await act.Should().ThrowAsync<OperationCanceledException>();
-    }
-
     // ══════════════════════════════════════════════════════════════════
-    // BLOCKER #8: CsvMarketDataFetcher zero rawClose guard
+    // BLOCKER #8: CsvMarketDataFetcher removed — market data ingestion
+    // is now in Boutquin.MarketData. Test removed.
     // ══════════════════════════════════════════════════════════════════
 
-    [Fact]
-    public async Task CsvMarketDataFetcher_ZeroRawClose_ThrowsMarketDataRetrievalException()
-    {
-        // Arrange — CSV with rawClose = 0
-        var tempDir = Path.Combine(Path.GetTempPath(), $"csv_test_{Guid.NewGuid():N}");
-        Directory.CreateDirectory(tempDir);
-        try
-        {
-            var csvContent = "Date,Open,High,Low,Close,AdjustedClose,Volume,DividendPerShare,SplitCoefficient\n"
-                + "2024-01-15,100,110,90,0,105,1000000,0,1\n";
-            var fileName = MarketDataFileNameHelper.GetCsvFileNameForMarketData(tempDir, "TEST");
-            await File.WriteAllTextAsync(fileName, csvContent);
-
-            var fetcher = new CsvMarketDataFetcher(tempDir);
-
-            // Act
-            var act = async () =>
-            {
-                await foreach (var _ in fetcher.FetchMarketDataAsync([new Asset("TEST")], CancellationToken.None))
-                {
-                }
-            };
-
-            // Assert
-            await act.Should().ThrowAsync<MarketDataRetrievalException>();
-        }
-        finally
-        {
-            Directory.Delete(tempDir, true);
-        }
-    }
-
     // ══════════════════════════════════════════════════════════════════
-    // BLOCKER #9: FredFetcher API key not URL-encoded
+    // BLOCKER #9: FredFetcher removed — economic data ingestion
+    // is now in Boutquin.MarketData. Test removed.
     // ══════════════════════════════════════════════════════════════════
-
-    [Fact]
-    public async Task FredFetcher_ApiKeyWithSpecialChars_IsUrlEncoded()
-    {
-        // Arrange
-        var specialKey = "abc+def=ghi&jkl";
-        string? capturedUrl = null;
-
-        var handler = new MockHttpMessageHandler(request =>
-        {
-            capturedUrl = request.RequestUri?.ToString();
-            return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-            {
-                Content = new StringContent(
-                    """{"observations":[]}""",
-                    System.Text.Encoding.UTF8, "application/json")
-            };
-        });
-
-        using var httpClient = new HttpClient(handler);
-        using var fetcher = new Boutquin.Trading.Data.Fred.FredFetcher(specialKey, httpClient, "https://api.example.com");
-
-        // Act
-        await foreach (var _ in fetcher.FetchSeriesAsync("TEST_SERIES"))
-        {
-        }
-
-        // Assert
-        capturedUrl.Should().NotBeNull();
-        capturedUrl.Should().NotContain("abc+def=ghi&jkl",
-            "raw special characters should be URL-encoded");
-        capturedUrl.Should().Contain(Uri.EscapeDataString(specialKey));
-    }
 
     // ══════════════════════════════════════════════════════════════════
     // BLOCKER #10: IRiskManager wired into OrderEventHandler
@@ -296,7 +183,7 @@ public sealed class CodeDeepReviewBlockerTests
             mockRiskManager.Object);
 
         var orderEvent = new OrderEvent(
-            new DateOnly(2024, 1, 15), "TestStrategy", new Asset("AAPL"),
+            new DateOnly(2024, 1, 15), "TestStrategy", new Symbol("AAPL"),
             TradeAction.Buy, OrderType.Market, 100);
 
         // Act
@@ -326,7 +213,7 @@ public sealed class CodeDeepReviewBlockerTests
             mockRiskManager.Object);
 
         var orderEvent = new OrderEvent(
-            new DateOnly(2024, 1, 15), "TestStrategy", new Asset("AAPL"),
+            new DateOnly(2024, 1, 15), "TestStrategy", new Symbol("AAPL"),
             TradeAction.Buy, OrderType.Market, 100);
 
         // Act
@@ -349,7 +236,7 @@ public sealed class CodeDeepReviewBlockerTests
         var handler = new OrderEventHandler();
 
         var orderEvent = new OrderEvent(
-            new DateOnly(2024, 1, 15), "TestStrategy", new Asset("AAPL"),
+            new DateOnly(2024, 1, 15), "TestStrategy", new Symbol("AAPL"),
             TradeAction.Buy, OrderType.Market, 100);
 
         // Act
@@ -414,25 +301,4 @@ public sealed class CodeDeepReviewBlockerTests
         closingTime.Value.Minute.Should().Be(0);
     }
 
-    // ══════════════════════════════════════════════════════════════════
-    // Helper: MockHttpMessageHandler
-    // ══════════════════════════════════════════════════════════════════
-
-    private sealed class MockHttpMessageHandler : HttpMessageHandler
-    {
-        private readonly Func<HttpRequestMessage, HttpResponseMessage> _handler;
-
-        public MockHttpMessageHandler(Func<HttpRequestMessage, HttpResponseMessage> handler)
-        {
-            _handler = handler;
-        }
-
-        protected override Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request,
-            CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            return Task.FromResult(_handler(request));
-        }
-    }
 }

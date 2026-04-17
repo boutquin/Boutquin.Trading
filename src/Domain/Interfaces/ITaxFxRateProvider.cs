@@ -15,9 +15,6 @@
 //
 
 namespace Boutquin.Trading.Domain.Interfaces;
-
-using Enums;
-
 /// <summary>
 /// Returns the official FX rate for tax purposes on a given date.
 /// Separate from <see cref="ICurrencyConversionService"/> because tax authorities

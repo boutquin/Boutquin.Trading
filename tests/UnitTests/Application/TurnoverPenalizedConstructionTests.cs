@@ -17,7 +17,6 @@
 namespace Boutquin.Trading.Tests.UnitTests.Application;
 
 using Boutquin.Trading.Application.PortfolioConstruction;
-using Boutquin.Trading.Domain.ValueObjects;
 using FluentAssertions;
 
 /// <summary>
@@ -25,11 +24,11 @@ using FluentAssertions;
 /// </summary>
 public sealed class TurnoverPenalizedConstructionTests
 {
-    private static readonly Asset s_vti = new("VTI");
-    private static readonly Asset s_tlt = new("TLT");
-    private static readonly Asset s_gld = new("GLD");
+    private static readonly Symbol s_vti = new("VTI");
+    private static readonly Symbol s_tlt = new("TLT");
+    private static readonly Symbol s_gld = new("GLD");
 
-    private static IReadOnlyList<Asset> ThreeAssets => [s_vti, s_tlt, s_gld];
+    private static IReadOnlyList<Symbol> ThreeAssets => [s_vti, s_tlt, s_gld];
 
     private static decimal[][] ThreeAssetReturns =>
     [
@@ -38,7 +37,7 @@ public sealed class TurnoverPenalizedConstructionTests
         [0.01m, -0.02m, 0.015m, -0.005m, 0.02m, -0.01m, 0.005m, 0.03m, -0.025m, 0.01m]
     ];
 
-    private static void AssertWeightsSumToOne(IReadOnlyDictionary<Asset, decimal> weights)
+    private static void AssertWeightsSumToOne(IReadOnlyDictionary<Symbol, decimal> weights)
     {
         weights.Values.Sum().Should().BeApproximately(1.0m, 1e-8m, "Weights must sum to 1.0");
     }

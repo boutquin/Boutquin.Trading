@@ -570,7 +570,7 @@ public sealed class DecimalArrayExtensionsTests
     /// with negative trading days per year.
     /// </summary>
     [Fact]
-    public void AllMethods_ShouldThrowNegativeTradingDaysPerYearException_WhenTradingDaysPerYearIsNegative()
+    public void AllMethods_ShouldThrowArgumentOutOfRangeException_WhenTradingDaysPerYearIsNegative()
     {
         // Arrange
         var dailyReturns = new[] { 0.01m, 0.02m };

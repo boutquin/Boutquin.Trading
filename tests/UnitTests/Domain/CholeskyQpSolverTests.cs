@@ -16,18 +16,18 @@
 
 namespace Boutquin.Trading.Tests.UnitTests.Domain;
 
-using Boutquin.Trading.Domain.Helpers;
+using Boutquin.Numerics.Solvers;
 
-public sealed class CholeskyQpSolverTests
+public sealed class ActiveSetQpSolverTests
 {
     private const decimal Precision = 1e-10m;
 
     // ============================================================
-    // SolveMinVarianceQP
+    // SolveMinVariance
     // ============================================================
 
     [Fact]
-    public void SolveMinVarianceQP_IdentityCovariance_ShouldReturnEqualWeight()
+    public void SolveMinVariance_IdentityCovariance_ShouldReturnEqualWeight()
     {
         var identity = new decimal[,]
         {
@@ -36,7 +36,7 @@ public sealed class CholeskyQpSolverTests
             { 0m, 0m, 1m },
         };
 
-        var weights = CholeskyQpSolver.SolveMinVarianceQP(identity, 3, 0m, 1m);
+        var weights = ActiveSetQpSolver.SolveMinVariance(identity, 0m, 1m);
 
         for (var i = 0; i < 3; i++)
         {
@@ -45,9 +45,9 @@ public sealed class CholeskyQpSolverTests
     }
 
     [Fact]
-    public void SolveMinVarianceQP_DiagonalCovariance_ShouldFavorLowVariance()
+    public void SolveMinVariance_DiagonalCovariance_ShouldFavorLowVariance()
     {
-        // Asset 0: var=1, Asset 1: var=4, Asset 2: var=9
+        // Symbol 0: var=1, Symbol 1: var=4, Symbol 2: var=9
         var cov = new decimal[,]
         {
             { 1m, 0m, 0m },
@@ -55,7 +55,7 @@ public sealed class CholeskyQpSolverTests
             { 0m, 0m, 9m },
         };
 
-        var weights = CholeskyQpSolver.SolveMinVarianceQP(cov, 3, 0m, 1m);
+        var weights = ActiveSetQpSolver.SolveMinVariance(cov, 0m, 1m);
 
         // Lowest variance asset should get highest weight
         weights[0].Should().BeGreaterThan(weights[1]);
@@ -66,7 +66,7 @@ public sealed class CholeskyQpSolverTests
     }
 
     [Fact]
-    public void SolveMinVarianceQP_WithBounds_ShouldRespectConstraints()
+    public void SolveMinVariance_WithBounds_ShouldRespectConstraints()
     {
         var cov = new decimal[,]
         {
@@ -74,7 +74,7 @@ public sealed class CholeskyQpSolverTests
             { 0m, 100m },
         };
 
-        var weights = CholeskyQpSolver.SolveMinVarianceQP(cov, 2, 0.2m, 0.8m);
+        var weights = ActiveSetQpSolver.SolveMinVariance(cov, 0.2m, 0.8m);
 
         weights[0].Should().BeLessThanOrEqualTo(0.8m + Precision);
         weights[1].Should().BeGreaterThanOrEqualTo(0.2m - Precision);
@@ -82,15 +82,15 @@ public sealed class CholeskyQpSolverTests
     }
 
     [Fact]
-    public void SolveMinVarianceQP_SingleAsset_ShouldReturnOneHundredPercent()
+    public void SolveMinVariance_SingleAsset_ShouldReturnOneHundredPercent()
     {
         var cov = new decimal[,] { { 0.04m } };
-        var weights = CholeskyQpSolver.SolveMinVarianceQP(cov, 1, 0m, 1m);
+        var weights = ActiveSetQpSolver.SolveMinVariance(cov, 0m, 1m);
         weights[0].Should().BeApproximately(1m, Precision);
     }
 
     [Fact]
-    public void SolveMinVarianceQP_TwoAssets_ShouldMatchClosedForm()
+    public void SolveMinVariance_TwoAssets_ShouldMatchClosedForm()
     {
         // Two uncorrelated assets: var1=1, var2=4
         // Closed-form: w1 = var2/(var1+var2) = 4/5 = 0.8, w2 = 0.2
@@ -100,18 +100,18 @@ public sealed class CholeskyQpSolverTests
             { 0m, 4m },
         };
 
-        var weights = CholeskyQpSolver.SolveMinVarianceQP(cov, 2, 0m, 1m);
+        var weights = ActiveSetQpSolver.SolveMinVariance(cov, 0m, 1m);
 
         weights[0].Should().BeApproximately(0.8m, Precision);
         weights[1].Should().BeApproximately(0.2m, Precision);
     }
 
     // ============================================================
-    // SolveMeanVarianceQP
+    // SolveMeanVariance
     // ============================================================
 
     [Fact]
-    public void SolveMeanVarianceQP_HighRiskAversion_ShouldApproachMinVariance()
+    public void SolveMeanVariance_HighRiskAversion_ShouldApproachMinVariance()
     {
         var cov = new decimal[,]
         {
@@ -121,8 +121,8 @@ public sealed class CholeskyQpSolverTests
         var means = new[] { 0.10m, 0.20m };
 
         // With very high risk aversion, should approximate MinVar
-        var weights = CholeskyQpSolver.SolveMeanVarianceQP(cov, means, 2, 100m, 0m, 1m);
-        var minVarWeights = CholeskyQpSolver.SolveMinVarianceQP(cov, 2, 0m, 1m);
+        var weights = ActiveSetQpSolver.SolveMeanVariance(cov, means, 100m, 0m, 1m);
+        var minVarWeights = ActiveSetQpSolver.SolveMinVariance(cov, 0m, 1m);
 
         for (var i = 0; i < 2; i++)
         {
@@ -131,7 +131,7 @@ public sealed class CholeskyQpSolverTests
     }
 
     [Fact]
-    public void SolveMeanVarianceQP_ZeroRiskAversion_ShouldMaximizeReturn()
+    public void SolveMeanVariance_ZeroRiskAversion_ShouldMaximizeReturn()
     {
         var cov = new decimal[,]
         {
@@ -141,14 +141,14 @@ public sealed class CholeskyQpSolverTests
         var means = new[] { 0.05m, 0.15m };
 
         // Zero risk aversion: pure max return LP — put 100% in highest-return asset
-        var weights = CholeskyQpSolver.SolveMeanVarianceQP(cov, means, 2, 0m, 0m, 1m);
+        var weights = ActiveSetQpSolver.SolveMeanVariance(cov, means, 0m, 0m, 1m);
 
         weights[1].Should().BeApproximately(1m, Precision);
         weights[0].Should().BeApproximately(0m, Precision);
     }
 
     [Fact]
-    public void SolveMeanVarianceQP_WithBounds_ShouldRespectConstraints()
+    public void SolveMeanVariance_WithBounds_ShouldRespectConstraints()
     {
         var cov = new decimal[,]
         {
@@ -158,7 +158,7 @@ public sealed class CholeskyQpSolverTests
         };
         var means = new[] { 0.05m, 0.10m, 0.15m };
 
-        var weights = CholeskyQpSolver.SolveMeanVarianceQP(cov, means, 3, 1m, 0.1m, 0.5m);
+        var weights = ActiveSetQpSolver.SolveMeanVariance(cov, means, 1m, 0.1m, 0.5m);
 
         foreach (var w in weights)
         {

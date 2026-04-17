@@ -16,7 +16,7 @@
 
 namespace Boutquin.Trading.Tests.UnitTests.Application.Calendar;
 
-using Boutquin.Trading.Domain.ValueObjects;
+using Boutquin.Trading.Recipes.Testing;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -25,7 +25,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 /// </summary>
 public sealed class BacktestCalendarTests
 {
-    private static readonly Asset s_aapl = new("AAPL");
+    private static readonly Symbol s_aapl = new("AAPL");
 
     [Fact]
     public void Constructor_BackwardCompatible()
@@ -34,27 +34,26 @@ public sealed class BacktestCalendarTests
         var equity = new[] { 10000m, 10100m };
         var mockPortfolio = CreateMockPortfolio(equity);
         var mockBenchmark = CreateMockPortfolio(equity);
-        var mockFetcher = new Mock<IMarketDataFetcher>();
 
-        // 4-param
-        var bt1 = new BackTest(mockPortfolio.Object, mockBenchmark.Object, mockFetcher.Object, CurrencyCode.USD);
+        // 3-param
+        var bt1 = new BackTest(mockPortfolio.Object, mockBenchmark.Object, CurrencyCode.USD);
         bt1.Should().NotBeNull();
 
-        // 5-param
-        var bt2 = new BackTest(mockPortfolio.Object, mockBenchmark.Object, mockFetcher.Object, CurrencyCode.USD, NullLogger<BackTest>.Instance);
+        // 4-param (with logger)
+        var bt2 = new BackTest(mockPortfolio.Object, mockBenchmark.Object, CurrencyCode.USD, NullLogger<BackTest>.Instance);
         bt2.Should().NotBeNull();
 
-        // 6-param
-        var bt3 = new BackTest(mockPortfolio.Object, mockBenchmark.Object, mockFetcher.Object, CurrencyCode.USD, NullLogger<BackTest>.Instance, 0m);
+        // 5-param (with dailyRiskFreeRate)
+        var bt3 = new BackTest(mockPortfolio.Object, mockBenchmark.Object, CurrencyCode.USD, NullLogger<BackTest>.Instance, 0m);
         bt3.Should().NotBeNull();
 
-        // 7-param
-        var bt4 = new BackTest(mockPortfolio.Object, mockBenchmark.Object, mockFetcher.Object, CurrencyCode.USD, NullLogger<BackTest>.Instance, 0m, null);
+        // 6-param (with drawdownControl)
+        var bt4 = new BackTest(mockPortfolio.Object, mockBenchmark.Object, CurrencyCode.USD, NullLogger<BackTest>.Instance, 0m, null);
         bt4.Should().NotBeNull();
 
-        // 8-param (new — with calendar)
-        var mockCalendar = new Mock<ITradingCalendar>();
-        var bt5 = new BackTest(mockPortfolio.Object, mockBenchmark.Object, mockFetcher.Object, CurrencyCode.USD, NullLogger<BackTest>.Instance, 0m, null, mockCalendar.Object);
+        // 7-param (with calendar)
+        var mockCalendar = new Mock<IBusinessCalendar>();
+        var bt5 = new BackTest(mockPortfolio.Object, mockBenchmark.Object, CurrencyCode.USD, NullLogger<BackTest>.Instance, 0m, null, mockCalendar.Object);
         bt5.Should().NotBeNull();
     }
 
@@ -62,9 +61,9 @@ public sealed class BacktestCalendarTests
     public async Task RunAsync_NoCalendar_ProcessesAllDates()
     {
         // Without calendar, all dates in market data are processed
-        var (backtest, portfolio, _) = CreateBacktestWithMarketData(tradingCalendar: null);
+        var (backtest, portfolio, _, dataset) = CreateBacktestWithMarketData(tradingCalendar: null);
 
-        await backtest.RunAsync(new DateOnly(2025, 1, 1), new DateOnly(2025, 1, 15)).ConfigureAwait(true);
+        await backtest.RunAsync(dataset).ConfigureAwait(true);
 
         // 10 trading days of data provided → 10 equity curve updates
         portfolio.Verify(
@@ -76,15 +75,15 @@ public sealed class BacktestCalendarTests
     public async Task RunAsync_WithCalendar_SkipsNonTradingDays()
     {
         // Calendar marks 2 dates as non-trading
-        var mockCalendar = new Mock<ITradingCalendar>();
-        mockCalendar.Setup(c => c.IsTradingDay(It.IsAny<DateOnly>())).Returns(true);
-        mockCalendar.Setup(c => c.IsTradingDay(new DateOnly(2025, 1, 4))).Returns(false); // Saturday
-        mockCalendar.Setup(c => c.IsTradingDay(new DateOnly(2025, 1, 5))).Returns(false); // Sunday
-        mockCalendar.Setup(c => c.TradingDaysPerYear).Returns(252);
+        var mockCalendar = new Mock<IBusinessCalendar>();
+        mockCalendar.Setup(c => c.IsBusinessDay(It.IsAny<DateOnly>())).Returns(true);
+        mockCalendar.Setup(c => c.IsBusinessDay(new DateOnly(2025, 1, 4))).Returns(false); // Saturday
+        mockCalendar.Setup(c => c.IsBusinessDay(new DateOnly(2025, 1, 5))).Returns(false); // Sunday
+        mockCalendar.Setup(c => c.BusinessDaysPerYear).Returns(252);
 
-        var (backtest, portfolio, _) = CreateBacktestWithMarketData(tradingCalendar: mockCalendar.Object);
+        var (backtest, portfolio, _, dataset) = CreateBacktestWithMarketData(tradingCalendar: mockCalendar.Object);
 
-        await backtest.RunAsync(new DateOnly(2025, 1, 1), new DateOnly(2025, 1, 15)).ConfigureAwait(true);
+        await backtest.RunAsync(dataset).ConfigureAwait(true);
 
         // 10 dates of data, 2 skipped → 8 equity curve updates
         portfolio.Verify(
@@ -95,13 +94,13 @@ public sealed class BacktestCalendarTests
     [Fact]
     public async Task RunAsync_WithCalendar_AllTradingDays_NoSkips()
     {
-        var mockCalendar = new Mock<ITradingCalendar>();
-        mockCalendar.Setup(c => c.IsTradingDay(It.IsAny<DateOnly>())).Returns(true);
-        mockCalendar.Setup(c => c.TradingDaysPerYear).Returns(252);
+        var mockCalendar = new Mock<IBusinessCalendar>();
+        mockCalendar.Setup(c => c.IsBusinessDay(It.IsAny<DateOnly>())).Returns(true);
+        mockCalendar.Setup(c => c.BusinessDaysPerYear).Returns(252);
 
-        var (backtest, portfolio, _) = CreateBacktestWithMarketData(tradingCalendar: mockCalendar.Object);
+        var (backtest, portfolio, _, dataset) = CreateBacktestWithMarketData(tradingCalendar: mockCalendar.Object);
 
-        await backtest.RunAsync(new DateOnly(2025, 1, 1), new DateOnly(2025, 1, 15)).ConfigureAwait(true);
+        await backtest.RunAsync(dataset).ConfigureAwait(true);
 
         // All 10 dates are trading days → same as no calendar
         portfolio.Verify(
@@ -109,8 +108,8 @@ public sealed class BacktestCalendarTests
             Times.Exactly(10));
     }
 
-    private static (BackTest Backtest, Mock<IPortfolio> Portfolio, Mock<IPortfolio> Benchmark) CreateBacktestWithMarketData(
-        ITradingCalendar? tradingCalendar)
+    private static (BackTest Backtest, Mock<IPortfolio> Portfolio, Mock<IPortfolio> Benchmark, FakeBacktestDataset Dataset) CreateBacktestWithMarketData(
+        IBusinessCalendar? tradingCalendar)
     {
         // Different equity curves to avoid zero active-return std dev
         var portfolioEquity = new[] { 10000m, 10050m, 9980m, 10020m, 9960m, 10040m, 10010m, 9990m, 10060m, 10030m };
@@ -128,27 +127,28 @@ public sealed class BacktestCalendarTests
             new DateOnly(2025, 1, 10), new DateOnly(2025, 1, 13),
         };
 
-        var marketData = new List<KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>>();
+        var prices = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>();
         foreach (var date in dates)
         {
-            var dayData = new SortedDictionary<Asset, MarketData>
+            prices[date] = new SortedDictionary<Symbol, Bar>
             {
-                [s_aapl] = new(date, 100m, 105m, 95m, 100m, 100m, 1_000_000L, 0m, 1m),
+                [s_aapl] = new(date, 100m, 105m, 95m, 100m, 100m, 1_000_000L),
             };
-            marketData.Add(new KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>>(date, dayData));
         }
 
-        var mockFetcher = new Mock<IMarketDataFetcher>();
-        mockFetcher.Setup(f => f.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>(), It.IsAny<CancellationToken>()))
-            .Returns(marketData.ToAsyncEnumerable());
+        var dataset = new FakeBacktestDataset
+        {
+            Prices = prices,
+            FxRates = [],
+        };
 
         var backtest = tradingCalendar is not null
-            ? new BackTest(portfolio.Object, benchmark.Object, mockFetcher.Object, CurrencyCode.USD,
+            ? new BackTest(portfolio.Object, benchmark.Object, CurrencyCode.USD,
                 NullLogger<BackTest>.Instance, 0m, null, tradingCalendar)
-            : new BackTest(portfolio.Object, benchmark.Object, mockFetcher.Object, CurrencyCode.USD,
+            : new BackTest(portfolio.Object, benchmark.Object, CurrencyCode.USD,
                 NullLogger<BackTest>.Instance, 0m, null);
 
-        return (backtest, portfolio, benchmark);
+        return (backtest, portfolio, benchmark, dataset);
     }
 
     private static Mock<IPortfolio> CreateMockPortfolio(decimal[] equityValues)
@@ -160,7 +160,7 @@ public sealed class BacktestCalendarTests
         mock.Setup(p => p.EquityCurve).Returns(equityCurve);
         mock.Setup(p => p.ProcessPendingOrdersAsync(
                 It.IsAny<DateOnly>(),
-                It.IsAny<SortedDictionary<Asset, MarketData>>(),
+                It.IsAny<SortedDictionary<Symbol, Bar>>(),
                 It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         mock.Setup(p => p.HandleEventAsync(It.IsAny<MarketEvent>(), It.IsAny<CancellationToken>()))

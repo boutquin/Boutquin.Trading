@@ -17,7 +17,6 @@
 namespace Boutquin.Trading.Domain.TaxEngine;
 
 using Enums;
-using ValueObjects;
 
 /// <summary>
 /// A historical trade record used by loss harvesting rules
@@ -25,7 +24,7 @@ using ValueObjects;
 /// </summary>
 public sealed record TradeRecord(
     DateOnly Date,
-    Asset Asset,
+    Symbol Symbol,
     TradeAction Action,
     decimal Quantity,
     decimal Price);

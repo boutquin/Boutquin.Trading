@@ -21,7 +21,7 @@ namespace Boutquin.Trading.Tests.UnitTests.Helpers;
 /// </summary>
 public sealed class TestStrategy : IStrategy
 {
-    private readonly SortedDictionary<Asset, int> _positions = [];
+    private readonly SortedDictionary<Symbol, int> _positions = [];
     private readonly SortedDictionary<CurrencyCode, decimal> _cash = [];
 
     /// <summary>
@@ -30,7 +30,7 @@ public sealed class TestStrategy : IStrategy
     public string Name { get; set; } = string.Empty;
 
     /// <inheritdoc />
-    public IReadOnlyDictionary<Asset, int> Positions
+    public IReadOnlyDictionary<Symbol, int> Positions
     {
         get => _positions;
         set
@@ -46,7 +46,7 @@ public sealed class TestStrategy : IStrategy
     /// <summary>
     /// Gets or sets the assets involved in the strategy.
     /// </summary>
-    public IReadOnlyDictionary<Asset, CurrencyCode> Assets { get; set; } = new Dictionary<Asset, CurrencyCode>();
+    public IReadOnlyDictionary<Symbol, CurrencyCode> Assets { get; set; } = new Dictionary<Symbol, CurrencyCode>();
 
     /// <inheritdoc />
     public IReadOnlyDictionary<CurrencyCode, decimal> Cash
@@ -73,13 +73,13 @@ public sealed class TestStrategy : IStrategy
     public IPositionSizer PositionSizer { get; set; } = null!;
 
     /// <inheritdoc />
-    public SignalEvent GenerateSignals(DateOnly timestamp, CurrencyCode baseCurrency, IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>> historicalMarketData, IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
+    public SignalEvent GenerateSignals(DateOnly timestamp, CurrencyCode baseCurrency, IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> historicalMarketData, IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
     {
-        return new SignalEvent(timestamp, Name, new Dictionary<Asset, SignalType>());
+        return new SignalEvent(timestamp, Name, new Dictionary<Symbol, SignalType>());
     }
 
     /// <inheritdoc />
-    public decimal ComputeTotalValue(DateOnly timestamp, CurrencyCode baseCurrency, IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>> historicalMarketData, IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
+    public decimal ComputeTotalValue(DateOnly timestamp, CurrencyCode baseCurrency, IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> historicalMarketData, IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
     {
         Guard.AgainstUndefinedEnumValue(() => baseCurrency);
         Guard.AgainstEmptyOrNullReadOnlyDictionary(() => historicalMarketData);
@@ -153,7 +153,7 @@ public sealed class TestStrategy : IStrategy
     }
 
     /// <inheritdoc />
-    public void UpdatePositions(Asset asset, int quantity)
+    public void UpdatePositions(Symbol asset, int quantity)
     {
         if (!_positions.TryAdd(asset, quantity))
         {
@@ -162,13 +162,13 @@ public sealed class TestStrategy : IStrategy
     }
 
     /// <inheritdoc />
-    public void SetPosition(Asset asset, int quantity)
+    public void SetPosition(Symbol asset, int quantity)
     {
         _positions[asset] = quantity;
     }
 
     /// <inheritdoc />
-    public int GetPositionQuantity(Asset asset)
+    public int GetPositionQuantity(Symbol asset)
     {
         return _positions.GetValueOrDefault(asset, 0);
     }

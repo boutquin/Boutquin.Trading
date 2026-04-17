@@ -15,9 +15,6 @@
 //
 
 namespace Boutquin.Trading.Application.SlippageModels;
-
-using Domain.ValueObjects;
-
 /// <summary>
 /// Models bid-ask spread as slippage using configurable per-asset half-spreads.
 /// The fill price is adjusted by the half-spread: buy orders pay mid + halfSpread,
@@ -25,7 +22,7 @@ using Domain.ValueObjects;
 /// </summary>
 public sealed class SpreadSlippage : ISlippageModel
 {
-    private readonly IReadOnlyDictionary<Asset, decimal> _halfSpreads;
+    private readonly IReadOnlyDictionary<Symbol, decimal> _halfSpreads;
     private readonly decimal _defaultHalfSpread;
 
     /// <summary>
@@ -34,7 +31,7 @@ public sealed class SpreadSlippage : ISlippageModel
     /// <param name="halfSpreads">Per-asset half-spread percentages (e.g., 0.0001 for 1 basis point).</param>
     /// <param name="defaultHalfSpread">Default half-spread for assets not in the dictionary.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="defaultHalfSpread"/> is negative or zero.</exception>
-    public SpreadSlippage(IReadOnlyDictionary<Asset, decimal> halfSpreads, decimal defaultHalfSpread)
+    public SpreadSlippage(IReadOnlyDictionary<Symbol, decimal> halfSpreads, decimal defaultHalfSpread)
     {
         Guard.AgainstNull(() => halfSpreads);
         Guard.AgainstNegativeOrZero(() => defaultHalfSpread);
@@ -45,7 +42,7 @@ public sealed class SpreadSlippage : ISlippageModel
 
     /// <inheritdoc />
     /// <remarks>
-    /// This overload does not have asset context. Use <see cref="CalculateFillPriceForAsset(decimal, int, TradeAction, Asset)"/> when
+    /// This overload does not have asset context. Use <see cref="CalculateFillPriceForAsset(decimal, int, TradeAction, Symbol)"/> when
     /// the asset is known. Falls back to the default half-spread.
     /// </remarks>
     public decimal CalculateFillPrice(decimal theoreticalPrice, int quantity, TradeAction tradeAction) =>
@@ -63,7 +60,7 @@ public sealed class SpreadSlippage : ISlippageModel
     /// <param name="tradeAction">Whether this is a buy or sell trade.</param>
     /// <param name="asset">The asset being traded.</param>
     /// <returns>The adjusted fill price after applying the bid-ask spread.</returns>
-    public decimal CalculateFillPriceForAsset(decimal theoreticalPrice, int quantity, TradeAction tradeAction, Asset asset)
+    public decimal CalculateFillPriceForAsset(decimal theoreticalPrice, int quantity, TradeAction tradeAction, Symbol asset)
     {
         // Safe: intentional fallback — unconfigured assets use the default half-spread
         var halfSpread = _halfSpreads.GetValueOrDefault(asset, _defaultHalfSpread);

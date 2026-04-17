@@ -15,7 +15,6 @@
 //
 
 using Boutquin.Trading.Domain.Analytics;
-using Boutquin.Trading.Domain.ValueObjects;
 
 namespace Boutquin.Trading.Application.Analytics;
 
@@ -43,11 +42,11 @@ public static class BrinsonFachlerAttributor
     /// <param name="benchmarkReturns">Benchmark return per sector.</param>
     /// <returns>A <see cref="BrinsonFachlerResult"/> with allocation, selection, and interaction effects.</returns>
     public static BrinsonFachlerResult Attribute(
-        IReadOnlyList<Asset> assetNames,
-        IReadOnlyDictionary<Asset, decimal> portfolioWeights,
-        IReadOnlyDictionary<Asset, decimal> benchmarkWeights,
-        IReadOnlyDictionary<Asset, decimal> portfolioReturns,
-        IReadOnlyDictionary<Asset, decimal> benchmarkReturns)
+        IReadOnlyList<Symbol> assetNames,
+        IReadOnlyDictionary<Symbol, decimal> portfolioWeights,
+        IReadOnlyDictionary<Symbol, decimal> benchmarkWeights,
+        IReadOnlyDictionary<Symbol, decimal> portfolioReturns,
+        IReadOnlyDictionary<Symbol, decimal> benchmarkReturns)
     {
         Guard.AgainstNull(() => assetNames);
         Guard.AgainstNull(() => portfolioWeights);
@@ -64,7 +63,7 @@ public static class BrinsonFachlerAttributor
                 !benchmarkReturns.ContainsKey(asset))
             {
                 throw new ArgumentException(
-                    $"Asset '{asset}' is missing from one or more input dictionaries.",
+                    $"Symbol '{asset}' is missing from one or more input dictionaries.",
                     nameof(assetNames));
             }
         }
@@ -73,17 +72,17 @@ public static class BrinsonFachlerAttributor
         {
             return new BrinsonFachlerResult(
                 0m, 0m, 0m, 0m,
-                new Dictionary<Asset, decimal>(),
-                new Dictionary<Asset, decimal>(),
-                new Dictionary<Asset, decimal>());
+                new Dictionary<Symbol, decimal>(),
+                new Dictionary<Symbol, decimal>(),
+                new Dictionary<Symbol, decimal>());
         }
 
         // Compute total benchmark return
         var benchmarkTotalReturn = assetNames.Sum(a => benchmarkWeights[a] * benchmarkReturns[a]);
 
-        var allocationEffects = new Dictionary<Asset, decimal>();
-        var selectionEffects = new Dictionary<Asset, decimal>();
-        var interactionEffects = new Dictionary<Asset, decimal>();
+        var allocationEffects = new Dictionary<Symbol, decimal>();
+        var selectionEffects = new Dictionary<Symbol, decimal>();
+        var interactionEffects = new Dictionary<Symbol, decimal>();
 
         foreach (var asset in assetNames)
         {

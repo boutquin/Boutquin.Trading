@@ -20,7 +20,6 @@ using Boutquin.Trading.Application.PortfolioConstruction;
 using Boutquin.Trading.Application.PositionSizing;
 using Boutquin.Trading.Application.Rebalancing;
 using Boutquin.Trading.Application.Strategies;
-using Boutquin.Trading.Domain.ValueObjects;
 using FluentAssertions;
 
 /// <summary>
@@ -28,11 +27,11 @@ using FluentAssertions;
 /// </summary>
 public sealed class ConstructionModelStrategyTests
 {
-    private static readonly Asset s_vti = new("VTI");
-    private static readonly Asset s_tlt = new("TLT");
+    private static readonly Symbol s_vti = new("VTI");
+    private static readonly Symbol s_tlt = new("TLT");
 
-    private static IReadOnlyDictionary<Asset, CurrencyCode> TestAssets =>
-        new Dictionary<Asset, CurrencyCode>
+    private static IReadOnlyDictionary<Symbol, CurrencyCode> TestAssets =>
+        new Dictionary<Symbol, CurrencyCode>
         {
             [s_vti] = CurrencyCode.USD,
             [s_tlt] = CurrencyCode.USD
@@ -41,9 +40,9 @@ public sealed class ConstructionModelStrategyTests
     private static SortedDictionary<CurrencyCode, decimal> TestCash =>
         new() { [CurrencyCode.USD] = 100_000m };
 
-    private static IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>> BuildMarketData()
+    private static IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> BuildMarketData()
     {
-        var data = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>();
+        var data = new Dictionary<DateOnly, SortedDictionary<Symbol, Bar>>();
 
         // Generate 70 days of data with different price patterns
         var baseDate = new DateOnly(2024, 1, 2);
@@ -58,10 +57,10 @@ public sealed class ConstructionModelStrategyTests
             // TLT: stable with low vol
             tltPrice *= 1m + (i % 4 == 0 ? 0.003m : -0.001m);
 
-            data[date] = new SortedDictionary<Asset, MarketData>
+            data[date] = new SortedDictionary<Symbol, Bar>
             {
-                [s_vti] = new(date, vtiPrice, vtiPrice + 1, vtiPrice - 1, vtiPrice, vtiPrice, 1_000_000, 0m),
-                [s_tlt] = new(date, tltPrice, tltPrice + 0.5m, tltPrice - 0.5m, tltPrice, tltPrice, 500_000, 0m)
+                [s_vti] = new(date, vtiPrice, vtiPrice + 1, vtiPrice - 1, vtiPrice, vtiPrice, 1_000_000),
+                [s_tlt] = new(date, tltPrice, tltPrice + 0.5m, tltPrice - 0.5m, tltPrice, tltPrice, 500_000)
             };
         }
 

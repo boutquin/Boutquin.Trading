@@ -16,18 +16,12 @@
 
 namespace Boutquin.Trading.BenchMark;
 
-using BenchmarkDotNet.Running;
-
 /// <summary>
-/// Main program class to run the benchmark.
+/// Entry point. Runs all benchmark classes via the BenchmarkSwitcher, which allows
+/// filtering by class name or method via command-line arguments.
 /// </summary>
 public sealed class Program
 {
-    /// <summary>
-    /// The main entry point for the application.
-    /// </summary>
-    /// <param name="args">Command line arguments.</param>
     public static void Main(string[] args) =>
-        // Run the benchmark and capture the summary.
-        _ = BenchmarkRunner.Run<CalculationBenchmark>();
+        BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
 }

@@ -16,6 +16,7 @@
 
 namespace Boutquin.Trading.Application.Analytics;
 
+using Boutquin.Numerics.LinearAlgebra;
 using CovarianceEstimators;
 
 /// <summary>
@@ -52,9 +53,7 @@ public static class EffectiveNumberOfBets
             return 1m;
         }
 
-        // Eigendecompose the correlation matrix
-        var eigenvalues = ComputeEigenvalues(correlationMatrix, n);
-
+        var eigenvalues = JacobiEigenDecomposition.Decompose(correlationMatrix).Values;
         return ComputeFromEigenvalues(eigenvalues);
     }
 
@@ -102,12 +101,13 @@ public static class EffectiveNumberOfBets
     /// </summary>
     internal static decimal ComputeFromEigenvalues(decimal[] eigenvalues)
     {
-        // Clamp negative eigenvalues to zero (numerical artifact)
+        // Clamp negative eigenvalues to zero (numerical artifact) — use local copy to avoid mutating caller's array
+        var clamped = (decimal[])eigenvalues.Clone();
         var totalEigenvalue = 0m;
-        for (var i = 0; i < eigenvalues.Length; i++)
+        for (var i = 0; i < clamped.Length; i++)
         {
-            eigenvalues[i] = Math.Max(0m, eigenvalues[i]);
-            totalEigenvalue += eigenvalues[i];
+            clamped[i] = Math.Max(0m, clamped[i]);
+            totalEigenvalue += clamped[i];
         }
 
         if (totalEigenvalue <= 0m)
@@ -117,9 +117,9 @@ public static class EffectiveNumberOfBets
 
         // Compute entropy: H = -sum(p_i * ln(p_i))
         var entropy = 0m;
-        for (var i = 0; i < eigenvalues.Length; i++)
+        for (var i = 0; i < clamped.Length; i++)
         {
-            var p = eigenvalues[i] / totalEigenvalue;
+            var p = clamped[i] / totalEigenvalue;
             if (p > 0m)
             {
                 entropy -= p * (decimal)Math.Log((double)p);
@@ -129,106 +129,4 @@ public static class EffectiveNumberOfBets
         // ENB = exp(H)
         return (decimal)Math.Exp((double)entropy);
     }
-
-    /// <summary>
-    /// Extracts eigenvalues from a symmetric matrix using Jacobi iteration.
-    /// Uses double internally to avoid decimal overflow.
-    /// Returns eigenvalues in descending order.
-    /// </summary>
-    private static decimal[] ComputeEigenvalues(decimal[,] matrix, int n)
-    {
-        var a = new double[n, n];
-        for (var i = 0; i < n; i++)
-        {
-            for (var j = 0; j < n; j++)
-            {
-                a[i, j] = (double)matrix[i, j];
-            }
-        }
-
-        const int maxSweeps = 100;
-        const double threshold = 1e-15;
-
-        for (var sweep = 0; sweep < maxSweeps; sweep++)
-        {
-            var offDiagSum = 0.0;
-            for (var i = 0; i < n; i++)
-            {
-                for (var j = i + 1; j < n; j++)
-                {
-                    offDiagSum += a[i, j] * a[i, j];
-                }
-            }
-
-            if (offDiagSum < threshold)
-            {
-                break;
-            }
-
-            for (var p = 0; p < n - 1; p++)
-            {
-                for (var q = p + 1; q < n; q++)
-                {
-                    if (Math.Abs(a[p, q]) < threshold)
-                    {
-                        continue;
-                    }
-
-                    var diff = a[q, q] - a[p, p];
-                    double t;
-                    if (Math.Abs(diff) < threshold)
-                    {
-                        t = 1.0;
-                    }
-                    else
-                    {
-                        var phi = diff / (2.0 * a[p, q]);
-                        t = Math.Sign(phi) / (Math.Abs(phi) + Math.Sqrt(phi * phi + 1.0));
-                    }
-
-                    var c = 1.0 / Math.Sqrt(t * t + 1.0);
-                    var s = t * c;
-                    var tau = s / (1.0 + c);
-
-                    var apq = a[p, q];
-                    a[p, q] = 0;
-                    a[p, p] -= t * apq;
-                    a[q, q] += t * apq;
-
-                    for (var r = 0; r < p; r++)
-                    {
-                        RotateDouble(a, r, p, r, q, s, tau);
-                    }
-
-                    for (var r = p + 1; r < q; r++)
-                    {
-                        RotateDouble(a, p, r, r, q, s, tau);
-                    }
-
-                    for (var r = q + 1; r < n; r++)
-                    {
-                        RotateDouble(a, p, r, q, r, s, tau);
-                    }
-                }
-            }
-        }
-
-        var eigenvalues = new decimal[n];
-        for (var i = 0; i < n; i++)
-        {
-            eigenvalues[i] = (decimal)a[i, i];
-        }
-
-        Array.Sort(eigenvalues, (x, y) => y.CompareTo(x)); // descending
-        return eigenvalues;
-    }
-
-    private static void RotateDouble(double[,] a, int i1, int j1, int i2, int j2, double s, double tau)
-    {
-        var g1 = a[i1, j1];
-        var g2 = a[i2, j2];
-        a[i1, j1] = g1 - s * (g2 + tau * g1);
-        a[i2, j2] = g2 + s * (g1 - tau * g2);
-    }
-
 }

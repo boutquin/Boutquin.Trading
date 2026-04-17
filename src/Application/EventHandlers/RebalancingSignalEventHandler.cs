@@ -18,7 +18,6 @@ namespace Boutquin.Trading.Application.EventHandlers;
 
 using Boutquin.Trading.Application.Helpers;
 using Boutquin.Trading.Application.Strategies;
-using Domain.ValueObjects;
 
 /// <summary>
 /// Signal event handler that uses <see cref="TargetPortfolioDiffer"/> for rebalance signals,
@@ -72,7 +71,7 @@ public sealed class RebalancingSignalEventHandler : IEventHandler
         var strategy = portfolio.GetStrategy(signalEvent.StrategyName);
 
         // Get target weights from ConstructionModelStrategy
-        IReadOnlyDictionary<Asset, decimal>? targetWeights = null;
+        IReadOnlyDictionary<Symbol, decimal>? targetWeights = null;
         if (strategy is ConstructionModelStrategy cms)
         {
             targetWeights = cms.LastComputedWeights;
@@ -91,7 +90,7 @@ public sealed class RebalancingSignalEventHandler : IEventHandler
             return; // No market data for this date
         }
 
-        var currentPrices = new Dictionary<Asset, decimal>();
+        var currentPrices = new Dictionary<Symbol, decimal>();
         foreach (var (asset, md) in dayData)
         {
             currentPrices[asset] = md.AdjustedClose;
@@ -107,8 +106,8 @@ public sealed class RebalancingSignalEventHandler : IEventHandler
             return;
         }
 
-        // Get current positions as Dictionary<Asset, int>
-        var currentPositions = new Dictionary<Asset, int>();
+        // Get current positions as Dictionary<Symbol, int>
+        var currentPositions = new Dictionary<Symbol, int>();
         foreach (var asset in strategy.Assets.Keys)
         {
             var qty = strategy.Positions.GetValueOrDefault(asset, 0);
@@ -128,14 +127,14 @@ public sealed class RebalancingSignalEventHandler : IEventHandler
             var (orderType, primaryPrice, secondaryPrice) =
                 strategy.OrderPriceCalculationStrategy.CalculateOrderPrices(
                     signalEvent.Timestamp,
-                    order.Asset,
+                    order.Symbol,
                     order.TradeAction,
                     portfolio.HistoricalMarketData);
 
             var orderEvent = new OrderEvent(
                 signalEvent.Timestamp,
                 signalEvent.StrategyName,
-                order.Asset,
+                order.Symbol,
                 order.TradeAction,
                 orderType,
                 order.Quantity,

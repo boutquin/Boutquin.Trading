@@ -21,7 +21,7 @@ namespace Boutquin.Trading.Tests.UnitTests.Application;
 /// </summary>
 public sealed class SignalEventHandlerTests
 {
-    private static readonly Asset s_testAsset = new("AAPL");
+    private static readonly Symbol s_testAsset = new("AAPL");
     private static readonly DateOnly s_testDate = new(2024, 1, 15);
     private const string StrategyName = "TestStrategy";
 
@@ -36,11 +36,11 @@ public sealed class SignalEventHandlerTests
 
         strategyMock.Setup(s => s.PositionSizer).Returns(sizerMock.Object);
         strategyMock.Setup(s => s.OrderPriceCalculationStrategy).Returns(priceStrategyMock.Object);
-        strategyMock.Setup(s => s.Positions).Returns(new Dictionary<Asset, int>());
+        strategyMock.Setup(s => s.Positions).Returns(new Dictionary<Symbol, int>());
 
         portfolioMock.Setup(p => p.GetStrategy(StrategyName)).Returns(strategyMock.Object);
         portfolioMock.Setup(p => p.HistoricalMarketData).Returns(
-            new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>());
+            new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>());
         portfolioMock.Setup(p => p.HistoricalFxConversionRates).Returns(
             new SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>());
         portfolioMock.Setup(p => p.EventProcessor).Returns(eventProcessorMock.Object);
@@ -54,26 +54,26 @@ public sealed class SignalEventHandlerTests
         var (portfolio, _, sizer, priceStrategy, eventProcessor) = CreateMocks();
 
         sizer.Setup(s => s.ComputePositionSizes(
-                It.IsAny<DateOnly>(), It.IsAny<IReadOnlyDictionary<Asset, SignalType>>(),
+                It.IsAny<DateOnly>(), It.IsAny<IReadOnlyDictionary<Symbol, SignalType>>(),
                 It.IsAny<IStrategy>(),
-                It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>>>(),
+                It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>>>(),
                 It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>>()))
-            .Returns(new Dictionary<Asset, int> { [s_testAsset] = 100 });
+            .Returns(new Dictionary<Symbol, int> { [s_testAsset] = 100 });
 
         priceStrategy.Setup(p => p.CalculateOrderPrices(
-                It.IsAny<DateOnly>(), It.IsAny<Asset>(), It.IsAny<TradeAction>(),
-                It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>>>()))
+                It.IsAny<DateOnly>(), It.IsAny<Symbol>(), It.IsAny<TradeAction>(),
+                It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>>>()))
             .Returns((OrderType.Market, 185.50m, (decimal?)null));
 
         var signalEvent = new SignalEvent(s_testDate, StrategyName,
-            new SortedDictionary<Asset, SignalType> { [s_testAsset] = SignalType.Overweight });
+            new SortedDictionary<Symbol, SignalType> { [s_testAsset] = SignalType.Overweight });
 
         var handler = new SignalEventHandler();
         await handler.HandleEventAsync(portfolio.Object, signalEvent, CancellationToken.None);
 
         eventProcessor.Verify(ep => ep.ProcessEventAsync(
             It.Is<OrderEvent>(o =>
-                o.Asset == s_testAsset &&
+                o.Symbol == s_testAsset &&
                 o.TradeAction == TradeAction.Buy &&
                 o.Quantity == 100),
             It.IsAny<CancellationToken>()), Times.Once);
@@ -85,21 +85,21 @@ public sealed class SignalEventHandlerTests
         var (portfolio, strategy, sizer, priceStrategy, eventProcessor) = CreateMocks();
 
         // Current position is 100, desired is 0 → sell 100
-        strategy.Setup(s => s.Positions).Returns(new Dictionary<Asset, int> { [s_testAsset] = 100 });
+        strategy.Setup(s => s.Positions).Returns(new Dictionary<Symbol, int> { [s_testAsset] = 100 });
         sizer.Setup(s => s.ComputePositionSizes(
-                It.IsAny<DateOnly>(), It.IsAny<IReadOnlyDictionary<Asset, SignalType>>(),
+                It.IsAny<DateOnly>(), It.IsAny<IReadOnlyDictionary<Symbol, SignalType>>(),
                 It.IsAny<IStrategy>(),
-                It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>>>(),
+                It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>>>(),
                 It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>>()))
-            .Returns(new Dictionary<Asset, int> { [s_testAsset] = 0 });
+            .Returns(new Dictionary<Symbol, int> { [s_testAsset] = 0 });
 
         priceStrategy.Setup(p => p.CalculateOrderPrices(
-                It.IsAny<DateOnly>(), It.IsAny<Asset>(), It.IsAny<TradeAction>(),
-                It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>>>()))
+                It.IsAny<DateOnly>(), It.IsAny<Symbol>(), It.IsAny<TradeAction>(),
+                It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>>>()))
             .Returns((OrderType.Market, 185.50m, (decimal?)null));
 
         var signalEvent = new SignalEvent(s_testDate, StrategyName,
-            new SortedDictionary<Asset, SignalType> { [s_testAsset] = SignalType.Exit });
+            new SortedDictionary<Symbol, SignalType> { [s_testAsset] = SignalType.Exit });
 
         var handler = new SignalEventHandler();
         await handler.HandleEventAsync(portfolio.Object, signalEvent, CancellationToken.None);
@@ -117,16 +117,16 @@ public sealed class SignalEventHandlerTests
         var (portfolio, strategy, sizer, _, eventProcessor) = CreateMocks();
 
         // Current position equals desired → no order
-        strategy.Setup(s => s.Positions).Returns(new Dictionary<Asset, int> { [s_testAsset] = 100 });
+        strategy.Setup(s => s.Positions).Returns(new Dictionary<Symbol, int> { [s_testAsset] = 100 });
         sizer.Setup(s => s.ComputePositionSizes(
-                It.IsAny<DateOnly>(), It.IsAny<IReadOnlyDictionary<Asset, SignalType>>(),
+                It.IsAny<DateOnly>(), It.IsAny<IReadOnlyDictionary<Symbol, SignalType>>(),
                 It.IsAny<IStrategy>(),
-                It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>>>(),
+                It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>>>(),
                 It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>>()))
-            .Returns(new Dictionary<Asset, int> { [s_testAsset] = 100 });
+            .Returns(new Dictionary<Symbol, int> { [s_testAsset] = 100 });
 
         var signalEvent = new SignalEvent(s_testDate, StrategyName,
-            new SortedDictionary<Asset, SignalType> { [s_testAsset] = SignalType.Hold });
+            new SortedDictionary<Symbol, SignalType> { [s_testAsset] = SignalType.Hold });
 
         var handler = new SignalEventHandler();
         await handler.HandleEventAsync(portfolio.Object, signalEvent, CancellationToken.None);
@@ -140,7 +140,7 @@ public sealed class SignalEventHandlerTests
     {
         var handler = new SignalEventHandler();
         var signalEvent = new SignalEvent(s_testDate, StrategyName,
-            new SortedDictionary<Asset, SignalType> { [s_testAsset] = SignalType.Overweight });
+            new SortedDictionary<Symbol, SignalType> { [s_testAsset] = SignalType.Overweight });
 
         var act = () => handler.HandleEventAsync(null!, signalEvent, CancellationToken.None);
         await act.Should().ThrowAsync<ArgumentNullException>();
@@ -152,7 +152,7 @@ public sealed class SignalEventHandlerTests
         var portfolioMock = new Mock<IPortfolio>();
         var handler = new SignalEventHandler();
         var marketEvent = new MarketEvent(s_testDate,
-            new SortedDictionary<Asset, MarketData>(),
+            new SortedDictionary<Symbol, Bar>(),
             new SortedDictionary<CurrencyCode, decimal>());
 
         var act = () => handler.HandleEventAsync(portfolioMock.Object, marketEvent, CancellationToken.None);
@@ -166,7 +166,7 @@ public sealed class SignalEventHandlerTests
         var portfolioMock = new Mock<IPortfolio>();
         var handler = new SignalEventHandler();
         var signalEvent = new SignalEvent(s_testDate, StrategyName,
-            new SortedDictionary<Asset, SignalType> { [s_testAsset] = SignalType.Overweight });
+            new SortedDictionary<Symbol, SignalType> { [s_testAsset] = SignalType.Overweight });
 
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();

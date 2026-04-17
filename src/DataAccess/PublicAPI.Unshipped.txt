@@ -1,0 +1,219 @@
+#nullable enable
+Boutquin.Trading.DataAccess.Configuration.AssetClassConfiguration
+Boutquin.Trading.DataAccess.Configuration.AssetClassConfiguration.AssetClassConfiguration() -> void
+Boutquin.Trading.DataAccess.Configuration.AssetClassConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<Boutquin.Trading.DataAccess.Entities.AssetClass!>! builder) -> void
+Boutquin.Trading.DataAccess.Configuration.CityConfiguration
+Boutquin.Trading.DataAccess.Configuration.CityConfiguration.CityConfiguration() -> void
+Boutquin.Trading.DataAccess.Configuration.CityConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<Boutquin.Trading.DataAccess.Entities.City!>! builder) -> void
+Boutquin.Trading.DataAccess.Configuration.ContinentConfiguration
+Boutquin.Trading.DataAccess.Configuration.ContinentConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<Boutquin.Trading.DataAccess.Entities.Continent!>! builder) -> void
+Boutquin.Trading.DataAccess.Configuration.ContinentConfiguration.ContinentConfiguration() -> void
+Boutquin.Trading.DataAccess.Configuration.CountryConfiguration
+Boutquin.Trading.DataAccess.Configuration.CountryConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<Boutquin.Trading.DataAccess.Entities.Country!>! builder) -> void
+Boutquin.Trading.DataAccess.Configuration.CountryConfiguration.CountryConfiguration() -> void
+Boutquin.Trading.DataAccess.Configuration.CurrencyConfiguration
+Boutquin.Trading.DataAccess.Configuration.CurrencyConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<Boutquin.Trading.DataAccess.Entities.Currency!>! builder) -> void
+Boutquin.Trading.DataAccess.Configuration.CurrencyConfiguration.CurrencyConfiguration() -> void
+Boutquin.Trading.DataAccess.Configuration.ExchangeConfiguration
+Boutquin.Trading.DataAccess.Configuration.ExchangeConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<Boutquin.Trading.DataAccess.Entities.Exchange!>! builder) -> void
+Boutquin.Trading.DataAccess.Configuration.ExchangeConfiguration.ExchangeConfiguration() -> void
+Boutquin.Trading.DataAccess.Configuration.ExchangeHolidayConfiguration
+Boutquin.Trading.DataAccess.Configuration.ExchangeHolidayConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<Boutquin.Trading.DataAccess.Entities.ExchangeHoliday!>! builder) -> void
+Boutquin.Trading.DataAccess.Configuration.ExchangeHolidayConfiguration.ExchangeHolidayConfiguration() -> void
+Boutquin.Trading.DataAccess.Configuration.ExchangeScheduleConfiguration
+Boutquin.Trading.DataAccess.Configuration.ExchangeScheduleConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<Boutquin.Trading.DataAccess.Entities.ExchangeSchedule!>! builder) -> void
+Boutquin.Trading.DataAccess.Configuration.ExchangeScheduleConfiguration.ExchangeScheduleConfiguration() -> void
+Boutquin.Trading.DataAccess.Configuration.FxRateConfiguration
+Boutquin.Trading.DataAccess.Configuration.FxRateConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<Boutquin.Trading.DataAccess.Entities.FxRate!>! builder) -> void
+Boutquin.Trading.DataAccess.Configuration.FxRateConfiguration.FxRateConfiguration() -> void
+Boutquin.Trading.DataAccess.Configuration.IdLookup
+Boutquin.Trading.DataAccess.Configuration.SecurityConfiguration
+Boutquin.Trading.DataAccess.Configuration.SecurityConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<Boutquin.Trading.DataAccess.Entities.Security!>! builder) -> void
+Boutquin.Trading.DataAccess.Configuration.SecurityConfiguration.SecurityConfiguration() -> void
+Boutquin.Trading.DataAccess.Configuration.SecurityPriceConfiguration
+Boutquin.Trading.DataAccess.Configuration.SecurityPriceConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<Boutquin.Trading.DataAccess.Entities.SecurityPrice!>! builder) -> void
+Boutquin.Trading.DataAccess.Configuration.SecurityPriceConfiguration.SecurityPriceConfiguration() -> void
+Boutquin.Trading.DataAccess.Configuration.SecuritySymbolConfiguration
+Boutquin.Trading.DataAccess.Configuration.SecuritySymbolConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<Boutquin.Trading.DataAccess.Entities.SecuritySymbol!>! builder) -> void
+Boutquin.Trading.DataAccess.Configuration.SecuritySymbolConfiguration.SecuritySymbolConfiguration() -> void
+Boutquin.Trading.DataAccess.Configuration.SymbolStandardConfiguration
+Boutquin.Trading.DataAccess.Configuration.SymbolStandardConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<Boutquin.Trading.DataAccess.Entities.SymbolStandard!>! builder) -> void
+Boutquin.Trading.DataAccess.Configuration.SymbolStandardConfiguration.SymbolStandardConfiguration() -> void
+Boutquin.Trading.DataAccess.Configuration.TimeZoneConfiguration
+Boutquin.Trading.DataAccess.Configuration.TimeZoneConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<Boutquin.Trading.DataAccess.Entities.TimeZone!>! builder) -> void
+Boutquin.Trading.DataAccess.Configuration.TimeZoneConfiguration.TimeZoneConfiguration() -> void
+Boutquin.Trading.DataAccess.Entities.AssetClass
+Boutquin.Trading.DataAccess.Entities.AssetClass.AssetClass(Boutquin.MarketData.Abstractions.ReferenceData.AssetClassCode id, string? description = null) -> void
+Boutquin.Trading.DataAccess.Entities.AssetClass.Description.get -> string!
+Boutquin.Trading.DataAccess.Entities.AssetClass.Id.get -> Boutquin.MarketData.Abstractions.ReferenceData.AssetClassCode
+Boutquin.Trading.DataAccess.Entities.City
+Boutquin.Trading.DataAccess.Entities.City.City(string! name, Boutquin.MarketData.Abstractions.ReferenceData.TimeZoneCode timeZoneCode, Boutquin.MarketData.Abstractions.ReferenceData.CountryCode countryCode) -> void
+Boutquin.Trading.DataAccess.Entities.City.CountryCode.get -> Boutquin.MarketData.Abstractions.ReferenceData.CountryCode
+Boutquin.Trading.DataAccess.Entities.City.Name.get -> string!
+Boutquin.Trading.DataAccess.Entities.City.TimeZoneCode.get -> Boutquin.MarketData.Abstractions.ReferenceData.TimeZoneCode
+Boutquin.Trading.DataAccess.Entities.ColumnConstants
+Boutquin.Trading.DataAccess.Entities.Continent
+Boutquin.Trading.DataAccess.Entities.Continent.Code.get -> Boutquin.MarketData.Abstractions.ReferenceData.ContinentCode
+Boutquin.Trading.DataAccess.Entities.Continent.Continent(Boutquin.MarketData.Abstractions.ReferenceData.ContinentCode code, string? name = null) -> void
+Boutquin.Trading.DataAccess.Entities.Continent.Name.get -> string!
+Boutquin.Trading.DataAccess.Entities.Country
+Boutquin.Trading.DataAccess.Entities.Country.Code.get -> Boutquin.MarketData.Abstractions.ReferenceData.CountryCode
+Boutquin.Trading.DataAccess.Entities.Country.ContinentCode.get -> Boutquin.MarketData.Abstractions.ReferenceData.ContinentCode
+Boutquin.Trading.DataAccess.Entities.Country.Country(Boutquin.MarketData.Abstractions.ReferenceData.CountryCode code, string! name, int numericCode, Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode currencyCode, Boutquin.MarketData.Abstractions.ReferenceData.ContinentCode continentCode) -> void
+Boutquin.Trading.DataAccess.Entities.Country.CurrencyCode.get -> Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode
+Boutquin.Trading.DataAccess.Entities.Country.Name.get -> string!
+Boutquin.Trading.DataAccess.Entities.Country.NumericCode.get -> int
+Boutquin.Trading.DataAccess.Entities.Currency
+Boutquin.Trading.DataAccess.Entities.Currency.Code.get -> Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode
+Boutquin.Trading.DataAccess.Entities.Currency.Currency(Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode code, int numericCode, string! name, string! symbol) -> void
+Boutquin.Trading.DataAccess.Entities.Currency.Name.get -> string!
+Boutquin.Trading.DataAccess.Entities.Currency.NumericCode.get -> int
+Boutquin.Trading.DataAccess.Entities.Currency.Symbol.get -> string!
+Boutquin.Trading.DataAccess.Entities.Exchange
+Boutquin.Trading.DataAccess.Entities.Exchange.City.get -> Boutquin.Trading.DataAccess.Entities.City!
+Boutquin.Trading.DataAccess.Entities.Exchange.Code.get -> Boutquin.MarketData.Abstractions.ReferenceData.ExchangeCode
+Boutquin.Trading.DataAccess.Entities.Exchange.Exchange(Boutquin.MarketData.Abstractions.ReferenceData.ExchangeCode exchangeCode, string! name, Boutquin.Trading.DataAccess.Entities.City! city) -> void
+Boutquin.Trading.DataAccess.Entities.Exchange.ExchangeHolidays.get -> System.Collections.Generic.ICollection<Boutquin.Trading.DataAccess.Entities.ExchangeHoliday!>!
+Boutquin.Trading.DataAccess.Entities.Exchange.ExchangeSchedules.get -> System.Collections.Generic.ICollection<Boutquin.Trading.DataAccess.Entities.ExchangeSchedule!>!
+Boutquin.Trading.DataAccess.Entities.Exchange.Name.get -> string!
+Boutquin.Trading.DataAccess.Entities.ExchangeHoliday
+Boutquin.Trading.DataAccess.Entities.ExchangeHoliday.Description.get -> string!
+Boutquin.Trading.DataAccess.Entities.ExchangeHoliday.ExchangeCode.get -> Boutquin.MarketData.Abstractions.ReferenceData.ExchangeCode
+Boutquin.Trading.DataAccess.Entities.ExchangeHoliday.ExchangeHoliday(Boutquin.MarketData.Abstractions.ReferenceData.ExchangeCode exchangeCode, System.DateOnly holidayDate, string! description) -> void
+Boutquin.Trading.DataAccess.Entities.ExchangeHoliday.HolidayDate.get -> System.DateOnly
+Boutquin.Trading.DataAccess.Entities.ExchangeSchedule
+Boutquin.Trading.DataAccess.Entities.ExchangeSchedule.CloseTime.get -> System.TimeSpan
+Boutquin.Trading.DataAccess.Entities.ExchangeSchedule.DayOfWeek.get -> System.DayOfWeek
+Boutquin.Trading.DataAccess.Entities.ExchangeSchedule.ExchangeCode.get -> Boutquin.MarketData.Abstractions.ReferenceData.ExchangeCode
+Boutquin.Trading.DataAccess.Entities.ExchangeSchedule.ExchangeSchedule(Boutquin.MarketData.Abstractions.ReferenceData.ExchangeCode exchangeCode, System.DayOfWeek dayOfWeek, System.TimeSpan openTime, System.TimeSpan closeTime) -> void
+Boutquin.Trading.DataAccess.Entities.ExchangeSchedule.OpenTime.get -> System.TimeSpan
+Boutquin.Trading.DataAccess.Entities.FxRate
+Boutquin.Trading.DataAccess.Entities.FxRate.BaseCurrencyCode.get -> Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode
+Boutquin.Trading.DataAccess.Entities.FxRate.FxRate(System.DateOnly rateDate, Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode baseCurrencyCode, Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode quoteCurrencyCode, decimal rate) -> void
+Boutquin.Trading.DataAccess.Entities.FxRate.QuoteCurrencyCode.get -> Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode
+Boutquin.Trading.DataAccess.Entities.FxRate.Rate.get -> decimal
+Boutquin.Trading.DataAccess.Entities.FxRate.RateDate.get -> System.DateOnly
+Boutquin.Trading.DataAccess.Entities.Position
+Boutquin.Trading.DataAccess.Entities.Position.BookValue.get -> decimal
+Boutquin.Trading.DataAccess.Entities.Position.Buy(int shares, decimal price, decimal transactionFee) -> void
+Boutquin.Trading.DataAccess.Entities.Position.MarketValue.get -> decimal
+Boutquin.Trading.DataAccess.Entities.Position.Position(string! symbol, int quantity, decimal bookValue) -> void
+Boutquin.Trading.DataAccess.Entities.Position.Quantity.get -> int
+Boutquin.Trading.DataAccess.Entities.Position.Sell(int shares, decimal price, decimal transactionFee) -> void
+Boutquin.Trading.DataAccess.Entities.Position.Symbol.get -> string!
+Boutquin.Trading.DataAccess.Entities.Position.UpdateMarketValue(decimal price) -> void
+Boutquin.Trading.DataAccess.Entities.Security
+Boutquin.Trading.DataAccess.Entities.Security.AssetClassCode.get -> Boutquin.MarketData.Abstractions.ReferenceData.AssetClassCode
+Boutquin.Trading.DataAccess.Entities.Security.Exchange.get -> Boutquin.Trading.DataAccess.Entities.Exchange!
+Boutquin.Trading.DataAccess.Entities.Security.Id.get -> Boutquin.Trading.Domain.ValueObjects.SecurityId
+Boutquin.Trading.DataAccess.Entities.Security.Name.get -> string!
+Boutquin.Trading.DataAccess.Entities.Security.Security(string! name, Boutquin.MarketData.Abstractions.ReferenceData.AssetClassCode assetClassCode, Boutquin.Trading.DataAccess.Entities.Exchange! exchange) -> void
+Boutquin.Trading.DataAccess.Entities.Security.SecurityPrices.get -> System.Collections.Generic.ICollection<Boutquin.Trading.DataAccess.Entities.SecurityPrice!>!
+Boutquin.Trading.DataAccess.Entities.Security.SecuritySymbols.get -> System.Collections.Generic.ICollection<Boutquin.Trading.DataAccess.Entities.SecuritySymbol!>!
+Boutquin.Trading.DataAccess.Entities.SecurityPrice
+Boutquin.Trading.DataAccess.Entities.SecurityPrice.ClosePrice.get -> decimal
+Boutquin.Trading.DataAccess.Entities.SecurityPrice.Dividend.get -> decimal
+Boutquin.Trading.DataAccess.Entities.SecurityPrice.HighPrice.get -> decimal
+Boutquin.Trading.DataAccess.Entities.SecurityPrice.LowPrice.get -> decimal
+Boutquin.Trading.DataAccess.Entities.SecurityPrice.OpenPrice.get -> decimal
+Boutquin.Trading.DataAccess.Entities.SecurityPrice.SecurityId.get -> int
+Boutquin.Trading.DataAccess.Entities.SecurityPrice.SecurityPrice(System.DateOnly tradeDate, int securityId, decimal openPrice, decimal highPrice, decimal lowPrice, decimal closePrice, long volume, decimal dividend) -> void
+Boutquin.Trading.DataAccess.Entities.SecurityPrice.TradeDate.get -> System.DateOnly
+Boutquin.Trading.DataAccess.Entities.SecurityPrice.Volume.get -> long
+Boutquin.Trading.DataAccess.Entities.SecuritySymbol
+Boutquin.Trading.DataAccess.Entities.SecuritySymbol.SecurityId.get -> int
+Boutquin.Trading.DataAccess.Entities.SecuritySymbol.SecuritySymbol(int securityId, string! symbol, Boutquin.MarketData.Abstractions.ReferenceData.SecuritySymbolStandard standard) -> void
+Boutquin.Trading.DataAccess.Entities.SecuritySymbol.Standard.get -> Boutquin.MarketData.Abstractions.ReferenceData.SecuritySymbolStandard
+Boutquin.Trading.DataAccess.Entities.SecuritySymbol.Symbol.get -> string!
+Boutquin.Trading.DataAccess.Entities.SymbolStandard
+Boutquin.Trading.DataAccess.Entities.SymbolStandard.Description.get -> string!
+Boutquin.Trading.DataAccess.Entities.SymbolStandard.Id.get -> Boutquin.MarketData.Abstractions.ReferenceData.SecuritySymbolStandard
+Boutquin.Trading.DataAccess.Entities.SymbolStandard.SymbolStandard(Boutquin.MarketData.Abstractions.ReferenceData.SecuritySymbolStandard id, string? description = null) -> void
+Boutquin.Trading.DataAccess.Entities.TimeZone
+Boutquin.Trading.DataAccess.Entities.TimeZone.Code.get -> Boutquin.MarketData.Abstractions.ReferenceData.TimeZoneCode
+Boutquin.Trading.DataAccess.Entities.TimeZone.Name.get -> string!
+Boutquin.Trading.DataAccess.Entities.TimeZone.TimeZone(Boutquin.MarketData.Abstractions.ReferenceData.TimeZoneCode code, string! name, string! timeZoneOffset, bool usesDaylightSaving) -> void
+Boutquin.Trading.DataAccess.Entities.TimeZone.TimeZoneOffset.get -> string!
+Boutquin.Trading.DataAccess.Entities.TimeZone.UsesDaylightSaving.get -> bool
+Boutquin.Trading.DataAccess.Extensions.ExchangeExtensions
+Boutquin.Trading.DataAccess.Migrations.InitialCreate
+Boutquin.Trading.DataAccess.Migrations.InitialCreate.InitialCreate() -> void
+~override Boutquin.Trading.DataAccess.Migrations.InitialCreate.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder modelBuilder) -> void
+Boutquin.Trading.DataAccess.SecurityMasterContext
+Boutquin.Trading.DataAccess.SecurityMasterContext.AssetClasses.get -> Microsoft.EntityFrameworkCore.DbSet<Boutquin.Trading.DataAccess.Entities.AssetClass!>!
+Boutquin.Trading.DataAccess.SecurityMasterContext.AssetClasses.set -> void
+Boutquin.Trading.DataAccess.SecurityMasterContext.Cities.get -> Microsoft.EntityFrameworkCore.DbSet<Boutquin.Trading.DataAccess.Entities.City!>!
+Boutquin.Trading.DataAccess.SecurityMasterContext.Cities.set -> void
+Boutquin.Trading.DataAccess.SecurityMasterContext.Continents.get -> Microsoft.EntityFrameworkCore.DbSet<Boutquin.Trading.DataAccess.Entities.Continent!>!
+Boutquin.Trading.DataAccess.SecurityMasterContext.Continents.set -> void
+Boutquin.Trading.DataAccess.SecurityMasterContext.Countries.get -> Microsoft.EntityFrameworkCore.DbSet<Boutquin.Trading.DataAccess.Entities.Country!>!
+Boutquin.Trading.DataAccess.SecurityMasterContext.Countries.set -> void
+Boutquin.Trading.DataAccess.SecurityMasterContext.Currencies.get -> Microsoft.EntityFrameworkCore.DbSet<Boutquin.Trading.DataAccess.Entities.Currency!>!
+Boutquin.Trading.DataAccess.SecurityMasterContext.Currencies.set -> void
+Boutquin.Trading.DataAccess.SecurityMasterContext.ExchangeHolidays.get -> Microsoft.EntityFrameworkCore.DbSet<Boutquin.Trading.DataAccess.Entities.ExchangeHoliday!>!
+Boutquin.Trading.DataAccess.SecurityMasterContext.ExchangeHolidays.set -> void
+Boutquin.Trading.DataAccess.SecurityMasterContext.ExchangeSchedules.get -> Microsoft.EntityFrameworkCore.DbSet<Boutquin.Trading.DataAccess.Entities.ExchangeSchedule!>!
+Boutquin.Trading.DataAccess.SecurityMasterContext.ExchangeSchedules.set -> void
+Boutquin.Trading.DataAccess.SecurityMasterContext.Exchanges.get -> Microsoft.EntityFrameworkCore.DbSet<Boutquin.Trading.DataAccess.Entities.Exchange!>!
+Boutquin.Trading.DataAccess.SecurityMasterContext.Exchanges.set -> void
+Boutquin.Trading.DataAccess.SecurityMasterContext.FxRates.get -> Microsoft.EntityFrameworkCore.DbSet<Boutquin.Trading.DataAccess.Entities.FxRate!>!
+Boutquin.Trading.DataAccess.SecurityMasterContext.FxRates.set -> void
+Boutquin.Trading.DataAccess.SecurityMasterContext.Securities.get -> Microsoft.EntityFrameworkCore.DbSet<Boutquin.Trading.DataAccess.Entities.Security!>!
+Boutquin.Trading.DataAccess.SecurityMasterContext.Securities.set -> void
+Boutquin.Trading.DataAccess.SecurityMasterContext.SecurityMasterContext(Microsoft.EntityFrameworkCore.DbContextOptions<Boutquin.Trading.DataAccess.SecurityMasterContext!>! options) -> void
+Boutquin.Trading.DataAccess.SecurityMasterContext.SecurityPrices.get -> Microsoft.EntityFrameworkCore.DbSet<Boutquin.Trading.DataAccess.Entities.SecurityPrice!>!
+Boutquin.Trading.DataAccess.SecurityMasterContext.SecurityPrices.set -> void
+Boutquin.Trading.DataAccess.SecurityMasterContext.SecuritySymbols.get -> Microsoft.EntityFrameworkCore.DbSet<Boutquin.Trading.DataAccess.Entities.SecuritySymbol!>!
+Boutquin.Trading.DataAccess.SecurityMasterContext.SecuritySymbols.set -> void
+Boutquin.Trading.DataAccess.SecurityMasterContext.SymbolStandards.get -> Microsoft.EntityFrameworkCore.DbSet<Boutquin.Trading.DataAccess.Entities.SymbolStandard!>!
+Boutquin.Trading.DataAccess.SecurityMasterContext.SymbolStandards.set -> void
+Boutquin.Trading.DataAccess.SecurityMasterContext.TimeZones.get -> Microsoft.EntityFrameworkCore.DbSet<Boutquin.Trading.DataAccess.Entities.TimeZone!>!
+Boutquin.Trading.DataAccess.SecurityMasterContext.TimeZones.set -> void
+const Boutquin.Trading.DataAccess.Entities.City.City_Key_Name = "_id" -> string!
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.AssetClass_Code_Length = 3 -> int
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.AssetClass_Description_Length = 50 -> int
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.City_CountryCode_Length = 2 -> int
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.City_Name_Length = 50 -> int
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.City_TimeZoneCode_Length = 10 -> int
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.Continent_Code_Length = 2 -> int
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.Continent_Name_Length = 50 -> int
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.Country_Code_Length = 2 -> int
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.Country_ContinentCode_Length = 2 -> int
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.Country_CurrencyCode_Length = 3 -> int
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.Country_Name_Length = 50 -> int
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.Currency_Code_Length = 3 -> int
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.Currency_Name_Length = 50 -> int
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.Currency_Symbol_Length = 5 -> int
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.Default_Primary_Key_Name = "Id" -> string!
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.ExchangeHoliday_Description_Length = 50 -> int
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.ExchangeHoliday_ExchangeCode_Length = 4 -> int
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.ExchangeSchedule_ExchangeCode_Length = 4 -> int
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.Exchange_City_Length = 50 -> int
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.Exchange_Code_Length = 4 -> int
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.Exchange_Name_Length = 50 -> int
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.FxRate_BaseCurrencyCode_Length = 3 -> int
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.FxRate_QuoteCurrencyCode_Length = 3 -> int
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.FxRate_Rate_Precision = 18 -> int
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.FxRate_Rate_Scale = 6 -> int
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.SecurityPrice_Price_Precision = 18 -> int
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.SecurityPrice_Price_Scale = 4 -> int
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.SecuritySymbol_Standard_Length = 50 -> int
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.SecuritySymbol_Symbol_Length = 50 -> int
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.Security_AssetClassCode_Length = 3 -> int
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.Security_ExchangeCode_Length = 4 -> int
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.Security_Name_Length = 200 -> int
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.SymbolStandard_Description_Length = 20 -> int
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.TimeZone_Code_Length = 10 -> int
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.TimeZone_Name_Length = 50 -> int
+const Boutquin.Trading.DataAccess.Entities.ColumnConstants.TimeZone_TimeZoneOffset_Length = 6 -> int
+const Boutquin.Trading.DataAccess.Entities.ExchangeHoliday.ExchangeHoliday_Key_Name = "_id" -> string!
+const Boutquin.Trading.DataAccess.Entities.ExchangeSchedule.ExchangeSchedule_Key_Name = "_id" -> string!
+const Boutquin.Trading.DataAccess.Entities.FxRate.FxRate_Key_Name = "_id" -> string!
+const Boutquin.Trading.DataAccess.Entities.Security.Security_Key_Name = "_id" -> string!
+const Boutquin.Trading.DataAccess.Entities.SecurityPrice.SecurityPrice_Key_Name = "_id" -> string!
+const Boutquin.Trading.DataAccess.Entities.SecuritySymbol.SecuritySymbol_Key_Name = "_id" -> string!
+static Boutquin.Trading.DataAccess.Configuration.IdLookup.GetCityId(string! cityName) -> int
+static Boutquin.Trading.DataAccess.Extensions.ExchangeExtensions.GetClosingTime(this Boutquin.Trading.DataAccess.Entities.Exchange! exchange, System.DateTime day, int minutesBeforeClosing = 0) -> System.DateTime?
+static Boutquin.Trading.DataAccess.Extensions.ExchangeExtensions.IsOpen(this Boutquin.Trading.DataAccess.Entities.Exchange! exchange, System.DateOnly day) -> bool
+~override Boutquin.Trading.DataAccess.Migrations.InitialCreate.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder migrationBuilder) -> void
+~override Boutquin.Trading.DataAccess.Migrations.InitialCreate.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder migrationBuilder) -> void

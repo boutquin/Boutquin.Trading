@@ -1,0 +1,437 @@
+#nullable enable
+Boutquin.Trading.Application.Analytics.BrinsonFachlerAttributor
+Boutquin.Trading.Application.Analytics.CorrelationAnalyzer
+Boutquin.Trading.Application.Analytics.DrawdownAnalyzer
+Boutquin.Trading.Application.Analytics.EffectiveNumberOfBets
+Boutquin.Trading.Application.Analytics.FactorRegressor
+Boutquin.Trading.Application.Analytics.MonteCarloSimulator
+Boutquin.Trading.Application.Analytics.MonteCarloSimulator.MonteCarloSimulator(int simulationCount = 1000, int seed = -1, int tradingDaysPerYear = 252) -> void
+Boutquin.Trading.Application.Analytics.MonteCarloSimulator.Run(decimal[]! dailyReturns) -> Boutquin.Trading.Domain.Analytics.MonteCarloResult!
+Boutquin.Trading.Application.Analytics.PcaRegimeSignal
+Boutquin.Trading.Application.Analytics.PcaRegimeSignal.EigenvectorStabilityResult
+Boutquin.Trading.Application.Analytics.PcaRegimeSignal.EigenvectorStabilityResult.AllCosineSimilarities.get -> decimal[]!
+Boutquin.Trading.Application.Analytics.PcaRegimeSignal.EigenvectorStabilityResult.AllCosineSimilarities.init -> void
+Boutquin.Trading.Application.Analytics.PcaRegimeSignal.EigenvectorStabilityResult.EigenvectorStabilityResult(decimal Pc1CosineSimilarity, decimal[]! AllCosineSimilarities) -> void
+Boutquin.Trading.Application.Analytics.PcaRegimeSignal.EigenvectorStabilityResult.Pc1CosineSimilarity.get -> decimal
+Boutquin.Trading.Application.Analytics.PcaRegimeSignal.EigenvectorStabilityResult.Pc1CosineSimilarity.init -> void
+Boutquin.Trading.Application.Analytics.PcaRegimeSignal.VarianceShareResult
+Boutquin.Trading.Application.Analytics.PcaRegimeSignal.VarianceShareResult.AllVarianceShares.get -> decimal[]!
+Boutquin.Trading.Application.Analytics.PcaRegimeSignal.VarianceShareResult.AllVarianceShares.init -> void
+Boutquin.Trading.Application.Analytics.PcaRegimeSignal.VarianceShareResult.Eigenvalues.get -> decimal[]!
+Boutquin.Trading.Application.Analytics.PcaRegimeSignal.VarianceShareResult.Eigenvalues.init -> void
+Boutquin.Trading.Application.Analytics.PcaRegimeSignal.VarianceShareResult.Pc1VarianceShare.get -> decimal
+Boutquin.Trading.Application.Analytics.PcaRegimeSignal.VarianceShareResult.Pc1VarianceShare.init -> void
+Boutquin.Trading.Application.Analytics.PcaRegimeSignal.VarianceShareResult.VarianceShareResult(decimal Pc1VarianceShare, decimal[]! AllVarianceShares, decimal[]! Eigenvalues) -> void
+Boutquin.Trading.Application.Analytics.PrincipalPortfolioAnalyzer
+Boutquin.Trading.Application.Analytics.PrincipalPortfolioAnalyzer.PrincipalPortfolio
+Boutquin.Trading.Application.Analytics.PrincipalPortfolioAnalyzer.PrincipalPortfolio.ComponentIndex.get -> int
+Boutquin.Trading.Application.Analytics.PrincipalPortfolioAnalyzer.PrincipalPortfolio.ComponentIndex.init -> void
+Boutquin.Trading.Application.Analytics.PrincipalPortfolioAnalyzer.PrincipalPortfolio.Eigenvalue.get -> decimal
+Boutquin.Trading.Application.Analytics.PrincipalPortfolioAnalyzer.PrincipalPortfolio.Eigenvalue.init -> void
+Boutquin.Trading.Application.Analytics.PrincipalPortfolioAnalyzer.PrincipalPortfolio.PrincipalPortfolio(int ComponentIndex, decimal[]! Weights, decimal Eigenvalue, decimal RiskContribution) -> void
+Boutquin.Trading.Application.Analytics.PrincipalPortfolioAnalyzer.PrincipalPortfolio.RiskContribution.get -> decimal
+Boutquin.Trading.Application.Analytics.PrincipalPortfolioAnalyzer.PrincipalPortfolio.RiskContribution.init -> void
+Boutquin.Trading.Application.Analytics.PrincipalPortfolioAnalyzer.PrincipalPortfolio.Weights.get -> decimal[]!
+Boutquin.Trading.Application.Analytics.PrincipalPortfolioAnalyzer.PrincipalPortfolio.Weights.init -> void
+Boutquin.Trading.Application.Analytics.PrincipalPortfolioAnalyzer.PrincipalPortfolioResult
+Boutquin.Trading.Application.Analytics.PrincipalPortfolioAnalyzer.PrincipalPortfolioResult.Portfolios.get -> System.Collections.Generic.IReadOnlyList<Boutquin.Trading.Application.Analytics.PrincipalPortfolioAnalyzer.PrincipalPortfolio!>!
+Boutquin.Trading.Application.Analytics.PrincipalPortfolioAnalyzer.PrincipalPortfolioResult.Portfolios.init -> void
+Boutquin.Trading.Application.Analytics.PrincipalPortfolioAnalyzer.PrincipalPortfolioResult.PrincipalPortfolioResult(System.Collections.Generic.IReadOnlyList<Boutquin.Trading.Application.Analytics.PrincipalPortfolioAnalyzer.PrincipalPortfolio!>! Portfolios) -> void
+Boutquin.Trading.Application.Analytics.WalkForwardOptimizer
+Boutquin.Trading.Application.Analytics.WalkForwardOptimizer.Run(System.Collections.Generic.SortedDictionary<System.DateOnly, decimal>! datedReturns, System.Func<decimal[]!, int, decimal>! parameterEvaluator, int parameterCount) -> System.Collections.Generic.IReadOnlyList<Boutquin.Trading.Domain.Analytics.WalkForwardResult!>!
+Boutquin.Trading.Application.Analytics.WalkForwardOptimizer.WalkForwardOptimizer(int inSampleDays, int outOfSampleDays) -> void
+Boutquin.Trading.Application.BackTest
+Boutquin.Trading.Application.BackTest.AnalyzeBenchmarkPerformanceMetrics() -> Boutquin.Trading.Domain.Helpers.Tearsheet!
+Boutquin.Trading.Application.BackTest.AnalyzePerformanceMetrics() -> Boutquin.Trading.Domain.Helpers.Tearsheet!
+Boutquin.Trading.Application.BackTest.BackTest(Boutquin.Trading.Domain.Interfaces.IPortfolio! portfolio, Boutquin.Trading.Domain.Interfaces.IPortfolio! benchmarkPortfolio, Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode baseCurrency) -> void
+Boutquin.Trading.Application.BackTest.BackTest(Boutquin.Trading.Domain.Interfaces.IPortfolio! portfolio, Boutquin.Trading.Domain.Interfaces.IPortfolio! benchmarkPortfolio, Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode baseCurrency, Microsoft.Extensions.Logging.ILogger<Boutquin.Trading.Application.BackTest!>! logger) -> void
+Boutquin.Trading.Application.BackTest.BackTest(Boutquin.Trading.Domain.Interfaces.IPortfolio! portfolio, Boutquin.Trading.Domain.Interfaces.IPortfolio! benchmarkPortfolio, Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode baseCurrency, Microsoft.Extensions.Logging.ILogger<Boutquin.Trading.Application.BackTest!>! logger, decimal dailyRiskFreeRate) -> void
+Boutquin.Trading.Application.BackTest.BackTest(Boutquin.Trading.Domain.Interfaces.IPortfolio! portfolio, Boutquin.Trading.Domain.Interfaces.IPortfolio! benchmarkPortfolio, Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode baseCurrency, Microsoft.Extensions.Logging.ILogger<Boutquin.Trading.Application.BackTest!>! logger, decimal dailyRiskFreeRate, Boutquin.Trading.Domain.Interfaces.IDrawdownControl? drawdownControl) -> void
+Boutquin.Trading.Application.BackTest.BackTest(Boutquin.Trading.Domain.Interfaces.IPortfolio! portfolio, Boutquin.Trading.Domain.Interfaces.IPortfolio! benchmarkPortfolio, Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode baseCurrency, Microsoft.Extensions.Logging.ILogger<Boutquin.Trading.Application.BackTest!>! logger, decimal dailyRiskFreeRate, Boutquin.Trading.Domain.Interfaces.IDrawdownControl? drawdownControl, Boutquin.MarketData.Abstractions.Calendars.IBusinessCalendar? tradingCalendar) -> void
+Boutquin.Trading.Application.BackTest.BackTest(Boutquin.Trading.Domain.Interfaces.IPortfolio! portfolio, Boutquin.Trading.Domain.Interfaces.IPortfolio! benchmarkPortfolio, Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode baseCurrency, Microsoft.Extensions.Logging.ILogger<Boutquin.Trading.Application.BackTest!>! logger, decimal dailyRiskFreeRate, Boutquin.Trading.Domain.Interfaces.IDrawdownControl? drawdownControl, Boutquin.MarketData.Abstractions.Calendars.IBusinessCalendar? tradingCalendar, decimal annualExpenseRatioBps, System.Collections.Generic.IReadOnlyDictionary<string!, decimal>? assetExpenseRatiosBps = null) -> void
+Boutquin.Trading.Application.BackTest.RunAsync(Boutquin.Trading.Recipes.IBacktestDataset! dataset, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken), System.DateOnly? burnInEndDate = null, System.Func<Boutquin.Trading.Domain.Interfaces.IPortfolio!, System.Threading.CancellationToken, System.Threading.Tasks.Task!>? afterDayCallback = null, bool ignoreDataQualityIssues = false) -> System.Threading.Tasks.Task<Boutquin.Trading.Domain.Helpers.Tearsheet!>!
+Boutquin.Trading.Application.BackTest.RunAsync(System.DateOnly startDate, System.DateOnly endDate, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken), System.DateOnly? burnInEndDate = null, System.Func<Boutquin.Trading.Domain.Interfaces.IPortfolio!, System.Threading.CancellationToken, System.Threading.Tasks.Task!>? afterDayCallback = null) -> System.Threading.Tasks.Task<Boutquin.Trading.Domain.Helpers.Tearsheet!>!
+Boutquin.Trading.Application.Brokers.SimulatedBrokerage
+Boutquin.Trading.Application.Brokers.SimulatedBrokerage.FillOccurred -> System.Func<object!, Boutquin.Trading.Domain.Events.FillEvent!, System.Threading.Tasks.Task!>?
+Boutquin.Trading.Application.Brokers.SimulatedBrokerage.ProcessPendingOrdersAsync(System.DateOnly date, System.Collections.Generic.SortedDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, Boutquin.MarketData.Abstractions.Records.Bar!>! dayData, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+Boutquin.Trading.Application.Brokers.SimulatedBrokerage.SetBufferedMarketData(System.Collections.Generic.IReadOnlyDictionary<System.DateOnly, System.Collections.Generic.SortedDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, Boutquin.MarketData.Abstractions.Records.Bar!>!>! data) -> void
+Boutquin.Trading.Application.Brokers.SimulatedBrokerage.SimulatedBrokerage(Boutquin.Trading.Domain.Interfaces.ITransactionCostModel! costModel, Boutquin.Trading.Domain.Interfaces.ISlippageModel? slippageModel = null, Boutquin.MarketData.Abstractions.Calendars.IBusinessCalendar? tradingCalendar = null, Microsoft.Extensions.Logging.ILogger<Boutquin.Trading.Application.Brokers.SimulatedBrokerage!>? logger = null) -> void
+Boutquin.Trading.Application.Brokers.SimulatedBrokerage.SimulatedBrokerage(decimal commissionRate = 0.001) -> void
+Boutquin.Trading.Application.Brokers.SimulatedBrokerage.SubmitOrderAsync(Boutquin.Trading.Domain.Events.Order! order, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<bool>!
+Boutquin.Trading.Application.Configuration.BacktestOptions
+Boutquin.Trading.Application.Configuration.BacktestOptions.AnnualExpenseRatioBps.get -> decimal
+Boutquin.Trading.Application.Configuration.BacktestOptions.AnnualExpenseRatioBps.set -> void
+Boutquin.Trading.Application.Configuration.BacktestOptions.AssetExpenseRatiosBps.get -> System.Collections.Generic.Dictionary<string!, decimal>!
+Boutquin.Trading.Application.Configuration.BacktestOptions.AssetExpenseRatiosBps.set -> void
+Boutquin.Trading.Application.Configuration.BacktestOptions.BacktestOptions() -> void
+Boutquin.Trading.Application.Configuration.BacktestOptions.ConstructionModel.get -> string!
+Boutquin.Trading.Application.Configuration.BacktestOptions.ConstructionModel.set -> void
+Boutquin.Trading.Application.Configuration.BacktestOptions.CovarianceEstimator.get -> string!
+Boutquin.Trading.Application.Configuration.BacktestOptions.CovarianceEstimator.set -> void
+Boutquin.Trading.Application.Configuration.BacktestOptions.EnableDividendReinvestment.get -> bool
+Boutquin.Trading.Application.Configuration.BacktestOptions.EnableDividendReinvestment.set -> void
+Boutquin.Trading.Application.Configuration.CalendarOptions
+Boutquin.Trading.Application.Configuration.CalendarOptions.CalendarOptions() -> void
+Boutquin.Trading.Application.Configuration.CalendarOptions.Calendars.get -> System.Collections.Generic.List<string!>!
+Boutquin.Trading.Application.Configuration.CalendarOptions.Calendars.set -> void
+Boutquin.Trading.Application.Configuration.CalendarOptions.CompositionMode.get -> string!
+Boutquin.Trading.Application.Configuration.CalendarOptions.CompositionMode.set -> void
+Boutquin.Trading.Application.Configuration.CalendarOptions.TradingCalendar.get -> string!
+Boutquin.Trading.Application.Configuration.CalendarOptions.TradingCalendar.set -> void
+Boutquin.Trading.Application.Configuration.CostModelOptions
+Boutquin.Trading.Application.Configuration.CostModelOptions.CommissionRate.get -> decimal
+Boutquin.Trading.Application.Configuration.CostModelOptions.CommissionRate.set -> void
+Boutquin.Trading.Application.Configuration.CostModelOptions.CostModelOptions() -> void
+Boutquin.Trading.Application.Configuration.CostModelOptions.DefaultSpreadPercent.get -> decimal
+Boutquin.Trading.Application.Configuration.CostModelOptions.DefaultSpreadPercent.set -> void
+Boutquin.Trading.Application.Configuration.CostModelOptions.SlippageAmount.get -> decimal
+Boutquin.Trading.Application.Configuration.CostModelOptions.SlippageAmount.set -> void
+Boutquin.Trading.Application.Configuration.CostModelOptions.SlippageType.get -> string!
+Boutquin.Trading.Application.Configuration.CostModelOptions.SlippageType.set -> void
+Boutquin.Trading.Application.Configuration.CostModelOptions.TransactionCostType.get -> string!
+Boutquin.Trading.Application.Configuration.CostModelOptions.TransactionCostType.set -> void
+Boutquin.Trading.Application.Configuration.CostModelOptions.VolumeLimit.get -> decimal
+Boutquin.Trading.Application.Configuration.CostModelOptions.VolumeLimit.set -> void
+Boutquin.Trading.Application.Configuration.RiskManagementOptions
+Boutquin.Trading.Application.Configuration.RiskManagementOptions.MaxDrawdownPercent.get -> decimal
+Boutquin.Trading.Application.Configuration.RiskManagementOptions.MaxDrawdownPercent.set -> void
+Boutquin.Trading.Application.Configuration.RiskManagementOptions.MaxPositionSizePercent.get -> decimal
+Boutquin.Trading.Application.Configuration.RiskManagementOptions.MaxPositionSizePercent.set -> void
+Boutquin.Trading.Application.Configuration.RiskManagementOptions.MaxSectorExposurePercent.get -> decimal
+Boutquin.Trading.Application.Configuration.RiskManagementOptions.MaxSectorExposurePercent.set -> void
+Boutquin.Trading.Application.Configuration.RiskManagementOptions.RiskManagementOptions() -> void
+Boutquin.Trading.Application.Configuration.ServiceCollectionExtensions
+Boutquin.Trading.Application.CostModels.CompositeCostModel
+Boutquin.Trading.Application.CostModels.CompositeCostModel.CalculateCommission(decimal fillPrice, int quantity, Boutquin.Trading.Domain.Enums.TradeAction tradeAction) -> decimal
+Boutquin.Trading.Application.CostModels.CompositeCostModel.CompositeCostModel(System.Collections.Generic.IReadOnlyList<Boutquin.Trading.Domain.Interfaces.ITransactionCostModel!>! models) -> void
+Boutquin.Trading.Application.CostModels.FixedPerTradeCostModel
+Boutquin.Trading.Application.CostModels.FixedPerTradeCostModel.CalculateCommission(decimal fillPrice, int quantity, Boutquin.Trading.Domain.Enums.TradeAction tradeAction) -> decimal
+Boutquin.Trading.Application.CostModels.FixedPerTradeCostModel.FixedPerTradeCostModel(decimal fixedAmount) -> void
+Boutquin.Trading.Application.CostModels.PerShareCostModel
+Boutquin.Trading.Application.CostModels.PerShareCostModel.CalculateCommission(decimal fillPrice, int quantity, Boutquin.Trading.Domain.Enums.TradeAction tradeAction) -> decimal
+Boutquin.Trading.Application.CostModels.PerShareCostModel.PerShareCostModel(decimal perShareRate) -> void
+Boutquin.Trading.Application.CostModels.PercentageOfValueCostModel
+Boutquin.Trading.Application.CostModels.PercentageOfValueCostModel.CalculateCommission(decimal fillPrice, int quantity, Boutquin.Trading.Domain.Enums.TradeAction tradeAction) -> decimal
+Boutquin.Trading.Application.CostModels.PercentageOfValueCostModel.PercentageOfValueCostModel(decimal rate) -> void
+Boutquin.Trading.Application.CostModels.TieredCostModel
+Boutquin.Trading.Application.CostModels.TieredCostModel.CalculateCommission(decimal fillPrice, int quantity, Boutquin.Trading.Domain.Enums.TradeAction tradeAction) -> decimal
+Boutquin.Trading.Application.CostModels.TieredCostModel.TieredCostModel(System.Collections.Generic.IReadOnlyList<(decimal MaxTradeValue, decimal Rate)>! tiers) -> void
+Boutquin.Trading.Application.CovarianceEstimators.DenoisedCovarianceEstimator
+Boutquin.Trading.Application.CovarianceEstimators.DenoisedCovarianceEstimator.DenoisedCovarianceEstimator(bool applyLedoitWolfShrinkage = false) -> void
+Boutquin.Trading.Application.CovarianceEstimators.DenoisedCovarianceEstimator.Estimate(decimal[]![]! returns) -> decimal[,]!
+Boutquin.Trading.Application.CovarianceEstimators.DetonedCovarianceEstimator
+Boutquin.Trading.Application.CovarianceEstimators.DetonedCovarianceEstimator.DetonedCovarianceEstimator(decimal detoningAlpha = 1.0) -> void
+Boutquin.Trading.Application.CovarianceEstimators.DetonedCovarianceEstimator.Estimate(decimal[]![]! returns) -> decimal[,]!
+Boutquin.Trading.Application.CovarianceEstimators.DoublySparseEstimator
+Boutquin.Trading.Application.CovarianceEstimators.DoublySparseEstimator.DoublySparseEstimator(decimal eigenvectorThreshold = 0.1) -> void
+Boutquin.Trading.Application.CovarianceEstimators.DoublySparseEstimator.Estimate(decimal[]![]! returns) -> decimal[,]!
+Boutquin.Trading.Application.CovarianceEstimators.ExponentiallyWeightedCovarianceEstimator
+Boutquin.Trading.Application.CovarianceEstimators.ExponentiallyWeightedCovarianceEstimator.Estimate(decimal[]![]! returns) -> decimal[,]!
+Boutquin.Trading.Application.CovarianceEstimators.ExponentiallyWeightedCovarianceEstimator.ExponentiallyWeightedCovarianceEstimator(decimal lambda = 0.94) -> void
+Boutquin.Trading.Application.CovarianceEstimators.LedoitWolfConstantCorrelationEstimator
+Boutquin.Trading.Application.CovarianceEstimators.LedoitWolfConstantCorrelationEstimator.Estimate(decimal[]![]! returns) -> decimal[,]!
+Boutquin.Trading.Application.CovarianceEstimators.LedoitWolfConstantCorrelationEstimator.LedoitWolfConstantCorrelationEstimator() -> void
+Boutquin.Trading.Application.CovarianceEstimators.LedoitWolfShrinkageEstimator
+Boutquin.Trading.Application.CovarianceEstimators.LedoitWolfShrinkageEstimator.Estimate(decimal[]![]! returns) -> decimal[,]!
+Boutquin.Trading.Application.CovarianceEstimators.LedoitWolfShrinkageEstimator.LedoitWolfShrinkageEstimator() -> void
+Boutquin.Trading.Application.CovarianceEstimators.LedoitWolfSingleFactorEstimator
+Boutquin.Trading.Application.CovarianceEstimators.LedoitWolfSingleFactorEstimator.Estimate(decimal[]![]! returns) -> decimal[,]!
+Boutquin.Trading.Application.CovarianceEstimators.LedoitWolfSingleFactorEstimator.LedoitWolfSingleFactorEstimator() -> void
+Boutquin.Trading.Application.CovarianceEstimators.NercomeCovarianceEstimator
+Boutquin.Trading.Application.CovarianceEstimators.NercomeCovarianceEstimator.Estimate(decimal[]![]! returns) -> decimal[,]!
+Boutquin.Trading.Application.CovarianceEstimators.NercomeCovarianceEstimator.NercomeCovarianceEstimator(decimal splitFraction = 0.5) -> void
+Boutquin.Trading.Application.CovarianceEstimators.OracleApproximatingShrinkageEstimator
+Boutquin.Trading.Application.CovarianceEstimators.OracleApproximatingShrinkageEstimator.Estimate(decimal[]![]! returns) -> decimal[,]!
+Boutquin.Trading.Application.CovarianceEstimators.OracleApproximatingShrinkageEstimator.OracleApproximatingShrinkageEstimator() -> void
+Boutquin.Trading.Application.CovarianceEstimators.PoetCovarianceEstimator
+Boutquin.Trading.Application.CovarianceEstimators.PoetCovarianceEstimator.Estimate(decimal[]![]! returns) -> decimal[,]!
+Boutquin.Trading.Application.CovarianceEstimators.PoetCovarianceEstimator.PoetCovarianceEstimator(int numFactors = 1, double thresholdMultiplier = 0.5) -> void
+Boutquin.Trading.Application.CovarianceEstimators.QuadraticInverseShrinkageEstimator
+Boutquin.Trading.Application.CovarianceEstimators.QuadraticInverseShrinkageEstimator.Estimate(decimal[]![]! returns) -> decimal[,]!
+Boutquin.Trading.Application.CovarianceEstimators.QuadraticInverseShrinkageEstimator.QuadraticInverseShrinkageEstimator() -> void
+Boutquin.Trading.Application.CovarianceEstimators.SampleCovarianceEstimator
+Boutquin.Trading.Application.CovarianceEstimators.SampleCovarianceEstimator.Estimate(decimal[]![]! returns) -> decimal[,]!
+Boutquin.Trading.Application.CovarianceEstimators.SampleCovarianceEstimator.SampleCovarianceEstimator() -> void
+Boutquin.Trading.Application.CovarianceEstimators.TracyWidomDenoisedCovarianceEstimator
+Boutquin.Trading.Application.CovarianceEstimators.TracyWidomDenoisedCovarianceEstimator.Estimate(decimal[]![]! returns) -> decimal[,]!
+Boutquin.Trading.Application.CovarianceEstimators.TracyWidomDenoisedCovarianceEstimator.TracyWidomDenoisedCovarianceEstimator() -> void
+Boutquin.Trading.Application.DownsideRisk.CDaRRiskMeasure
+Boutquin.Trading.Application.DownsideRisk.CDaRRiskMeasure.CDaRRiskMeasure(decimal confidenceLevel = 0.95) -> void
+Boutquin.Trading.Application.DownsideRisk.CDaRRiskMeasure.Evaluate(decimal[]! weights, decimal[]![]! scenarios, decimal learningRate) -> (decimal Value, decimal[]! Gradient)
+Boutquin.Trading.Application.DownsideRisk.CDaRRiskMeasure.Reset() -> void
+Boutquin.Trading.Application.DownsideRisk.CVaRRiskMeasure
+Boutquin.Trading.Application.DownsideRisk.CVaRRiskMeasure.CVaRRiskMeasure(decimal confidenceLevel = 0.95) -> void
+Boutquin.Trading.Application.DownsideRisk.CVaRRiskMeasure.Evaluate(decimal[]! weights, decimal[]![]! scenarios, decimal learningRate) -> (decimal Value, decimal[]! Gradient)
+Boutquin.Trading.Application.DownsideRisk.CVaRRiskMeasure.Reset() -> void
+Boutquin.Trading.Application.DownsideRisk.DownsideDeviationRiskMeasure
+Boutquin.Trading.Application.DownsideRisk.DownsideDeviationRiskMeasure.DownsideDeviationRiskMeasure(decimal minimumAcceptableReturn = 0) -> void
+Boutquin.Trading.Application.DownsideRisk.DownsideDeviationRiskMeasure.Evaluate(decimal[]! weights, decimal[]![]! scenarios, decimal learningRate) -> (decimal Value, decimal[]! Gradient)
+Boutquin.Trading.Application.EventHandlers.FillEventHandler
+Boutquin.Trading.Application.EventHandlers.FillEventHandler.FillEventHandler() -> void
+Boutquin.Trading.Application.EventHandlers.FillEventHandler.FillEventHandler(Microsoft.Extensions.Logging.ILogger<Boutquin.Trading.Application.EventHandlers.FillEventHandler!>! logger) -> void
+Boutquin.Trading.Application.EventHandlers.FillEventHandler.HandleEventAsync(Boutquin.Trading.Domain.Interfaces.IPortfolio! portfolio, Boutquin.Trading.Domain.Interfaces.IFinancialEvent! eventObj, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+Boutquin.Trading.Application.EventHandlers.MarketEventHandler
+Boutquin.Trading.Application.EventHandlers.MarketEventHandler.HandleEventAsync(Boutquin.Trading.Domain.Interfaces.IPortfolio! portfolio, Boutquin.Trading.Domain.Interfaces.IFinancialEvent! eventObj, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+Boutquin.Trading.Application.EventHandlers.MarketEventHandler.MarketEventHandler() -> void
+Boutquin.Trading.Application.EventHandlers.OrderEventHandler
+Boutquin.Trading.Application.EventHandlers.OrderEventHandler.HandleEventAsync(Boutquin.Trading.Domain.Interfaces.IPortfolio! portfolio, Boutquin.Trading.Domain.Interfaces.IFinancialEvent! eventObj, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+Boutquin.Trading.Application.EventHandlers.OrderEventHandler.OrderEventHandler() -> void
+Boutquin.Trading.Application.EventHandlers.OrderEventHandler.OrderEventHandler(Microsoft.Extensions.Logging.ILogger<Boutquin.Trading.Application.EventHandlers.OrderEventHandler!>! logger) -> void
+Boutquin.Trading.Application.EventHandlers.OrderEventHandler.OrderEventHandler(Microsoft.Extensions.Logging.ILogger<Boutquin.Trading.Application.EventHandlers.OrderEventHandler!>! logger, Boutquin.Trading.Domain.Interfaces.IRiskManager? riskManager) -> void
+Boutquin.Trading.Application.EventHandlers.RebalancingSignalEventHandler
+Boutquin.Trading.Application.EventHandlers.RebalancingSignalEventHandler.HandleEventAsync(Boutquin.Trading.Domain.Interfaces.IPortfolio! portfolio, Boutquin.Trading.Domain.Interfaces.IFinancialEvent! eventObj, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+Boutquin.Trading.Application.EventHandlers.RebalancingSignalEventHandler.RebalancingSignalEventHandler(Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode baseCurrency, decimal minimumTradeValue = 0) -> void
+Boutquin.Trading.Application.EventHandlers.SignalEventHandler
+Boutquin.Trading.Application.EventHandlers.SignalEventHandler.HandleEventAsync(Boutquin.Trading.Domain.Interfaces.IPortfolio! portfolio, Boutquin.Trading.Domain.Interfaces.IFinancialEvent! eventObj, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+Boutquin.Trading.Application.EventHandlers.SignalEventHandler.SignalEventHandler() -> void
+Boutquin.Trading.Application.Helpers.TargetPortfolioDiffer
+Boutquin.Trading.Application.Indicators.ExponentialMovingAverage
+Boutquin.Trading.Application.Indicators.ExponentialMovingAverage.Compute(decimal[]! values) -> decimal
+Boutquin.Trading.Application.Indicators.ExponentialMovingAverage.ExponentialMovingAverage(int period) -> void
+Boutquin.Trading.Application.Indicators.MomentumScore
+Boutquin.Trading.Application.Indicators.MomentumScore.Compute(decimal[]! dailyReturns) -> decimal
+Boutquin.Trading.Application.Indicators.MomentumScore.MomentumScore(int totalMonths = 12, int skipMonths = 1, int tradingDaysPerMonth = 21) -> void
+Boutquin.Trading.Application.Indicators.RateOfChangeIndicator
+Boutquin.Trading.Application.Indicators.RateOfChangeIndicator.Compute(decimal[]! series1, decimal[]! series2) -> decimal
+Boutquin.Trading.Application.Indicators.RateOfChangeIndicator.RateOfChangeIndicator(int lookback) -> void
+Boutquin.Trading.Application.Indicators.RealizedVolatility
+Boutquin.Trading.Application.Indicators.RealizedVolatility.Compute(decimal[]! returns) -> decimal
+Boutquin.Trading.Application.Indicators.RealizedVolatility.RealizedVolatility(int window, int tradingDaysPerYear = 252) -> void
+Boutquin.Trading.Application.Indicators.SimpleMovingAverage
+Boutquin.Trading.Application.Indicators.SimpleMovingAverage.Compute(decimal[]! values) -> decimal
+Boutquin.Trading.Application.Indicators.SimpleMovingAverage.SimpleMovingAverage(int period) -> void
+Boutquin.Trading.Application.Indicators.SpreadIndicator
+Boutquin.Trading.Application.Indicators.SpreadIndicator.Compute(decimal[]! series1, decimal[]! series2) -> decimal
+Boutquin.Trading.Application.Indicators.SpreadIndicator.SpreadIndicator() -> void
+Boutquin.Trading.Application.Portfolio
+Boutquin.Trading.Application.Portfolio.AdjustHistoricalDataForSplit(Boutquin.MarketData.Abstractions.ReferenceData.Symbol asset, decimal splitRatio) -> void
+Boutquin.Trading.Application.Portfolio.AdjustPositionForSplit(Boutquin.MarketData.Abstractions.ReferenceData.Symbol asset, decimal splitRatio) -> void
+Boutquin.Trading.Application.Portfolio.AssetCurrencies.get -> System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode>!
+Boutquin.Trading.Application.Portfolio.BaseCurrency.get -> Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode
+Boutquin.Trading.Application.Portfolio.CalculateTotalPortfolioValue(System.DateOnly timestamp) -> decimal
+Boutquin.Trading.Application.Portfolio.EnableDividendReinvestment.get -> bool
+Boutquin.Trading.Application.Portfolio.EquityCurve.get -> System.Collections.Generic.SortedDictionary<System.DateOnly, decimal>!
+Boutquin.Trading.Application.Portfolio.EventProcessor.get -> Boutquin.Trading.Domain.Interfaces.IEventProcessor!
+Boutquin.Trading.Application.Portfolio.GenerateSignals(Boutquin.Trading.Domain.Events.MarketEvent! marketEvent) -> System.Collections.Generic.IEnumerable<Boutquin.Trading.Domain.Events.SignalEvent!>!
+Boutquin.Trading.Application.Portfolio.GetAssetCurrency(Boutquin.MarketData.Abstractions.ReferenceData.Symbol asset) -> Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode
+Boutquin.Trading.Application.Portfolio.GetStrategy(string! strategyName) -> Boutquin.Trading.Domain.Interfaces.IStrategy!
+Boutquin.Trading.Application.Portfolio.HandleEventAsync(Boutquin.Trading.Domain.Interfaces.IFinancialEvent! event, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+Boutquin.Trading.Application.Portfolio.HistoricalFxConversionRates.get -> System.Collections.Generic.SortedDictionary<System.DateOnly, System.Collections.Generic.SortedDictionary<Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode, decimal>!>!
+Boutquin.Trading.Application.Portfolio.HistoricalMarketData.get -> System.Collections.Generic.SortedDictionary<System.DateOnly, System.Collections.Generic.SortedDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, Boutquin.MarketData.Abstractions.Records.Bar!>!>!
+Boutquin.Trading.Application.Portfolio.IsLive.get -> bool
+Boutquin.Trading.Application.Portfolio.Portfolio(Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode baseCurrency, System.Collections.Generic.IReadOnlyDictionary<string!, Boutquin.Trading.Domain.Interfaces.IStrategy!>! strategies, System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode>! assetCurrencies, System.Collections.Generic.IReadOnlyDictionary<System.Type!, Boutquin.Trading.Domain.Interfaces.IEventHandler!>! handlers, Boutquin.Trading.Domain.Interfaces.IBrokerage! broker, Microsoft.Extensions.Logging.ILogger<Boutquin.Trading.Application.Portfolio!>! logger, bool isLive = false, bool enableDividendReinvestment = false) -> void
+Boutquin.Trading.Application.Portfolio.Portfolio(Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode baseCurrency, System.Collections.Generic.IReadOnlyDictionary<string!, Boutquin.Trading.Domain.Interfaces.IStrategy!>! strategies, System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode>! assetCurrencies, System.Collections.Generic.IReadOnlyDictionary<System.Type!, Boutquin.Trading.Domain.Interfaces.IEventHandler!>! handlers, Boutquin.Trading.Domain.Interfaces.IBrokerage! broker, bool isLive = false) -> void
+Boutquin.Trading.Application.Portfolio.ProcessPendingOrdersAsync(System.DateOnly date, System.Collections.Generic.SortedDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, Boutquin.MarketData.Abstractions.Records.Bar!>! dayData, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+Boutquin.Trading.Application.Portfolio.Strategies.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Boutquin.Trading.Domain.Interfaces.IStrategy!>!
+Boutquin.Trading.Application.Portfolio.SubmitOrderAsync(Boutquin.Trading.Domain.Events.OrderEvent! orderEvent, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<bool>!
+Boutquin.Trading.Application.Portfolio.UpdateCash(string! strategyName, Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode currency, decimal amount) -> void
+Boutquin.Trading.Application.Portfolio.UpdateCashForDividend(Boutquin.MarketData.Abstractions.ReferenceData.Symbol asset, decimal dividendPerShare, decimal currentPrice = 0) -> void
+Boutquin.Trading.Application.Portfolio.UpdateEquityCurve(System.DateOnly timestamp) -> void
+Boutquin.Trading.Application.Portfolio.UpdateHistoricalData(Boutquin.Trading.Domain.Events.MarketEvent! marketEvent) -> void
+Boutquin.Trading.Application.Portfolio.UpdatePosition(string! strategyName, Boutquin.MarketData.Abstractions.ReferenceData.Symbol asset, int quantity) -> void
+Boutquin.Trading.Application.PortfolioConstruction.BlackLittermanConstruction
+Boutquin.Trading.Application.PortfolioConstruction.BlackLittermanConstruction.BlackLittermanConstruction(decimal[]! equilibriumWeights, decimal riskAversionCoefficient = 2.5, decimal tau = 0.05, decimal[,]? pickMatrix = null, decimal[]? viewReturns = null, decimal[,]? viewUncertainty = null, Boutquin.Trading.Domain.Interfaces.ICovarianceEstimator? covarianceEstimator = null, decimal minWeight = 0, decimal maxWeight = 1.0) -> void
+Boutquin.Trading.Application.PortfolioConstruction.BlackLittermanConstruction.ComputeTargetWeights(System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>! assets, decimal[]![]! returns) -> System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>!
+Boutquin.Trading.Application.PortfolioConstruction.BlackLittermanViewSpec
+Boutquin.Trading.Application.PortfolioConstruction.BlackLittermanViewSpec.BlackLittermanViewSpec(Boutquin.Trading.Application.PortfolioConstruction.BlackLittermanViewType Type, string? Symbol, string? LongAsset, string? ShortAsset, decimal ExpectedReturn, decimal Confidence) -> void
+Boutquin.Trading.Application.PortfolioConstruction.BlackLittermanViewSpec.Confidence.get -> decimal
+Boutquin.Trading.Application.PortfolioConstruction.BlackLittermanViewSpec.ExpectedReturn.get -> decimal
+Boutquin.Trading.Application.PortfolioConstruction.BlackLittermanViewSpec.LongAsset.get -> string?
+Boutquin.Trading.Application.PortfolioConstruction.BlackLittermanViewSpec.ShortAsset.get -> string?
+Boutquin.Trading.Application.PortfolioConstruction.BlackLittermanViewSpec.Symbol.get -> string?
+Boutquin.Trading.Application.PortfolioConstruction.BlackLittermanViewSpec.Type.get -> Boutquin.Trading.Application.PortfolioConstruction.BlackLittermanViewType
+Boutquin.Trading.Application.PortfolioConstruction.BlackLittermanViewType
+Boutquin.Trading.Application.PortfolioConstruction.BlackLittermanViewType.Absolute = 0 -> Boutquin.Trading.Application.PortfolioConstruction.BlackLittermanViewType
+Boutquin.Trading.Application.PortfolioConstruction.BlackLittermanViewType.Relative = 1 -> Boutquin.Trading.Application.PortfolioConstruction.BlackLittermanViewType
+Boutquin.Trading.Application.PortfolioConstruction.DynamicBlackLittermanConstruction
+Boutquin.Trading.Application.PortfolioConstruction.DynamicBlackLittermanConstruction.ComputeTargetWeights(System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>! assets, decimal[]![]! returns) -> System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>!
+Boutquin.Trading.Application.PortfolioConstruction.DynamicBlackLittermanConstruction.DynamicBlackLittermanConstruction(System.Collections.Generic.IReadOnlyList<Boutquin.Trading.Application.PortfolioConstruction.BlackLittermanViewSpec!>! viewSpecs, decimal riskAversionCoefficient = 2.5, decimal tau = 0.05, Boutquin.Trading.Domain.Interfaces.ICovarianceEstimator? covarianceEstimator = null, decimal minWeight = 0, decimal maxWeight = 1.0) -> void
+Boutquin.Trading.Application.PortfolioConstruction.EqualWeightConstruction
+Boutquin.Trading.Application.PortfolioConstruction.EqualWeightConstruction.ComputeTargetWeights(System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>! assets, decimal[]![]! returns) -> System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>!
+Boutquin.Trading.Application.PortfolioConstruction.EqualWeightConstruction.EqualWeightConstruction() -> void
+Boutquin.Trading.Application.PortfolioConstruction.HierarchicalEqualRiskContributionConstruction
+Boutquin.Trading.Application.PortfolioConstruction.HierarchicalEqualRiskContributionConstruction.ComputeTargetWeights(System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>! assets, decimal[]![]! returns) -> System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>!
+Boutquin.Trading.Application.PortfolioConstruction.HierarchicalEqualRiskContributionConstruction.HierarchicalEqualRiskContributionConstruction(Boutquin.Trading.Domain.Interfaces.ICovarianceEstimator? covarianceEstimator = null, decimal minWeight = 0, decimal maxWeight = 1.0) -> void
+Boutquin.Trading.Application.PortfolioConstruction.HierarchicalRiskParityConstruction
+Boutquin.Trading.Application.PortfolioConstruction.HierarchicalRiskParityConstruction.ComputeTargetWeights(System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>! assets, decimal[]![]! returns) -> System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>!
+Boutquin.Trading.Application.PortfolioConstruction.HierarchicalRiskParityConstruction.HierarchicalRiskParityConstruction(Boutquin.Trading.Domain.Interfaces.ICovarianceEstimator? covarianceEstimator = null, decimal minWeight = 0, decimal maxWeight = 1.0) -> void
+Boutquin.Trading.Application.PortfolioConstruction.InverseVolatilityConstruction
+Boutquin.Trading.Application.PortfolioConstruction.InverseVolatilityConstruction.ComputeTargetWeights(System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>! assets, decimal[]![]! returns) -> System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>!
+Boutquin.Trading.Application.PortfolioConstruction.InverseVolatilityConstruction.InverseVolatilityConstruction() -> void
+Boutquin.Trading.Application.PortfolioConstruction.MaximumDiversificationConstruction
+Boutquin.Trading.Application.PortfolioConstruction.MaximumDiversificationConstruction.ComputeTargetWeights(System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>! assets, decimal[]![]! returns) -> System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>!
+Boutquin.Trading.Application.PortfolioConstruction.MaximumDiversificationConstruction.MaximumDiversificationConstruction(Boutquin.Trading.Domain.Interfaces.ICovarianceEstimator? covarianceEstimator = null, decimal minWeight = 0, decimal maxWeight = 1.0, int maxIterations = 5000, decimal tolerance = 0.000000000001) -> void
+Boutquin.Trading.Application.PortfolioConstruction.MeanDownsideRiskConstruction
+Boutquin.Trading.Application.PortfolioConstruction.MeanDownsideRiskConstruction.ComputeTargetWeights(System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>! assets, decimal[]![]! returns) -> System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>!
+Boutquin.Trading.Application.PortfolioConstruction.MeanDownsideRiskConstruction.MeanDownsideRiskConstruction(Boutquin.Trading.Domain.Interfaces.IDownsideRiskMeasure! riskMeasure, decimal minWeight = 0, decimal maxWeight = 1.0, decimal riskAversion = 1.0, int maxIterations = 5000, decimal tolerance = 0.000000000001) -> void
+Boutquin.Trading.Application.PortfolioConstruction.MeanVarianceConstruction
+Boutquin.Trading.Application.PortfolioConstruction.MeanVarianceConstruction.ComputeTargetWeights(System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>! assets, decimal[]![]! returns) -> System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>!
+Boutquin.Trading.Application.PortfolioConstruction.MeanVarianceConstruction.MeanVarianceConstruction(Boutquin.Trading.Domain.Interfaces.ICovarianceEstimator? covarianceEstimator = null, decimal minWeight = 0, decimal maxWeight = 1.0, decimal riskAversion = 1.0, int maxIterations = 5000, decimal tolerance = 0.000000000001) -> void
+Boutquin.Trading.Application.PortfolioConstruction.MinimumVarianceConstruction
+Boutquin.Trading.Application.PortfolioConstruction.MinimumVarianceConstruction.ComputeTargetWeights(System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>! assets, decimal[]![]! returns) -> System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>!
+Boutquin.Trading.Application.PortfolioConstruction.MinimumVarianceConstruction.MinimumVarianceConstruction(Boutquin.Trading.Domain.Interfaces.ICovarianceEstimator? covarianceEstimator = null, decimal minWeight = 0, decimal maxWeight = 1.0, int maxIterations = 5000, decimal tolerance = 0.000000000001) -> void
+Boutquin.Trading.Application.PortfolioConstruction.PcaConstrainedConstruction
+Boutquin.Trading.Application.PortfolioConstruction.PcaConstrainedConstruction.ComputeTargetWeights(System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>! assets, decimal[]![]! returns) -> System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>!
+Boutquin.Trading.Application.PortfolioConstruction.PcaConstrainedConstruction.PcaConstrainedConstruction(Boutquin.Trading.Domain.Interfaces.IPortfolioConstructionModel! innerModel, Boutquin.Trading.Domain.Interfaces.ICovarianceEstimator? covarianceEstimator = null, int? maxComponents = null) -> void
+Boutquin.Trading.Application.PortfolioConstruction.PrincipalComponentRiskParityConstruction
+Boutquin.Trading.Application.PortfolioConstruction.PrincipalComponentRiskParityConstruction.ComputeTargetWeights(System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>! assets, decimal[]![]! returns) -> System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>!
+Boutquin.Trading.Application.PortfolioConstruction.PrincipalComponentRiskParityConstruction.PrincipalComponentRiskParityConstruction(Boutquin.Trading.Domain.Interfaces.ICovarianceEstimator? covarianceEstimator = null, decimal? signalThreshold = null) -> void
+Boutquin.Trading.Application.PortfolioConstruction.RegimeWeightConstrainedConstruction
+Boutquin.Trading.Application.PortfolioConstruction.RegimeWeightConstrainedConstruction.ComputeTargetWeights(System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>! assets, decimal[]![]! returns) -> System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>!
+Boutquin.Trading.Application.PortfolioConstruction.RegimeWeightConstrainedConstruction.RegimeWeightConstrainedConstruction(Boutquin.Trading.Domain.Interfaces.IPortfolioConstructionModel! inner, System.Collections.Generic.IReadOnlyDictionary<Boutquin.Trading.Domain.Enums.EconomicRegime, Boutquin.Trading.Domain.ValueObjects.AssetWeightConstraints!>! regimeConstraints, Boutquin.Trading.Domain.Enums.EconomicRegime currentRegime) -> void
+Boutquin.Trading.Application.PortfolioConstruction.ReturnTiltedHrpConstruction
+Boutquin.Trading.Application.PortfolioConstruction.ReturnTiltedHrpConstruction.ComputeTargetWeights(System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>! assets, decimal[]![]! returns) -> System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>!
+Boutquin.Trading.Application.PortfolioConstruction.ReturnTiltedHrpConstruction.ReturnTiltedHrpConstruction(Boutquin.Trading.Domain.Interfaces.ICovarianceEstimator? covarianceEstimator = null, decimal kappa = 0.5, decimal minWeight = 0, decimal maxWeight = 1.0) -> void
+Boutquin.Trading.Application.PortfolioConstruction.RiskParityConstruction
+Boutquin.Trading.Application.PortfolioConstruction.RiskParityConstruction.ComputeTargetWeights(System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>! assets, decimal[]![]! returns) -> System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>!
+Boutquin.Trading.Application.PortfolioConstruction.RiskParityConstruction.RiskParityConstruction(Boutquin.Trading.Domain.Interfaces.ICovarianceEstimator? covarianceEstimator = null, decimal minWeight = 0, decimal maxWeight = 1.0, int maxIterations = 100, decimal tolerance = 0.0000000001) -> void
+Boutquin.Trading.Application.PortfolioConstruction.RobustMeanVarianceConstruction
+Boutquin.Trading.Application.PortfolioConstruction.RobustMeanVarianceConstruction.ComputeTargetWeights(System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>! assets, decimal[]![]! returns) -> System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>!
+Boutquin.Trading.Application.PortfolioConstruction.RobustMeanVarianceConstruction.ComputeTargetWeights(System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>! assets, decimal[]![]! returns, System.Collections.Generic.IReadOnlyList<decimal[,]!>! covarianceScenarios) -> System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>!
+Boutquin.Trading.Application.PortfolioConstruction.RobustMeanVarianceConstruction.RobustMeanVarianceConstruction(Boutquin.Trading.Domain.Interfaces.ICovarianceEstimator! covarianceEstimator, decimal minWeight = 0, decimal maxWeight = 1.0, decimal riskAversion = 1.0, int maxIterations = 3000, int maxAlternatingRounds = 20, decimal tolerance = 0.0000000001) -> void
+Boutquin.Trading.Application.PortfolioConstruction.TacticalOverlayConstruction
+Boutquin.Trading.Application.PortfolioConstruction.TacticalOverlayConstruction.ComputeTargetWeights(System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>! assets, decimal[]![]! returns) -> System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>!
+Boutquin.Trading.Application.PortfolioConstruction.TacticalOverlayConstruction.TacticalOverlayConstruction(Boutquin.Trading.Domain.Interfaces.IPortfolioConstructionModel! baseModel, System.Collections.Generic.IReadOnlyDictionary<Boutquin.Trading.Domain.Enums.EconomicRegime, System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>!>! regimeTilts, Boutquin.Trading.Domain.Enums.EconomicRegime currentRegime, System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>? momentumScores = null, decimal momentumStrength = 0.1) -> void
+Boutquin.Trading.Application.PortfolioConstruction.TurnoverPenalizedConstruction
+Boutquin.Trading.Application.PortfolioConstruction.TurnoverPenalizedConstruction.ComputeTargetWeights(System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>! assets, decimal[]![]! returns) -> System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>!
+Boutquin.Trading.Application.PortfolioConstruction.TurnoverPenalizedConstruction.Reset() -> void
+Boutquin.Trading.Application.PortfolioConstruction.TurnoverPenalizedConstruction.TurnoverPenalizedConstruction(Boutquin.Trading.Domain.Interfaces.IPortfolioConstructionModel! inner, decimal lambda = 0.05, decimal minWeight = 0, decimal maxWeight = 1.0, int maxIterations = 2000, decimal tolerance = 0.0000000001) -> void
+Boutquin.Trading.Application.PortfolioConstruction.VolatilityTargetingConstruction
+Boutquin.Trading.Application.PortfolioConstruction.VolatilityTargetingConstruction.ComputeTargetWeights(System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>! assets, decimal[]![]! returns) -> System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>!
+Boutquin.Trading.Application.PortfolioConstruction.VolatilityTargetingConstruction.VolatilityTargetingConstruction(Boutquin.Trading.Domain.Interfaces.IPortfolioConstructionModel! baseModel, decimal targetVolatility, decimal maxLeverage = 1.0, int tradingDaysPerYear = 252) -> void
+Boutquin.Trading.Application.PortfolioConstruction.WeightConstrainedConstruction
+Boutquin.Trading.Application.PortfolioConstruction.WeightConstrainedConstruction.ComputeTargetWeights(System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>! assets, decimal[]![]! returns) -> System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>!
+Boutquin.Trading.Application.PortfolioConstruction.WeightConstrainedConstruction.WeightConstrainedConstruction(Boutquin.Trading.Domain.Interfaces.IPortfolioConstructionModel! inner, Boutquin.Trading.Domain.ValueObjects.AssetWeightConstraints! constraints) -> void
+Boutquin.Trading.Application.PortfolioConstruction.WeightConstrainedConstruction.WeightConstrainedConstruction(Boutquin.Trading.Domain.Interfaces.IPortfolioConstructionModel! inner, System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>? floors = null, System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>? caps = null) -> void
+Boutquin.Trading.Application.PositionSizing.DynamicWeightPositionSizer
+Boutquin.Trading.Application.PositionSizing.DynamicWeightPositionSizer.ComputePositionSizes(System.DateOnly timestamp, System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, Boutquin.Trading.Domain.Enums.SignalType>! signalType, Boutquin.Trading.Domain.Interfaces.IStrategy! strategy, System.Collections.Generic.IReadOnlyDictionary<System.DateOnly, System.Collections.Generic.SortedDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, Boutquin.MarketData.Abstractions.Records.Bar!>!>! historicalMarketData, System.Collections.Generic.IReadOnlyDictionary<System.DateOnly, System.Collections.Generic.SortedDictionary<Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode, decimal>!>! historicalFxConversionRates) -> System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, int>!
+Boutquin.Trading.Application.PositionSizing.DynamicWeightPositionSizer.DynamicWeightPositionSizer(Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode baseCurrency, decimal cashBufferPercent = 0) -> void
+Boutquin.Trading.Application.PositionSizing.FixedWeightPositionSizer
+Boutquin.Trading.Application.PositionSizing.FixedWeightPositionSizer.ComputePositionSizes(System.DateOnly timestamp, System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, Boutquin.Trading.Domain.Enums.SignalType>! signalType, Boutquin.Trading.Domain.Interfaces.IStrategy! strategy, System.Collections.Generic.IReadOnlyDictionary<System.DateOnly, System.Collections.Generic.SortedDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, Boutquin.MarketData.Abstractions.Records.Bar!>!>! historicalMarketData, System.Collections.Generic.IReadOnlyDictionary<System.DateOnly, System.Collections.Generic.SortedDictionary<Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode, decimal>!>! historicalFxConversionRates) -> System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, int>!
+Boutquin.Trading.Application.PositionSizing.FixedWeightPositionSizer.FixedWeightPositionSizer(System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>! fixedAssetWeights, Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode baseCurrency, decimal cashBufferPercent = 0, bool renormalizeForSignaledAssets = false) -> void
+Boutquin.Trading.Application.Rebalancing.CalendarRebalancingTrigger
+Boutquin.Trading.Application.Rebalancing.CalendarRebalancingTrigger.CalendarRebalancingTrigger() -> void
+Boutquin.Trading.Application.Rebalancing.CalendarRebalancingTrigger.ShouldRebalance(System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>! currentWeights, System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>! targetWeights) -> bool
+Boutquin.Trading.Application.Rebalancing.ThresholdRebalancingTrigger
+Boutquin.Trading.Application.Rebalancing.ThresholdRebalancingTrigger.ShouldRebalance(System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>! currentWeights, System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>! targetWeights) -> bool
+Boutquin.Trading.Application.Rebalancing.ThresholdRebalancingTrigger.ThresholdRebalancingTrigger(decimal threshold) -> void
+Boutquin.Trading.Application.Regime.GrowthInflationRegimeClassifier
+Boutquin.Trading.Application.Regime.GrowthInflationRegimeClassifier.Classify(decimal growthSignal, decimal inflationSignal) -> Boutquin.Trading.Domain.Enums.EconomicRegime
+Boutquin.Trading.Application.Regime.GrowthInflationRegimeClassifier.GrowthInflationRegimeClassifier(decimal deadband = 0) -> void
+Boutquin.Trading.Application.Regime.GrowthInflationRegimeClassifier.Reset() -> void
+Boutquin.Trading.Application.Reporting.BenchmarkComparisonReport
+Boutquin.Trading.Application.Reporting.HtmlReportGenerator
+Boutquin.Trading.Application.RiskManagement.DrawdownCircuitBreaker
+Boutquin.Trading.Application.RiskManagement.DrawdownCircuitBreaker.CheckAsync(Boutquin.Trading.Domain.Interfaces.IPortfolio! portfolio, System.DateOnly date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Boutquin.Trading.Application.RiskManagement.DrawdownCircuitBreaker.DrawdownCircuitBreaker(decimal maxDrawdownPercent, int cooldownDays = 21) -> void
+Boutquin.Trading.Application.RiskManagement.DrawdownCircuitBreaker.InCashMode.get -> bool
+Boutquin.Trading.Application.RiskManagement.DrawdownCircuitBreaker.LiquidationCount.get -> int
+Boutquin.Trading.Application.RiskManagement.MaxDrawdownRule
+Boutquin.Trading.Application.RiskManagement.MaxDrawdownRule.Evaluate(Boutquin.Trading.Domain.Events.Order! order, Boutquin.Trading.Domain.Interfaces.IPortfolio! portfolio) -> Boutquin.Trading.Domain.ValueObjects.RiskEvaluation!
+Boutquin.Trading.Application.RiskManagement.MaxDrawdownRule.MaxDrawdownRule(decimal maxDrawdownPercent) -> void
+Boutquin.Trading.Application.RiskManagement.MaxDrawdownRule.Name.get -> string!
+Boutquin.Trading.Application.RiskManagement.MaxPositionSizeRule
+Boutquin.Trading.Application.RiskManagement.MaxPositionSizeRule.Evaluate(Boutquin.Trading.Domain.Events.Order! order, Boutquin.Trading.Domain.Interfaces.IPortfolio! portfolio) -> Boutquin.Trading.Domain.ValueObjects.RiskEvaluation!
+Boutquin.Trading.Application.RiskManagement.MaxPositionSizeRule.EvaluateBatch(System.Collections.Generic.IReadOnlyList<Boutquin.Trading.Domain.Events.Order!>! orders, Boutquin.Trading.Domain.Interfaces.IPortfolio! portfolio) -> Boutquin.Trading.Domain.ValueObjects.RiskEvaluation!
+Boutquin.Trading.Application.RiskManagement.MaxPositionSizeRule.MaxPositionSizeRule(decimal maxPositionPercent) -> void
+Boutquin.Trading.Application.RiskManagement.MaxPositionSizeRule.Name.get -> string!
+Boutquin.Trading.Application.RiskManagement.MaxSectorExposureRule
+Boutquin.Trading.Application.RiskManagement.MaxSectorExposureRule.Evaluate(Boutquin.Trading.Domain.Events.Order! order, Boutquin.Trading.Domain.Interfaces.IPortfolio! portfolio) -> Boutquin.Trading.Domain.ValueObjects.RiskEvaluation!
+Boutquin.Trading.Application.RiskManagement.MaxSectorExposureRule.EvaluateBatch(System.Collections.Generic.IReadOnlyList<Boutquin.Trading.Domain.Events.Order!>! orders, Boutquin.Trading.Domain.Interfaces.IPortfolio! portfolio) -> Boutquin.Trading.Domain.ValueObjects.RiskEvaluation!
+Boutquin.Trading.Application.RiskManagement.MaxSectorExposureRule.MaxSectorExposureRule(decimal maxExposurePercent, System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, Boutquin.MarketData.Abstractions.ReferenceData.AssetClassCode>! assetClassMap) -> void
+Boutquin.Trading.Application.RiskManagement.MaxSectorExposureRule.Name.get -> string!
+Boutquin.Trading.Application.RiskManagement.RiskManager
+Boutquin.Trading.Application.RiskManagement.RiskManager.Evaluate(Boutquin.Trading.Domain.Events.Order! order, Boutquin.Trading.Domain.Interfaces.IPortfolio! portfolio) -> Boutquin.Trading.Domain.ValueObjects.RiskEvaluation!
+Boutquin.Trading.Application.RiskManagement.RiskManager.EvaluateBatch(System.Collections.Generic.IReadOnlyList<Boutquin.Trading.Domain.Events.Order!>! orders, Boutquin.Trading.Domain.Interfaces.IPortfolio! portfolio) -> Boutquin.Trading.Domain.ValueObjects.BatchRiskEvaluation!
+Boutquin.Trading.Application.RiskManagement.RiskManager.RiskManager(System.Collections.Generic.IEnumerable<Boutquin.Trading.Domain.Interfaces.IRiskRule!>! rules) -> void
+Boutquin.Trading.Application.SlippageModels.FixedSlippage
+Boutquin.Trading.Application.SlippageModels.FixedSlippage.CalculateFillPrice(decimal theoreticalPrice, int quantity, Boutquin.Trading.Domain.Enums.TradeAction tradeAction) -> decimal
+Boutquin.Trading.Application.SlippageModels.FixedSlippage.FixedSlippage(decimal fixedAmount) -> void
+Boutquin.Trading.Application.SlippageModels.NoSlippage
+Boutquin.Trading.Application.SlippageModels.NoSlippage.CalculateFillPrice(decimal theoreticalPrice, int quantity, Boutquin.Trading.Domain.Enums.TradeAction tradeAction) -> decimal
+Boutquin.Trading.Application.SlippageModels.NoSlippage.NoSlippage() -> void
+Boutquin.Trading.Application.SlippageModels.PercentageSlippage
+Boutquin.Trading.Application.SlippageModels.PercentageSlippage.CalculateFillPrice(decimal theoreticalPrice, int quantity, Boutquin.Trading.Domain.Enums.TradeAction tradeAction) -> decimal
+Boutquin.Trading.Application.SlippageModels.PercentageSlippage.PercentageSlippage(decimal percentage) -> void
+Boutquin.Trading.Application.SlippageModels.SpreadSlippage
+Boutquin.Trading.Application.SlippageModels.SpreadSlippage.CalculateFillPrice(decimal theoreticalPrice, int quantity, Boutquin.Trading.Domain.Enums.TradeAction tradeAction) -> decimal
+Boutquin.Trading.Application.SlippageModels.SpreadSlippage.CalculateFillPriceForAsset(decimal theoreticalPrice, int quantity, Boutquin.Trading.Domain.Enums.TradeAction tradeAction, Boutquin.MarketData.Abstractions.ReferenceData.Symbol asset) -> decimal
+Boutquin.Trading.Application.SlippageModels.SpreadSlippage.SpreadSlippage(System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>! halfSpreads, decimal defaultHalfSpread) -> void
+Boutquin.Trading.Application.SlippageModels.VolumeShareSlippage
+Boutquin.Trading.Application.SlippageModels.VolumeShareSlippage.CalculateFillPrice(decimal theoreticalPrice, int quantity, Boutquin.Trading.Domain.Enums.TradeAction tradeAction) -> decimal
+Boutquin.Trading.Application.SlippageModels.VolumeShareSlippage.CalculateFillPrice(decimal theoreticalPrice, int quantity, Boutquin.Trading.Domain.Enums.TradeAction tradeAction, long barVolume) -> decimal
+Boutquin.Trading.Application.SlippageModels.VolumeShareSlippage.PriceImpact.get -> decimal
+Boutquin.Trading.Application.SlippageModels.VolumeShareSlippage.VolumeLimit.get -> decimal
+Boutquin.Trading.Application.SlippageModels.VolumeShareSlippage.VolumeShareSlippage(decimal volumeLimit = 0.025, decimal priceImpact = 0.1) -> void
+Boutquin.Trading.Application.Strategies.BuyAndHoldStrategy
+Boutquin.Trading.Application.Strategies.BuyAndHoldStrategy.BuyAndHoldStrategy(string! name, System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode>! assets, System.Collections.Generic.SortedDictionary<Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode, decimal>! cash, System.DateOnly initialTimestamp, Boutquin.Trading.Domain.Interfaces.IOrderPriceCalculationStrategy! orderPriceCalculationStrategy, Boutquin.Trading.Domain.Interfaces.IPositionSizer! positionSizer) -> void
+Boutquin.Trading.Application.Strategies.ClosePriceOrderPriceCalculationStrategy
+Boutquin.Trading.Application.Strategies.ClosePriceOrderPriceCalculationStrategy.CalculateOrderPrices(System.DateOnly timestamp, Boutquin.MarketData.Abstractions.ReferenceData.Symbol asset, Boutquin.Trading.Domain.Enums.TradeAction tradeAction, System.Collections.Generic.IReadOnlyDictionary<System.DateOnly, System.Collections.Generic.SortedDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, Boutquin.MarketData.Abstractions.Records.Bar!>!>! historicalData) -> (Boutquin.Trading.Domain.Enums.OrderType OrderType, decimal PrimaryPrice, decimal? SecondaryPrice)
+Boutquin.Trading.Application.Strategies.ClosePriceOrderPriceCalculationStrategy.ClosePriceOrderPriceCalculationStrategy() -> void
+Boutquin.Trading.Application.Strategies.ConstructionModelStrategy
+Boutquin.Trading.Application.Strategies.ConstructionModelStrategy.ConstructionModelStrategy(string! name, System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode>! assets, System.Collections.Generic.SortedDictionary<Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode, decimal>! cash, Boutquin.Trading.Domain.Interfaces.IOrderPriceCalculationStrategy! orderPriceCalculationStrategy, Boutquin.Trading.Domain.Interfaces.IPositionSizer! positionSizer, Boutquin.Trading.Domain.Interfaces.IPortfolioConstructionModel! constructionModel, Boutquin.Trading.Domain.Enums.RebalancingFrequency rebalancingFrequency, Boutquin.Trading.Domain.Interfaces.IRebalancingTrigger? rebalancingTrigger = null, int lookbackWindow = 60, Boutquin.Trading.Domain.Interfaces.ITimedUniverseSelector? universeSelector = null, Boutquin.MarketData.Abstractions.Calendars.IBusinessCalendar? tradingCalendar = null) -> void
+Boutquin.Trading.Application.Strategies.ConstructionModelStrategy.ConstructionModelStrategy(string! name, System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode>! assets, System.Collections.Generic.SortedDictionary<Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode, decimal>! cash, Boutquin.Trading.Domain.Interfaces.IOrderPriceCalculationStrategy! orderPriceCalculationStrategy, Boutquin.Trading.Domain.Interfaces.IPositionSizer! positionSizer, Boutquin.Trading.Domain.Interfaces.IPortfolioConstructionModel! constructionModel, Boutquin.Trading.Domain.Enums.RebalancingFrequency rebalancingFrequency, Microsoft.Extensions.Logging.ILogger<Boutquin.Trading.Application.Strategies.ConstructionModelStrategy!>! logger, Boutquin.Trading.Domain.Interfaces.IRebalancingTrigger? rebalancingTrigger = null, int lookbackWindow = 60, Boutquin.Trading.Domain.Interfaces.ITimedUniverseSelector? universeSelector = null, Boutquin.MarketData.Abstractions.Calendars.IBusinessCalendar? tradingCalendar = null) -> void
+Boutquin.Trading.Application.Strategies.ConstructionModelStrategy.LastComputedWeights.get -> System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>?
+Boutquin.Trading.Application.Strategies.ConstructionModelStrategy.TargetWeightHistory.get -> System.Collections.Generic.IReadOnlyDictionary<System.DateOnly, System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>!>!
+Boutquin.Trading.Application.Strategies.RebalancingBuyAndHoldStrategy
+Boutquin.Trading.Application.Strategies.RebalancingBuyAndHoldStrategy.RebalancingBuyAndHoldStrategy(string! name, System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode>! assets, System.Collections.Generic.SortedDictionary<Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode, decimal>! cash, Boutquin.Trading.Domain.Interfaces.IOrderPriceCalculationStrategy! orderPriceCalculationStrategy, Boutquin.Trading.Domain.Interfaces.IPositionSizer! positionSizer, Boutquin.Trading.Domain.Enums.RebalancingFrequency rebalancingFrequency, Boutquin.MarketData.Abstractions.Calendars.IBusinessCalendar? tradingCalendar = null, Boutquin.Trading.Domain.Interfaces.ITimedUniverseSelector? universeSelector = null) -> void
+Boutquin.Trading.Application.Strategies.StrategyBase
+Boutquin.Trading.Application.Strategies.StrategyBase.Assets.get -> System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode>!
+Boutquin.Trading.Application.Strategies.StrategyBase.Cash.get -> System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode, decimal>!
+Boutquin.Trading.Application.Strategies.StrategyBase.GetPositionQuantity(Boutquin.MarketData.Abstractions.ReferenceData.Symbol asset) -> int
+Boutquin.Trading.Application.Strategies.StrategyBase.Name.get -> string!
+Boutquin.Trading.Application.Strategies.StrategyBase.OrderPriceCalculationStrategy.get -> Boutquin.Trading.Domain.Interfaces.IOrderPriceCalculationStrategy!
+Boutquin.Trading.Application.Strategies.StrategyBase.PositionSizer.get -> Boutquin.Trading.Domain.Interfaces.IPositionSizer!
+Boutquin.Trading.Application.Strategies.StrategyBase.Positions.get -> System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, int>!
+Boutquin.Trading.Application.Strategies.StrategyBase.SetPosition(Boutquin.MarketData.Abstractions.ReferenceData.Symbol asset, int quantity) -> void
+Boutquin.Trading.Application.Strategies.StrategyBase.StrategyBase(string! name, System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode>! assets, System.Collections.Generic.SortedDictionary<Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode, decimal>! cash, Boutquin.Trading.Domain.Interfaces.IOrderPriceCalculationStrategy! orderPriceCalculationStrategy, Boutquin.Trading.Domain.Interfaces.IPositionSizer! positionSizer) -> void
+Boutquin.Trading.Application.Strategies.StrategyBase.UpdateCash(Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode currency, decimal amount) -> void
+Boutquin.Trading.Application.Strategies.StrategyBase.UpdatePositions(Boutquin.MarketData.Abstractions.ReferenceData.Symbol asset, int quantity) -> void
+Boutquin.Trading.Application.Universe.CompositeTimedUniverseSelector
+Boutquin.Trading.Application.Universe.CompositeTimedUniverseSelector.CompositeTimedUniverseSelector(System.Collections.Generic.IReadOnlyList<Boutquin.Trading.Domain.Interfaces.IUniverseSelector!>! selectors) -> void
+Boutquin.Trading.Application.Universe.CompositeTimedUniverseSelector.Select(System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>! candidates) -> System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>!
+Boutquin.Trading.Application.Universe.CompositeTimedUniverseSelector.SelectAsOf(System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>! candidates, System.DateOnly asOfDate) -> System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>!
+Boutquin.Trading.Application.Universe.CompositeUniverseSelector
+Boutquin.Trading.Application.Universe.CompositeUniverseSelector.CompositeUniverseSelector(System.Collections.Generic.IReadOnlyList<Boutquin.Trading.Domain.Interfaces.IUniverseSelector!>! selectors) -> void
+Boutquin.Trading.Application.Universe.CompositeUniverseSelector.Select(System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>! candidates) -> System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>!
+Boutquin.Trading.Application.Universe.DynamicUniverse
+Boutquin.Trading.Application.Universe.DynamicUniverse.DynamicUniverse(System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, System.DateOnly>! entryDates) -> void
+Boutquin.Trading.Application.Universe.DynamicUniverse.Select(System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>! candidates) -> System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>!
+Boutquin.Trading.Application.Universe.DynamicUniverse.SelectAsOf(System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>! candidates, System.DateOnly asOfDate) -> System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>!
+Boutquin.Trading.Application.Universe.LiquidityFilter
+Boutquin.Trading.Application.Universe.LiquidityFilter.LiquidityFilter(decimal minAverageDailyVolume, System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, Boutquin.Trading.Domain.Analytics.AssetMetadata!>! metadata) -> void
+Boutquin.Trading.Application.Universe.LiquidityFilter.Select(System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>! candidates) -> System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>!
+Boutquin.Trading.Application.Universe.MinAgeFilter
+Boutquin.Trading.Application.Universe.MinAgeFilter.MinAgeFilter(int minAgeDays, System.DateOnly asOfDate, System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, Boutquin.Trading.Domain.Analytics.AssetMetadata!>! metadata) -> void
+Boutquin.Trading.Application.Universe.MinAgeFilter.Select(System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>! candidates) -> System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>!
+Boutquin.Trading.Application.Universe.MinAumFilter
+Boutquin.Trading.Application.Universe.MinAumFilter.MinAumFilter(decimal minAumMillions, System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, Boutquin.Trading.Domain.Analytics.AssetMetadata!>! metadata) -> void
+Boutquin.Trading.Application.Universe.MinAumFilter.Select(System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>! candidates) -> System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>!
+Boutquin.Trading.Application.Universe.SupersessionFilter
+Boutquin.Trading.Application.Universe.SupersessionFilter.Select(System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>! candidates) -> System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>!
+Boutquin.Trading.Application.Universe.SupersessionFilter.SupersessionFilter(System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, Boutquin.Trading.Domain.Analytics.AssetMetadata!>! metadata) -> void
+abstract Boutquin.Trading.Application.Strategies.StrategyBase.GenerateSignals(System.DateOnly timestamp, Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode baseCurrency, System.Collections.Generic.IReadOnlyDictionary<System.DateOnly, System.Collections.Generic.SortedDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, Boutquin.MarketData.Abstractions.Records.Bar!>!>! historicalMarketData, System.Collections.Generic.IReadOnlyDictionary<System.DateOnly, System.Collections.Generic.SortedDictionary<Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode, decimal>!>! historicalFxConversionRates) -> Boutquin.Trading.Domain.Events.SignalEvent!
+const Boutquin.Trading.Application.Configuration.BacktestOptions.SectionName = "Backtest" -> string!
+const Boutquin.Trading.Application.Configuration.CalendarOptions.SectionName = "Calendar" -> string!
+const Boutquin.Trading.Application.Configuration.CostModelOptions.SectionName = "CostModel" -> string!
+const Boutquin.Trading.Application.Configuration.RiskManagementOptions.SectionName = "RiskManagement" -> string!
+override Boutquin.Trading.Application.Strategies.BuyAndHoldStrategy.GenerateSignals(System.DateOnly timestamp, Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode baseCurrency, System.Collections.Generic.IReadOnlyDictionary<System.DateOnly, System.Collections.Generic.SortedDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, Boutquin.MarketData.Abstractions.Records.Bar!>!>! historicalMarketData, System.Collections.Generic.IReadOnlyDictionary<System.DateOnly, System.Collections.Generic.SortedDictionary<Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode, decimal>!>! historicalFxConversionRates) -> Boutquin.Trading.Domain.Events.SignalEvent!
+override Boutquin.Trading.Application.Strategies.ConstructionModelStrategy.GenerateSignals(System.DateOnly timestamp, Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode baseCurrency, System.Collections.Generic.IReadOnlyDictionary<System.DateOnly, System.Collections.Generic.SortedDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, Boutquin.MarketData.Abstractions.Records.Bar!>!>! historicalMarketData, System.Collections.Generic.IReadOnlyDictionary<System.DateOnly, System.Collections.Generic.SortedDictionary<Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode, decimal>!>! historicalFxConversionRates) -> Boutquin.Trading.Domain.Events.SignalEvent!
+override Boutquin.Trading.Application.Strategies.RebalancingBuyAndHoldStrategy.GenerateSignals(System.DateOnly timestamp, Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode baseCurrency, System.Collections.Generic.IReadOnlyDictionary<System.DateOnly, System.Collections.Generic.SortedDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, Boutquin.MarketData.Abstractions.Records.Bar!>!>! historicalMarketData, System.Collections.Generic.IReadOnlyDictionary<System.DateOnly, System.Collections.Generic.SortedDictionary<Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode, decimal>!>! historicalFxConversionRates) -> Boutquin.Trading.Domain.Events.SignalEvent!
+static Boutquin.Trading.Application.Analytics.BrinsonFachlerAttributor.Attribute(System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>! assetNames, System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>! portfolioWeights, System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>! benchmarkWeights, System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>! portfolioReturns, System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>! benchmarkReturns) -> Boutquin.Trading.Domain.Analytics.BrinsonFachlerResult!
+static Boutquin.Trading.Application.Analytics.CorrelationAnalyzer.Analyze(System.Collections.Generic.IReadOnlyList<Boutquin.MarketData.Abstractions.ReferenceData.Symbol>! assetNames, decimal[]![]! returns, decimal[]! weights) -> Boutquin.Trading.Domain.Analytics.CorrelationAnalysisResult!
+static Boutquin.Trading.Application.Analytics.CorrelationAnalyzer.RollingCorrelation(decimal[]! returnsA, decimal[]! returnsB, int windowSize) -> decimal[]!
+static Boutquin.Trading.Application.Analytics.DrawdownAnalyzer.AnalyzeDrawdownPeriods(System.Collections.Generic.SortedDictionary<System.DateOnly, decimal>! equityCurve) -> System.Collections.Generic.IReadOnlyList<Boutquin.Trading.Domain.Analytics.DrawdownPeriod!>!
+static Boutquin.Trading.Application.Analytics.EffectiveNumberOfBets.Compute(decimal[,]! correlationMatrix) -> decimal
+static Boutquin.Trading.Application.Analytics.EffectiveNumberOfBets.ComputeFromReturns(decimal[]![]! returns) -> decimal
+static Boutquin.Trading.Application.Analytics.FactorRegressor.Regress(decimal[]! portfolioReturns, System.Collections.Generic.IReadOnlyList<string!>! factorNames, decimal[]![]! factorReturns) -> Boutquin.Trading.Domain.Analytics.FactorRegressionResult!
+static Boutquin.Trading.Application.Analytics.PcaRegimeSignal.ComputeEigenvectorStability(decimal[,]! corrA, decimal[,]! corrB) -> Boutquin.Trading.Application.Analytics.PcaRegimeSignal.EigenvectorStabilityResult!
+static Boutquin.Trading.Application.Analytics.PcaRegimeSignal.ComputeVarianceShare(decimal[,]! correlationMatrix) -> Boutquin.Trading.Application.Analytics.PcaRegimeSignal.VarianceShareResult!
+static Boutquin.Trading.Application.Analytics.PcaRegimeSignal.ComputeVarianceShareFromReturns(decimal[]![]! returns) -> Boutquin.Trading.Application.Analytics.PcaRegimeSignal.VarianceShareResult!
+static Boutquin.Trading.Application.Analytics.PrincipalPortfolioAnalyzer.Analyze(decimal[,]! correlationMatrix, decimal[]! variances) -> Boutquin.Trading.Application.Analytics.PrincipalPortfolioAnalyzer.PrincipalPortfolioResult!
+static Boutquin.Trading.Application.Analytics.PrincipalPortfolioAnalyzer.AnalyzeFromReturns(decimal[]![]! returns) -> Boutquin.Trading.Application.Analytics.PrincipalPortfolioAnalyzer.PrincipalPortfolioResult!
+static Boutquin.Trading.Application.Configuration.ServiceCollectionExtensions.AddBoutquinTrading(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfiguration! configuration) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Boutquin.Trading.Application.Helpers.TargetPortfolioDiffer.ComputeRebalanceOrders(System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>! targetWeights, System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, int>! currentPositions, System.Collections.Generic.IReadOnlyDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, decimal>! currentPrices, decimal totalPortfolioValue, decimal minimumTradeValue = 0) -> System.Collections.Generic.IReadOnlyList<Boutquin.Trading.Domain.Helpers.RebalanceOrder!>!
+static Boutquin.Trading.Application.Reporting.BenchmarkComparisonReport.Generate(Boutquin.Trading.Domain.Helpers.Tearsheet! portfolio, Boutquin.Trading.Domain.Helpers.Tearsheet! benchmark, string! portfolioName, string! benchmarkName, int tradingDaysPerYear = 252) -> string!
+static Boutquin.Trading.Application.Reporting.HtmlReportGenerator.GenerateTearsheetReport(Boutquin.Trading.Domain.Helpers.Tearsheet! tearsheet, string! strategyName) -> string!
+virtual Boutquin.Trading.Application.Strategies.StrategyBase.ComputeTotalValue(System.DateOnly timestamp, Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode baseCurrency, System.Collections.Generic.IReadOnlyDictionary<System.DateOnly, System.Collections.Generic.SortedDictionary<Boutquin.MarketData.Abstractions.ReferenceData.Symbol, Boutquin.MarketData.Abstractions.Records.Bar!>!>! historicalMarketData, System.Collections.Generic.IReadOnlyDictionary<System.DateOnly, System.Collections.Generic.SortedDictionary<Boutquin.MarketData.Abstractions.ReferenceData.CurrencyCode, decimal>!>! historicalFxConversionRates) -> decimal

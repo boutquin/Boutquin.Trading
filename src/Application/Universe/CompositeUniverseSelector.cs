@@ -15,9 +15,6 @@
 //
 
 namespace Boutquin.Trading.Application.Universe;
-
-using Domain.ValueObjects;
-
 /// <summary>
 /// Composes multiple universe selectors with AND logic: an asset must pass all selectors to be included.
 /// </summary>
@@ -34,7 +31,7 @@ public sealed class CompositeUniverseSelector : IUniverseSelector
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<Asset> Select(IReadOnlyList<Asset> candidates)
+    public IReadOnlyList<Symbol> Select(IReadOnlyList<Symbol> candidates)
     {
         Guard.AgainstNull(() => candidates);
 

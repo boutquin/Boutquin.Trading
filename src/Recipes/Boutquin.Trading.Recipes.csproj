@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Title>Boutquin.Trading.Recipes</Title>
+    <Description>Recipe layer bridging the Boutquin.Trading domain to the Boutquin.MarketData kernel. Provides BacktestDatasetBuilder for materializing market data via IDataPipeline.</Description>
+    <PackageTags>trading;market-data;recipes;backtesting;quantitative-finance;data-pipeline</PackageTags>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\Resources\icon.png" Link="icon.png" Pack="True" PackagePath="\" />
+    <None Include=".\doc\README.md" Pack="True" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Boutquin.MarketData.Abstractions" />
+    <PackageReference Include="Boutquin.MarketData.Orchestration" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="MinVer" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Domain\Boutquin.Trading.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -15,9 +15,6 @@
 //
 
 namespace Boutquin.Trading.Domain.Interfaces;
-
-using ValueObjects;
-
 /// <summary>
 /// Determines whether rebalancing should occur based on current and target weights.
 /// </summary>
@@ -30,6 +27,6 @@ public interface IRebalancingTrigger
     /// <param name="targetWeights">The target portfolio weights.</param>
     /// <returns><c>true</c> if the portfolio should be rebalanced; otherwise, <c>false</c>.</returns>
     bool ShouldRebalance(
-        IReadOnlyDictionary<Asset, decimal> currentWeights,
-        IReadOnlyDictionary<Asset, decimal> targetWeights);
+        IReadOnlyDictionary<Symbol, decimal> currentWeights,
+        IReadOnlyDictionary<Symbol, decimal> targetWeights);
 }

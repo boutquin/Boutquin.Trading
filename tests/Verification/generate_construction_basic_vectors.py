@@ -21,6 +21,7 @@ from pathlib import Path
 
 import numpy as np
 from pypfopt import EfficientFrontier
+from scipy.optimize import minimize as scipy_minimize
 
 VECTORS_DIR = Path(__file__).parent / "vectors"
 VECTORS_DIR.mkdir(exist_ok=True)
@@ -97,72 +98,25 @@ def cholesky_solve(l: np.ndarray, b: np.ndarray) -> np.ndarray:
 
 
 def minimum_variance(cov: np.ndarray, min_weight=0.0, max_weight=1.0) -> np.ndarray:
-    """Cholesky + active-set QP: min w'Σw s.t. 1'w=1, minW≤w≤maxW.
-    Matches C# MinimumVarianceConstruction with CholeskyQpSolver."""
+    """Minimum variance via scipy SLSQP: min w'Σw s.t. 1'w=1, minW≤w≤maxW.
+    Uses the canonical global optimum (Numerics ActiveSetQpSolver matches scipy)."""
     n = cov.shape[0]
     if n == 1:
         return np.array([1.0])
 
-    max_weight = max(max_weight, 1.0 / n)
-    min_weight = min(min_weight, 1.0 / n)
+    effective_max = max(max_weight, 1.0 / n)
+    effective_min = min(min_weight, 1.0 / n)
 
-    status = np.zeros(n, dtype=int)  # 0=free, -1=lower, +1=upper
-
-    for _ in range(2 * n):
-        free_idx = [i for i in range(n) if status[i] == 0]
-        fixed_sum = sum(min_weight if status[i] == -1 else max_weight
-                        for i in range(n) if status[i] != 0)
-        n_free = len(free_idx)
-        if n_free == 0:
-            return np.full(n, 1.0 / n)
-
-        remaining = 1.0 - fixed_sum
-        cov_free = cov[np.ix_(free_idx, free_idx)]
-        l = cholesky_decompose(cov_free)
-        z = cholesky_solve(l, np.ones(n_free))
-        c = remaining / z.sum()
-        w_free = c * z
-
-        # Find most-violated constraint
-        worst_idx, worst_dir, worst_viol = -1, 0, 0.0
-        for fi, i in enumerate(free_idx):
-            if w_free[fi] < min_weight:
-                v = min_weight - w_free[fi]
-                if v > worst_viol:
-                    worst_viol, worst_idx, worst_dir = v, i, -1
-            elif w_free[fi] > max_weight:
-                v = w_free[fi] - max_weight
-                if v > worst_viol:
-                    worst_viol, worst_idx, worst_dir = v, i, 1
-
-        if worst_idx >= 0:
-            status[worst_idx] = worst_dir
-            continue
-
-        # Build full weight vector
-        w = np.array([min_weight if status[i] == -1 else
-                       max_weight if status[i] == 1 else 0.0
-                       for i in range(n)])
-        for fi, i in enumerate(free_idx):
-            w[i] = w_free[fi]
-
-        # KKT release check
-        grad = cov @ w
-        nu = np.mean([grad[i] for i in range(n) if status[i] == 0])
-        released = False
-        for i in range(n):
-            if status[i] == -1 and grad[i] < nu - 1e-14:
-                status[i] = 0
-                released = True
-                break
-            if status[i] == 1 and grad[i] > nu + 1e-14:
-                status[i] = 0
-                released = True
-                break
-        if not released:
-            return w
-
-    return np.full(n, 1.0 / n)
+    result = scipy_minimize(
+        fun=lambda w: float(w @ cov @ w),
+        x0=np.full(n, 1.0 / n),
+        method="SLSQP",
+        bounds=[(effective_min, effective_max)] * n,
+        constraints=[{"type": "eq", "fun": lambda w: np.sum(w) - 1.0}],
+        tol=1e-15,
+        options={"ftol": 1e-15, "maxiter": 1000},
+    )
+    return result.x
 
 
 def mean_variance(returns: np.ndarray, cov: np.ndarray, risk_aversion=1.0,

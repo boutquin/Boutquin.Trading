@@ -30,25 +30,23 @@ public sealed class FixedWeightPositionSizerTests
     public void FixedWeightPositionSizer_ComputePositionSizes_ValidParameters_ShouldComputePositionSizes()
     {
         // Arrange
-        var fixedAssetWeights = new Dictionary<Asset, decimal> { { new Asset("AAPL"), 1m } };
-        var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { new Asset("AAPL"), CurrencyCode.USD } };
+        var fixedAssetWeights = new Dictionary<Symbol, decimal> { { new Symbol("AAPL"), 1m } };
+        var assetCurrencies = new Dictionary<Symbol, CurrencyCode> { { new Symbol("AAPL"), CurrencyCode.USD } };
         var baseCurrency = CurrencyCode.USD;
         var positionSizer = new FixedWeightPositionSizer(fixedAssetWeights, baseCurrency);
-        var signalType = new Dictionary<Asset, SignalType> { { new Asset("AAPL"), SignalType.Rebalance } };
-        var marketData = new MarketData(
-            Timestamp: _initialTimestamp,
+        var signalType = new Dictionary<Symbol, SignalType> { { new Symbol("AAPL"), SignalType.Rebalance } };
+        var marketData = new Bar(
+            Date: _initialTimestamp,
             Open: 100,
             High: 200,
             Low: 50,
             Close: 200,
             AdjustedClose: 200,
-            Volume: 1000000,
-            DividendPerShare: 0,
-            SplitCoefficient: 1);
+            Volume: 1000000);
 
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
-            { _initialTimestamp, new SortedDictionary<Asset, MarketData> { { new Asset("AAPL"), marketData } } }
+            { _initialTimestamp, new SortedDictionary<Symbol, Bar> { { new Symbol("AAPL"), marketData } } }
         };
         var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
         {
@@ -59,7 +57,7 @@ public sealed class FixedWeightPositionSizerTests
         _ = strategyMock.Setup(s => s.ComputeTotalValue(
             It.IsAny<DateOnly>(),
             It.IsAny<CurrencyCode>(),
-            It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>>>(),
+            It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>>>(),
             It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>>())).Returns(1000m);
 
         // Act
@@ -67,8 +65,8 @@ public sealed class FixedWeightPositionSizerTests
 
         // Assert
         positionSizes.Should().NotBeNull();
-        positionSizes.Should().ContainKey(new Asset("AAPL"));
-        positionSizes[new Asset("AAPL")].Should().Be(5);  // 1000 / 200 = 5
+        positionSizes.Should().ContainKey(new Symbol("AAPL"));
+        positionSizes[new Symbol("AAPL")].Should().Be(5);  // 1000 / 200 = 5
     }
 
     /// <summary>
@@ -78,30 +76,28 @@ public sealed class FixedWeightPositionSizerTests
     public void FixedWeightPositionSizer_ComputePositionSizes_FixedAssetWeightNotFound_ShouldThrowInvalidOperationException()
     {
         // Arrange
-        var fixedAssetWeights = new Dictionary<Asset, decimal> { { new Asset("AAPL"), 1m } };
+        var fixedAssetWeights = new Dictionary<Symbol, decimal> { { new Symbol("AAPL"), 1m } };
         var baseCurrency = CurrencyCode.USD;
         var positionSizer = new FixedWeightPositionSizer(fixedAssetWeights, baseCurrency);
-        var signalType = new Dictionary<Asset, SignalType> { { new Asset("MSFT"), SignalType.Rebalance } };
-        var marketData = new MarketData(
-            Timestamp: _initialTimestamp,
+        var signalType = new Dictionary<Symbol, SignalType> { { new Symbol("MSFT"), SignalType.Rebalance } };
+        var marketData = new Bar(
+            Date: _initialTimestamp,
             Open: 100,
             High: 200,
             Low: 50,
             Close: 200,
             AdjustedClose: 200,
-            Volume: 1000000,
-            DividendPerShare: 0,
-            SplitCoefficient: 1);
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+            Volume: 1000000);
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
-            { _initialTimestamp, new SortedDictionary<Asset, MarketData> { { new Asset("MSFT"), marketData } } }
+            { _initialTimestamp, new SortedDictionary<Symbol, Bar> { { new Symbol("MSFT"), marketData } } }
         };
         var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
         {
             { _initialTimestamp, new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
         };
         var strategyMock = new Mock<IStrategy>();
-        strategyMock.Setup(s => s.Assets).Returns(new Dictionary<Asset, CurrencyCode> { { new Asset("MSFT"), CurrencyCode.USD } });
+        strategyMock.Setup(s => s.Assets).Returns(new Dictionary<Symbol, CurrencyCode> { { new Symbol("MSFT"), CurrencyCode.USD } });
 
         // Act and Assert
         Assert.Throws<InvalidOperationException>(() => positionSizer.ComputePositionSizes(_initialTimestamp, signalType, strategyMock.Object, historicalMarketData, historicalFxConversionRates));
@@ -114,38 +110,34 @@ public sealed class FixedWeightPositionSizerTests
     public void FixedWeightPositionSizer_ComputePositionSizes_TwoAssets_ShouldComputePositionSizes()
     {
         // Arrange
-        var fixedAssetWeights = new Dictionary<Asset, decimal> { { new Asset("AAPL"), 0.6m }, { new Asset("MSFT"), 0.4m } };
-        var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { new Asset("AAPL"), CurrencyCode.USD }, { new Asset("MSFT"), CurrencyCode.USD } };
+        var fixedAssetWeights = new Dictionary<Symbol, decimal> { { new Symbol("AAPL"), 0.6m }, { new Symbol("MSFT"), 0.4m } };
+        var assetCurrencies = new Dictionary<Symbol, CurrencyCode> { { new Symbol("AAPL"), CurrencyCode.USD }, { new Symbol("MSFT"), CurrencyCode.USD } };
         var baseCurrency = CurrencyCode.USD;
         var positionSizer = new FixedWeightPositionSizer(fixedAssetWeights, baseCurrency);
 
-        var signalType = new Dictionary<Asset, SignalType> { { new Asset("AAPL"), SignalType.Rebalance }, { new Asset("MSFT"), SignalType.Rebalance } };
+        var signalType = new Dictionary<Symbol, SignalType> { { new Symbol("AAPL"), SignalType.Rebalance }, { new Symbol("MSFT"), SignalType.Rebalance } };
 
-        var marketDataAAPL = new MarketData(
-            Timestamp: _initialTimestamp,
+        var marketDataAAPL = new Bar(
+            Date: _initialTimestamp,
             Open: 100,
             High: 200,
             Low: 50,
             Close: 200,
             AdjustedClose: 200,
-            Volume: 1000000,
-            DividendPerShare: 0,
-            SplitCoefficient: 1);
+            Volume: 1000000);
 
-        var marketDataMSFT = new MarketData(
-            Timestamp: _initialTimestamp,
+        var marketDataMSFT = new Bar(
+            Date: _initialTimestamp,
             Open: 50,
             High: 100,
             Low: 25,
             Close: 100,
             AdjustedClose: 100,
-            Volume: 1000000,
-            DividendPerShare: 0,
-            SplitCoefficient: 1);
+            Volume: 1000000);
 
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
-            { _initialTimestamp, new SortedDictionary<Asset, MarketData> { { new Asset("AAPL"), marketDataAAPL }, { new Asset("MSFT"), marketDataMSFT } } }
+            { _initialTimestamp, new SortedDictionary<Symbol, Bar> { { new Symbol("AAPL"), marketDataAAPL }, { new Symbol("MSFT"), marketDataMSFT } } }
         };
 
         var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
@@ -158,7 +150,7 @@ public sealed class FixedWeightPositionSizerTests
         strategyMock.Setup(s => s.ComputeTotalValue(
             It.IsAny<DateOnly>(),
             It.IsAny<CurrencyCode>(),
-            It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>>>(),
+            It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>>>(),
             It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>>())).Returns(1000m);
 
         // Act
@@ -167,11 +159,11 @@ public sealed class FixedWeightPositionSizerTests
         // Assert
         positionSizes.Should().NotBeNull();
 
-        positionSizes.Should().ContainKey(new Asset("AAPL"));
-        positionSizes[new Asset("AAPL")].Should().Be(3);  // 1000 * 0.6 / 200 = 3
+        positionSizes.Should().ContainKey(new Symbol("AAPL"));
+        positionSizes[new Symbol("AAPL")].Should().Be(3);  // 1000 * 0.6 / 200 = 3
 
-        positionSizes.Should().ContainKey(new Asset("MSFT"));
-        positionSizes[new Asset("MSFT")].Should().Be(4);  // 1000 * 0.4 / 100 = 4
+        positionSizes.Should().ContainKey(new Symbol("MSFT"));
+        positionSizes[new Symbol("MSFT")].Should().Be(4);  // 1000 * 0.4 / 100 = 4
     }
 
     /// <summary>
@@ -182,25 +174,23 @@ public sealed class FixedWeightPositionSizerTests
     public void FixedWeightPositionSizer_ComputePositionSizes_ShouldRoundAwayFromZero()
     {
         // Arrange — values chosen so desiredAssetValue / price = 1.5015... (rounds to 2, truncates to 1)
-        var fixedAssetWeights = new Dictionary<Asset, decimal> { { new Asset("XYZ"), 0.5m } };
-        var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { new Asset("XYZ"), CurrencyCode.USD } };
+        var fixedAssetWeights = new Dictionary<Symbol, decimal> { { new Symbol("XYZ"), 0.5m } };
+        var assetCurrencies = new Dictionary<Symbol, CurrencyCode> { { new Symbol("XYZ"), CurrencyCode.USD } };
         var baseCurrency = CurrencyCode.USD;
         var positionSizer = new FixedWeightPositionSizer(fixedAssetWeights, baseCurrency);
-        var signalType = new Dictionary<Asset, SignalType> { { new Asset("XYZ"), SignalType.Rebalance } };
-        var marketData = new MarketData(
-            Timestamp: _initialTimestamp,
+        var signalType = new Dictionary<Symbol, SignalType> { { new Symbol("XYZ"), SignalType.Rebalance } };
+        var marketData = new Bar(
+            Date: _initialTimestamp,
             Open: 333,
             High: 340,
             Low: 330,
             Close: 333,
             AdjustedClose: 333,
-            Volume: 1000000,
-            DividendPerShare: 0,
-            SplitCoefficient: 1);
+            Volume: 1000000);
 
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
-            { _initialTimestamp, new SortedDictionary<Asset, MarketData> { { new Asset("XYZ"), marketData } } }
+            { _initialTimestamp, new SortedDictionary<Symbol, Bar> { { new Symbol("XYZ"), marketData } } }
         };
         var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
         {
@@ -211,14 +201,14 @@ public sealed class FixedWeightPositionSizerTests
         strategyMock.Setup(s => s.ComputeTotalValue(
             It.IsAny<DateOnly>(),
             It.IsAny<CurrencyCode>(),
-            It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>>>(),
+            It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>>>(),
             It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>>())).Returns(1000m);
 
         // Act
         var positionSizes = positionSizer.ComputePositionSizes(_initialTimestamp, signalType, strategyMock.Object, historicalMarketData, historicalFxConversionRates);
 
         // Assert — 1000 * 0.5 / 333 = 1.5015... → Math.Round = 2 (not truncation = 1)
-        positionSizes[new Asset("XYZ")].Should().Be(2);
+        positionSizes[new Symbol("XYZ")].Should().Be(2);
     }
 
     /// <summary>
@@ -231,29 +221,29 @@ public sealed class FixedWeightPositionSizerTests
     public void FixedWeightPositionSizer_Renormalize_PartialSignals_ShouldRenormalizeWeights()
     {
         // Arrange — 3 assets but only VTI has a signal (the others aren't incepted yet)
-        var vti = new Asset("VTI");
-        var vea = new Asset("VEA");
-        var iemg = new Asset("IEMG");
-        var weights = new Dictionary<Asset, decimal>
+        var vti = new Symbol("VTI");
+        var vea = new Symbol("VEA");
+        var iemg = new Symbol("IEMG");
+        var weights = new Dictionary<Symbol, decimal>
         {
             { vti, 0.55m },
             { vea, 0.35m },
             { iemg, 0.10m }
         };
-        var assetCurrencies = new Dictionary<Asset, CurrencyCode>
+        var assetCurrencies = new Dictionary<Symbol, CurrencyCode>
         {
             { vti, CurrencyCode.USD },
             { vea, CurrencyCode.USD },
             { iemg, CurrencyCode.USD }
         };
         // Only VTI has a signal (VEA and IEMG not yet incepted)
-        var signalType = new Dictionary<Asset, SignalType> { { vti, SignalType.Rebalance } };
+        var signalType = new Dictionary<Symbol, SignalType> { { vti, SignalType.Rebalance } };
         var positionSizer = new FixedWeightPositionSizer(weights, CurrencyCode.USD, renormalizeForSignaledAssets: true);
 
-        var md = new MarketData(_initialTimestamp, 100, 110, 90, 100, 100, 1_000_000, 0, 1);
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var md = new Bar(_initialTimestamp, 100, 110, 90, 100, 100, 1_000_000);
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
-            { _initialTimestamp, new SortedDictionary<Asset, MarketData> { { vti, md } } }
+            { _initialTimestamp, new SortedDictionary<Symbol, Bar> { { vti, md } } }
         };
         var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
         {
@@ -264,7 +254,7 @@ public sealed class FixedWeightPositionSizerTests
         strategyMock.Setup(s => s.ComputeTotalValue(
             It.IsAny<DateOnly>(),
             It.IsAny<CurrencyCode>(),
-            It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>>>(),
+            It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>>>(),
             It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>>())).Returns(100_000m);
 
         // Act
@@ -285,26 +275,26 @@ public sealed class FixedWeightPositionSizerTests
     public void FixedWeightPositionSizer_NoRenormalize_PartialSignals_ShouldUseOriginalWeights()
     {
         // Arrange
-        var vti = new Asset("VTI");
-        var vea = new Asset("VEA");
-        var weights = new Dictionary<Asset, decimal>
+        var vti = new Symbol("VTI");
+        var vea = new Symbol("VEA");
+        var weights = new Dictionary<Symbol, decimal>
         {
             { vti, 0.55m },
             { vea, 0.35m }
         };
-        var assetCurrencies = new Dictionary<Asset, CurrencyCode>
+        var assetCurrencies = new Dictionary<Symbol, CurrencyCode>
         {
             { vti, CurrencyCode.USD },
             { vea, CurrencyCode.USD }
         };
         // Only VTI has a signal
-        var signalType = new Dictionary<Asset, SignalType> { { vti, SignalType.Rebalance } };
+        var signalType = new Dictionary<Symbol, SignalType> { { vti, SignalType.Rebalance } };
         var positionSizer = new FixedWeightPositionSizer(weights, CurrencyCode.USD); // renormalize defaults to false
 
-        var md = new MarketData(_initialTimestamp, 100, 110, 90, 100, 100, 1_000_000, 0, 1);
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var md = new Bar(_initialTimestamp, 100, 110, 90, 100, 100, 1_000_000);
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
-            { _initialTimestamp, new SortedDictionary<Asset, MarketData> { { vti, md } } }
+            { _initialTimestamp, new SortedDictionary<Symbol, Bar> { { vti, md } } }
         };
         var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
         {
@@ -315,7 +305,7 @@ public sealed class FixedWeightPositionSizerTests
         strategyMock.Setup(s => s.ComputeTotalValue(
             It.IsAny<DateOnly>(),
             It.IsAny<CurrencyCode>(),
-            It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>>>(),
+            It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>>>(),
             It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>>())).Returns(100_000m);
 
         // Act

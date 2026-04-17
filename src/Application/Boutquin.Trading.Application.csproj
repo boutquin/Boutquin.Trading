@@ -8,6 +8,11 @@
     <PackageTags>CleanArchitecture;Domain;Entities;Shared;ApplicationLayer;SecurityMaster;TradingStrategy;Portfolio;BackTesting</PackageTags>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- RS0026 fires on pre-release overloads with optional params; nothing is shipped, backcompat rule not applicable -->
+    <NoWarn>$(NoWarn);RS0026</NoWarn>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Include="..\..\Resources\icon.png">
       <Pack>True</Pack>
@@ -20,16 +25,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.5" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.5" />
-    <PackageReference Include="MinVer" Version="7.0.0" PrivateAssets="All" />
-    <PackageReference Include="System.Linq.Async" Version="7.0.0" />
+    <PackageReference Include="Boutquin.MarketData.Abstractions" />
+    <PackageReference Include="Boutquin.Numerics" />
+    <PackageReference Include="Boutquin.MarketData.Calendars" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+    <PackageReference Include="MinVer" PrivateAssets="All" />
+    <PackageReference Include="System.Linq.Async" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Domain\Boutquin.Trading.Domain.csproj" />
-    <ProjectReference Include="..\Data.CSV\Boutquin.Trading.Data.CSV.csproj" />
+    <ProjectReference Include="..\Recipes\Boutquin.Trading.Recipes.csproj" />
   </ItemGroup>
 
 </Project>

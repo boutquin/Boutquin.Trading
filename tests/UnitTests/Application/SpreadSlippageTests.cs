@@ -24,12 +24,12 @@ namespace Boutquin.Trading.Tests.UnitTests.Application;
 public sealed class SpreadSlippageTests
 {
     private const decimal Precision = 1e-12m;
-    private static readonly Asset s_testAsset = new("AAPL");
+    private static readonly Symbol s_testAsset = new("AAPL");
 
     [Fact]
     public void CalculateFillPrice_Buy_IncreasesPrice()
     {
-        var halfSpreads = new Dictionary<Asset, decimal>();
+        var halfSpreads = new Dictionary<Symbol, decimal>();
         var slippage = new SpreadSlippage(halfSpreads, defaultHalfSpread: 0.001m);
 
         var fillPrice = slippage.CalculateFillPrice(100m, 100, TradeAction.Buy);
@@ -40,7 +40,7 @@ public sealed class SpreadSlippageTests
     [Fact]
     public void CalculateFillPrice_Sell_DecreasesPrice()
     {
-        var halfSpreads = new Dictionary<Asset, decimal>();
+        var halfSpreads = new Dictionary<Symbol, decimal>();
         var slippage = new SpreadSlippage(halfSpreads, defaultHalfSpread: 0.001m);
 
         var fillPrice = slippage.CalculateFillPrice(100m, 100, TradeAction.Sell);
@@ -51,7 +51,7 @@ public sealed class SpreadSlippageTests
     [Fact]
     public void CalculateFillPriceForAsset_UsesPerAssetSpread()
     {
-        var halfSpreads = new Dictionary<Asset, decimal>
+        var halfSpreads = new Dictionary<Symbol, decimal>
         {
             [s_testAsset] = 0.005m // 50 bps for AAPL
         };
@@ -65,10 +65,10 @@ public sealed class SpreadSlippageTests
     [Fact]
     public void CalculateFillPriceForAsset_UnknownAsset_UsesDefault()
     {
-        var halfSpreads = new Dictionary<Asset, decimal>();
+        var halfSpreads = new Dictionary<Symbol, decimal>();
         var slippage = new SpreadSlippage(halfSpreads, defaultHalfSpread: 0.002m);
 
-        var fillPrice = slippage.CalculateFillPriceForAsset(100m, 100, TradeAction.Buy, new Asset("UNKNOWN"));
+        var fillPrice = slippage.CalculateFillPriceForAsset(100m, 100, TradeAction.Buy, new Symbol("UNKNOWN"));
 
         fillPrice.Should().BeApproximately(100.2m, Precision); // 100 * (1 + 0.002)
     }
@@ -76,7 +76,7 @@ public sealed class SpreadSlippageTests
     [Fact]
     public void CalculateFillPrice_BuySellAsymmetry()
     {
-        var halfSpreads = new Dictionary<Asset, decimal>();
+        var halfSpreads = new Dictionary<Symbol, decimal>();
         var slippage = new SpreadSlippage(halfSpreads, defaultHalfSpread: 0.01m);
 
         var buyPrice = slippage.CalculateFillPrice(100m, 100, TradeAction.Buy);
@@ -97,21 +97,21 @@ public sealed class SpreadSlippageTests
     [Fact]
     public void Constructor_ZeroDefaultHalfSpread_ThrowsArgumentOutOfRangeException()
     {
-        var act = () => new SpreadSlippage(new Dictionary<Asset, decimal>(), 0m);
+        var act = () => new SpreadSlippage(new Dictionary<Symbol, decimal>(), 0m);
         act.Should().Throw<ArgumentOutOfRangeException>();
     }
 
     [Fact]
     public void Constructor_NegativeDefaultHalfSpread_ThrowsArgumentOutOfRangeException()
     {
-        var act = () => new SpreadSlippage(new Dictionary<Asset, decimal>(), -0.001m);
+        var act = () => new SpreadSlippage(new Dictionary<Symbol, decimal>(), -0.001m);
         act.Should().Throw<ArgumentOutOfRangeException>();
     }
 
     [Fact]
     public void CalculateFillPrice_LargeSpread_CalculatesCorrectly()
     {
-        var halfSpreads = new Dictionary<Asset, decimal>();
+        var halfSpreads = new Dictionary<Symbol, decimal>();
         var slippage = new SpreadSlippage(halfSpreads, defaultHalfSpread: 0.10m); // 10% half-spread
 
         var buyPrice = slippage.CalculateFillPrice(100m, 100, TradeAction.Buy);

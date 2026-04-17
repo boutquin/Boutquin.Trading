@@ -17,7 +17,6 @@
 namespace Boutquin.Trading.Application.Universe;
 
 using Boutquin.Trading.Domain.Analytics;
-using Domain.ValueObjects;
 
 /// <summary>
 /// Excludes assets whose <see cref="AssetMetadata.SupersededBy"/> replacement
@@ -28,22 +27,22 @@ using Domain.ValueObjects;
 /// </summary>
 public sealed class SupersessionFilter : IUniverseSelector
 {
-    private readonly IReadOnlyDictionary<Asset, AssetMetadata> _metadata;
+    private readonly IReadOnlyDictionary<Symbol, AssetMetadata> _metadata;
 
     /// <summary>Initializes a new instance with the specified asset metadata.</summary>
-    /// <param name="metadata">Asset metadata containing supersession information.</param>
-    public SupersessionFilter(IReadOnlyDictionary<Asset, AssetMetadata> metadata)
+    /// <param name="metadata">Symbol metadata containing supersession information.</param>
+    public SupersessionFilter(IReadOnlyDictionary<Symbol, AssetMetadata> metadata)
     {
         Guard.AgainstNull(() => metadata);
         _metadata = metadata;
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<Asset> Select(IReadOnlyList<Asset> candidates)
+    public IReadOnlyList<Symbol> Select(IReadOnlyList<Symbol> candidates)
     {
         Guard.AgainstNull(() => candidates);
 
-        var candidateSet = new HashSet<Asset>(candidates);
+        var candidateSet = new HashSet<Symbol>(candidates);
 
         return candidates
             .Where(a =>

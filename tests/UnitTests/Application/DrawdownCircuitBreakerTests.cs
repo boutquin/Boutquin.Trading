@@ -18,14 +18,13 @@ namespace Boutquin.Trading.Tests.UnitTests.Application;
 
 using Boutquin.Trading.Application.RiskManagement;
 using Boutquin.Trading.Domain.Events;
-using Boutquin.Trading.Domain.ValueObjects;
 
 using Moq;
 
 public sealed class DrawdownCircuitBreakerTests
 {
-    private static readonly Asset s_vti = new("VTI");
-    private static readonly Asset s_tlt = new("TLT");
+    private static readonly Symbol s_vti = new("VTI");
+    private static readonly Symbol s_tlt = new("TLT");
 
     private static Mock<IPortfolio> CreatePortfolioMock(
         SortedDictionary<DateOnly, decimal> equityCurve,
@@ -40,11 +39,11 @@ public sealed class DrawdownCircuitBreakerTests
         return mock;
     }
 
-    private static Mock<IStrategy> CreateStrategyMock(Dictionary<Asset, int>? positions = null)
+    private static Mock<IStrategy> CreateStrategyMock(Dictionary<Symbol, int>? positions = null)
     {
         var mock = new Mock<IStrategy>();
         mock.Setup(s => s.Positions)
-            .Returns((IReadOnlyDictionary<Asset, int>)(positions ?? new Dictionary<Asset, int>()));
+            .Returns((IReadOnlyDictionary<Symbol, int>)(positions ?? new Dictionary<Symbol, int>()));
         return mock;
     }
 
@@ -130,7 +129,7 @@ public sealed class DrawdownCircuitBreakerTests
             [new DateOnly(2026, 1, 2)] = 70m, // 30% drawdown
         };
 
-        var strategy = CreateStrategyMock(new Dictionary<Asset, int>
+        var strategy = CreateStrategyMock(new Dictionary<Symbol, int>
         {
             [s_vti] = 50,
             [s_tlt] = 30,
@@ -165,7 +164,7 @@ public sealed class DrawdownCircuitBreakerTests
             [new DateOnly(2026, 1, 3)] = 65m, // still in drawdown
         };
 
-        var strategy = CreateStrategyMock(new Dictionary<Asset, int> { [s_vti] = 50 });
+        var strategy = CreateStrategyMock(new Dictionary<Symbol, int> { [s_vti] = 50 });
         var strategies = new Dictionary<string, IStrategy> { ["Main"] = strategy.Object };
         var portfolio = CreatePortfolioMock(equityCurve, strategies);
 
@@ -222,7 +221,7 @@ public sealed class DrawdownCircuitBreakerTests
         };
 
         // Strategy with no positions (already liquidated or all-cash)
-        var strategy = CreateStrategyMock(new Dictionary<Asset, int>());
+        var strategy = CreateStrategyMock(new Dictionary<Symbol, int>());
         var strategies = new Dictionary<string, IStrategy> { ["Main"] = strategy.Object };
         var portfolio = CreatePortfolioMock(equityCurve, strategies);
 

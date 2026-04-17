@@ -15,28 +15,25 @@
 //
 
 namespace Boutquin.Trading.Application.PortfolioConstruction;
-
-using Domain.ValueObjects;
-
 /// <summary>
 /// Allocates equal weight to every asset: w_i = 1/N.
 /// </summary>
 public sealed class EqualWeightConstruction : IPortfolioConstructionModel
 {
     /// <inheritdoc />
-    public IReadOnlyDictionary<Asset, decimal> ComputeTargetWeights(
-        IReadOnlyList<Asset> assets,
+    public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
+        IReadOnlyList<Symbol> assets,
         decimal[][] returns)
     {
         Guard.AgainstNull(() => assets);
 
         if (assets.Count == 0)
         {
-            return new Dictionary<Asset, decimal>();
+            return new Dictionary<Symbol, decimal>();
         }
 
         var weight = 1m / assets.Count;
-        var weights = new Dictionary<Asset, decimal>(assets.Count);
+        var weights = new Dictionary<Symbol, decimal>(assets.Count);
 
         foreach (var asset in assets)
         {

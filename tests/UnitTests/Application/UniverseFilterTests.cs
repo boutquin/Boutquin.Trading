@@ -21,12 +21,12 @@ using Boutquin.Trading.Domain.Analytics;
 
 public sealed class UniverseFilterTests
 {
-    private static readonly Asset s_vti = new("VTI");
-    private static readonly Asset s_tlt = new("TLT");
-    private static readonly Asset s_smallEtf = new("SMALL");
+    private static readonly Symbol s_vti = new("VTI");
+    private static readonly Symbol s_tlt = new("TLT");
+    private static readonly Symbol s_smallEtf = new("SMALL");
 
-    private static IReadOnlyDictionary<Asset, AssetMetadata> CreateMetadata() =>
-        new Dictionary<Asset, AssetMetadata>
+    private static IReadOnlyDictionary<Symbol, AssetMetadata> CreateMetadata() =>
+        new Dictionary<Symbol, AssetMetadata>
         {
             [s_vti] = new AssetMetadata(s_vti, AumMillions: 500m, InceptionDate: new DateOnly(2001, 5, 24), AverageDailyVolume: 5_000_000m),
             [s_tlt] = new AssetMetadata(s_tlt, AumMillions: 200m, InceptionDate: new DateOnly(2002, 7, 22), AverageDailyVolume: 2_000_000m),
@@ -42,7 +42,7 @@ public sealed class UniverseFilterTests
     {
         var metadata = CreateMetadata();
         var filter = new MinAumFilter(100m, metadata);
-        var candidates = new List<Asset> { s_vti, s_tlt, s_smallEtf };
+        var candidates = new List<Symbol> { s_vti, s_tlt, s_smallEtf };
 
         var result = filter.Select(candidates);
 
@@ -56,7 +56,7 @@ public sealed class UniverseFilterTests
     {
         var metadata = CreateMetadata();
         var filter = new MinAumFilter(0m, metadata);
-        var candidates = new List<Asset> { s_vti, s_tlt, s_smallEtf };
+        var candidates = new List<Symbol> { s_vti, s_tlt, s_smallEtf };
 
         filter.Select(candidates).Should().HaveCount(3);
     }
@@ -72,7 +72,7 @@ public sealed class UniverseFilterTests
         var asOfDate = new DateOnly(2026, 3, 16);
         // 3 years = ~1095 days
         var filter = new MinAgeFilter(1095, asOfDate, metadata);
-        var candidates = new List<Asset> { s_vti, s_tlt, s_smallEtf };
+        var candidates = new List<Symbol> { s_vti, s_tlt, s_smallEtf };
 
         var result = filter.Select(candidates);
 
@@ -88,7 +88,7 @@ public sealed class UniverseFilterTests
         var asOfDate = new DateOnly(2026, 3, 16);
         // 10 years = ~3650 days
         var filter = new MinAgeFilter(3650, asOfDate, metadata);
-        var candidates = new List<Asset> { s_vti, s_tlt, s_smallEtf };
+        var candidates = new List<Symbol> { s_vti, s_tlt, s_smallEtf };
 
         var result = filter.Select(candidates);
 
@@ -106,7 +106,7 @@ public sealed class UniverseFilterTests
     {
         var metadata = CreateMetadata();
         var filter = new LiquidityFilter(100_000m, metadata);
-        var candidates = new List<Asset> { s_vti, s_tlt, s_smallEtf };
+        var candidates = new List<Symbol> { s_vti, s_tlt, s_smallEtf };
 
         var result = filter.Select(candidates);
 
@@ -130,7 +130,7 @@ public sealed class UniverseFilterTests
             new LiquidityFilter(100_000m, metadata),
         });
 
-        var candidates = new List<Asset> { s_vti, s_tlt, s_smallEtf };
+        var candidates = new List<Symbol> { s_vti, s_tlt, s_smallEtf };
         var result = composite.Select(candidates);
 
         result.Should().Contain(s_vti);
@@ -142,6 +142,6 @@ public sealed class UniverseFilterTests
     public void CompositeSelector_EmptyCandidates_ShouldReturnEmpty()
     {
         var composite = new CompositeUniverseSelector(new List<IUniverseSelector>());
-        composite.Select(new List<Asset>()).Should().BeEmpty();
+        composite.Select(new List<Symbol>()).Should().BeEmpty();
     }
 }

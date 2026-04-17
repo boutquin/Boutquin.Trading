@@ -23,9 +23,9 @@ namespace Boutquin.Trading.Tests.UnitTests.Application;
 /// </summary>
 public sealed class ConstructionModelStrategyUniverseTests
 {
-    private static readonly Asset s_vti = new("VTI");
-    private static readonly Asset s_bnd = new("BND");
-    private static readonly Asset s_gld = new("GLD");
+    private static readonly Symbol s_vti = new("VTI");
+    private static readonly Symbol s_bnd = new("BND");
+    private static readonly Symbol s_gld = new("GLD");
 
     /// <summary>
     /// Assets not yet eligible (entry date in the future) are excluded from weight computation.
@@ -36,7 +36,7 @@ public sealed class ConstructionModelStrategyUniverseTests
     {
         // Arrange
         var date = new DateOnly(2024, 6, 3);
-        var entryDates = new Dictionary<Asset, DateOnly>
+        var entryDates = new Dictionary<Symbol, DateOnly>
         {
             [s_vti] = new DateOnly(2020, 1, 1),
             [s_bnd] = new DateOnly(2020, 1, 1),
@@ -87,7 +87,7 @@ public sealed class ConstructionModelStrategyUniverseTests
         var date2 = new DateOnly(2024, 7, 5);
 
         // Universe where GLD is only eligible until 2024-06-30
-        var entryDates = new Dictionary<Asset, DateOnly>
+        var entryDates = new Dictionary<Symbol, DateOnly>
         {
             [s_vti] = new DateOnly(2020, 1, 1),
             [s_bnd] = new DateOnly(2020, 1, 1),
@@ -104,7 +104,7 @@ public sealed class ConstructionModelStrategyUniverseTests
         strategy.UpdatePositions(s_gld, 50);
 
         // Now create a new universe that excludes GLD
-        var restrictedEntryDates = new Dictionary<Asset, DateOnly>
+        var restrictedEntryDates = new Dictionary<Symbol, DateOnly>
         {
             [s_vti] = new DateOnly(2020, 1, 1),
             [s_bnd] = new DateOnly(2020, 1, 1),
@@ -131,10 +131,10 @@ public sealed class ConstructionModelStrategyUniverseTests
 
     // --- Helpers ---
 
-    private static (ConstructionModelStrategy Strategy, SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>> MarketData, SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> FxData) CreateStrategy(
+    private static (ConstructionModelStrategy Strategy, SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>> MarketData, SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> FxData) CreateStrategy(
         ITimedUniverseSelector? universeSelector)
     {
-        var assets = new Dictionary<Asset, CurrencyCode>
+        var assets = new Dictionary<Symbol, CurrencyCode>
         {
             [s_vti] = CurrencyCode.USD,
             [s_bnd] = CurrencyCode.USD,
@@ -144,15 +144,15 @@ public sealed class ConstructionModelStrategyUniverseTests
 
         var mockOrderPrice = new Mock<IOrderPriceCalculationStrategy>();
         mockOrderPrice
-            .Setup(o => o.CalculateOrderPrices(It.IsAny<DateOnly>(), It.IsAny<Asset>(), It.IsAny<TradeAction>(),
-                It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>>>()))
+            .Setup(o => o.CalculateOrderPrices(It.IsAny<DateOnly>(), It.IsAny<Symbol>(), It.IsAny<TradeAction>(),
+                It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>>>()))
             .Returns((OrderType.Market, 100m, 0m));
 
         var mockSizer = new Mock<IPositionSizer>();
 
         var mockModel = new Mock<IPortfolioConstructionModel>();
-        mockModel.Setup(m => m.ComputeTargetWeights(It.IsAny<IReadOnlyList<Asset>>(), It.IsAny<decimal[][]>()))
-            .Returns((IReadOnlyList<Asset> a, decimal[][] _) =>
+        mockModel.Setup(m => m.ComputeTargetWeights(It.IsAny<IReadOnlyList<Symbol>>(), It.IsAny<decimal[][]>()))
+            .Returns((IReadOnlyList<Symbol> a, decimal[][] _) =>
             {
                 var w = 1m / a.Count;
                 return a.ToDictionary(x => x, _ => w);
@@ -164,17 +164,17 @@ public sealed class ConstructionModelStrategyUniverseTests
             universeSelector: universeSelector);
 
         // Create enough historical data for weight computation
-        var historicalData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>();
+        var historicalData = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>();
         var fxData = new SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>();
         var baseDate = new DateOnly(2024, 5, 1);
 
         for (var i = 0; i < 70; i++)
         {
             var date = baseDate.AddDays(i);
-            var dayData = new SortedDictionary<Asset, MarketData>();
+            var dayData = new SortedDictionary<Symbol, Bar>();
             foreach (var asset in assets.Keys)
             {
-                dayData[asset] = new MarketData(date, 100m + i * 0.1m, 105m, 95m, 100m + i * 0.1m, 100m + i * 0.1m, 1_000_000L, 0m, 1m);
+                dayData[asset] = new Bar(date, 100m + i * 0.1m, 105m, 95m, 100m + i * 0.1m, 100m + i * 0.1m, 1_000_000L);
             }
             historicalData[date] = dayData;
             fxData[date] = new SortedDictionary<CurrencyCode, decimal> { [CurrencyCode.USD] = 1m };

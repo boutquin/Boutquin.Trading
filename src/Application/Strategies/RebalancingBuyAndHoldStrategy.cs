@@ -15,16 +15,13 @@
 //
 
 namespace Boutquin.Trading.Application.Strategies;
-
-using Domain.ValueObjects;
-
 /// <summary>
 /// Rebalancing buy and hold strategy that periodically rebalances the portfolio to the initial weights.
 /// </summary>
 public sealed class RebalancingBuyAndHoldStrategy : StrategyBase
 {
     private readonly RebalancingFrequency _rebalancingFrequency;
-    private readonly ITradingCalendar? _tradingCalendar;
+    private readonly IBusinessCalendar? _tradingCalendar;
     private readonly ITimedUniverseSelector? _universeSelector;
     private DateOnly? _lastRebalancingDate;
 
@@ -41,12 +38,12 @@ public sealed class RebalancingBuyAndHoldStrategy : StrategyBase
     /// <param name="universeSelector">Optional universe selector for dynamic universe support (ETFs enter at inception).</param>
     public RebalancingBuyAndHoldStrategy(
         string name,
-        IReadOnlyDictionary<Asset, CurrencyCode> assets,
+        IReadOnlyDictionary<Symbol, CurrencyCode> assets,
         SortedDictionary<CurrencyCode, decimal> cash,
         IOrderPriceCalculationStrategy orderPriceCalculationStrategy,
         IPositionSizer positionSizer,
         RebalancingFrequency rebalancingFrequency,
-        ITradingCalendar? tradingCalendar = null,
+        IBusinessCalendar? tradingCalendar = null,
         ITimedUniverseSelector? universeSelector = null)
         : base(name, assets, cash, orderPriceCalculationStrategy, positionSizer)
     {
@@ -61,14 +58,14 @@ public sealed class RebalancingBuyAndHoldStrategy : StrategyBase
     public override SignalEvent GenerateSignals(
         DateOnly timestamp,
         CurrencyCode baseCurrency,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>> historicalMarketData,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> historicalMarketData,
         IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
     {
         Guard.AgainstUndefinedEnumValue(() => baseCurrency);
         Guard.AgainstEmptyOrNullReadOnlyDictionary(() => historicalMarketData);
         Guard.AgainstEmptyOrNullReadOnlyDictionary(() => historicalFxConversionRates);
 
-        var signalEvents = new SortedDictionary<Asset, SignalType>();
+        var signalEvents = new SortedDictionary<Symbol, SignalType>();
 
         if (_lastRebalancingDate != null && !IsRebalancingDate(timestamp))
         {
@@ -128,10 +125,10 @@ public sealed class RebalancingBuyAndHoldStrategy : StrategyBase
             _ => throw new InvalidOperationException($"Unsupported rebalancing frequency: {_rebalancingFrequency}")
         };
 
-        // Snap to next trading day if the computed date falls on a weekend or holiday
-        if (_tradingCalendar is not null && nextDate != DateOnly.MaxValue && !_tradingCalendar.IsTradingDay(nextDate))
+        // Snap to next business day if the computed date falls on a weekend or holiday
+        if (_tradingCalendar is not null && nextDate != DateOnly.MaxValue && !_tradingCalendar.IsBusinessDay(nextDate))
         {
-            nextDate = _tradingCalendar.NextTradingDay(nextDate);
+            nextDate = _tradingCalendar.Adjust(nextDate, BusinessDayAdjustment.Following);
         }
 
         return nextDate;

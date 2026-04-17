@@ -20,11 +20,11 @@ public sealed class StrategyBaseTests
 {
     private static IStrategy CreateStrategy(
         SortedDictionary<CurrencyCode, decimal>? cash = null,
-        IReadOnlyDictionary<Asset, CurrencyCode>? assets = null)
+        IReadOnlyDictionary<Symbol, CurrencyCode>? assets = null)
     {
-        var defaultAssets = assets ?? new Dictionary<Asset, CurrencyCode>
+        var defaultAssets = assets ?? new Dictionary<Symbol, CurrencyCode>
         {
-            { new Asset("AAPL"), CurrencyCode.USD }
+            { new Symbol("AAPL"), CurrencyCode.USD }
         };
         var defaultCash = cash ?? new SortedDictionary<CurrencyCode, decimal>
         {
@@ -59,7 +59,7 @@ public sealed class StrategyBaseTests
     [Fact]
     public void UpdatePositions_IncrementsQuantity()
     {
-        var asset = new Asset("AAPL");
+        var asset = new Symbol("AAPL");
         var strategy = CreateStrategy();
         strategy.UpdatePositions(asset, 50);
         strategy.UpdatePositions(asset, 25);
@@ -69,7 +69,7 @@ public sealed class StrategyBaseTests
     [Fact]
     public void UpdatePositions_CreatesNewAssetEntry()
     {
-        var asset = new Asset("MSFT");
+        var asset = new Symbol("MSFT");
         var strategy = CreateStrategy();
         strategy.UpdatePositions(asset, 100);
         strategy.GetPositionQuantity(asset).Should().Be(100);
@@ -79,13 +79,13 @@ public sealed class StrategyBaseTests
     public void GetPositionQuantity_ReturnsZeroForUnknownAsset()
     {
         var strategy = CreateStrategy();
-        strategy.GetPositionQuantity(new Asset("UNKNOWN")).Should().Be(0);
+        strategy.GetPositionQuantity(new Symbol("UNKNOWN")).Should().Be(0);
     }
 
     [Fact]
     public void SetPosition_SetsAbsoluteQuantity()
     {
-        var asset = new Asset("AAPL");
+        var asset = new Symbol("AAPL");
         var strategy = CreateStrategy();
         strategy.UpdatePositions(asset, 50);
         strategy.SetPosition(asset, 200);
@@ -97,7 +97,7 @@ public sealed class StrategyBaseTests
     {
         var strategy = CreateStrategy();
         // The compile-time type of the Positions property is IReadOnlyDictionary
-        IReadOnlyDictionary<Asset, int> positions = strategy.Positions;
+        IReadOnlyDictionary<Symbol, int> positions = strategy.Positions;
         positions.Should().NotBeNull();
     }
 
@@ -119,9 +119,9 @@ public sealed class StrategyBaseTests
     public void ComputeTotalValue_ShouldNotThrow_WhenPositionZeroAndNoMarketData()
     {
         // Arrange — 2 assets, only AAPL has market data; MSFT has position 0 and no data
-        var aapl = new Asset("AAPL");
-        var msft = new Asset("MSFT");
-        var assets = new Dictionary<Asset, CurrencyCode>
+        var aapl = new Symbol("AAPL");
+        var msft = new Symbol("MSFT");
+        var assets = new Dictionary<Symbol, CurrencyCode>
         {
             { aapl, CurrencyCode.USD },
             { msft, CurrencyCode.USD }
@@ -131,12 +131,12 @@ public sealed class StrategyBaseTests
         // MSFT is not in positions → defaults to 0
 
         var timestamp = new DateOnly(2024, 1, 15);
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
             {
-                timestamp, new SortedDictionary<Asset, MarketData>
+                timestamp, new SortedDictionary<Symbol, Bar>
                 {
-                    { aapl, new MarketData(timestamp, 150, 155, 149, 152, 152, 5_000_000, 0, 1) }
+                    { aapl, new Bar(timestamp, 150, 155, 149, 152, 152, 5_000_000) }
                     // No MSFT market data
                 }
             }
@@ -162,9 +162,9 @@ public sealed class StrategyBaseTests
     public void ComputeTotalValue_ShouldThrow_WhenPositionNonZeroAndNoMarketData()
     {
         // Arrange — 2 assets, only AAPL has market data; MSFT has position > 0 but no data
-        var aapl = new Asset("AAPL");
-        var msft = new Asset("MSFT");
-        var assets = new Dictionary<Asset, CurrencyCode>
+        var aapl = new Symbol("AAPL");
+        var msft = new Symbol("MSFT");
+        var assets = new Dictionary<Symbol, CurrencyCode>
         {
             { aapl, CurrencyCode.USD },
             { msft, CurrencyCode.USD }
@@ -174,12 +174,12 @@ public sealed class StrategyBaseTests
         strategy.UpdatePositions(msft, 5); // Non-zero position, no market data
 
         var timestamp = new DateOnly(2024, 1, 15);
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
             {
-                timestamp, new SortedDictionary<Asset, MarketData>
+                timestamp, new SortedDictionary<Symbol, Bar>
                 {
-                    { aapl, new MarketData(timestamp, 150, 155, 149, 152, 152, 5_000_000, 0, 1) }
+                    { aapl, new Bar(timestamp, 150, 155, 149, 152, 152, 5_000_000) }
                     // No MSFT market data
                 }
             }

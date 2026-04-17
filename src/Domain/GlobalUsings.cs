@@ -16,17 +16,14 @@
 
 global using System.Collections.Immutable;
 global using System.ComponentModel;
-global using System.Security;
 
 global using Boutquin.Domain.Exceptions;
 global using Boutquin.Domain.Extensions;
 global using Boutquin.Domain.Helpers;
-global using Boutquin.Trading.Domain.Data;
+global using Boutquin.MarketData.Abstractions.Records;
+global using Boutquin.MarketData.Abstractions.ReferenceData;
+global using Boutquin.Numerics.Statistics;
 global using Boutquin.Trading.Domain.Enums;
 global using Boutquin.Trading.Domain.Events;
 global using Boutquin.Trading.Domain.Exceptions;
-global using Boutquin.Trading.Domain.Helpers;
 global using Boutquin.Trading.Domain.Interfaces;
-
-global using Microsoft.Extensions.Logging;
-global using Microsoft.Extensions.Logging.Abstractions;

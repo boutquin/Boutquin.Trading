@@ -19,6 +19,7 @@ using System.Text.Json;
 using Boutquin.Trading.Application.CostModels;
 using Boutquin.Trading.Application.SlippageModels;
 using Boutquin.Trading.Domain.Helpers;
+using Boutquin.Trading.Recipes.Testing;
 
 namespace Boutquin.Trading.Tests.UnitTests.Application;
 
@@ -76,59 +77,41 @@ public sealed class BacktestCrossLanguageVerificationTests
     }
 
     /// <summary>
-    /// Builds a mock IMarketDataFetcher from the JSON market data in a vector file.
+    /// Builds price data from the JSON market data in a vector file.
     /// </summary>
-    private static IMarketDataFetcher BuildMockFetcher(JsonElement marketDataElement)
+    private static SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>> BuildPriceData(JsonElement marketDataElement)
     {
-        var buffered = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>();
+        var buffered = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>();
 
         foreach (var tickerProp in marketDataElement.EnumerateObject())
         {
             var ticker = tickerProp.Name;
-            var asset = new Asset(ticker);
+            var asset = new Symbol(ticker);
 
             foreach (var record in tickerProp.Value.EnumerateArray())
             {
                 var dateStr = record.GetProperty("date").GetString()!;
                 var date = DateOnly.Parse(dateStr);
 
-                var md = new MarketData(
+                var md = new Bar(
                     date,
                     (decimal)record.GetProperty("open").GetDouble(),
                     (decimal)record.GetProperty("high").GetDouble(),
                     (decimal)record.GetProperty("low").GetDouble(),
                     (decimal)record.GetProperty("close").GetDouble(),
                     (decimal)record.GetProperty("adjusted_close").GetDouble(),
-                    record.GetProperty("volume").GetInt64(),
-                    (decimal)record.GetProperty("dividend_per_share").GetDouble(),
-                    (decimal)record.GetProperty("split_coefficient").GetDouble());
+                    record.GetProperty("volume").GetInt64());
 
                 if (!buffered.TryGetValue(date, out var dayData))
                 {
-                    dayData = new SortedDictionary<Asset, MarketData>();
+                    dayData = new SortedDictionary<Symbol, Bar>();
                     buffered[date] = dayData;
                 }
                 dayData[asset] = md;
             }
         }
 
-        var mock = new Mock<IMarketDataFetcher>();
-        mock.Setup(f => f.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>(), It.IsAny<CancellationToken>()))
-            .Returns(ToAsyncEnumerable(buffered));
-        mock.Setup(f => f.FetchFxRatesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
-            .Returns(ToAsyncEnumerable(new SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>()));
-
-        return mock.Object;
-    }
-
-    private static async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<TKey, TValue>>> ToAsyncEnumerable<TKey, TValue>(
-        SortedDictionary<DateOnly, SortedDictionary<TKey, TValue>> data) where TKey : notnull
-    {
-        foreach (var kvp in data)
-        {
-            yield return kvp;
-        }
-        await Task.CompletedTask;
+        return buffered;
     }
 
     /// <summary>
@@ -144,12 +127,12 @@ public sealed class BacktestCrossLanguageVerificationTests
         var commissionRate = (decimal)inputs.GetProperty("commission_rate").GetDouble();
 
         // Build asset weights
-        var weights = new Dictionary<Asset, decimal>();
-        var assetCurrencies = new Dictionary<Asset, CurrencyCode>();
-        var assets = new Dictionary<Asset, CurrencyCode>();
+        var weights = new Dictionary<Symbol, decimal>();
+        var assetCurrencies = new Dictionary<Symbol, CurrencyCode>();
+        var assets = new Dictionary<Symbol, CurrencyCode>();
         foreach (var w in weightsElement.EnumerateObject())
         {
-            var asset = new Asset(w.Name);
+            var asset = new Symbol(w.Name);
             weights[asset] = (decimal)w.Value.GetDouble();
             assetCurrencies[asset] = CurrencyCode.USD;
             assets[asset] = CurrencyCode.USD;
@@ -157,7 +140,6 @@ public sealed class BacktestCrossLanguageVerificationTests
 
         // Determine date range from market data
         DateOnly? startDate = null;
-        DateOnly? endDate = null;
         foreach (var tickerProp in marketDataElement.EnumerateObject())
         {
             foreach (var record in tickerProp.Value.EnumerateArray())
@@ -167,29 +149,24 @@ public sealed class BacktestCrossLanguageVerificationTests
                 {
                     startDate = date;
                 }
-
-                if (endDate == null || date > endDate)
-                {
-                    endDate = date;
-                }
             }
         }
 
-        var fetcher = BuildMockFetcher(marketDataElement);
+        var priceData = BuildPriceData(marketDataElement);
         var costModel = commissionRate > 0
             ? (ITransactionCostModel)new PercentageOfValueCostModel(commissionRate)
             : new ZeroCostModel();
-        var broker = new SimulatedBrokerage(fetcher, costModel, new NoSlippage());
+        var broker = new SimulatedBrokerage(costModel, new NoSlippage());
 
         var cash = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, initialCash } };
         var orderPriceCalc = new ClosePriceOrderPriceCalculationStrategy();
         var positionSizer = new FixedWeightPositionSizer(
-            new ReadOnlyDictionary<Asset, decimal>(new Dictionary<Asset, decimal>(weights)),
+            new ReadOnlyDictionary<Symbol, decimal>(new Dictionary<Symbol, decimal>(weights)),
             CurrencyCode.USD);
 
         var strategy = new BuyAndHoldStrategy(
             "TestStrategy",
-            new ReadOnlyDictionary<Asset, CurrencyCode>(new Dictionary<Asset, CurrencyCode>(assets)),
+            new ReadOnlyDictionary<Symbol, CurrencyCode>(new Dictionary<Symbol, CurrencyCode>(assets)),
             cash,
             startDate!.Value,
             orderPriceCalc,
@@ -202,51 +179,57 @@ public sealed class BacktestCrossLanguageVerificationTests
             { typeof(OrderEvent), new OrderEventHandler() },
             { typeof(FillEvent), new FillEventHandler() },
         };
-
-        var portfolio = new Portfolio(
+        _ = new Portfolio(
             CurrencyCode.USD,
             new ReadOnlyDictionary<string, IStrategy>(new Dictionary<string, IStrategy> { { "TestStrategy", strategy } }),
-            new ReadOnlyDictionary<Asset, CurrencyCode>(new Dictionary<Asset, CurrencyCode>(assetCurrencies)),
+            new ReadOnlyDictionary<Symbol, CurrencyCode>(new Dictionary<Symbol, CurrencyCode>(assetCurrencies)),
             new ReadOnlyDictionary<Type, IEventHandler>(handlers),
             broker);
 
         // Build benchmark (use same market data and config if no separate benchmark)
         Portfolio benchmarkPortfolio;
-        IMarketDataFetcher benchmarkFetcher;
-
+        var mergedPrices = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>(priceData);
+        Portfolio? portfolio;
         if (benchmarkInputs.HasValue)
         {
             var bmMarketData = benchmarkInputs.Value.GetProperty("benchmark_market_data");
             var bmWeightsElement = benchmarkInputs.Value.GetProperty("benchmark_weights");
 
-            var bmWeights = new Dictionary<Asset, decimal>();
-            var bmAssets = new Dictionary<Asset, CurrencyCode>();
-            var bmAssetCurrencies = new Dictionary<Asset, CurrencyCode>();
+            var bmWeights = new Dictionary<Symbol, decimal>();
+            var bmAssets = new Dictionary<Symbol, CurrencyCode>();
+            var bmAssetCurrencies = new Dictionary<Symbol, CurrencyCode>();
             foreach (var w in bmWeightsElement.EnumerateObject())
             {
-                var asset = new Asset(w.Name);
+                var asset = new Symbol(w.Name);
                 bmWeights[asset] = (decimal)w.Value.GetDouble();
                 bmAssets[asset] = CurrencyCode.USD;
                 bmAssetCurrencies[asset] = CurrencyCode.USD;
             }
 
-            // Merge market data for the combined fetcher
-            var combinedMarketData = marketDataElement.Clone();
-            benchmarkFetcher = BuildMockFetcher(bmMarketData);
-            // Actually, for BackTest we need a single fetcher that serves both
-            // Let's build one that has all data
-            var mergedElement = MergeMarketData(marketDataElement, bmMarketData);
-            var mergedFetcher = BuildMockFetcher(mergedElement);
+            // Merge benchmark prices into the dataset
+            var bmPrices = BuildPriceData(bmMarketData);
+            foreach (var (date, dayData) in bmPrices)
+            {
+                if (!mergedPrices.TryGetValue(date, out var merged))
+                {
+                    merged = new SortedDictionary<Symbol, Bar>();
+                    mergedPrices[date] = merged;
+                }
+                foreach (var (a, md) in dayData)
+                {
+                    merged[a] = md;
+                }
+            }
 
-            var bmBroker = new SimulatedBrokerage(mergedFetcher, costModel, new NoSlippage());
+            var bmBroker = new SimulatedBrokerage(costModel, new NoSlippage());
             var bmCash = new SortedDictionary<CurrencyCode, decimal>
                 { { CurrencyCode.USD, (decimal)benchmarkInputs.Value.GetProperty("initial_cash").GetDouble() } };
             var bmPositionSizer = new FixedWeightPositionSizer(
-                new ReadOnlyDictionary<Asset, decimal>(new Dictionary<Asset, decimal>(bmWeights)),
+                new ReadOnlyDictionary<Symbol, decimal>(new Dictionary<Symbol, decimal>(bmWeights)),
                 CurrencyCode.USD);
             var bmStrategy = new BuyAndHoldStrategy(
                 "BenchmarkStrategy",
-                new ReadOnlyDictionary<Asset, CurrencyCode>(new Dictionary<Asset, CurrencyCode>(bmAssets)),
+                new ReadOnlyDictionary<Symbol, CurrencyCode>(new Dictionary<Symbol, CurrencyCode>(bmAssets)),
                 bmCash,
                 startDate!.Value,
                 orderPriceCalc,
@@ -263,113 +246,52 @@ public sealed class BacktestCrossLanguageVerificationTests
             benchmarkPortfolio = new Portfolio(
                 CurrencyCode.USD,
                 new ReadOnlyDictionary<string, IStrategy>(new Dictionary<string, IStrategy> { { "BenchmarkStrategy", bmStrategy } }),
-                new ReadOnlyDictionary<Asset, CurrencyCode>(new Dictionary<Asset, CurrencyCode>(bmAssetCurrencies)),
+                new ReadOnlyDictionary<Symbol, CurrencyCode>(new Dictionary<Symbol, CurrencyCode>(bmAssetCurrencies)),
                 new ReadOnlyDictionary<Type, IEventHandler>(bmHandlers),
                 bmBroker);
 
-            // Use merged fetcher for the BackTest
-            fetcher = mergedFetcher;
-            // Recreate portfolio broker with merged fetcher
-            broker = new SimulatedBrokerage(mergedFetcher, costModel, new NoSlippage());
-            // Recreate portfolio with new broker
+            // Recreate portfolio broker (broker is stateful — needs fresh instance)
+            broker = new SimulatedBrokerage(costModel, new NoSlippage());
             portfolio = new Portfolio(
                 CurrencyCode.USD,
                 new ReadOnlyDictionary<string, IStrategy>(new Dictionary<string, IStrategy> { { "TestStrategy", strategy } }),
-                new ReadOnlyDictionary<Asset, CurrencyCode>(new Dictionary<Asset, CurrencyCode>(assetCurrencies)),
+                new ReadOnlyDictionary<Symbol, CurrencyCode>(new Dictionary<Symbol, CurrencyCode>(assetCurrencies)),
                 new ReadOnlyDictionary<Type, IEventHandler>(handlers),
                 broker);
         }
         else
         {
             // Generate a synthetic benchmark asset ("BM") with slightly perturbed prices
-            // to ensure non-zero active returns (avoids CalculationException in
-            // InformationRatio/Sortino). The benchmark uses the same date range.
-            var bmAsset = new Asset("BM");
-            var bmAssets = new Dictionary<Asset, CurrencyCode> { { bmAsset, CurrencyCode.USD } };
-            var bmAssetCurrencies2 = new Dictionary<Asset, CurrencyCode> { { bmAsset, CurrencyCode.USD } };
-            var bmWeights = new Dictionary<Asset, decimal> { { bmAsset, 1.0m } };
+            var bmAsset = new Symbol("BM");
+            var bmAssets = new Dictionary<Symbol, CurrencyCode> { { bmAsset, CurrencyCode.USD } };
+            var bmAssetCurrencies2 = new Dictionary<Symbol, CurrencyCode> { { bmAsset, CurrencyCode.USD } };
+            var bmWeights = new Dictionary<Symbol, decimal> { { bmAsset, 1.0m } };
 
-            // Create benchmark market data: same dates, price = 100 + (index * 0.01)
-            var bmBuffered = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>();
-            var allDates = new List<DateOnly>();
-            foreach (var tickerProp in marketDataElement.EnumerateObject())
-            {
-                foreach (var record in tickerProp.Value.EnumerateArray())
-                {
-                    allDates.Add(DateOnly.Parse(record.GetProperty("date").GetString()!));
-                }
-                break; // Only need dates from first ticker
-            }
-            allDates.Sort();
+            var allDates = new List<DateOnly>(mergedPrices.Keys);
 
             var bmPrice = 100.0m;
             var rng = new Random(12345);
             foreach (var date in allDates)
             {
-                var ret = 1.0m + (decimal)(rng.NextDouble() * 0.02 - 0.01); // ±1%
+                var ret = 1.0m + (decimal)(rng.NextDouble() * 0.02 - 0.01);
                 bmPrice *= ret;
-                var md = new MarketData(date, bmPrice, bmPrice * 1.01m, bmPrice * 0.99m,
-                    bmPrice, bmPrice, 1_000_000, 0m, 1.0m);
-                bmBuffered[date] = new SortedDictionary<Asset, MarketData> { { bmAsset, md } };
+                var md = new Bar(date, bmPrice, bmPrice * 1.01m, bmPrice * 0.99m, bmPrice, bmPrice, 1_000_000);
+                if (!mergedPrices.TryGetValue(date, out var dayData))
+                {
+                    dayData = new SortedDictionary<Symbol, Bar>();
+                    mergedPrices[date] = dayData;
+                }
+                dayData[bmAsset] = md;
             }
 
-            // Merge benchmark data into fetcher
-            var mergedBuffered = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>();
-            // First add original data
-            foreach (var tickerProp in marketDataElement.EnumerateObject())
-            {
-                var ticker = tickerProp.Name;
-                var origAsset = new Asset(ticker);
-                foreach (var record in tickerProp.Value.EnumerateArray())
-                {
-                    var date = DateOnly.Parse(record.GetProperty("date").GetString()!);
-                    if (!mergedBuffered.TryGetValue(date, out var dayAssets))
-                    {
-                        dayAssets = new SortedDictionary<Asset, MarketData>();
-                        mergedBuffered[date] = dayAssets;
-                    }
-                    dayAssets[origAsset] = new MarketData(
-                        date,
-                        (decimal)record.GetProperty("open").GetDouble(),
-                        (decimal)record.GetProperty("high").GetDouble(),
-                        (decimal)record.GetProperty("low").GetDouble(),
-                        (decimal)record.GetProperty("close").GetDouble(),
-                        (decimal)record.GetProperty("adjusted_close").GetDouble(),
-                        record.GetProperty("volume").GetInt64(),
-                        (decimal)record.GetProperty("dividend_per_share").GetDouble(),
-                        (decimal)record.GetProperty("split_coefficient").GetDouble());
-                }
-            }
-            // Add benchmark data
-            foreach (var (date, dayData) in bmBuffered)
-            {
-                if (!mergedBuffered.TryGetValue(date, out var bmDayAssets))
-                {
-                    bmDayAssets = new SortedDictionary<Asset, MarketData>();
-                    mergedBuffered[date] = bmDayAssets;
-                }
-
-                foreach (var (a, md) in dayData)
-                {
-                    bmDayAssets[a] = md;
-                }
-            }
-
-            var mergedMock = new Mock<IMarketDataFetcher>();
-            mergedMock.Setup(f => f.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>(), It.IsAny<CancellationToken>()))
-                .Returns(ToAsyncEnumerable(mergedBuffered));
-            mergedMock.Setup(f => f.FetchFxRatesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
-                .Returns(ToAsyncEnumerable(new SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>()));
-            var mergedFetcher = mergedMock.Object;
-
-            var bmBroker2 = new SimulatedBrokerage(mergedFetcher, costModel, new NoSlippage());
+            var bmBroker2 = new SimulatedBrokerage(costModel, new NoSlippage());
             var bmCash2 = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, initialCash } };
             var bmPositionSizer2 = new FixedWeightPositionSizer(
-                new ReadOnlyDictionary<Asset, decimal>(new Dictionary<Asset, decimal>(bmWeights)),
+                new ReadOnlyDictionary<Symbol, decimal>(new Dictionary<Symbol, decimal>(bmWeights)),
                 CurrencyCode.USD);
             var bmStrategy2 = new BuyAndHoldStrategy(
                 "BenchmarkStrategy",
-                new ReadOnlyDictionary<Asset, CurrencyCode>(new Dictionary<Asset, CurrencyCode>(bmAssets)),
+                new ReadOnlyDictionary<Symbol, CurrencyCode>(new Dictionary<Symbol, CurrencyCode>(bmAssets)),
                 bmCash2,
                 startDate!.Value,
                 orderPriceCalc,
@@ -386,40 +308,27 @@ public sealed class BacktestCrossLanguageVerificationTests
             benchmarkPortfolio = new Portfolio(
                 CurrencyCode.USD,
                 new ReadOnlyDictionary<string, IStrategy>(new Dictionary<string, IStrategy> { { "BenchmarkStrategy", bmStrategy2 } }),
-                new ReadOnlyDictionary<Asset, CurrencyCode>(new Dictionary<Asset, CurrencyCode>(bmAssetCurrencies2)),
+                new ReadOnlyDictionary<Symbol, CurrencyCode>(new Dictionary<Symbol, CurrencyCode>(bmAssetCurrencies2)),
                 new ReadOnlyDictionary<Type, IEventHandler>(bmHandlers2),
                 bmBroker2);
 
-            // Use merged fetcher for BackTest so it can serve both portfolio and benchmark
-            fetcher = mergedFetcher;
-            broker = new SimulatedBrokerage(mergedFetcher, costModel, new NoSlippage());
+            broker = new SimulatedBrokerage(costModel, new NoSlippage());
             portfolio = new Portfolio(
                 CurrencyCode.USD,
                 new ReadOnlyDictionary<string, IStrategy>(new Dictionary<string, IStrategy> { { "TestStrategy", strategy } }),
-                new ReadOnlyDictionary<Asset, CurrencyCode>(new Dictionary<Asset, CurrencyCode>(assetCurrencies)),
+                new ReadOnlyDictionary<Symbol, CurrencyCode>(new Dictionary<Symbol, CurrencyCode>(assetCurrencies)),
                 new ReadOnlyDictionary<Type, IEventHandler>(handlers),
                 broker);
         }
 
-        var backtest = new BackTest(portfolio, benchmarkPortfolio, fetcher, CurrencyCode.USD);
-        return await backtest.RunAsync(startDate!.Value, endDate!.Value);
-    }
-
-    private static JsonElement MergeMarketData(JsonElement a, JsonElement b)
-    {
-        var dict = new Dictionary<string, JsonElement>();
-        foreach (var prop in a.EnumerateObject())
+        var dataset = new FakeBacktestDataset
         {
-            dict[prop.Name] = prop.Value;
-        }
+            Prices = mergedPrices,
+            FxRates = [],
+        };
 
-        foreach (var prop in b.EnumerateObject())
-        {
-            dict[prop.Name] = prop.Value;
-        }
-
-        var json = JsonSerializer.Serialize(dict);
-        return JsonDocument.Parse(json).RootElement;
+        var backtest = new BackTest(portfolio, benchmarkPortfolio, CurrencyCode.USD);
+        return await backtest.RunAsync(dataset);
     }
 
     // ─── Scenario 1: Single-asset buy-and-hold (no commission) ──────────
@@ -748,11 +657,11 @@ public sealed class BacktestCrossLanguageVerificationTests
         };
 
         // Build assets from market data tickers
-        var assets = new Dictionary<Asset, CurrencyCode>();
-        var assetCurrencies = new Dictionary<Asset, CurrencyCode>();
+        var assets = new Dictionary<Symbol, CurrencyCode>();
+        var assetCurrencies = new Dictionary<Symbol, CurrencyCode>();
         foreach (var tickerProp in marketDataElement.EnumerateObject())
         {
-            var asset = new Asset(tickerProp.Name);
+            var asset = new Symbol(tickerProp.Name);
             assets[asset] = CurrencyCode.USD;
             assetCurrencies[asset] = CurrencyCode.USD;
         }
@@ -777,11 +686,11 @@ public sealed class BacktestCrossLanguageVerificationTests
             }
         }
 
-        var fetcher = BuildMockFetcher(marketDataElement);
+        var priceData = BuildPriceData(marketDataElement);
         var costModel = commissionRate > 0
             ? (ITransactionCostModel)new PercentageOfValueCostModel(commissionRate)
             : new ZeroCostModel();
-        var broker = new SimulatedBrokerage(fetcher, costModel, new NoSlippage());
+        var broker = new SimulatedBrokerage(costModel, new NoSlippage());
 
         var cash = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, initialCash } };
         var orderPriceCalc = new ClosePriceOrderPriceCalculationStrategy();
@@ -805,20 +714,19 @@ public sealed class BacktestCrossLanguageVerificationTests
             { typeof(OrderEvent), new OrderEventHandler() },
             { typeof(FillEvent), new FillEventHandler() },
         };
-
-        var portfolio = new Portfolio(
+        _ = new Portfolio(
             CurrencyCode.USD,
             new ReadOnlyDictionary<string, IStrategy>(new Dictionary<string, IStrategy> { { "TestStrategy", strategy } }),
-            new ReadOnlyDictionary<Asset, CurrencyCode>(new Dictionary<Asset, CurrencyCode>(assetCurrencies)),
+            new ReadOnlyDictionary<Symbol, CurrencyCode>(new Dictionary<Symbol, CurrencyCode>(assetCurrencies)),
             new ReadOnlyDictionary<Type, IEventHandler>(handlers),
             broker);
 
         // Synthetic benchmark
-        var bmAsset = new Asset("BM");
-        var bmAssets = new Dictionary<Asset, CurrencyCode> { { bmAsset, CurrencyCode.USD } };
-        var bmWeights = new Dictionary<Asset, decimal> { { bmAsset, 1.0m } };
+        var bmAsset = new Symbol("BM");
+        var bmAssets = new Dictionary<Symbol, CurrencyCode> { { bmAsset, CurrencyCode.USD } };
+        var bmWeights = new Dictionary<Symbol, decimal> { { bmAsset, 1.0m } };
 
-        var bmBuffered = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>();
+        var bmBuffered = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>();
         var allDates = new List<DateOnly>();
         foreach (var tickerProp in marketDataElement.EnumerateObject())
         {
@@ -837,41 +745,38 @@ public sealed class BacktestCrossLanguageVerificationTests
         {
             var ret = 1.0m + (decimal)(rng.NextDouble() * 0.02 - 0.01);
             bmPrice *= ret;
-            var md = new MarketData(date, bmPrice, bmPrice * 1.01m, bmPrice * 0.99m,
-                bmPrice, bmPrice, 1_000_000, 0m, 1.0m);
-            bmBuffered[date] = new SortedDictionary<Asset, MarketData> { { bmAsset, md } };
+            var md = new Bar(date, bmPrice, bmPrice * 1.01m, bmPrice * 0.99m, bmPrice, bmPrice, 1_000_000);
+            bmBuffered[date] = new SortedDictionary<Symbol, Bar> { { bmAsset, md } };
         }
 
         // Merge market + benchmark data
-        var mergedBuffered = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>();
+        var mergedBuffered = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>();
         foreach (var tickerProp in marketDataElement.EnumerateObject())
         {
-            var origAsset = new Asset(tickerProp.Name);
+            var origAsset = new Symbol(tickerProp.Name);
             foreach (var record in tickerProp.Value.EnumerateArray())
             {
                 var date = DateOnly.Parse(record.GetProperty("date").GetString()!);
                 if (!mergedBuffered.TryGetValue(date, out var dayAssets))
                 {
-                    dayAssets = new SortedDictionary<Asset, MarketData>();
+                    dayAssets = new SortedDictionary<Symbol, Bar>();
                     mergedBuffered[date] = dayAssets;
                 }
-                dayAssets[origAsset] = new MarketData(
+                dayAssets[origAsset] = new Bar(
                     date,
                     (decimal)record.GetProperty("open").GetDouble(),
                     (decimal)record.GetProperty("high").GetDouble(),
                     (decimal)record.GetProperty("low").GetDouble(),
                     (decimal)record.GetProperty("close").GetDouble(),
                     (decimal)record.GetProperty("adjusted_close").GetDouble(),
-                    record.GetProperty("volume").GetInt64(),
-                    (decimal)record.GetProperty("dividend_per_share").GetDouble(),
-                    (decimal)record.GetProperty("split_coefficient").GetDouble());
+                    record.GetProperty("volume").GetInt64());
             }
         }
         foreach (var (date, dayData) in bmBuffered)
         {
             if (!mergedBuffered.TryGetValue(date, out var bmDayAssets))
             {
-                bmDayAssets = new SortedDictionary<Asset, MarketData>();
+                bmDayAssets = new SortedDictionary<Symbol, Bar>();
                 mergedBuffered[date] = bmDayAssets;
             }
             foreach (var (a, md) in dayData)
@@ -880,30 +785,23 @@ public sealed class BacktestCrossLanguageVerificationTests
             }
         }
 
-        var mergedMock = new Mock<IMarketDataFetcher>();
-        mergedMock.Setup(f => f.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>(), It.IsAny<CancellationToken>()))
-            .Returns(ToAsyncEnumerable(mergedBuffered));
-        mergedMock.Setup(f => f.FetchFxRatesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
-            .Returns(ToAsyncEnumerable(new SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>()));
-        var mergedFetcher = mergedMock.Object;
-
-        // Recreate with merged fetcher
-        broker = new SimulatedBrokerage(mergedFetcher, costModel, new NoSlippage());
-        portfolio = new Portfolio(
+        // Recreate broker (stateful — needs fresh instance)
+        broker = new SimulatedBrokerage(costModel, new NoSlippage());
+        var portfolio = new Portfolio(
             CurrencyCode.USD,
             new ReadOnlyDictionary<string, IStrategy>(new Dictionary<string, IStrategy> { { "TestStrategy", strategy } }),
-            new ReadOnlyDictionary<Asset, CurrencyCode>(new Dictionary<Asset, CurrencyCode>(assetCurrencies)),
+            new ReadOnlyDictionary<Symbol, CurrencyCode>(new Dictionary<Symbol, CurrencyCode>(assetCurrencies)),
             new ReadOnlyDictionary<Type, IEventHandler>(handlers),
             broker);
 
-        var bmBroker = new SimulatedBrokerage(mergedFetcher, costModel, new NoSlippage());
+        var bmBroker = new SimulatedBrokerage(costModel, new NoSlippage());
         var bmCash = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, initialCash } };
         var bmPositionSizer = new FixedWeightPositionSizer(
-            new ReadOnlyDictionary<Asset, decimal>(new Dictionary<Asset, decimal>(bmWeights)),
+            new ReadOnlyDictionary<Symbol, decimal>(new Dictionary<Symbol, decimal>(bmWeights)),
             CurrencyCode.USD);
         var bmStrategy = new BuyAndHoldStrategy(
             "BenchmarkStrategy",
-            new ReadOnlyDictionary<Asset, CurrencyCode>(new Dictionary<Asset, CurrencyCode>(bmAssets)),
+            new ReadOnlyDictionary<Symbol, CurrencyCode>(new Dictionary<Symbol, CurrencyCode>(bmAssets)),
             bmCash,
             startDate!.Value,
             orderPriceCalc,
@@ -918,12 +816,18 @@ public sealed class BacktestCrossLanguageVerificationTests
         var benchmarkPortfolio = new Portfolio(
             CurrencyCode.USD,
             new ReadOnlyDictionary<string, IStrategy>(new Dictionary<string, IStrategy> { { "BenchmarkStrategy", bmStrategy } }),
-            new ReadOnlyDictionary<Asset, CurrencyCode>(new Dictionary<Asset, CurrencyCode>(bmAssets)),
+            new ReadOnlyDictionary<Symbol, CurrencyCode>(new Dictionary<Symbol, CurrencyCode>(bmAssets)),
             new ReadOnlyDictionary<Type, IEventHandler>(bmHandlers),
             bmBroker);
 
-        var backtest = new BackTest(portfolio, benchmarkPortfolio, mergedFetcher, CurrencyCode.USD);
-        return await backtest.RunAsync(startDate!.Value, endDate!.Value);
+        var dataset = new FakeBacktestDataset
+        {
+            Prices = mergedBuffered,
+            FxRates = [],
+        };
+
+        var backtest = new BackTest(portfolio, benchmarkPortfolio, CurrencyCode.USD);
+        return await backtest.RunAsync(dataset);
     }
 
     /// <summary>

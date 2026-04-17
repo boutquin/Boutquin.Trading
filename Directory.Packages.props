@@ -1,0 +1,64 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Core domain -->
+    <PackageVersion Include="Boutquin.Domain" Version="0.7.0" />
+    <PackageVersion Include="Boutquin.Numerics" Version="1.0.0" />
+
+    <!-- MarketData kernel -->
+    <PackageVersion Include="Boutquin.MarketData.Abstractions" Version="1.0.1" />
+    <PackageVersion Include="Boutquin.MarketData.Calendars" Version="1.0.1" />
+    <PackageVersion Include="Boutquin.MarketData.Orchestration" Version="1.0.1" />
+    <PackageVersion Include="Boutquin.MarketData.DependencyInjection" Version="1.0.1" />
+    <PackageVersion Include="Boutquin.MarketData.Testing" Version="1.0.1" />
+
+    <!-- MarketData adapters -->
+    <PackageVersion Include="Boutquin.MarketData.Adapter.Tiingo" Version="1.0.2" />
+    <PackageVersion Include="Boutquin.MarketData.Adapter.Frankfurter" Version="1.0.2" />
+    <PackageVersion Include="Boutquin.MarketData.Adapter.Fred" Version="1.0.2" />
+    <PackageVersion Include="Boutquin.MarketData.Adapter.FamaFrench" Version="1.0.2" />
+    <PackageVersion Include="Boutquin.MarketData.Adapter.TwelveData" Version="1.0.2" />
+    <PackageVersion Include="Boutquin.MarketData.Adapter.BankOfCanada" Version="1.0.2" />
+
+    <!-- Entity Framework Core -->
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.6" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.6" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.6" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.6" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.6" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.6" />
+
+    <!-- Microsoft Extensions -->
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.6" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.6" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.6" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.6" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.6" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.6" />
+    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.6" />
+
+    <!-- Build infrastructure -->
+    <PackageVersion Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="3.3.4" />
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.202" />
+    <PackageVersion Include="MinVer" Version="7.0.0" />
+
+    <!-- Data access -->
+    <PackageVersion Include="CsvHelper" Version="33.1.0" />
+    <PackageVersion Include="System.Linq.Async" Version="7.0.0" />
+
+    <!-- Testing -->
+    <PackageVersion Include="coverlet.collector" Version="8.0.1" />
+    <PackageVersion Include="FluentAssertions" Version="8.9.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.4.0" />
+    <PackageVersion Include="Moq" Version="4.20.72" />
+    <PackageVersion Include="NetArchTest.eNhancedEdition" Version="1.4.5" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+
+    <!-- Benchmarking -->
+    <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
+  </ItemGroup>
+</Project>

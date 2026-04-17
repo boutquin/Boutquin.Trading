@@ -15,9 +15,6 @@
 //
 
 namespace Boutquin.Trading.Domain.Interfaces;
-
-using ValueObjects;
-
 /// <summary>
 /// The ICapitalAllocationStrategy interface defines a method for allocating capital across multiple strategies.
 /// This interface is used by the Portfolio class to compute the SortedDictionary&lt;CurrencyCode, decimal&gt; TargetCapital,
@@ -40,6 +37,6 @@ public interface ICapitalAllocationStrategy
     /// </remarks>
     IReadOnlyDictionary<string, SortedDictionary<CurrencyCode, decimal>> AllocateCapital(
         ImmutableList<IStrategy> strategies,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>> historicalMarketData,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> historicalMarketData,
         IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates);
 }

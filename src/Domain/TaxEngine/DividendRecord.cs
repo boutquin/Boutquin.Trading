@@ -15,17 +15,13 @@
 //
 
 namespace Boutquin.Trading.Domain.TaxEngine;
-
-using Enums;
-using ValueObjects;
-
 /// <summary>
 /// Represents a classified dividend for tax purposes.
 /// </summary>
 public sealed record DividendRecord(
     DateOnly ExDate,
     DateOnly PayDate,
-    Asset Asset,
+    Symbol Symbol,
     decimal AmountPerShare,
     DividendType DividendType,
     CurrencyCode Currency,

@@ -40,14 +40,14 @@ public sealed class Continent
     {
         // Validate parameters
         Guard.AgainstUndefinedEnumValue(() => code); // Throws ArgumentOutOfRangeException    
-        if (!name.IsNullOrWhiteSpace())
+        if (!string.IsNullOrWhiteSpace(name))
         {
             Guard.AgainstOverflow(() => name,
                 ColumnConstants.Continent_Name_Length); // Throws ArgumentOutOfRangeException
         }
 
         Code = code;
-        Name = name.IsNullOrWhiteSpace() ? code.GetDescription() : name;
+        Name = string.IsNullOrWhiteSpace(name) ? code.GetDescription() : name!;
     }
 
     /// <summary>

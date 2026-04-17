@@ -20,9 +20,9 @@ namespace Boutquin.Trading.Tests.UnitTests.Application;
 
 public sealed class RebalancingSignalEventHandlerTests
 {
-    private static readonly Asset s_vti = new("VTI");
-    private static readonly Asset s_bnd = new("BND");
-    private static readonly Asset s_gld = new("GLD");
+    private static readonly Symbol s_vti = new("VTI");
+    private static readonly Symbol s_bnd = new("BND");
+    private static readonly Symbol s_gld = new("GLD");
     private static readonly DateOnly s_date = new(2024, 6, 3);
 
     /// <summary>
@@ -38,13 +38,13 @@ public sealed class RebalancingSignalEventHandlerTests
 
         // Strategy has VTI=100 shares (overweight), BND=0 (underweight), GLD=50 (to sell)
         var strategy = CreateConstructionModelStrategy(
-            positions: new Dictionary<Asset, int> { [s_vti] = 100, [s_bnd] = 0, [s_gld] = 50 },
-            targetWeights: new Dictionary<Asset, decimal> { [s_vti] = 0.3m, [s_bnd] = 0.5m, [s_gld] = 0.2m });
+            positions: new Dictionary<Symbol, int> { [s_vti] = 100, [s_bnd] = 0, [s_gld] = 50 },
+            targetWeights: new Dictionary<Symbol, decimal> { [s_vti] = 0.3m, [s_bnd] = 0.5m, [s_gld] = 0.2m });
 
         mockPortfolio.Setup(p => p.GetStrategy("TestStrategy")).Returns(strategy);
 
         var handler = new RebalancingSignalEventHandler(CurrencyCode.USD);
-        var signals = new SortedDictionary<Asset, SignalType>
+        var signals = new SortedDictionary<Symbol, SignalType>
         {
             [s_vti] = SignalType.Rebalance,
             [s_bnd] = SignalType.Rebalance,
@@ -80,12 +80,12 @@ public sealed class RebalancingSignalEventHandlerTests
         var mockPortfolio = CreateMockPortfolio(emittedOrders);
 
         var strategy = CreateSimpleStrategy(
-            positions: new Dictionary<Asset, int> { [s_vti] = 0 });
+            positions: new Dictionary<Symbol, int> { [s_vti] = 0 });
 
         mockPortfolio.Setup(p => p.GetStrategy("TestStrategy")).Returns(strategy);
 
         var handler = new RebalancingSignalEventHandler(CurrencyCode.USD);
-        var signals = new SortedDictionary<Asset, SignalType>
+        var signals = new SortedDictionary<Symbol, SignalType>
         {
             [s_vti] = SignalType.Underweight, // Not Rebalance
         };
@@ -111,14 +111,14 @@ public sealed class RebalancingSignalEventHandlerTests
         var mockPortfolio = CreateMockPortfolio(emittedOrders);
 
         var strategy = CreateConstructionModelStrategy(
-            positions: new Dictionary<Asset, int> { [s_vti] = 600, [s_bnd] = 400 },
-            targetWeights: new Dictionary<Asset, decimal> { [s_vti] = 0.6m, [s_bnd] = 0.4m },
+            positions: new Dictionary<Symbol, int> { [s_vti] = 600, [s_bnd] = 400 },
+            targetWeights: new Dictionary<Symbol, decimal> { [s_vti] = 0.6m, [s_bnd] = 0.4m },
             initialCash: 0m); // No cash — total value is purely positions
 
         mockPortfolio.Setup(p => p.GetStrategy("TestStrategy")).Returns(strategy);
 
         var handler = new RebalancingSignalEventHandler(CurrencyCode.USD);
-        var signals = new SortedDictionary<Asset, SignalType>
+        var signals = new SortedDictionary<Symbol, SignalType>
         {
             [s_vti] = SignalType.Rebalance,
             [s_bnd] = SignalType.Rebalance,
@@ -148,13 +148,13 @@ public sealed class RebalancingSignalEventHandlerTests
     {
         var mockPortfolio = new Mock<IPortfolio>();
 
-        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
-            [s_date] = new SortedDictionary<Asset, MarketData>
+            [s_date] = new SortedDictionary<Symbol, Bar>
             {
-                [s_vti] = new MarketData(s_date, 100m, 105m, 95m, 100m, 100m, 1_000_000L, 0m, 1m),
-                [s_bnd] = new MarketData(s_date, 100m, 102m, 98m, 100m, 100m, 500_000L, 0m, 1m),
-                [s_gld] = new MarketData(s_date, 100m, 103m, 97m, 100m, 100m, 300_000L, 0m, 1m),
+                [s_vti] = new Bar(s_date, 100m, 105m, 95m, 100m, 100m, 1_000_000L),
+                [s_bnd] = new Bar(s_date, 100m, 102m, 98m, 100m, 100m, 500_000L),
+                [s_gld] = new Bar(s_date, 100m, 103m, 97m, 100m, 100m, 300_000L),
             },
         };
 
@@ -185,11 +185,11 @@ public sealed class RebalancingSignalEventHandlerTests
     }
 
     private static ConstructionModelStrategy CreateConstructionModelStrategy(
-        Dictionary<Asset, int> positions,
-        Dictionary<Asset, decimal> targetWeights,
+        Dictionary<Symbol, int> positions,
+        Dictionary<Symbol, decimal> targetWeights,
         decimal initialCash = 100_000m)
     {
-        var assets = new Dictionary<Asset, CurrencyCode>
+        var assets = new Dictionary<Symbol, CurrencyCode>
         {
             [s_vti] = CurrencyCode.USD,
             [s_bnd] = CurrencyCode.USD,
@@ -197,7 +197,7 @@ public sealed class RebalancingSignalEventHandlerTests
         };
 
         // Only include assets that are in positions or targetWeights
-        var relevantAssets = new Dictionary<Asset, CurrencyCode>();
+        var relevantAssets = new Dictionary<Symbol, CurrencyCode>();
         foreach (var a in positions.Keys.Union(targetWeights.Keys))
         {
             if (assets.TryGetValue(a, out var cc))
@@ -209,9 +209,9 @@ public sealed class RebalancingSignalEventHandlerTests
         var cash = new SortedDictionary<CurrencyCode, decimal> { [CurrencyCode.USD] = initialCash };
         var mockOrderPrice = new Mock<IOrderPriceCalculationStrategy>();
         mockOrderPrice
-            .Setup(o => o.CalculateOrderPrices(It.IsAny<DateOnly>(), It.IsAny<Asset>(), It.IsAny<TradeAction>(),
-                It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>>>()))
-            .Returns((DateOnly _, Asset _, TradeAction _, IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>> _) =>
+            .Setup(o => o.CalculateOrderPrices(It.IsAny<DateOnly>(), It.IsAny<Symbol>(), It.IsAny<TradeAction>(),
+                It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>>>()))
+            .Returns((DateOnly _, Symbol _, TradeAction _, IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> _) =>
                 (OrderType.Market, 100m, 0m));
 
         var mockSizer = new Mock<IPositionSizer>();
@@ -241,14 +241,14 @@ public sealed class RebalancingSignalEventHandlerTests
         // The simplest way: make the strategy and set LastComputedWeights through a first GenerateSignals call.
 
         // Use a fake historical data with 3 dates to allow weight computation:
-        var historicalData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>();
+        var historicalData = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>();
         for (var i = 0; i < 5; i++)
         {
             var date = s_date.AddDays(-10 + i);
-            var dayData = new SortedDictionary<Asset, MarketData>();
+            var dayData = new SortedDictionary<Symbol, Bar>();
             foreach (var asset in relevantAssets.Keys)
             {
-                dayData[asset] = new MarketData(date, 100m, 105m, 95m, 100m, 100m, 1_000_000L, 0m, 1m);
+                dayData[asset] = new Bar(date, 100m, 105m, 95m, 100m, 100m, 1_000_000L);
             }
             historicalData[date] = dayData;
         }
@@ -265,7 +265,7 @@ public sealed class RebalancingSignalEventHandlerTests
         // Instead, manually force weights by using a mock construction model.
         // Let's recreate with a mock:
         var mockModel = new Mock<IPortfolioConstructionModel>();
-        mockModel.Setup(m => m.ComputeTargetWeights(It.IsAny<IReadOnlyList<Asset>>(), It.IsAny<decimal[][]>()))
+        mockModel.Setup(m => m.ComputeTargetWeights(It.IsAny<IReadOnlyList<Symbol>>(), It.IsAny<decimal[][]>()))
             .Returns(targetWeights);
 
         var strategy2 = new ConstructionModelStrategy(
@@ -287,20 +287,20 @@ public sealed class RebalancingSignalEventHandlerTests
         return strategy2;
     }
 
-    private static IStrategy CreateSimpleStrategy(Dictionary<Asset, int> positions)
+    private static IStrategy CreateSimpleStrategy(Dictionary<Symbol, int> positions)
     {
-        var assets = new Dictionary<Asset, CurrencyCode> { [s_vti] = CurrencyCode.USD };
+        var assets = new Dictionary<Symbol, CurrencyCode> { [s_vti] = CurrencyCode.USD };
         var cash = new SortedDictionary<CurrencyCode, decimal> { [CurrencyCode.USD] = 100_000m };
 
         var mockOrderPrice = new Mock<IOrderPriceCalculationStrategy>();
         mockOrderPrice
-            .Setup(o => o.CalculateOrderPrices(It.IsAny<DateOnly>(), It.IsAny<Asset>(), It.IsAny<TradeAction>(),
-                It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>>>()))
+            .Setup(o => o.CalculateOrderPrices(It.IsAny<DateOnly>(), It.IsAny<Symbol>(), It.IsAny<TradeAction>(),
+                It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>>>()))
             .Returns((OrderType.Market, 100m, 0m));
 
         // Create a FixedWeightPositionSizer that returns position sizes
         var sizer = new FixedWeightPositionSizer(
-            new Dictionary<Asset, decimal> { [s_vti] = 1.0m },
+            new Dictionary<Symbol, decimal> { [s_vti] = 1.0m },
             CurrencyCode.USD);
 
         var strategy = new BuyAndHoldStrategy("TestStrategy", assets, cash, s_date, mockOrderPrice.Object, sizer);

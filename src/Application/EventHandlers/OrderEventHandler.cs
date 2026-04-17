@@ -84,7 +84,7 @@ public sealed class OrderEventHandler : IEventHandler
             var order = new Order(
                 orderEvent.Timestamp,
                 orderEvent.StrategyName,
-                orderEvent.Asset,
+                orderEvent.Symbol,
                 orderEvent.TradeAction,
                 orderEvent.OrderType,
                 orderEvent.Quantity,
@@ -95,8 +95,8 @@ public sealed class OrderEventHandler : IEventHandler
             if (!riskEvaluation.IsAllowed)
             {
                 _logger.LogWarning(
-                    "Order rejected by risk manager for {Asset} ({TradeAction} {Quantity}): {Reason}",
-                    orderEvent.Asset,
+                    "Order rejected by risk manager for {Symbol} ({TradeAction} {Quantity}): {Reason}",
+                    orderEvent.Symbol,
                     orderEvent.TradeAction,
                     orderEvent.Quantity,
                     riskEvaluation.RejectionReason);
@@ -109,8 +109,8 @@ public sealed class OrderEventHandler : IEventHandler
         if (!orderSubmitted)
         {
             _logger.LogWarning(
-                "Order submission failed for {Asset} ({TradeAction} {Quantity} @ {OrderType})",
-                orderEvent.Asset,
+                "Order submission failed for {Symbol} ({TradeAction} {Quantity} @ {OrderType})",
+                orderEvent.Symbol,
                 orderEvent.TradeAction,
                 orderEvent.Quantity,
                 orderEvent.OrderType);

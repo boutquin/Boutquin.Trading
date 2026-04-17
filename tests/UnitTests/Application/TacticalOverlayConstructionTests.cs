@@ -17,7 +17,6 @@
 namespace Boutquin.Trading.Tests.UnitTests.Application;
 
 using Boutquin.Trading.Application.PortfolioConstruction;
-using Boutquin.Trading.Domain.Enums;
 using FluentAssertions;
 
 /// <summary>
@@ -25,8 +24,8 @@ using FluentAssertions;
 /// </summary>
 public sealed class TacticalOverlayConstructionTests
 {
-    private static readonly Asset s_vti = new("VTI");
-    private static readonly Asset s_tlt = new("TLT");
+    private static readonly Symbol s_vti = new("VTI");
+    private static readonly Symbol s_tlt = new("TLT");
 
     /// <summary>
     /// Regression: Constructor must throw when the current regime has no entry in regimeTilts.
@@ -38,9 +37,9 @@ public sealed class TacticalOverlayConstructionTests
     {
         // Arrange — regimeTilts has RisingGrowthRisingInflation but currentRegime is FallingGrowthFallingInflation
         var baseModel = new Mock<IPortfolioConstructionModel>();
-        var regimeTilts = new Dictionary<EconomicRegime, IReadOnlyDictionary<Asset, decimal>>
+        var regimeTilts = new Dictionary<EconomicRegime, IReadOnlyDictionary<Symbol, decimal>>
         {
-            [EconomicRegime.RisingGrowthRisingInflation] = new Dictionary<Asset, decimal>
+            [EconomicRegime.RisingGrowthRisingInflation] = new Dictionary<Symbol, decimal>
             {
                 [s_vti] = 0.05m,
                 [s_tlt] = -0.05m
@@ -64,16 +63,16 @@ public sealed class TacticalOverlayConstructionTests
     public void ComputeTargetWeights_ShouldApplyTilts_WhenRegimePresent()
     {
         // Arrange — base model returns equal weight, regime tilts VTI +10%, TLT -10%
-        var assets = new List<Asset> { s_vti, s_tlt };
+        var assets = new List<Symbol> { s_vti, s_tlt };
         var returns = new[] { new[] { 0.01m, -0.01m }, new[] { -0.005m, 0.005m } };
 
         var baseModel = new Mock<IPortfolioConstructionModel>();
         baseModel.Setup(m => m.ComputeTargetWeights(assets, returns))
-            .Returns(new Dictionary<Asset, decimal> { [s_vti] = 0.5m, [s_tlt] = 0.5m });
+            .Returns(new Dictionary<Symbol, decimal> { [s_vti] = 0.5m, [s_tlt] = 0.5m });
 
-        var regimeTilts = new Dictionary<EconomicRegime, IReadOnlyDictionary<Asset, decimal>>
+        var regimeTilts = new Dictionary<EconomicRegime, IReadOnlyDictionary<Symbol, decimal>>
         {
-            [EconomicRegime.RisingGrowthRisingInflation] = new Dictionary<Asset, decimal>
+            [EconomicRegime.RisingGrowthRisingInflation] = new Dictionary<Symbol, decimal>
             {
                 [s_vti] = 0.10m,
                 [s_tlt] = -0.10m

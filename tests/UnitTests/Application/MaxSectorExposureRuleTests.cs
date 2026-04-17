@@ -24,9 +24,9 @@ using FluentAssertions;
 /// </summary>
 public sealed class MaxSectorExposureRuleTests
 {
-    private static readonly Asset s_vti = new("VTI");
-    private static readonly Asset s_bnd = new("BND");
-    private static readonly Asset s_xyz = new("XYZ"); // Not in asset class map
+    private static readonly Symbol s_vti = new("VTI");
+    private static readonly Symbol s_bnd = new("BND");
+    private static readonly Symbol s_xyz = new("XYZ"); // Not in asset class map
 
     /// <summary>
     /// Regression: Orders for assets not in the asset class map must be rejected,
@@ -36,7 +36,7 @@ public sealed class MaxSectorExposureRuleTests
     public void Evaluate_ShouldReject_WhenOrderAssetNotInAssetClassMap()
     {
         // Arrange — asset class map only has VTI, order is for XYZ (unmapped)
-        var assetClassMap = new Dictionary<Asset, AssetClassCode>
+        var assetClassMap = new Dictionary<Symbol, AssetClassCode>
         {
             [s_vti] = AssetClassCode.Equities
         };
@@ -44,16 +44,16 @@ public sealed class MaxSectorExposureRuleTests
         {
             [new DateOnly(2026, 1, 1)] = 100_000m
         };
-        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
             [new DateOnly(2026, 1, 1)] = new()
             {
-                [s_vti] = new MarketData(new DateOnly(2026, 1, 1), 100m, 101m, 99m, 100m, 100m, 1_000_000, 0m)
+                [s_vti] = new Bar(new DateOnly(2026, 1, 1), 100m, 101m, 99m, 100m, 100m, 1_000_000)
             }
         };
         var strategyMock = new Mock<IStrategy>();
         strategyMock.Setup(s => s.Positions)
-            .Returns((IReadOnlyDictionary<Asset, int>)new Dictionary<Asset, int>());
+            .Returns((IReadOnlyDictionary<Symbol, int>)new Dictionary<Symbol, int>());
         var strategies = new Dictionary<string, IStrategy> { ["Test"] = strategyMock.Object };
         var portfolio = new Mock<IPortfolio>();
         portfolio.Setup(p => p.EquityCurve).Returns(equityCurve);
@@ -65,7 +65,7 @@ public sealed class MaxSectorExposureRuleTests
         var order = new Order(
             Timestamp: new DateOnly(2026, 1, 1),
             StrategyName: "Test",
-            Asset: s_xyz, // Not in map
+            Symbol: s_xyz, // Not in map
             TradeAction: TradeAction.Buy,
             OrderType: OrderType.Market,
             Quantity: 100);
@@ -83,7 +83,7 @@ public sealed class MaxSectorExposureRuleTests
     [Fact]
     public void Evaluate_ShouldAllow_WhenNoEquityCurve()
     {
-        var assetClassMap = new Dictionary<Asset, AssetClassCode> { [s_vti] = AssetClassCode.Equities };
+        var assetClassMap = new Dictionary<Symbol, AssetClassCode> { [s_vti] = AssetClassCode.Equities };
         var portfolio = new Mock<IPortfolio>();
         portfolio.Setup(p => p.EquityCurve).Returns(new SortedDictionary<DateOnly, decimal>());
 
@@ -91,7 +91,7 @@ public sealed class MaxSectorExposureRuleTests
         var order = new Order(
             Timestamp: new DateOnly(2026, 1, 1),
             StrategyName: "Test",
-            Asset: s_vti,
+            Symbol: s_vti,
             TradeAction: TradeAction.Buy,
             OrderType: OrderType.Market,
             Quantity: 100);
@@ -107,13 +107,13 @@ public sealed class MaxSectorExposureRuleTests
     [Fact]
     public void Evaluate_ShouldReject_WhenNoLatestMarketData()
     {
-        var assetClassMap = new Dictionary<Asset, AssetClassCode> { [s_vti] = AssetClassCode.Equities };
+        var assetClassMap = new Dictionary<Symbol, AssetClassCode> { [s_vti] = AssetClassCode.Equities };
         var equityCurve = new SortedDictionary<DateOnly, decimal>
         {
             [new DateOnly(2026, 1, 1)] = 100_000m
         };
         // Historical market data exists but is empty (no entries)
-        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>();
+        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>();
 
         var portfolio = new Mock<IPortfolio>();
         portfolio.Setup(p => p.EquityCurve).Returns(equityCurve);
@@ -123,7 +123,7 @@ public sealed class MaxSectorExposureRuleTests
         var order = new Order(
             Timestamp: new DateOnly(2026, 1, 1),
             StrategyName: "Test",
-            Asset: s_vti,
+            Symbol: s_vti,
             TradeAction: TradeAction.Buy,
             OrderType: OrderType.Market,
             Quantity: 100);
@@ -142,7 +142,7 @@ public sealed class MaxSectorExposureRuleTests
     public void Evaluate_ShouldAllow_WhenExposureExactlyAtLimit()
     {
         // Arrange: 60% limit, portfolio $100k, VTI (Equities) at exactly 60%
-        var assetClassMap = new Dictionary<Asset, AssetClassCode>
+        var assetClassMap = new Dictionary<Symbol, AssetClassCode>
         {
             [s_vti] = AssetClassCode.Equities,
             [s_bnd] = AssetClassCode.FixedIncome
@@ -151,18 +151,18 @@ public sealed class MaxSectorExposureRuleTests
         {
             [new DateOnly(2026, 1, 1)] = 100_000m
         };
-        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
             [new DateOnly(2026, 1, 1)] = new()
             {
                 // 600 shares × $100 = $60,000 = exactly 60%
-                [s_vti] = new MarketData(new DateOnly(2026, 1, 1), 100m, 101m, 99m, 100m, 100m, 1_000_000, 0m),
-                [s_bnd] = new MarketData(new DateOnly(2026, 1, 1), 80m, 81m, 79m, 80m, 80m, 500_000, 0m)
+                [s_vti] = new Bar(new DateOnly(2026, 1, 1), 100m, 101m, 99m, 100m, 100m, 1_000_000),
+                [s_bnd] = new Bar(new DateOnly(2026, 1, 1), 80m, 81m, 79m, 80m, 80m, 500_000)
             }
         };
         var strategyMock = new Mock<IStrategy>();
         strategyMock.Setup(s => s.Positions)
-            .Returns((IReadOnlyDictionary<Asset, int>)new Dictionary<Asset, int>
+            .Returns((IReadOnlyDictionary<Symbol, int>)new Dictionary<Symbol, int>
             {
                 [s_vti] = 600,
                 [s_bnd] = 500
@@ -179,7 +179,7 @@ public sealed class MaxSectorExposureRuleTests
         var order = new Order(
             Timestamp: new DateOnly(2026, 1, 1),
             StrategyName: "Test",
-            Asset: s_vti,
+            Symbol: s_vti,
             TradeAction: TradeAction.Buy,
             OrderType: OrderType.Market,
             Quantity: 0);
@@ -203,7 +203,7 @@ public sealed class MaxSectorExposureRuleTests
         // Arrange: 60% limit, portfolio $100k
         // Position: 600 shares VTI × $100 = $60,000 + tiny overshoot from BND rebalance
         // We simulate exposure at 60.009% (within 1bp tolerance)
-        var assetClassMap = new Dictionary<Asset, AssetClassCode>
+        var assetClassMap = new Dictionary<Symbol, AssetClassCode>
         {
             [s_vti] = AssetClassCode.Equities,
             [s_bnd] = AssetClassCode.FixedIncome
@@ -214,17 +214,17 @@ public sealed class MaxSectorExposureRuleTests
         {
             [new DateOnly(2026, 1, 1)] = 100_000m
         };
-        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
             [new DateOnly(2026, 1, 1)] = new()
             {
-                [s_vti] = new MarketData(new DateOnly(2026, 1, 1), 100.015m, 101m, 99m, 100.015m, 100.015m, 1_000_000, 0m),
-                [s_bnd] = new MarketData(new DateOnly(2026, 1, 1), 80m, 81m, 79m, 80m, 80m, 500_000, 0m)
+                [s_vti] = new Bar(new DateOnly(2026, 1, 1), 100.015m, 101m, 99m, 100.015m, 100.015m, 1_000_000),
+                [s_bnd] = new Bar(new DateOnly(2026, 1, 1), 80m, 81m, 79m, 80m, 80m, 500_000)
             }
         };
         var strategyMock = new Mock<IStrategy>();
         strategyMock.Setup(s => s.Positions)
-            .Returns((IReadOnlyDictionary<Asset, int>)new Dictionary<Asset, int>
+            .Returns((IReadOnlyDictionary<Symbol, int>)new Dictionary<Symbol, int>
             {
                 [s_vti] = 600,
                 [s_bnd] = 500
@@ -242,7 +242,7 @@ public sealed class MaxSectorExposureRuleTests
         var orders = new List<Order>
         {
             new(Timestamp: new DateOnly(2026, 1, 1), StrategyName: "Test",
-                Asset: s_bnd, TradeAction: TradeAction.Buy, OrderType: OrderType.Market, Quantity: 0)
+                Symbol: s_bnd, TradeAction: TradeAction.Buy, OrderType: OrderType.Market, Quantity: 0)
         };
 
         // Act

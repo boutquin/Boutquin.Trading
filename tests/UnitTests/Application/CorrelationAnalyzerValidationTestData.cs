@@ -18,8 +18,8 @@ namespace Boutquin.Trading.Tests.UnitTests.Application;
 
 public static class CorrelationAnalyzerValidationTestData
 {
-    private static readonly Asset s_a = new("A");
-    private static readonly Asset s_b = new("B");
+    private static readonly Symbol s_a = new("A");
+    private static readonly Symbol s_b = new("B");
 
     public static IEnumerable<object[]> DimensionMismatch_ReturnsVsAssets
     {
@@ -28,7 +28,7 @@ public static class CorrelationAnalyzerValidationTestData
             // 2 assets but 3 return series
             yield return
             [
-                new List<Asset> { s_a, s_b },
+                new List<Symbol> { s_a, s_b },
                 new[] { new[] { 0.01m, 0.02m }, new[] { 0.01m, 0.02m }, new[] { 0.01m, 0.02m } },
                 new[] { 0.5m, 0.5m }
             ];
@@ -42,7 +42,7 @@ public static class CorrelationAnalyzerValidationTestData
             // 2 assets but 3 weights
             yield return
             [
-                new List<Asset> { s_a, s_b },
+                new List<Symbol> { s_a, s_b },
                 new[] { new[] { 0.01m, 0.02m }, new[] { 0.01m, 0.02m } },
                 new[] { 0.3m, 0.3m, 0.4m }
             ];
@@ -56,7 +56,7 @@ public static class CorrelationAnalyzerValidationTestData
             // 2 assets with only 1 observation each (need >= 2 for N-1 divisor)
             yield return
             [
-                new List<Asset> { s_a, s_b },
+                new List<Symbol> { s_a, s_b },
                 new[] { new[] { 0.01m }, new[] { 0.02m } },
                 new[] { 0.5m, 0.5m }
             ];

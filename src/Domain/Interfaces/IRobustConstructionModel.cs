@@ -15,9 +15,6 @@
 //
 
 namespace Boutquin.Trading.Domain.Interfaces;
-
-using ValueObjects;
-
 /// <summary>
 /// Extends <see cref="IPortfolioConstructionModel"/> to accept multiple covariance scenarios
 /// for robust (minimax) optimization. The model optimizes for the worst-case scenario,
@@ -36,8 +33,8 @@ public interface IRobustConstructionModel : IPortfolioConstructionModel
     /// (e.g., normal conditions, GFC 2008, rate shock 2022).
     /// </param>
     /// <returns>Target weight dictionary optimized for worst-case scenario.</returns>
-    IReadOnlyDictionary<Asset, decimal> ComputeTargetWeights(
-        IReadOnlyList<Asset> assets,
+    IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
+        IReadOnlyList<Symbol> assets,
         decimal[][] returns,
         IReadOnlyList<decimal[,]> covarianceScenarios);
 }

@@ -17,7 +17,6 @@
 namespace Boutquin.Trading.Application.PositionSizing;
 
 using Boutquin.Trading.Application.Strategies;
-using Domain.ValueObjects;
 
 /// <summary>
 /// Position sizer that reads dynamically computed target weights from a
@@ -47,11 +46,11 @@ public sealed class DynamicWeightPositionSizer : IPositionSizer
     }
 
     /// <inheritdoc />
-    public IReadOnlyDictionary<Asset, int> ComputePositionSizes(
+    public IReadOnlyDictionary<Symbol, int> ComputePositionSizes(
         DateOnly timestamp,
-        IReadOnlyDictionary<Asset, SignalType> signalType,
+        IReadOnlyDictionary<Symbol, SignalType> signalType,
         IStrategy strategy,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>> historicalMarketData,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> historicalMarketData,
         IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
     {
         Guard.AgainstNull(() => signalType);
@@ -60,7 +59,7 @@ public sealed class DynamicWeightPositionSizer : IPositionSizer
         Guard.AgainstEmptyOrNullReadOnlyDictionary(() => historicalFxConversionRates);
 
         // Get target weights from the strategy
-        IReadOnlyDictionary<Asset, decimal>? targetWeights = null;
+        IReadOnlyDictionary<Symbol, decimal>? targetWeights = null;
         if (strategy is ConstructionModelStrategy cms)
         {
             targetWeights = cms.LastComputedWeights
@@ -79,7 +78,7 @@ public sealed class DynamicWeightPositionSizer : IPositionSizer
             timestamp, _baseCurrency, historicalMarketData, historicalFxConversionRates);
         var allocatableValue = totalStrategyValue * (1m - _cashBufferPercent);
 
-        var positionSizes = new Dictionary<Asset, int>();
+        var positionSizes = new Dictionary<Symbol, int>();
 
         foreach (var asset in strategy.Assets.Keys)
         {

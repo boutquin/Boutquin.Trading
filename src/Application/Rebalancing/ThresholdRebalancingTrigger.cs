@@ -15,9 +15,6 @@
 //
 
 namespace Boutquin.Trading.Application.Rebalancing;
-
-using Domain.ValueObjects;
-
 /// <summary>
 /// Triggers rebalancing when any asset's weight drifts beyond a configurable band
 /// from its target weight.
@@ -50,8 +47,8 @@ public sealed class ThresholdRebalancingTrigger : IRebalancingTrigger
 
     /// <inheritdoc />
     public bool ShouldRebalance(
-        IReadOnlyDictionary<Asset, decimal> currentWeights,
-        IReadOnlyDictionary<Asset, decimal> targetWeights)
+        IReadOnlyDictionary<Symbol, decimal> currentWeights,
+        IReadOnlyDictionary<Symbol, decimal> targetWeights)
     {
         Guard.AgainstNull(() => currentWeights);
         Guard.AgainstNull(() => targetWeights);

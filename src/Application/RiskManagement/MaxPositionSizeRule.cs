@@ -78,7 +78,7 @@ public sealed class MaxPositionSizeRule : IRiskRule
 
         // Estimate the value of the proposed order
         var latestMarketData = portfolio.HistoricalMarketData.Values.LastOrDefault();
-        if (latestMarketData is null || !latestMarketData.TryGetValue(order.Asset, out var marketData))
+        if (latestMarketData is null || !latestMarketData.TryGetValue(order.Symbol, out var marketData))
         {
             return RiskEvaluation.Allowed;
         }
@@ -87,7 +87,7 @@ public sealed class MaxPositionSizeRule : IRiskRule
         var existingQuantity = 0;
         foreach (var strategy in portfolio.Strategies.Values)
         {
-            if (strategy.Positions.TryGetValue(order.Asset, out var qty))
+            if (strategy.Positions.TryGetValue(order.Symbol, out var qty))
             {
                 existingQuantity += qty;
             }
@@ -106,7 +106,7 @@ public sealed class MaxPositionSizeRule : IRiskRule
         if (positionPercent > _maxPositionPercent + Tolerance)
         {
             return RiskEvaluation.Rejected(
-                $"Position in {order.Asset} would be {positionPercent:P2} of portfolio, exceeding maximum {_maxPositionPercent:P2}.");
+                $"Position in {order.Symbol} would be {positionPercent:P2} of portfolio, exceeding maximum {_maxPositionPercent:P2}.");
         }
 
         return RiskEvaluation.Allowed;
@@ -141,7 +141,7 @@ public sealed class MaxPositionSizeRule : IRiskRule
         }
 
         // 1. Collect current positions across all strategies
-        var currentPositions = new Dictionary<Asset, int>();
+        var currentPositions = new Dictionary<Symbol, int>();
         foreach (var strategy in portfolio.Strategies.Values)
         {
             foreach (var (asset, qty) in strategy.Positions)
@@ -151,13 +151,13 @@ public sealed class MaxPositionSizeRule : IRiskRule
         }
 
         // 2. Compute net deltas from the entire batch
-        var deltas = new Dictionary<Asset, int>();
+        var deltas = new Dictionary<Symbol, int>();
         foreach (var order in orders)
         {
             var delta = order.TradeAction == TradeAction.Buy
                 ? order.Quantity
                 : -order.Quantity;
-            deltas[order.Asset] = deltas.GetValueOrDefault(order.Asset) + delta;
+            deltas[order.Symbol] = deltas.GetValueOrDefault(order.Symbol) + delta;
         }
 
         // 3. Check projected position for each affected asset

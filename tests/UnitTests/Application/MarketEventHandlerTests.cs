@@ -28,17 +28,17 @@ public sealed class MarketEventHandlerTests
     public async Task MarketEventHandler_GenerateSignals_FeedsToEventProcessor()
     {
         // Arrange
-        var asset = new Asset("AAPL");
+        var asset = new Symbol("AAPL");
         var date = new DateOnly(2024, 1, 15);
-        var marketData = new SortedDictionary<Asset, MarketData>
+        var marketData = new SortedDictionary<Symbol, Bar>
         {
-            { asset, new MarketData(date, 100m, 105m, 99m, 104m, 104m, 1000, 0m, 1m) }
+            { asset, new Bar(date, 100m, 105m, 99m, 104m, 104m, 1000) }
         };
         var fxRates = new SortedDictionary<CurrencyCode, decimal>();
 
         var marketEvent = new MarketEvent(date, marketData, fxRates);
 
-        var signal = new SignalEvent(date, "TestStrategy", new Dictionary<Asset, SignalType>
+        var signal = new SignalEvent(date, "TestStrategy", new Dictionary<Symbol, SignalType>
         {
             { asset, SignalType.Overweight }
         });

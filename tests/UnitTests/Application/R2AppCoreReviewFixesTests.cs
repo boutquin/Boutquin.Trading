@@ -25,23 +25,14 @@ using FluentAssertions;
 public sealed class R2AppCoreReviewFixesTests
 {
     private static readonly DateOnly s_today = new(2024, 1, 15);
-    private static readonly Asset s_aapl = new("AAPL");
+    private static readonly Symbol s_aapl = new("AAPL");
 
-    private static MarketData MakeMarketData(
+    private static Bar MakeMarketData(
         decimal open = 100m, decimal high = 200m, decimal low = 50m,
         decimal close = 150m, decimal adjustedClose = 150m, long volume = 1_000_000)
-        => new(s_today, open, high, low, close, adjustedClose, volume, 0m, 1m);
+        => new(s_today, open, high, low, close, adjustedClose, volume);
 
-    private static KeyValuePair<DateOnly, SortedDictionary<Asset, MarketData>> MakeMarketDataKvp(MarketData md)
-        => new(s_today, new SortedDictionary<Asset, MarketData> { { s_aapl, md } });
-
-    private static Mock<IMarketDataFetcher> SetupFetcher(MarketData md)
-    {
-        var mock = new Mock<IMarketDataFetcher>();
-        mock.Setup(f => f.FetchMarketDataAsync(It.IsAny<IEnumerable<Asset>>(), It.IsAny<CancellationToken>()))
-            .Returns(new[] { MakeMarketDataKvp(md) }.ToAsyncEnumerable());
-        return mock;
-    }
+    // SetupFetcher removed — SimulatedBrokerage no longer requires IMarketDataFetcher.
 
     #region R2C-02: FillEventHandler sell quantity negation
 
@@ -130,8 +121,7 @@ public sealed class R2AppCoreReviewFixesTests
         // Arrange: stopPrice=105, limitPrice=107. Close=100, High=106, Low=99.
         // Stop triggers: High(106) >= 105. Limit fills: Close(100) <= 107.
         var md = MakeMarketData(open: 100, high: 106, low: 99, close: 100, adjustedClose: 100);
-        var fetcherMock = SetupFetcher(md);
-        var brokerage = new SimulatedBrokerage(fetcherMock.Object);
+        var brokerage = new SimulatedBrokerage();
 
         var order = new Order(s_today, "S1", s_aapl, TradeAction.Buy, OrderType.StopLimit, 10,
             PrimaryPrice: 105m, SecondaryPrice: 107m);
@@ -141,7 +131,7 @@ public sealed class R2AppCoreReviewFixesTests
 
         // Act — queue the order, then process pending orders with next-bar data
         var result = await brokerage.SubmitOrderAsync(order, CancellationToken.None).ConfigureAwait(true);
-        var dayData = new SortedDictionary<Asset, MarketData> { { s_aapl, md } };
+        var dayData = new SortedDictionary<Symbol, Bar> { { s_aapl, md } };
         await brokerage.ProcessPendingOrdersAsync(s_today, dayData, CancellationToken.None).ConfigureAwait(true);
 
         // Assert — stop triggers (High>=stop) and limit fills (Close<=limit)
@@ -158,8 +148,7 @@ public sealed class R2AppCoreReviewFixesTests
         // Arrange: stopPrice=95, limitPrice=93. Close=100, Low=94, High=101.
         // Stop triggers: Low(94) <= 95. Limit fills: Close(100) >= 93.
         var md = MakeMarketData(open: 100, high: 101, low: 94, close: 100, adjustedClose: 100);
-        var fetcherMock = SetupFetcher(md);
-        var brokerage = new SimulatedBrokerage(fetcherMock.Object);
+        var brokerage = new SimulatedBrokerage();
 
         var order = new Order(s_today, "S1", s_aapl, TradeAction.Sell, OrderType.StopLimit, 10,
             PrimaryPrice: 95m, SecondaryPrice: 93m);
@@ -169,7 +158,7 @@ public sealed class R2AppCoreReviewFixesTests
 
         // Act — queue the order, then process pending orders with next-bar data
         var result = await brokerage.SubmitOrderAsync(order, CancellationToken.None).ConfigureAwait(true);
-        var dayData = new SortedDictionary<Asset, MarketData> { { s_aapl, md } };
+        var dayData = new SortedDictionary<Symbol, Bar> { { s_aapl, md } };
         await brokerage.ProcessPendingOrdersAsync(s_today, dayData, CancellationToken.None).ConfigureAwait(true);
 
         // Assert
@@ -185,8 +174,7 @@ public sealed class R2AppCoreReviewFixesTests
     {
         // Arrange: stopPrice=110, High=108 → stop doesn't trigger
         var md = MakeMarketData(open: 100, high: 108, low: 99, close: 105, adjustedClose: 105);
-        var fetcherMock = SetupFetcher(md);
-        var brokerage = new SimulatedBrokerage(fetcherMock.Object);
+        var brokerage = new SimulatedBrokerage();
 
         var order = new Order(s_today, "S1", s_aapl, TradeAction.Buy, OrderType.StopLimit, 10,
             PrimaryPrice: 110m, SecondaryPrice: 115m);
@@ -196,7 +184,7 @@ public sealed class R2AppCoreReviewFixesTests
 
         // Act — queue the order, then process; stop should not trigger so no fill
         var result = await brokerage.SubmitOrderAsync(order, CancellationToken.None).ConfigureAwait(true);
-        var dayData = new SortedDictionary<Asset, MarketData> { { s_aapl, md } };
+        var dayData = new SortedDictionary<Symbol, Bar> { { s_aapl, md } };
         await brokerage.ProcessPendingOrdersAsync(s_today, dayData, CancellationToken.None).ConfigureAwait(true);
 
         // Assert — order was queued (true) but no fill occurred
@@ -212,8 +200,7 @@ public sealed class R2AppCoreReviewFixesTests
     {
         // Arrange: stopPrice=105, limitPrice=99. High=106 (stop triggers), Close=100 (100>99, limit missed).
         var md = MakeMarketData(open: 100, high: 106, low: 98, close: 100, adjustedClose: 100);
-        var fetcherMock = SetupFetcher(md);
-        var brokerage = new SimulatedBrokerage(fetcherMock.Object);
+        var brokerage = new SimulatedBrokerage();
 
         var order = new Order(s_today, "S1", s_aapl, TradeAction.Buy, OrderType.StopLimit, 10,
             PrimaryPrice: 105m, SecondaryPrice: 99m);
@@ -223,7 +210,7 @@ public sealed class R2AppCoreReviewFixesTests
 
         // Act — queue the order, then process; stop triggers but limit missed so no fill
         var result = await brokerage.SubmitOrderAsync(order, CancellationToken.None).ConfigureAwait(true);
-        var dayData = new SortedDictionary<Asset, MarketData> { { s_aapl, md } };
+        var dayData = new SortedDictionary<Symbol, Bar> { { s_aapl, md } };
         await brokerage.ProcessPendingOrdersAsync(s_today, dayData, CancellationToken.None).ConfigureAwait(true);
 
         // Assert — order was queued (true) but no fill occurred (stop triggered, limit missed)
@@ -243,8 +230,7 @@ public sealed class R2AppCoreReviewFixesTests
     {
         // Arrange
         var md = MakeMarketData();
-        var fetcherMock = SetupFetcher(md);
-        var brokerage = new SimulatedBrokerage(fetcherMock.Object);
+        var brokerage = new SimulatedBrokerage();
 
         var order = new Order(s_today, "S1", s_aapl, TradeAction.Buy, OrderType.Market, 10);
 
@@ -256,7 +242,7 @@ public sealed class R2AppCoreReviewFixesTests
 
         // Act — queue the order, then process pending orders to trigger fills
         await brokerage.SubmitOrderAsync(order, CancellationToken.None).ConfigureAwait(true);
-        var dayData = new SortedDictionary<Asset, MarketData> { { s_aapl, md } };
+        var dayData = new SortedDictionary<Symbol, Bar> { { s_aapl, md } };
         await brokerage.ProcessPendingOrdersAsync(s_today, dayData, CancellationToken.None).ConfigureAwait(true);
 
         // Assert — both handlers must have been called
@@ -272,8 +258,7 @@ public sealed class R2AppCoreReviewFixesTests
     {
         // Arrange
         var md = MakeMarketData();
-        var fetcherMock = SetupFetcher(md);
-        var brokerage = new SimulatedBrokerage(fetcherMock.Object);
+        var brokerage = new SimulatedBrokerage();
 
         var order = new Order(s_today, "S1", s_aapl, TradeAction.Buy, OrderType.Market, 10);
 
@@ -281,7 +266,7 @@ public sealed class R2AppCoreReviewFixesTests
 
         // Act — queue the order, then process; exception should propagate from ProcessPendingOrdersAsync
         await brokerage.SubmitOrderAsync(order, CancellationToken.None).ConfigureAwait(true);
-        var dayData = new SortedDictionary<Asset, MarketData> { { s_aapl, md } };
+        var dayData = new SortedDictionary<Symbol, Bar> { { s_aapl, md } };
         var act = () => brokerage.ProcessPendingOrdersAsync(s_today, dayData, CancellationToken.None);
 
         // Assert
@@ -300,9 +285,9 @@ public sealed class R2AppCoreReviewFixesTests
     public void GenerateSignals_MissingFxRate_FallsBackToEmptyWeights()
     {
         // Arrange: 2 assets — one USD, one EUR. FX rates missing EUR.
-        var vti = new Asset("VTI");
-        var dax = new Asset("DAX");
-        var assets = new Dictionary<Asset, CurrencyCode>
+        var vti = new Symbol("VTI");
+        var dax = new Symbol("DAX");
+        var assets = new Dictionary<Symbol, CurrencyCode>
         {
             [vti] = CurrencyCode.USD,
             [dax] = CurrencyCode.EUR
@@ -318,15 +303,15 @@ public sealed class R2AppCoreReviewFixesTests
             constructionModel, RebalancingFrequency.Daily, lookbackWindow: 5);
 
         // Build market data with both assets
-        var marketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>();
+        var marketData = new Dictionary<DateOnly, SortedDictionary<Symbol, Bar>>();
         var baseDate = new DateOnly(2024, 1, 2);
         for (var i = 0; i < 10; i++)
         {
             var date = baseDate.AddDays(i);
-            marketData[date] = new SortedDictionary<Asset, MarketData>
+            marketData[date] = new SortedDictionary<Symbol, Bar>
             {
-                [vti] = new(date, 200m, 201m, 199m, 200m, 200m, 1_000_000, 0m),
-                [dax] = new(date, 100m, 101m, 99m, 100m, 100m, 500_000, 0m)
+                [vti] = new(date, 200m, 201m, 199m, 200m, 200m, 1_000_000),
+                [dax] = new(date, 100m, 101m, 99m, 100m, 100m, 500_000)
             };
         }
 
@@ -365,18 +350,18 @@ public sealed class R2AppCoreReviewFixesTests
     {
         // Arrange
         var date = s_today;
-        var marketData = new SortedDictionary<Asset, MarketData>
+        var marketData = new SortedDictionary<Symbol, Bar>
         {
-            { s_aapl, new MarketData(date, 100m, 105m, 99m, 104m, 104m, 1000, 0m, 1m) }
+            { s_aapl, new Bar(date, 100m, 105m, 99m, 104m, 104m, 1000) }
         };
         var fxRates = new SortedDictionary<CurrencyCode, decimal>();
         var marketEvent = new MarketEvent(date, marketData, fxRates);
 
-        var signal1 = new SignalEvent(date, "S1", new Dictionary<Asset, SignalType>
+        var signal1 = new SignalEvent(date, "S1", new Dictionary<Symbol, SignalType>
         {
             { s_aapl, SignalType.Overweight }
         });
-        var signal2 = new SignalEvent(date, "S2", new Dictionary<Asset, SignalType>
+        var signal2 = new SignalEvent(date, "S2", new Dictionary<Symbol, SignalType>
         {
             { s_aapl, SignalType.Underweight }
         });
@@ -409,9 +394,9 @@ public sealed class R2AppCoreReviewFixesTests
     {
         // Arrange
         var date = s_today;
-        var marketData = new SortedDictionary<Asset, MarketData>
+        var marketData = new SortedDictionary<Symbol, Bar>
         {
-            { s_aapl, new MarketData(date, 100m, 105m, 99m, 104m, 104m, 1000, 0m, 1m) }
+            { s_aapl, new Bar(date, 100m, 105m, 99m, 104m, 104m, 1000) }
         };
         var fxRates = new SortedDictionary<CurrencyCode, decimal>();
         var marketEvent = new MarketEvent(date, marketData, fxRates);
@@ -446,13 +431,12 @@ public sealed class R2AppCoreReviewFixesTests
         var date1 = new DateOnly(2024, 1, 14);
         var date2 = new DateOnly(2024, 1, 15);
 
-        var md2 = new SortedDictionary<Asset, MarketData>
+        var md2 = new SortedDictionary<Symbol, Bar>
         {
-            { s_aapl, new MarketData(date2, 100m, 110m, 95m, 105m, 105m, 1_000_000, 0m, 1m) }
+            { s_aapl, new Bar(date2, 100m, 110m, 95m, 105m, 105m, 1_000_000) }
         };
 
-        var fetcherMock = new Mock<IMarketDataFetcher>();
-        var brokerage = new SimulatedBrokerage(fetcherMock.Object);
+        var brokerage = new SimulatedBrokerage();
         var order = new Order(date1, "S1", s_aapl, TradeAction.Buy, OrderType.Market, 10);
 
         FillEvent? capturedFill = null;
@@ -478,14 +462,13 @@ public sealed class R2AppCoreReviewFixesTests
         var date1 = new DateOnly(2024, 1, 14);
         var date2 = new DateOnly(2024, 1, 15);
 
-        var otherAsset = new Asset("MSFT");
-        var dayData = new SortedDictionary<Asset, MarketData>
+        var otherAsset = new Symbol("MSFT");
+        var dayData = new SortedDictionary<Symbol, Bar>
         {
-            { otherAsset, new MarketData(date2, 100m, 110m, 95m, 105m, 105m, 1_000_000, 0m, 1m) }
+            { otherAsset, new Bar(date2, 100m, 110m, 95m, 105m, 105m, 1_000_000) }
         };
 
-        var fetcherMock = new Mock<IMarketDataFetcher>();
-        var brokerage = new SimulatedBrokerage(fetcherMock.Object);
+        var brokerage = new SimulatedBrokerage();
         var order = new Order(date1, "S1", s_aapl, TradeAction.Buy, OrderType.Market, 10);
 
         var filled = false;

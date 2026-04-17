@@ -28,7 +28,7 @@ public sealed class FillEventHandlerTests
     public async Task FillEventHandler_SellOrder_CreditsCash()
     {
         // Arrange
-        var asset = new Asset("AAPL");
+        var asset = new Symbol("AAPL");
         var strategyName = "TestStrategy";
         var mockStrategy = new Mock<IStrategy>();
         var mockPortfolio = new Mock<IPortfolio>();
@@ -65,7 +65,7 @@ public sealed class FillEventHandlerTests
     public async Task FillEventHandler_BuyOrder_DeductsCash()
     {
         // Arrange
-        var asset = new Asset("AAPL");
+        var asset = new Symbol("AAPL");
         var strategyName = "TestStrategy";
         var mockStrategy = new Mock<IStrategy>();
         var mockPortfolio = new Mock<IPortfolio>();
@@ -104,7 +104,7 @@ public sealed class FillEventHandlerTests
     public async Task FillEventHandler_ShouldThrow_WhenAssetCurrencyNotInCashDict()
     {
         // Arrange — fill is for USD asset, but strategy only has EUR cash
-        var asset = new Asset("AAPL");
+        var asset = new Symbol("AAPL");
         var strategyName = "TestStrategy";
         var mockStrategy = new Mock<IStrategy>();
         var mockPortfolio = new Mock<IPortfolio>();

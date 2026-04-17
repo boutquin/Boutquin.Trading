@@ -24,9 +24,9 @@ namespace Boutquin.Trading.Tests.UnitTests.Application;
 /// </summary>
 public sealed class TargetPortfolioDifferTests
 {
-    private static readonly Asset s_vti = new("VTI");
-    private static readonly Asset s_bnd = new("BND");
-    private static readonly Asset s_gld = new("GLD");
+    private static readonly Symbol s_vti = new("VTI");
+    private static readonly Symbol s_bnd = new("BND");
+    private static readonly Symbol s_gld = new("GLD");
 
     /// <summary>
     /// Target matches current exactly → no orders needed.
@@ -36,9 +36,9 @@ public sealed class TargetPortfolioDifferTests
     public void ComputeRebalanceOrders_NoChangesNeeded_ReturnsEmptyList()
     {
         // Arrange
-        var targetWeights = new Dictionary<Asset, decimal> { { s_vti, 0.6m }, { s_bnd, 0.4m } };
-        var currentPositions = new Dictionary<Asset, int> { { s_vti, 600 }, { s_bnd, 400 } };
-        var prices = new Dictionary<Asset, decimal> { { s_vti, 100m }, { s_bnd, 100m } };
+        var targetWeights = new Dictionary<Symbol, decimal> { { s_vti, 0.6m }, { s_bnd, 0.4m } };
+        var currentPositions = new Dictionary<Symbol, int> { { s_vti, 600 }, { s_bnd, 400 } };
+        var prices = new Dictionary<Symbol, decimal> { { s_vti, 100m }, { s_bnd, 100m } };
 
         // Act
         var orders = TargetPortfolioDiffer.ComputeRebalanceOrders(targetWeights, currentPositions, prices, 100_000m);
@@ -55,16 +55,16 @@ public sealed class TargetPortfolioDifferTests
     public void ComputeRebalanceOrders_NewPosition_ReturnsBuyOrder()
     {
         // Arrange
-        var targetWeights = new Dictionary<Asset, decimal> { { s_vti, 0.5m } };
-        var currentPositions = new Dictionary<Asset, int>();
-        var prices = new Dictionary<Asset, decimal> { { s_vti, 200m } };
+        var targetWeights = new Dictionary<Symbol, decimal> { { s_vti, 0.5m } };
+        var currentPositions = new Dictionary<Symbol, int>();
+        var prices = new Dictionary<Symbol, decimal> { { s_vti, 200m } };
 
         // Act
         var orders = TargetPortfolioDiffer.ComputeRebalanceOrders(targetWeights, currentPositions, prices, 100_000m);
 
         // Assert — 100,000 * 0.5 / 200 = 250 shares
         orders.Should().HaveCount(1);
-        orders[0].Asset.Should().Be(s_vti);
+        orders[0].Symbol.Should().Be(s_vti);
         orders[0].TradeAction.Should().Be(TradeAction.Buy);
         orders[0].Quantity.Should().Be(250);
     }
@@ -76,16 +76,16 @@ public sealed class TargetPortfolioDifferTests
     public void ComputeRebalanceOrders_ExitPosition_ReturnsSellOrder()
     {
         // Arrange
-        var targetWeights = new Dictionary<Asset, decimal>();
-        var currentPositions = new Dictionary<Asset, int> { { s_vti, 500 } };
-        var prices = new Dictionary<Asset, decimal> { { s_vti, 100m } };
+        var targetWeights = new Dictionary<Symbol, decimal>();
+        var currentPositions = new Dictionary<Symbol, int> { { s_vti, 500 } };
+        var prices = new Dictionary<Symbol, decimal> { { s_vti, 100m } };
 
         // Act
         var orders = TargetPortfolioDiffer.ComputeRebalanceOrders(targetWeights, currentPositions, prices, 100_000m);
 
         // Assert
         orders.Should().HaveCount(1);
-        orders[0].Asset.Should().Be(s_vti);
+        orders[0].Symbol.Should().Be(s_vti);
         orders[0].TradeAction.Should().Be(TradeAction.Sell);
         orders[0].Quantity.Should().Be(500);
     }
@@ -98,9 +98,9 @@ public sealed class TargetPortfolioDifferTests
     public void ComputeRebalanceOrders_IncreasePosition_ReturnsBuyDelta()
     {
         // Arrange
-        var targetWeights = new Dictionary<Asset, decimal> { { s_vti, 0.6m } };
-        var currentPositions = new Dictionary<Asset, int> { { s_vti, 400 } };
-        var prices = new Dictionary<Asset, decimal> { { s_vti, 100m } };
+        var targetWeights = new Dictionary<Symbol, decimal> { { s_vti, 0.6m } };
+        var currentPositions = new Dictionary<Symbol, int> { { s_vti, 400 } };
+        var prices = new Dictionary<Symbol, decimal> { { s_vti, 100m } };
 
         // Act
         var orders = TargetPortfolioDiffer.ComputeRebalanceOrders(targetWeights, currentPositions, prices, 100_000m);
@@ -119,9 +119,9 @@ public sealed class TargetPortfolioDifferTests
     public void ComputeRebalanceOrders_DecreasePosition_ReturnsSellDelta()
     {
         // Arrange
-        var targetWeights = new Dictionary<Asset, decimal> { { s_vti, 0.3m } };
-        var currentPositions = new Dictionary<Asset, int> { { s_vti, 500 } };
-        var prices = new Dictionary<Asset, decimal> { { s_vti, 100m } };
+        var targetWeights = new Dictionary<Symbol, decimal> { { s_vti, 0.3m } };
+        var currentPositions = new Dictionary<Symbol, int> { { s_vti, 500 } };
+        var prices = new Dictionary<Symbol, decimal> { { s_vti, 100m } };
 
         // Act
         var orders = TargetPortfolioDiffer.ComputeRebalanceOrders(targetWeights, currentPositions, prices, 100_000m);
@@ -140,9 +140,9 @@ public sealed class TargetPortfolioDifferTests
     public void ComputeRebalanceOrders_MultiAsset_SellsBeforeBuys()
     {
         // Arrange — $100k, VTI target 70% (700 shares), BND target 30% (300 shares)
-        var targetWeights = new Dictionary<Asset, decimal> { { s_vti, 0.7m }, { s_bnd, 0.3m } };
-        var currentPositions = new Dictionary<Asset, int> { { s_vti, 500 }, { s_bnd, 500 } };
-        var prices = new Dictionary<Asset, decimal> { { s_vti, 100m }, { s_bnd, 100m } };
+        var targetWeights = new Dictionary<Symbol, decimal> { { s_vti, 0.7m }, { s_bnd, 0.3m } };
+        var currentPositions = new Dictionary<Symbol, int> { { s_vti, 500 }, { s_bnd, 500 } };
+        var prices = new Dictionary<Symbol, decimal> { { s_vti, 100m }, { s_bnd, 100m } };
 
         // Act
         var orders = TargetPortfolioDiffer.ComputeRebalanceOrders(targetWeights, currentPositions, prices, 100_000m);
@@ -150,10 +150,10 @@ public sealed class TargetPortfolioDifferTests
         // Assert — BND Sell 200 first, then VTI Buy 200
         orders.Should().HaveCount(2);
         orders[0].TradeAction.Should().Be(TradeAction.Sell);
-        orders[0].Asset.Should().Be(s_bnd);
+        orders[0].Symbol.Should().Be(s_bnd);
         orders[0].Quantity.Should().Be(200);
         orders[1].TradeAction.Should().Be(TradeAction.Buy);
-        orders[1].Asset.Should().Be(s_vti);
+        orders[1].Symbol.Should().Be(s_vti);
         orders[1].Quantity.Should().Be(200);
     }
 
@@ -164,9 +164,9 @@ public sealed class TargetPortfolioDifferTests
     public void ComputeRebalanceOrders_FullLiquidation_EmptyTargetSellsAll()
     {
         // Arrange
-        var targetWeights = new Dictionary<Asset, decimal>();
-        var currentPositions = new Dictionary<Asset, int> { { s_vti, 100 }, { s_bnd, 200 }, { s_gld, 300 } };
-        var prices = new Dictionary<Asset, decimal> { { s_vti, 100m }, { s_bnd, 100m }, { s_gld, 100m } };
+        var targetWeights = new Dictionary<Symbol, decimal>();
+        var currentPositions = new Dictionary<Symbol, int> { { s_vti, 100 }, { s_bnd, 200 }, { s_gld, 300 } };
+        var prices = new Dictionary<Symbol, decimal> { { s_vti, 100m }, { s_bnd, 100m }, { s_gld, 100m } };
 
         // Act
         var orders = TargetPortfolioDiffer.ComputeRebalanceOrders(targetWeights, currentPositions, prices, 100_000m);
@@ -174,7 +174,7 @@ public sealed class TargetPortfolioDifferTests
         // Assert — 3 sell orders
         orders.Should().HaveCount(3);
         orders.Should().OnlyContain(o => o.TradeAction == TradeAction.Sell);
-        orders.Select(o => o.Asset).Should().BeEquivalentTo(new[] { s_vti, s_bnd, s_gld });
+        orders.Select(o => o.Symbol).Should().BeEquivalentTo(new[] { s_vti, s_bnd, s_gld });
     }
 
     /// <summary>
@@ -184,9 +184,9 @@ public sealed class TargetPortfolioDifferTests
     public void ComputeRebalanceOrders_ZeroPortfolioValue_ThrowsArgumentOutOfRange()
     {
         // Arrange
-        var targetWeights = new Dictionary<Asset, decimal> { { s_vti, 1m } };
-        var currentPositions = new Dictionary<Asset, int>();
-        var prices = new Dictionary<Asset, decimal> { { s_vti, 100m } };
+        var targetWeights = new Dictionary<Symbol, decimal> { { s_vti, 1m } };
+        var currentPositions = new Dictionary<Symbol, int>();
+        var prices = new Dictionary<Symbol, decimal> { { s_vti, 100m } };
 
         // Act & Assert
         var act = () => TargetPortfolioDiffer.ComputeRebalanceOrders(targetWeights, currentPositions, prices, 0m);
@@ -200,9 +200,9 @@ public sealed class TargetPortfolioDifferTests
     public void ComputeRebalanceOrders_MissingPrice_ThrowsInvalidOperationException()
     {
         // Arrange
-        var targetWeights = new Dictionary<Asset, decimal> { { s_vti, 0.5m }, { s_bnd, 0.5m } };
-        var currentPositions = new Dictionary<Asset, int>();
-        var prices = new Dictionary<Asset, decimal> { { s_vti, 100m } }; // BND price missing
+        var targetWeights = new Dictionary<Symbol, decimal> { { s_vti, 0.5m }, { s_bnd, 0.5m } };
+        var currentPositions = new Dictionary<Symbol, int>();
+        var prices = new Dictionary<Symbol, decimal> { { s_vti, 100m } }; // BND price missing
 
         // Act & Assert
         var act = () => TargetPortfolioDiffer.ComputeRebalanceOrders(targetWeights, currentPositions, prices, 100_000m);
@@ -217,9 +217,9 @@ public sealed class TargetPortfolioDifferTests
     public void ComputeRebalanceOrders_RoundsAwayFromZero()
     {
         // Arrange
-        var targetWeights = new Dictionary<Asset, decimal> { { s_vti, 0.5m } };
-        var currentPositions = new Dictionary<Asset, int>();
-        var prices = new Dictionary<Asset, decimal> { { s_vti, 333m } };
+        var targetWeights = new Dictionary<Symbol, decimal> { { s_vti, 0.5m } };
+        var currentPositions = new Dictionary<Symbol, int>();
+        var prices = new Dictionary<Symbol, decimal> { { s_vti, 333m } };
 
         // Act
         var orders = TargetPortfolioDiffer.ComputeRebalanceOrders(targetWeights, currentPositions, prices, 100_000m);
@@ -237,9 +237,9 @@ public sealed class TargetPortfolioDifferTests
     public void ComputeRebalanceOrders_SetsCorrectWeights()
     {
         // Arrange
-        var targetWeights = new Dictionary<Asset, decimal> { { s_vti, 0.6m } };
-        var currentPositions = new Dictionary<Asset, int> { { s_vti, 400 } };
-        var prices = new Dictionary<Asset, decimal> { { s_vti, 100m } };
+        var targetWeights = new Dictionary<Symbol, decimal> { { s_vti, 0.6m } };
+        var currentPositions = new Dictionary<Symbol, int> { { s_vti, 400 } };
+        var prices = new Dictionary<Symbol, decimal> { { s_vti, 100m } };
 
         // Act
         var orders = TargetPortfolioDiffer.ComputeRebalanceOrders(targetWeights, currentPositions, prices, 100_000m);
@@ -263,9 +263,9 @@ public sealed class TargetPortfolioDifferTests
     public void ComputeRebalanceOrders_ThreeAssetRebalance_NetDeltaIsCorrect()
     {
         // Arrange — current positions sum to $100k at $100/share
-        var targetWeights = new Dictionary<Asset, decimal> { { s_vti, 0.5m }, { s_bnd, 0.3m }, { s_gld, 0.2m } };
-        var currentPositions = new Dictionary<Asset, int> { { s_vti, 400 }, { s_bnd, 300 }, { s_gld, 300 } };
-        var prices = new Dictionary<Asset, decimal> { { s_vti, 100m }, { s_bnd, 100m }, { s_gld, 100m } };
+        var targetWeights = new Dictionary<Symbol, decimal> { { s_vti, 0.5m }, { s_bnd, 0.3m }, { s_gld, 0.2m } };
+        var currentPositions = new Dictionary<Symbol, int> { { s_vti, 400 }, { s_bnd, 300 }, { s_gld, 300 } };
+        var prices = new Dictionary<Symbol, decimal> { { s_vti, 100m }, { s_bnd, 100m }, { s_gld, 100m } };
 
         // Act
         var orders = TargetPortfolioDiffer.ComputeRebalanceOrders(targetWeights, currentPositions, prices, 100_000m);
@@ -274,7 +274,7 @@ public sealed class TargetPortfolioDifferTests
         var netDelta = 0m;
         foreach (var order in orders)
         {
-            var value = order.Quantity * prices[order.Asset];
+            var value = order.Quantity * prices[order.Symbol];
             netDelta += order.TradeAction == TradeAction.Buy ? value : -value;
         }
 

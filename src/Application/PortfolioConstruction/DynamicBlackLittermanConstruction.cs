@@ -19,7 +19,6 @@ namespace Boutquin.Trading.Application.PortfolioConstruction;
 using Boutquin.Trading.Application.CovarianceEstimators;
 using Boutquin.Trading.Domain.Exceptions;
 using Domain.Interfaces;
-using Domain.ValueObjects;
 
 /// <summary>
 /// A DynamicUniverse-compatible Black-Litterman implementation that stores views by asset name
@@ -69,15 +68,15 @@ public sealed class DynamicBlackLittermanConstruction : IPortfolioConstructionMo
     }
 
     /// <inheritdoc />
-    public IReadOnlyDictionary<Asset, decimal> ComputeTargetWeights(
-        IReadOnlyList<Asset> assets,
+    public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
+        IReadOnlyList<Symbol> assets,
         decimal[][] returns)
     {
         Guard.AgainstNull(() => assets);
 
         if (assets.Count == 0)
         {
-            return new Dictionary<Asset, decimal>();
+            return new Dictionary<Symbol, decimal>();
         }
 
         if (returns is null || returns.Length != assets.Count)
@@ -140,7 +139,7 @@ public sealed class DynamicBlackLittermanConstruction : IPortfolioConstructionMo
 
                 if (view.Type == BlackLittermanViewType.Absolute)
                 {
-                    pickMatrix[v, tickerIndex[view.Asset!]] = 1m;
+                    pickMatrix[v, tickerIndex[view.Symbol!]] = 1m;
                 }
                 else // Relative
                 {
@@ -319,7 +318,7 @@ public sealed class DynamicBlackLittermanConstruction : IPortfolioConstructionMo
             }
         }
 
-        var weights = new Dictionary<Asset, decimal>(n);
+        var weights = new Dictionary<Symbol, decimal>(n);
         for (var i = 0; i < n; i++)
         {
             weights[assets[i]] = rawWeights[i];
@@ -339,7 +338,7 @@ public sealed class DynamicBlackLittermanConstruction : IPortfolioConstructionMo
         {
             if (view.Type == BlackLittermanViewType.Absolute)
             {
-                if (view.Asset is not null && tickerIndex.ContainsKey(view.Asset))
+                if (view.Symbol is not null && tickerIndex.ContainsKey(view.Symbol))
                 {
                     filtered.Add(view);
                 }

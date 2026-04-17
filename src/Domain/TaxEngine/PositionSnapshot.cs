@@ -15,14 +15,11 @@
 //
 
 namespace Boutquin.Trading.Domain.TaxEngine;
-
-using ValueObjects;
-
 /// <summary>
 /// A point-in-time position snapshot used by the Canadian superficial loss rule
 /// to check whether the asset is still held at the end of the 61-day period.
 /// </summary>
 public sealed record PositionSnapshot(
-    Asset Asset,
+    Symbol Symbol,
     decimal Quantity,
     DateOnly AsOfDate);

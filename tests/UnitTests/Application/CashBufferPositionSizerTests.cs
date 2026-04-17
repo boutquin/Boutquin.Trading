@@ -23,8 +23,8 @@ namespace Boutquin.Trading.Tests.UnitTests.Application;
 public sealed class CashBufferPositionSizerTests
 {
     private static readonly DateOnly s_timestamp = new(2024, 1, 2);
-    private static readonly Asset s_aapl = new("AAPL");
-    private static readonly Asset s_msft = new("MSFT");
+    private static readonly Symbol s_aapl = new("AAPL");
+    private static readonly Symbol s_msft = new("MSFT");
 
     /// <summary>
     /// Default buffer=0 produces same result as before (backward compatibility).
@@ -35,7 +35,7 @@ public sealed class CashBufferPositionSizerTests
     {
         // Arrange
         var sizer = new FixedWeightPositionSizer(
-            new Dictionary<Asset, decimal> { { s_aapl, 1m } },
+            new Dictionary<Symbol, decimal> { { s_aapl, 1m } },
             CurrencyCode.USD,
             cashBufferPercent: 0m);
 
@@ -58,7 +58,7 @@ public sealed class CashBufferPositionSizerTests
     {
         // Arrange
         var sizer = new FixedWeightPositionSizer(
-            new Dictionary<Asset, decimal> { { s_aapl, 1m } },
+            new Dictionary<Symbol, decimal> { { s_aapl, 1m } },
             CurrencyCode.USD,
             cashBufferPercent: 0.05m);
 
@@ -82,10 +82,10 @@ public sealed class CashBufferPositionSizerTests
     public void FixedWeight_WithBuffer_MultiAsset_ScalesProportionally()
     {
         // Arrange
-        var weights = new Dictionary<Asset, decimal> { { s_aapl, 0.6m }, { s_msft, 0.4m } };
+        var weights = new Dictionary<Symbol, decimal> { { s_aapl, 0.6m }, { s_msft, 0.4m } };
         var sizer = new FixedWeightPositionSizer(weights, CurrencyCode.USD, cashBufferPercent: 0.05m);
 
-        var assetCurrencies = new Dictionary<Asset, CurrencyCode>
+        var assetCurrencies = new Dictionary<Symbol, CurrencyCode>
         {
             { s_aapl, CurrencyCode.USD },
             { s_msft, CurrencyCode.USD }
@@ -94,15 +94,15 @@ public sealed class CashBufferPositionSizerTests
         var mdAapl = MakeMarketData(200m);
         var mdMsft = MakeMarketData(100m);
 
-        var marketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var marketData = new Dictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
-            { s_timestamp, new SortedDictionary<Asset, MarketData> { { s_aapl, mdAapl }, { s_msft, mdMsft } } }
+            { s_timestamp, new SortedDictionary<Symbol, Bar> { { s_aapl, mdAapl }, { s_msft, mdMsft } } }
         };
         var fxRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
         {
             { s_timestamp, new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
         };
-        var signals = new Dictionary<Asset, SignalType>
+        var signals = new Dictionary<Symbol, SignalType>
         {
             { s_aapl, SignalType.Rebalance },
             { s_msft, SignalType.Rebalance }
@@ -113,7 +113,7 @@ public sealed class CashBufferPositionSizerTests
         strategyMock.Setup(s => s.ComputeTotalValue(
             It.IsAny<DateOnly>(),
             It.IsAny<CurrencyCode>(),
-            It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>>>(),
+            It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>>>(),
             It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>>()))
             .Returns(100_000m);
 
@@ -155,7 +155,7 @@ public sealed class CashBufferPositionSizerTests
     {
         // Act & Assert
         var act = () => new FixedWeightPositionSizer(
-            new Dictionary<Asset, decimal> { { s_aapl, 1m } },
+            new Dictionary<Symbol, decimal> { { s_aapl, 1m } },
             CurrencyCode.USD,
             cashBufferPercent: -0.01m);
 
@@ -170,7 +170,7 @@ public sealed class CashBufferPositionSizerTests
     {
         // Act & Assert
         var act = () => new FixedWeightPositionSizer(
-            new Dictionary<Asset, decimal> { { s_aapl, 1m } },
+            new Dictionary<Symbol, decimal> { { s_aapl, 1m } },
             CurrencyCode.USD,
             cashBufferPercent: 1.0m);
 
@@ -186,7 +186,7 @@ public sealed class CashBufferPositionSizerTests
     {
         // Arrange
         var sizer = new FixedWeightPositionSizer(
-            new Dictionary<Asset, decimal> { { s_aapl, 1m } },
+            new Dictionary<Symbol, decimal> { { s_aapl, 1m } },
             CurrencyCode.USD,
             cashBufferPercent: 0.99m);
 
@@ -202,39 +202,37 @@ public sealed class CashBufferPositionSizerTests
 
     // ── Helpers ──────────────────────────────────────────────────────────────
 
-    private static MarketData MakeMarketData(decimal price) =>
+    private static Bar MakeMarketData(decimal price) =>
         new(
-            Timestamp: s_timestamp,
+            Date: s_timestamp,
             Open: price,
             High: price,
             Low: price,
             Close: price,
             AdjustedClose: price,
-            Volume: 1_000_000,
-            DividendPerShare: 0,
-            SplitCoefficient: 1);
+            Volume: 1_000_000);
 
-    private static (Mock<IStrategy> Strategy, Dictionary<DateOnly, SortedDictionary<Asset, MarketData>> MarketData, Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> FxRates, Dictionary<Asset, SignalType> Signals) BuildSingleAssetScenario(
-        Asset asset, decimal totalValue, decimal price)
+    private static (Mock<IStrategy> Strategy, Dictionary<DateOnly, SortedDictionary<Symbol, Bar>> MarketData, Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> FxRates, Dictionary<Symbol, SignalType> Signals) BuildSingleAssetScenario(
+        Symbol asset, decimal totalValue, decimal price)
     {
-        var assetCurrencies = new Dictionary<Asset, CurrencyCode> { { asset, CurrencyCode.USD } };
+        var assetCurrencies = new Dictionary<Symbol, CurrencyCode> { { asset, CurrencyCode.USD } };
         var md = MakeMarketData(price);
-        var marketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var marketData = new Dictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
-            { s_timestamp, new SortedDictionary<Asset, MarketData> { { asset, md } } }
+            { s_timestamp, new SortedDictionary<Symbol, Bar> { { asset, md } } }
         };
         var fxRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
         {
             { s_timestamp, new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
         };
-        var signals = new Dictionary<Asset, SignalType> { { asset, SignalType.Rebalance } };
+        var signals = new Dictionary<Symbol, SignalType> { { asset, SignalType.Rebalance } };
 
         var strategyMock = new Mock<IStrategy>();
         strategyMock.Setup(s => s.Assets).Returns(assetCurrencies);
         strategyMock.Setup(s => s.ComputeTotalValue(
             It.IsAny<DateOnly>(),
             It.IsAny<CurrencyCode>(),
-            It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>>>(),
+            It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>>>(),
             It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>>()))
             .Returns(totalValue);
 

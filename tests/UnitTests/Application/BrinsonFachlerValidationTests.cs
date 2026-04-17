@@ -20,12 +20,12 @@ using Boutquin.Trading.Application.Analytics;
 
 public sealed class BrinsonFachlerValidationTests
 {
-    private static readonly Asset s_a = new("A");
+    private static readonly Symbol s_a = new("A");
 
     [Fact]
     public void Attribute_NullAssetNames_ThrowsArgumentNullException()
     {
-        var dict = new Dictionary<Asset, decimal> { [s_a] = 0.5m };
+        var dict = new Dictionary<Symbol, decimal> { [s_a] = 0.5m };
         var act = () => BrinsonFachlerAttributor.Attribute(null!, dict, dict, dict, dict);
 
         act.Should().Throw<ArgumentNullException>();
@@ -34,8 +34,8 @@ public sealed class BrinsonFachlerValidationTests
     [Fact]
     public void Attribute_NullPortfolioWeights_ThrowsArgumentNullException()
     {
-        var names = new List<Asset> { s_a };
-        var dict = new Dictionary<Asset, decimal> { [s_a] = 0.5m };
+        var names = new List<Symbol> { s_a };
+        var dict = new Dictionary<Symbol, decimal> { [s_a] = 0.5m };
         var act = () => BrinsonFachlerAttributor.Attribute(names, null!, dict, dict, dict);
 
         act.Should().Throw<ArgumentNullException>();
@@ -45,11 +45,11 @@ public sealed class BrinsonFachlerValidationTests
     [MemberData(nameof(BrinsonFachlerValidationTestData.MissingKeyCases),
         MemberType = typeof(BrinsonFachlerValidationTestData))]
     public void Attribute_MissingKey_ThrowsArgumentException(
-        IReadOnlyList<Asset> assetNames,
-        IReadOnlyDictionary<Asset, decimal> portfolioWeights,
-        IReadOnlyDictionary<Asset, decimal> benchmarkWeights,
-        IReadOnlyDictionary<Asset, decimal> portfolioReturns,
-        IReadOnlyDictionary<Asset, decimal> benchmarkReturns)
+        IReadOnlyList<Symbol> assetNames,
+        IReadOnlyDictionary<Symbol, decimal> portfolioWeights,
+        IReadOnlyDictionary<Symbol, decimal> benchmarkWeights,
+        IReadOnlyDictionary<Symbol, decimal> portfolioReturns,
+        IReadOnlyDictionary<Symbol, decimal> benchmarkReturns)
     {
         var act = () => BrinsonFachlerAttributor.Attribute(
             assetNames, portfolioWeights, benchmarkWeights, portfolioReturns, benchmarkReturns);

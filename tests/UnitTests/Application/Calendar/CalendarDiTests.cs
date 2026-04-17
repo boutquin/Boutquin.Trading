@@ -16,7 +16,8 @@
 
 namespace Boutquin.Trading.Tests.UnitTests.Application.Calendar;
 
-using Boutquin.Trading.Application.Calendar;
+using Boutquin.MarketData.Calendars;
+using Boutquin.MarketData.Calendars.Holidays;
 using Boutquin.Trading.Application.Configuration;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
@@ -44,7 +45,7 @@ public sealed class CalendarDiTests
     }
 
     [Fact]
-    public void AddBoutquinTrading_UsConfig_RegistersUsTradingCalendar()
+    public void AddBoutquinTrading_UsConfig_RegistersUsNyseCalendar()
     {
         var config = BuildConfig(new Dictionary<string, string?>
         {
@@ -52,14 +53,14 @@ public sealed class CalendarDiTests
         });
 
         var sp = BuildServiceProvider(config);
-        var calendar = sp.GetRequiredService<ITradingCalendar>();
+        var calendar = sp.GetRequiredService<IBusinessCalendar>();
 
-        calendar.Should().BeOfType<UsTradingCalendar>();
-        calendar.TradingDaysPerYear.Should().Be(252);
+        calendar.Should().BeOfType<UsNyseCalendar>();
+        calendar.BusinessDaysPerYear.Should().Be(252);
     }
 
     [Fact]
-    public void AddBoutquinTrading_CanadianConfig_RegistersCanadianTradingCalendar()
+    public void AddBoutquinTrading_CanadianConfig_RegistersCaTsxCalendar()
     {
         var config = BuildConfig(new Dictionary<string, string?>
         {
@@ -67,10 +68,10 @@ public sealed class CalendarDiTests
         });
 
         var sp = BuildServiceProvider(config);
-        var calendar = sp.GetRequiredService<ITradingCalendar>();
+        var calendar = sp.GetRequiredService<IBusinessCalendar>();
 
-        calendar.Should().BeOfType<CanadianTradingCalendar>();
-        calendar.TradingDaysPerYear.Should().Be(250);
+        calendar.Should().BeOfType<CaTsxCalendar>();
+        calendar.BusinessDaysPerYear.Should().Be(250);
     }
 
     [Fact]
@@ -85,11 +86,11 @@ public sealed class CalendarDiTests
         });
 
         var sp = BuildServiceProvider(config);
-        var calendar = sp.GetRequiredService<ITradingCalendar>();
+        var calendar = sp.GetRequiredService<IBusinessCalendar>();
 
-        calendar.Should().BeOfType<CompositeTradingCalendar>();
+        calendar.Should().BeOfType<CompositeCalendar>();
         // Any mode → max of 252, 250
-        calendar.TradingDaysPerYear.Should().Be(252);
+        calendar.BusinessDaysPerYear.Should().Be(252);
     }
 
     [Fact]
@@ -99,9 +100,9 @@ public sealed class CalendarDiTests
         var config = BuildConfig(new Dictionary<string, string?>());
 
         var sp = BuildServiceProvider(config);
-        var calendar = sp.GetRequiredService<ITradingCalendar>();
+        var calendar = sp.GetRequiredService<IBusinessCalendar>();
 
-        calendar.Should().BeOfType<UsTradingCalendar>();
+        calendar.Should().BeOfType<UsNyseCalendar>();
     }
 
     [Fact]
@@ -114,7 +115,7 @@ public sealed class CalendarDiTests
 
         var sp = BuildServiceProvider(config);
 
-        var act = sp.GetRequiredService<ITradingCalendar>;
+        var act = sp.GetRequiredService<IBusinessCalendar>;
 
         act.Should().Throw<ArgumentOutOfRangeException>()
             .WithMessage("*Unknown TradingCalendar*");
@@ -130,7 +131,7 @@ public sealed class CalendarDiTests
 
         var sp = BuildServiceProvider(config);
 
-        var act = sp.GetRequiredService<ITradingCalendar>;
+        var act = sp.GetRequiredService<IBusinessCalendar>;
 
         act.Should().Throw<ArgumentException>()
             .WithMessage("*at least one constituent calendar*");
@@ -151,9 +152,9 @@ public sealed class CalendarDiTests
         });
 
         var sp = BuildServiceProvider(config);
-        var calendar = sp.GetRequiredService<ITradingCalendar>();
+        var calendar = sp.GetRequiredService<IBusinessCalendar>();
 
-        calendar.Should().BeOfType<UsTradingCalendar>();
+        calendar.Should().BeOfType<UsNyseCalendar>();
     }
 
     [Theory]
@@ -168,9 +169,9 @@ public sealed class CalendarDiTests
         });
 
         var sp = BuildServiceProvider(config);
-        var calendar = sp.GetRequiredService<ITradingCalendar>();
+        var calendar = sp.GetRequiredService<IBusinessCalendar>();
 
-        calendar.Should().BeOfType<CanadianTradingCalendar>();
+        calendar.Should().BeOfType<CaTsxCalendar>();
     }
 
     [Theory]
@@ -187,9 +188,9 @@ public sealed class CalendarDiTests
         });
 
         var sp = BuildServiceProvider(config);
-        var calendar = sp.GetRequiredService<ITradingCalendar>();
+        var calendar = sp.GetRequiredService<IBusinessCalendar>();
 
-        calendar.Should().BeOfType<CompositeTradingCalendar>();
+        calendar.Should().BeOfType<CompositeCalendar>();
     }
 
     private static IConfiguration BuildConfig(Dictionary<string, string?> settings)
@@ -203,7 +204,7 @@ public sealed class CalendarDiTests
     {
         // AddBoutquinTrading registers all services. We provide baseline config for
         // non-calendar services so their factories don't throw when resolved during
-        // DI validation. Calendar tests only resolve ITradingCalendar.
+        // DI validation. Calendar tests only resolve IBusinessCalendar.
         var baselineSettings = new Dictionary<string, string?>
         {
             ["CostModel:TransactionCostType"] = "PercentageOfValue",

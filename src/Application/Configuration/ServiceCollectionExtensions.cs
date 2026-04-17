@@ -16,8 +16,7 @@
 
 namespace Boutquin.Trading.Application.Configuration;
 
-using Caching;
-using Calendar;
+using Boutquin.Trading.Recipes;
 using CostModels;
 using CovarianceEstimators;
 using DownsideRisk;
@@ -114,9 +113,9 @@ public static class ServiceCollectionExtensions
             // R2I-02: Wire MaxSectorExposureRule when configured
             if (options.MaxSectorExposurePercent > 0)
             {
-                var assetClassMapping = sp.GetService<IReadOnlyDictionary<Domain.ValueObjects.Asset, AssetClassCode>>()
+                var assetClassMapping = sp.GetService<IReadOnlyDictionary<Symbol, AssetClassCode>>()
                     ?? throw new InvalidOperationException(
-                        "MaxSectorExposurePercent is configured but no IReadOnlyDictionary<Asset, AssetClassCode> " +
+                        "MaxSectorExposurePercent is configured but no IReadOnlyDictionary<Symbol, AssetClassCode> " +
                         "is registered in DI. Register the asset-class mapping or set MaxSectorExposurePercent to 0.");
                 rules.Add(new MaxSectorExposureRule(options.MaxSectorExposurePercent, assetClassMapping));
             }
@@ -128,20 +127,21 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IPortfolioConstructionModel>(sp =>
         {
             var options = sp.GetRequiredService<IOptions<BacktestOptions>>().Value;
+            var cov = CreateCovarianceEstimator(options.CovarianceEstimator);
             return options.ConstructionModel switch
             {
                 "EqualWeight" => new EqualWeightConstruction(),
                 "InverseVolatility" => new InverseVolatilityConstruction(),
-                "MinimumVariance" => new MinimumVarianceConstruction(new SampleCovarianceEstimator()),
-                "MeanVariance" => new MeanVarianceConstruction(new SampleCovarianceEstimator()),
-                "RiskParity" => new RiskParityConstruction(new SampleCovarianceEstimator()),
-                "MaximumDiversification" => new MaximumDiversificationConstruction(new SampleCovarianceEstimator()),
-                "HierarchicalRiskParity" => new HierarchicalRiskParityConstruction(new SampleCovarianceEstimator()),
-                "ReturnTiltedHRP" => new ReturnTiltedHrpConstruction(new SampleCovarianceEstimator()),
+                "MinimumVariance" => new MinimumVarianceConstruction(cov),
+                "MeanVariance" => new MeanVarianceConstruction(cov),
+                "RiskParity" => new RiskParityConstruction(cov),
+                "MaximumDiversification" => new MaximumDiversificationConstruction(cov),
+                "HierarchicalRiskParity" => new HierarchicalRiskParityConstruction(cov),
+                "ReturnTiltedHRP" => new ReturnTiltedHrpConstruction(cov),
                 "MeanCVaR" => new MeanDownsideRiskConstruction(new CVaRRiskMeasure()),
                 "MeanSortino" => new MeanDownsideRiskConstruction(new DownsideDeviationRiskMeasure()),
-                "RobustMeanVariance" => new RobustMeanVarianceConstruction(new LedoitWolfShrinkageEstimator()),
-                "HERC" => new HierarchicalEqualRiskContributionConstruction(new SampleCovarianceEstimator()),
+                "RobustMeanVariance" => new RobustMeanVarianceConstruction(cov),
+                "HERC" => new HierarchicalEqualRiskContributionConstruction(cov),
                 "MeanCDaR" => new MeanDownsideRiskConstruction(new CDaRRiskMeasure()),
                 // R2I-01: BlackLitterman requires non-empty equilibrium weights.
                 // Registration via DI is not supported — register manually with proper weights.
@@ -160,13 +160,13 @@ public static class ServiceCollectionExtensions
 
         // Register trading calendar
         services.Configure<CalendarOptions>(configuration.GetSection(CalendarOptions.SectionName));
-        services.AddSingleton<ITradingCalendar>(sp =>
+        services.AddSingleton<IBusinessCalendar>(sp =>
         {
             var options = sp.GetRequiredService<IOptions<CalendarOptions>>().Value;
             return options.TradingCalendar.Trim() switch
             {
-                var t when t.Equals("US", StringComparison.OrdinalIgnoreCase) => new UsTradingCalendar(),
-                var t when t.Equals("Canadian", StringComparison.OrdinalIgnoreCase) => new CanadianTradingCalendar(),
+                var t when t.Equals("US", StringComparison.OrdinalIgnoreCase) => new UsNyseCalendar(),
+                var t when t.Equals("Canadian", StringComparison.OrdinalIgnoreCase) => new CaTsxCalendar(),
                 var t when t.Equals("Composite", StringComparison.OrdinalIgnoreCase) => CreateCompositeCalendar(options),
                 _ => throw new ArgumentOutOfRangeException(
                     nameof(options.TradingCalendar),
@@ -175,108 +175,38 @@ public static class ServiceCollectionExtensions
             };
         });
 
-        // Bind cache options and register decorators
-        services.AddBoutquinTradingCaching(configuration);
+        // Register recipe layer — BacktestDatasetBuilder materializes IBacktestDataset via IDataPipeline
+        services.AddSingleton<BacktestDatasetBuilder>();
 
         return services;
     }
 
-    /// <summary>
-    /// Registers caching decorators (L1 memory, L2 CSV write-through) around
-    /// pre-registered <see cref="IMarketDataFetcher"/>, <see cref="IEconomicDataFetcher"/>,
-    /// and <see cref="IFactorDataFetcher"/> instances.
-    /// <para>
-    /// Call this after the base fetchers are registered. If a base fetcher is not registered,
-    /// the decorator for that fetcher type is skipped.
-    /// </para>
-    /// </summary>
-    /// <param name="services">The service collection.</param>
-    /// <param name="configuration">The configuration root (reads "Cache" section).</param>
-    /// <returns>The service collection for chaining.</returns>
-    public static IServiceCollection AddBoutquinTradingCaching(
-        this IServiceCollection services,
-        IConfiguration configuration)
-    {
-        Guard.AgainstNull(() => services);
-        Guard.AgainstNull(() => configuration);
-
-        services.Configure<CacheOptions>(configuration.GetSection(CacheOptions.SectionName));
-
-        // Snapshot the current base registrations before replacing them
-        var baseMarketData = FindDescriptor<IMarketDataFetcher>(services);
-        var baseEconomic = FindDescriptor<IEconomicDataFetcher>(services);
-        var baseFactor = FindDescriptor<IFactorDataFetcher>(services);
-
-        if (baseMarketData != null)
+    private static ICovarianceEstimator CreateCovarianceEstimator(string name) =>
+        name switch
         {
-            services.Remove(baseMarketData);
-            services.AddSingleton<IMarketDataFetcher>(sp =>
-            {
-                var cacheOptions = sp.GetRequiredService<IOptions<CacheOptions>>().Value;
-                IMarketDataFetcher fetcher = ResolveFromDescriptor<IMarketDataFetcher>(baseMarketData, sp);
+            "Sample" => new SampleCovarianceEstimator(),
+            "EWMA" => new ExponentiallyWeightedCovarianceEstimator(),
+            "LedoitWolf" => new LedoitWolfShrinkageEstimator(),
+            "LedoitWolfConstantCorrelation" => new LedoitWolfConstantCorrelationEstimator(),
+            "LedoitWolfSingleFactor" => new LedoitWolfSingleFactorEstimator(),
+            "OAS" => new OracleApproximatingShrinkageEstimator(),
+            "QIS" => new QuadraticInverseShrinkageEstimator(),
+            "Denoised" => new DenoisedCovarianceEstimator(),
+            "DenoisedLW" => new DenoisedCovarianceEstimator(applyLedoitWolfShrinkage: true),
+            "TracyWidomDenoised" => new TracyWidomDenoisedCovarianceEstimator(),
+            "Detoned" => new DetonedCovarianceEstimator(),
+            "NERCOME" => new NercomeCovarianceEstimator(),
+            "POET" => new PoetCovarianceEstimator(),
+            "DoublySparse" => new DoublySparseEstimator(),
+            _ => throw new ArgumentOutOfRangeException(
+                nameof(name),
+                name,
+                "Unknown CovarianceEstimator. Valid values: Sample, EWMA, LedoitWolf, " +
+                "LedoitWolfConstantCorrelation, LedoitWolfSingleFactor, OAS, QIS, " +
+                "Denoised, DenoisedLW, TracyWidomDenoised, Detoned, NERCOME, POET, DoublySparse."),
+        };
 
-                if (cacheOptions.DataDirectory != null)
-                {
-                    fetcher = new WriteThroughMarketDataFetcher(fetcher, cacheOptions.DataDirectory);
-                }
-
-                if (cacheOptions.EnableMemoryCache)
-                {
-                    fetcher = new CachingMarketDataFetcher(fetcher);
-                }
-
-                return fetcher;
-            });
-        }
-
-        if (baseEconomic != null)
-        {
-            services.Remove(baseEconomic);
-            services.AddSingleton<IEconomicDataFetcher>(sp =>
-            {
-                var cacheOptions = sp.GetRequiredService<IOptions<CacheOptions>>().Value;
-                IEconomicDataFetcher fetcher = ResolveFromDescriptor<IEconomicDataFetcher>(baseEconomic, sp);
-
-                if (cacheOptions.DataDirectory != null)
-                {
-                    fetcher = new WriteThroughEconomicDataFetcher(fetcher, cacheOptions.DataDirectory);
-                }
-
-                if (cacheOptions.EnableMemoryCache)
-                {
-                    fetcher = new CachingEconomicDataFetcher(fetcher);
-                }
-
-                return fetcher;
-            });
-        }
-
-        if (baseFactor != null)
-        {
-            services.Remove(baseFactor);
-            services.AddSingleton<IFactorDataFetcher>(sp =>
-            {
-                var cacheOptions = sp.GetRequiredService<IOptions<CacheOptions>>().Value;
-                IFactorDataFetcher fetcher = ResolveFromDescriptor<IFactorDataFetcher>(baseFactor, sp);
-
-                if (cacheOptions.DataDirectory != null)
-                {
-                    fetcher = new WriteThroughFactorDataFetcher(fetcher, cacheOptions.DataDirectory);
-                }
-
-                if (cacheOptions.EnableMemoryCache)
-                {
-                    fetcher = new CachingFactorDataFetcher(fetcher);
-                }
-
-                return fetcher;
-            });
-        }
-
-        return services;
-    }
-
-    private static CompositeTradingCalendar CreateCompositeCalendar(CalendarOptions options)
+    private static CompositeCalendar CreateCompositeCalendar(CalendarOptions options)
     {
         if (options.Calendars.Count == 0)
         {
@@ -295,43 +225,18 @@ public static class ServiceCollectionExtensions
                 "Unknown CompositionMode. Valid values: Any, All."),
         };
 
-        var calendars = options.Calendars.Select<string, ITradingCalendar>(name => name.Trim() switch
+        var calendars = options.Calendars.Select<string, IBusinessCalendar>(name => name.Trim() switch
         {
-            var n when n.Equals("US", StringComparison.OrdinalIgnoreCase) => new UsTradingCalendar(),
-            var n when n.Equals("Canadian", StringComparison.OrdinalIgnoreCase) => new CanadianTradingCalendar(),
+            var n when n.Equals("US", StringComparison.OrdinalIgnoreCase) => new UsNyseCalendar(),
+            var n when n.Equals("Canadian", StringComparison.OrdinalIgnoreCase) => new CaTsxCalendar(),
             _ => throw new ArgumentOutOfRangeException(
                 nameof(options.Calendars),
                 name,
                 "Unknown calendar in Calendars list. Valid values: US, Canadian."),
-        }).ToList();
+        }).ToArray();
 
-        return new CompositeTradingCalendar(calendars, compositionMode);
+        var code = string.Join("+", calendars.Select(c => c.Code));
+        return new CompositeCalendar(code, compositionMode, calendars);
     }
 
-    private static ServiceDescriptor? FindDescriptor<T>(IServiceCollection services)
-    {
-        return services.FirstOrDefault(d => d.ServiceType == typeof(T));
-    }
-
-    private static T ResolveFromDescriptor<T>(ServiceDescriptor descriptor, IServiceProvider sp)
-        where T : class
-    {
-        if (descriptor.ImplementationInstance is T instance)
-        {
-            return instance;
-        }
-
-        if (descriptor.ImplementationFactory != null)
-        {
-            return (T)descriptor.ImplementationFactory(sp);
-        }
-
-        if (descriptor.ImplementationType != null)
-        {
-            return (T)ActivatorUtilities.CreateInstance(sp, descriptor.ImplementationType);
-        }
-
-        throw new InvalidOperationException(
-            $"Cannot resolve base {typeof(T).Name} from the existing service descriptor.");
-    }
 }

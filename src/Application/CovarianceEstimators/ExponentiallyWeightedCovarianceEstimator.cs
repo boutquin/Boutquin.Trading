@@ -14,6 +14,8 @@
 //   limitations under the License.
 //
 
+using NumericsStats = Boutquin.Numerics.Statistics;
+
 namespace Boutquin.Trading.Application.CovarianceEstimators;
 
 /// <summary>
@@ -22,7 +24,7 @@ namespace Boutquin.Trading.Application.CovarianceEstimators;
 /// </summary>
 public sealed class ExponentiallyWeightedCovarianceEstimator : ICovarianceEstimator
 {
-    private readonly decimal _lambda;
+    private readonly NumericsStats.ExponentiallyWeightedCovarianceEstimator _inner;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ExponentiallyWeightedCovarianceEstimator"/> class.
@@ -31,61 +33,13 @@ public sealed class ExponentiallyWeightedCovarianceEstimator : ICovarianceEstima
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="lambda"/> is not in the range (0, 1).</exception>
     public ExponentiallyWeightedCovarianceEstimator(decimal lambda = 0.94m)
     {
-        if (lambda <= 0m || lambda >= 1m)
-        {
-            throw new ArgumentOutOfRangeException(nameof(lambda), lambda, "Lambda must be between 0 and 1 exclusive.");
-        }
-
-        _lambda = lambda;
+        _inner = new NumericsStats.ExponentiallyWeightedCovarianceEstimator(lambda);
     }
 
     /// <inheritdoc />
     public decimal[,] Estimate(decimal[][] returns)
     {
         SampleCovarianceEstimator.ValidateReturns(returns);
-
-        var n = returns.Length;
-        var t = returns[0].Length;
-        var means = new decimal[n];
-
-        for (var i = 0; i < n; i++)
-        {
-            means[i] = returns[i].Average();
-        }
-
-        // Compute weights: w[k] = (1-λ) * λ^(T-1-k) for k=0..T-1
-        // Most recent observation (k=T-1) gets weight (1-λ), oldest gets (1-λ)*λ^(T-1)
-        var weights = new decimal[t];
-        var weightSum = 0m;
-
-        for (var k = 0; k < t; k++)
-        {
-            weights[k] = (decimal)Math.Pow((double)_lambda, t - 1 - k);
-            weightSum += weights[k];
-        }
-
-        // Normalize weights
-        for (var k = 0; k < t; k++)
-        {
-            weights[k] /= weightSum;
-        }
-
-        var cov = new decimal[n, n];
-        for (var i = 0; i < n; i++)
-        {
-            for (var j = i; j < n; j++)
-            {
-                var sum = 0m;
-                for (var k = 0; k < t; k++)
-                {
-                    sum += weights[k] * (returns[i][k] - means[i]) * (returns[j][k] - means[j]);
-                }
-
-                cov[i, j] = sum;
-                cov[j, i] = sum;
-            }
-        }
-
-        return cov;
+        return _inner.Estimate(new NumericsStats.ReturnsMatrix(returns).AsTimeByAsset());
     }
 }

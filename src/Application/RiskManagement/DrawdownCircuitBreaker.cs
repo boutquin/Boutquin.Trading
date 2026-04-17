@@ -120,7 +120,7 @@ public sealed class DrawdownCircuitBreaker : IDrawdownControl
                 var sellOrder = new OrderEvent(
                     Timestamp: date,
                     StrategyName: strategyName,
-                    Asset: asset,
+                    Symbol: asset,
                     TradeAction: TradeAction.Sell,
                     OrderType: OrderType.Market,
                     Quantity: quantity);

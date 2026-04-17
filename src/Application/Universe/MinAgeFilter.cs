@@ -17,7 +17,6 @@
 namespace Boutquin.Trading.Application.Universe;
 
 using Boutquin.Trading.Domain.Analytics;
-using Domain.ValueObjects;
 
 /// <summary>
 /// Filters assets by minimum age since inception.
@@ -26,13 +25,13 @@ public sealed class MinAgeFilter : IUniverseSelector
 {
     private readonly int _minAgeDays;
     private readonly DateOnly _asOfDate;
-    private readonly IReadOnlyDictionary<Asset, AssetMetadata> _metadata;
+    private readonly IReadOnlyDictionary<Symbol, AssetMetadata> _metadata;
 
     /// <summary>Initializes a new instance with the specified minimum age, reference date, and metadata.</summary>
     /// <param name="minAgeDays">The minimum age in days since inception.</param>
     /// <param name="asOfDate">The reference date for age calculation.</param>
-    /// <param name="metadata">Asset metadata containing inception dates.</param>
-    public MinAgeFilter(int minAgeDays, DateOnly asOfDate, IReadOnlyDictionary<Asset, AssetMetadata> metadata)
+    /// <param name="metadata">Symbol metadata containing inception dates.</param>
+    public MinAgeFilter(int minAgeDays, DateOnly asOfDate, IReadOnlyDictionary<Symbol, AssetMetadata> metadata)
     {
         Guard.AgainstNegativeOrZero(() => minAgeDays);
         Guard.AgainstNull(() => metadata);
@@ -43,7 +42,7 @@ public sealed class MinAgeFilter : IUniverseSelector
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<Asset> Select(IReadOnlyList<Asset> candidates)
+    public IReadOnlyList<Symbol> Select(IReadOnlyList<Symbol> candidates)
     {
         Guard.AgainstNull(() => candidates);
 

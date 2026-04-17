@@ -4,27 +4,23 @@
 [![License](https://img.shields.io/github/license/boutquin/Boutquin.Trading)](https://github.com/boutquin/Boutquin.Trading/blob/main/LICENSE.txt)
 [![Build](https://github.com/boutquin/Boutquin.Trading/actions/workflows/pr-verify.yml/badge.svg)](https://github.com/boutquin/Boutquin.Trading/actions/workflows/pr-verify.yml)
 
-A production-ready, multi-asset, multi-strategy, event-driven quantitative trading framework for backtesting long-only ETF and equity strategies. Features 19 portfolio construction models, 4 covariance estimators, risk management, performance analytics, and cross-language verification against Python reference implementations. Built with clean architecture, .NET 10, and strict code quality standards.
+A production-ready, multi-asset, multi-strategy, event-driven quantitative trading framework for backtesting long-only ETF and equity strategies. Features 21 portfolio construction models, 13 covariance estimators, risk management, performance analytics, and cross-language verification against Python reference implementations. Built with clean architecture, .NET 10, and strict code quality standards.
 
 ## Solution Structure
 
 | Project | NuGet Package | Description |
 |---------|---------------|-------------|
-| **Boutquin.Trading.Domain** | `Boutquin.Trading.Domain` | 39 interfaces, events, value objects, 17 enums, tax engine extension points, and domain logic |
-| **Boutquin.Trading.Application** | `Boutquin.Trading.Application` | Backtest engine, portfolio, 18 construction models, analytics, risk management, caching, DI registration |
+| **Boutquin.Trading.Domain** | `Boutquin.Trading.Domain` | 39 interfaces, events, value objects, 9 backtest enums, tax engine extension points, and domain logic |
+| **Boutquin.Trading.Application** | `Boutquin.Trading.Application` | Backtest engine, portfolio, 21 construction models, 13 covariance estimators, analytics, risk management, DI registration |
+| **Boutquin.Trading.Recipes** | `Boutquin.Trading.Recipes` | `IBacktestDataset`, `BacktestDatasetBuilder` — MarketData kernel integration for production data workflows |
 | **Boutquin.Trading.DataAccess** | `Boutquin.Trading.DataAccess` | EF Core data access (SecurityMaster) |
-| **Boutquin.Trading.Data.Tiingo** | `Boutquin.Trading.Data.Tiingo` | Equity data fetcher (Tiingo API) |
-| **Boutquin.Trading.Data.Frankfurter** | `Boutquin.Trading.Data.Frankfurter` | FX rate fetcher (Frankfurter API, ECB-sourced) |
-| **Boutquin.Trading.Data.Fred** | `Boutquin.Trading.Data.Fred` | Economic data fetcher (FRED API — treasury yields, inflation, growth) |
-| **Boutquin.Trading.Data.FamaFrench** | `Boutquin.Trading.Data.FamaFrench` | Fama-French factor data fetcher (Ken French Data Library) |
-| **Boutquin.Trading.Data.TwelveData** | `Boutquin.Trading.Data.TwelveData` | Equity data fetcher (Twelve Data API) |
-| **Boutquin.Trading.Data.CSV** | `Boutquin.Trading.Data.CSV` | CSV data reader/writer for market, economic, and factor data |
-| **Boutquin.Trading.Data.Processor** | — | Data processing pipeline |
 | **Boutquin.Trading.BackTest** | — | Backtest runner entry point |
-| **Boutquin.Trading.Sample** | — | Usage examples and demonstrations |
-| **Boutquin.Trading.Tests.UnitTests** | — | 150+ test classes, 1,456 tests (xUnit, FluentAssertions, Moq) |
+| **Boutquin.Trading.Examples** | — | Usage examples and demonstrations |
+| **Boutquin.Trading.Tests.UnitTests** | — | 119+ test files (xUnit, FluentAssertions, Moq) |
 | **Boutquin.Trading.Tests.ArchitectureTests** | — | Architecture fitness functions (NetArchTest) |
 | **Boutquin.Trading.BenchMark** | — | Performance benchmarks (BenchmarkDotNet) |
+
+> **Data providers** are in the separate [Boutquin.MarketData.Adapter](https://github.com/boutquin/Boutquin.MarketData.Adapter) repository (Tiingo, Frankfurter, FRED, Bank of Canada, Fama-French, and more). The `Boutquin.Trading.Recipes` package connects the backtest engine to the `Boutquin.MarketData` data pipeline.
 
 ## Features
 
@@ -37,9 +33,10 @@ A production-ready, multi-asset, multi-strategy, event-driven quantitative tradi
 - **Quantity-limiting** — Buy fills clipped to affordable quantity; zero-quantity fills rejected
 - **Dividend reinvestment (DRIP)** — Optional automatic reinvestment of dividends into whole shares at Close price
 - **Expense ratio deduction** — Configurable annual expense ratio (basis points) with per-asset overrides, deducted daily from portfolio value
+- **Data quality gate** — `RunAsync` logs data provenance and surfaces pipeline issues before the event loop; `"Warning"` or `"Error"` issues abort with `InvalidOperationException` unless `ignoreDataQualityIssues=true`
 - **CancellationToken** — All async APIs support cooperative cancellation
 
-### Portfolio Construction (18 Models + 1 Decorator)
+### Portfolio Construction (19 Models + 2 Decorators)
 - **Equal Weight** — Uniform allocation across all assets
 - **Inverse Volatility** — Weight inversely proportional to realized volatility
 - **Minimum Variance** — Minimize portfolio variance via projected gradient descent
@@ -54,17 +51,36 @@ A production-ready, multi-asset, multi-strategy, event-driven quantitative tradi
 - **Mean-CVaR** — Downside-risk-aware via `MeanDownsideRiskConstruction` with `CVaRRiskMeasure`
 - **Mean-Sortino** — Downside-risk-aware via `MeanDownsideRiskConstruction` with `DownsideDeviationRiskMeasure`
 - **Robust Mean-Variance** — Minimax optimization across multiple covariance scenarios (regime-resilient)
+- **Principal Component Risk Parity** — Equalizes risk across statistical factors (PCs) via inverse-risk (1/√λ) allocation with Marcenko-Pastur signal filtering (Meucci, 2009)
 - **Tactical Overlay** — Regime-specific tilts plus optional momentum scoring
 - **Volatility Targeting** — Scale weights to hit a target portfolio volatility
 - **Weight-Constrained** — Applies min/max weight bounds to any inner model
 - **Regime Weight-Constrained** — Regime-dependent weight constraints
 - **Turnover-Penalized** (decorator) — L1 turnover penalty wrapping any inner model (stateful)
+- **PCA-Constrained** (decorator) — Projects returns to signal PC subspace before delegating to inner model; reduces noise for more stable weights
 
-### Covariance Estimation (4 Estimators)
+### Covariance Estimation (13 Estimators)
+
+**Classical**
 - **Sample** — Standard sample covariance (N-1 divisor)
 - **EWMA** — Exponentially weighted with configurable lambda
-- **Ledoit-Wolf Shrinkage** — Shrinkage toward scaled identity (2004 formula with rho correction)
-- **Denoised** — Random Matrix Theory eigenvalue cleaning (Lopez de Prado 2018), optional Ledoit-Wolf on top
+
+**Linear shrinkage**
+- **Ledoit-Wolf Shrinkage** — Shrinkage toward scaled identity (Ledoit & Wolf 2004, with rho correction)
+- **Ledoit-Wolf Constant Correlation** — Shrinkage toward average correlation target; better default for equity portfolios
+- **Ledoit-Wolf Single Factor** — Shrinkage toward market single-factor target
+- **Oracle Approximating Shrinkage (OAS)** — Chen et al. (2010); improved finite-sample performance
+
+**Nonlinear / denoising**
+- **Quadratic Inverse Shrinkage (QIS)** — Per-eigenvalue shrinkage, gold standard for N ≥ 10 (Ledoit & Wolf 2022)
+- **Denoised** — Random Matrix Theory Marcenko-Pastur eigenvalue cleaning (Lopez de Prado 2018), optional Ledoit-Wolf on top
+- **Tracy-Widom Denoised** — Sharper finite-sample eigenvalue threshold; preferred when T/N < 5
+- **Detoned** — Extends denoising with PC1 (market factor) shrinkage (Lopez de Prado 2020); configurable alpha
+
+**Factor / sparse / nonparametric**
+- **POET** — Low-rank + sparse residual; ideal for HRP/PCRP (no PSD guarantee at high threshold)
+- **NERCOME** — Nonparametric split-sample; no distributional assumption
+- **Doubly Sparse** — Sparsifies eigenvectors and noise eigenvalues
 
 ### Downside Risk Measures (3)
 - **CVaR** — Conditional Value-at-Risk (Rockafellar-Uryasev 2000 reformulation, configurable alpha, guards against empty scenarios)
@@ -82,6 +98,8 @@ A production-ready, multi-asset, multi-strategy, event-driven quantitative tradi
 - **Factor Regression** — Multi-factor OLS via normal equations with Gaussian elimination + partial pivoting
 - **Correlation Analysis** — Full N×N correlation matrix, diversification ratio, rolling pairwise correlation
 - **Effective Number of Bets** — Entropy-based diversification metric from eigenvalue spectrum (Meucci, 2009)
+- **Principal Portfolio Analysis** — Decomposes portfolio risk into orthogonal investable principal portfolios with risk contributions (Meucci, 2009; Partovi & Caputo, 2004)
+- **PCA Regime Signal** — PC1 variance share (systemic risk) and eigenvector stability (regime shift detection) from correlation eigenspectrum (Kritzman et al., 2011)
 - **Drawdown Analysis** — Discrete drawdown period identification (peak → trough → recovery)
 - **Walk-Forward Optimization** — Rolling in-sample/out-of-sample validation (no look-ahead bias)
 - **Monte Carlo Simulation** — Bootstrap resampling with Sharpe ratio distribution
@@ -104,23 +122,29 @@ A production-ready, multi-asset, multi-strategy, event-driven quantitative tradi
 - **HTML Tearsheet** — Self-contained HTML with embedded SVG equity curve, drawdown area chart, metrics table, and monthly returns heatmap
 - **Benchmark Comparison** — Side-by-side portfolio vs benchmark with dual equity curve and tracking error
 
-### Caching
-- **L1 memory cache** — `ConcurrentDictionary` + `Lazy<Task>` decorators for thread-safe exactly-once materialization; IEnumerable inputs materialized to List before key building; faulted entries auto-evicted on error; caller cancellation checked per-item (cache fetch uses `CancellationToken.None` to prevent stale token capture)
-- **L2 CSV write-through** — Transparent disk cache with atomic writes (tmp + rename), per-symbol existence checks, and partial cache support; API fetch failures propagate immediately (no fallthrough to incomplete CSV reads)
-- **DI wiring** — `AddBoutquinTradingCaching()` auto-decorates pre-registered fetchers based on `CacheOptions` (L1/L2 independently toggleable)
+### Data Access
 
-### Data Providers
-- **Tiingo** — Historical equity/ETF price data
-- **Twelve Data** — Equity market data combining time series, dividends, and splits
-- **Frankfurter** — ECB-sourced FX rates with date range filtering
-- **FRED** — Federal Reserve Economic Data (treasury yields, inflation, GDP, macro indicators)
-- **Fama-French** — Academic factor return series (3-factor, 5-factor, momentum) from the Ken French Data Library
-- **CSV** — Market data, economic data, factor data, and symbol list storage/ingestion
-- **Composite fetcher** — Routes equity vs FX requests to the appropriate provider
+Data ingestion is delegated to the [Boutquin.MarketData](https://github.com/boutquin/Boutquin.MarketData) kernel and [Boutquin.MarketData.Adapter](https://github.com/boutquin/Boutquin.MarketData.Adapter) packages. The `Boutquin.Trading.Recipes` project provides the bridge:
+
+- **`BacktestDatasetSpec`** — declarative specification of symbols, date range, base currency, FRED series, and factor datasets
+- **`BacktestDatasetBuilder`** — materializes a spec via `IDataPipeline` into an immutable `IBacktestDataset`
+- **`IBacktestDataset`** — read-only dataset consumed by `BackTest.RunAsync`
+
+Available adapters (in `Boutquin.MarketData.Adapter`):
+
+| Adapter | Source | Data |
+|---------|--------|------|
+| `Tiingo` | Tiingo REST API | Equity/ETF OHLCAV, adjusted close |
+| `TwelveData` | Twelve Data API | Equities + dividends + splits |
+| `Frankfurter` | Frankfurter / ECB | FX spot rates |
+| `FRED` | Federal Reserve | Treasury yields, inflation, GDP, macro |
+| `FamaFrench` | Ken French Data Library | Factor returns (3-factor, 5-factor, momentum) |
+| `BankOfCanada` | Bank of Canada | CORRA fixings, zero curves |
+| `NewYorkFed` | NY Fed | SOFR fixings |
 
 ### Cross-Language Verification
-- **81 golden JSON test vectors** generated by 13 Python scripts against numpy/scipy/statsmodels/scikit-learn/PyPortfolioOpt
-- **11 verification suites** — calculations, backtests, edge cases, covariance estimators, construction models (basic + advanced + remaining), risk measures, analytics, indicators/regime, integration
+- **84 golden JSON test vectors** generated by 14 Python scripts against numpy/scipy/statsmodels/scikit-learn/PyPortfolioOpt
+- **12 verification suites** — calculations, backtests, edge cases, covariance estimators, construction models (basic + advanced + remaining + PCA), risk measures, analytics, indicators/regime, integration
 - **Three-layer cross-checks** — library cross-references, analytical solutions, property-based invariants
 - **Python pytest** validates self-consistency; C# xUnit validates cross-language correctness
 - See [tests/Verification/README.md](tests/Verification/README.md) for details
@@ -195,15 +219,17 @@ Configuration via `appsettings.json`:
 │                        Application Layer                                  │
 │  Engine: Portfolio, BackTest, SimulatedBrokerage                          │
 │  Strategies: BuyAndHold, RebalancingBuyAndHold, ConstructionModel         │
-│  Construction (18): EqualWeight, InverseVol, MinVar, MeanVar, RiskParity ,│
+│  Construction (19): EqualWeight, InverseVol, MinVar, MeanVar, RiskParity ,│
 │    MaxDiversification, HRP, HERC, ReturnTiltedHRP, BlackLitterman,        │
-│    DynamicBL, MeanDownsideRisk, RobustMeanVar, TacticalOverlay,           │
-│    VolTargeting, WeightConstrained, RegimeWeightConstrained               │
-│  Decorator: TurnoverPenalized                                             │
-│  Covariance (4): Sample, EWMA, LedoitWolf, Denoised                       │
+│    DynamicBL, MeanDownsideRisk, RobustMeanVar, PrincipalComponentRP,      │
+│    TacticalOverlay, VolTargeting, WeightConstrained, RegimeWeightConstr.  │
+│  Decorators (2): TurnoverPenalized, PcaConstrained                        │
+│  Covariance (13): Sample, EWMA, LedoitWolf×3, OAS, QIS, Denoised,         │
+│    TracyWidomDenoised, Detoned, POET, NERCOME, DoublySparse               │
 │  Downside Risk (3): CVaR, DownsideDeviation, CDaR                         │
-│  Analytics (7): BrinsonFachler, FactorRegressor, CorrelationAnalyzer,     │
-│    DrawdownAnalyzer, WalkForward, MonteCarlo, EffectiveNumberOfBets       │
+│  Analytics (9): BrinsonFachler, FactorRegressor, CorrelationAnalyzer,     │
+│    DrawdownAnalyzer, WalkForward, MonteCarlo, EffectiveNumberOfBets,      │
+│    PrincipalPortfolioAnalyzer, PcaRegimeSignal                            │
 │  Caching: L1 Memory (3 decorators), L2 CSV (3 write-through decorators)   │
 │  Risk: RiskManager, MaxDrawdown, MaxPositionSize, MaxSectorExposure,      │
 │    DrawdownCircuitBreaker                                                 │
@@ -213,42 +239,42 @@ Configuration via `appsettings.json`:
 │  DI: ServiceCollectionExtensions + 5 options classes                      │
 └───────────────────────────────────────────────────────────────────────────┘
 ┌───────────────────────────────────────────────────────────────────────────┐
-│                           Data Layer                                      │
-│  Tiingo, TwelveData (equities), Frankfurter (FX), FRED (economic),        │
-│  FamaFrench (factors), CSV (storage), CompositeMarketDataFetcher          │
-│  DataAccess (EF Core SecurityMaster)                                      │
+│                       Recipes Layer                                       │
+│  BacktestDatasetBuilder → IDataPipeline (Boutquin.MarketData kernel)      │
+│  IBacktestDataset — immutable read-only dataset fed into BackTest         │
+└───────────────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────────┐
+│           External: Boutquin.MarketData + Boutquin.MarketData.Adapter     │
+│  Transport, caching, normalization, provenance (MarketData kernel)        │
+│  Adapters: Tiingo, TwelveData, Frankfurter, FRED, FamaFrench, ...         │
+│  DataAccess (EF Core SecurityMaster — local persistence layer)            │
 └───────────────────────────────────────────────────────────────────────────┘
 ```
 
-The architecture follows the dependency inversion principle — the Domain layer defines contracts, and Application/Data layers provide implementations that can be swapped independently.
+The architecture follows the dependency inversion principle — the Domain layer defines contracts, and Application and Recipes layers provide implementations that can be swapped independently. Data ingestion is fully delegated to the `Boutquin.MarketData` ecosystem.
 
-For detailed architecture including component navigation and data flow, see [ARCHITECTURE.md](ARCHITECTURE.md).
+For detailed architecture including component navigation and data flow, see [docs/architecture.md](docs/architecture.md).
 
 ## Directory Structure
 
 ```
 Boutquin.Trading/
-├── src/                    # Source projects (12)
-│   ├── Domain/             # 39 interfaces, events, 17 enums, tax engine records, value objects
-│   ├── Application/        # Engine, 18 construction models, analytics, risk, caching, DI
+├── src/                    # Source projects (6)
+│   ├── Domain/             # 39 interfaces, events, 9 backtest enums, tax engine records, value objects
+│   ├── Application/        # Engine, 21 construction models, 13 estimators, analytics, risk, DI
+│   ├── Recipes/            # IBacktestDataset, BacktestDatasetBuilder (MarketData kernel bridge)
 │   ├── DataAccess/         # EF Core data access (SecurityMaster)
-│   ├── Data.Tiingo/        # Tiingo equity data fetcher
-│   ├── Data.TwelveData/    # Twelve Data equity data fetcher
-│   ├── Data.Frankfurter/   # Frankfurter FX rate fetcher
-│   ├── Data.Fred/          # FRED economic data fetcher
-│   ├── Data.FamaFrench/    # Fama-French factor data fetcher
-│   ├── Data.CSV/           # CSV data reader/writer
-│   ├── Data.Processor/     # Data processing pipeline
 │   ├── BackTest/           # Backtest runner entry point
 │   └── Sample/             # Usage examples
 ├── tests/
-│   ├── UnitTests/          # 150+ test classes, 1,456 tests (xUnit, FluentAssertions, Moq)
-│   ├── ArchitectureTests/  # NetArchTest fitness functions (4 tests)
-│   └── Verification/       # Cross-language Python suite (13 generators, 81 vectors)
+│   ├── UnitTests/          # 119+ test files (xUnit, FluentAssertions, Moq)
+│   ├── ArchitectureTests/  # NetArchTest fitness functions
+│   └── Verification/       # Cross-language Python suite (14+ generators, 84 vectors)
 ├── benchmarks/
 │   └── BenchMark/          # BenchmarkDotNet suite
 ├── docs/                   # Documentation
-├── specs/                  # Specifications
+│   └── examples/           # Worked examples (buy-and-hold → attribution)
+├── specs/                  # Internal specifications (gitignored in public release)
 ├── hooks/                  # Git hooks (pre-commit)
 └── Resources/              # Shared assets (icon)
 ```

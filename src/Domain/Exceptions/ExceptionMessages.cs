@@ -21,6 +21,6 @@ namespace Boutquin.Trading.Domain.Exceptions;
 /// </summary>
 public static class ExceptionMessages
 {
-    /// <summary>Message for when trading days per year is not positive.</summary>
-    public const string NegativeTradingDaysPerYear = "The number of trading days per year must be positive.";
+    /// <summary>Message for when business days per year is not positive.</summary>
+    public const string NegativeBusinessDaysPerYear = "The number of business days per year must be positive.";
 }

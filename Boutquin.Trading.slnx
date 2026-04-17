@@ -1,0 +1,38 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/benchmarks/">
+    <Project Path="benchmarks/BenchMark/Boutquin.Trading.BenchMark.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".github/workflows/pr-verify.yml" />
+    <File Path="ARCHITECTURE.md" />
+    <File Path="CHANGELOG.md" />
+    <File Path="CODE_OF_CONDUCT.md" />
+    <File Path="CONTRIBUTING.md" />
+    <File Path="Directory.Build.props" />
+    <File Path="global.json" />
+    <File Path="LICENSE.txt" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Application/Boutquin.Trading.Application.csproj" />
+    <Project Path="src/BackTest/Boutquin.Trading.BackTest.csproj" />
+    <Project Path="src/DataAccess/Boutquin.Trading.DataAccess.csproj" />
+    <Project Path="src/Domain/Boutquin.Trading.Domain.csproj" />
+    <Project Path="src/Recipes/Boutquin.Trading.Recipes.csproj" />
+  </Folder>
+  <Folder Name="/src/Application/" />
+  <Folder Name="/src/Examples/">
+    <Project Path="src/Examples/Boutquin.Trading.Examples.csproj" />
+  </Folder>
+  <Folder Name="/src/Recipes/" />
+  <Folder Name="/tests/">
+    <Project Path="tests/ArchitectureTests/Boutquin.Trading.Tests.ArchitectureTests.csproj" />
+    <Project Path="tests/UnitTests/Boutquin.Trading.Tests.UnitTests.csproj" />
+  </Folder>
+</Solution>

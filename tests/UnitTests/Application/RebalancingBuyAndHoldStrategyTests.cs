@@ -22,21 +22,19 @@ namespace Boutquin.Trading.Tests.UnitTests.Application;
 public sealed class RebalancingBuyAndHoldStrategyTests
 {
     private readonly string _name = "TestStrategy";
-    private readonly IReadOnlyDictionary<Asset, CurrencyCode> _assets = new Dictionary<Asset, CurrencyCode> { { new Asset("AAPL"), CurrencyCode.USD } };
+    private readonly IReadOnlyDictionary<Symbol, CurrencyCode> _assets = new Dictionary<Symbol, CurrencyCode> { { new Symbol("AAPL"), CurrencyCode.USD } };
     private readonly SortedDictionary<CurrencyCode, decimal> _cash = new() { { CurrencyCode.USD, 10000m } };
     private readonly Mock<IOrderPriceCalculationStrategy> _orderPriceCalculationStrategyMock = new();
     private readonly Mock<IPositionSizer> _positionSizerMock = new();
     private readonly DateOnly _initialTimestamp = new(year: 2023, month: 5, day: 1);
-    private readonly MarketData _marketData = new(
-        Timestamp: new DateOnly(year: 2023, month: 5, day: 1),
+    private readonly Bar _marketData = new(
+        Date: new DateOnly(year: 2023, month: 5, day: 1),
         Open: 100,
         High: 200,
         Low: 50,
         Close: 150,
         AdjustedClose: 150,
-        Volume: 1000000,
-        DividendPerShare: 0,
-        SplitCoefficient: 1);
+        Volume: 1000000);
 
     /// <summary>
     /// Tests that the RebalancingBuyAndHoldStrategy constructor creates an instance when given valid parameters.
@@ -64,9 +62,9 @@ public sealed class RebalancingBuyAndHoldStrategyTests
     {
         // Arrange
         var strategy = new RebalancingBuyAndHoldStrategy(_name, _assets, _cash, _orderPriceCalculationStrategyMock.Object, _positionSizerMock.Object, RebalancingFrequency.Daily);
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
-            { _initialTimestamp, new SortedDictionary<Asset, MarketData> { { new Asset("AAPL"), _marketData } } }
+            { _initialTimestamp, new SortedDictionary<Symbol, Bar> { { new Symbol("AAPL"), _marketData } } }
         };
         var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
         {
@@ -84,8 +82,8 @@ public sealed class RebalancingBuyAndHoldStrategyTests
         signalEvent.Should().NotBeNull();
         signalEvent.Timestamp.Should().Be(_initialTimestamp);
         signalEvent.StrategyName.Should().Be(_name);
-        signalEvent.Signals.Should().ContainKey(new Asset("AAPL"));
-        signalEvent.Signals[new Asset("AAPL")].Should().Be(SignalType.Rebalance);
+        signalEvent.Signals.Should().ContainKey(new Symbol("AAPL"));
+        signalEvent.Signals[new Symbol("AAPL")].Should().Be(SignalType.Rebalance);
     }
 
     /// <summary>
@@ -96,9 +94,9 @@ public sealed class RebalancingBuyAndHoldStrategyTests
     {
         // Arrange
         var strategy = new RebalancingBuyAndHoldStrategy(_name, _assets, _cash, _orderPriceCalculationStrategyMock.Object, _positionSizerMock.Object, RebalancingFrequency.Monthly);
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
-            { _initialTimestamp, new SortedDictionary<Asset, MarketData> { { new Asset("AAPL"), _marketData } } }
+            { _initialTimestamp, new SortedDictionary<Symbol, Bar> { { new Symbol("AAPL"), _marketData } } }
         };
         var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
         {
@@ -132,10 +130,10 @@ public sealed class RebalancingBuyAndHoldStrategyTests
     {
         // Arrange
         var strategy = new RebalancingBuyAndHoldStrategy(_name, _assets, _cash, _orderPriceCalculationStrategyMock.Object, _positionSizerMock.Object, RebalancingFrequency.Monthly);
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
-            { _initialTimestamp, new SortedDictionary<Asset, MarketData> { { new Asset("AAPL"), _marketData } } },
-            { _initialTimestamp.AddMonths(1), new SortedDictionary<Asset, MarketData> { { new Asset("AAPL"), _marketData } } }
+            { _initialTimestamp, new SortedDictionary<Symbol, Bar> { { new Symbol("AAPL"), _marketData } } },
+            { _initialTimestamp.AddMonths(1), new SortedDictionary<Symbol, Bar> { { new Symbol("AAPL"), _marketData } } }
         };
         var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
         {
@@ -159,14 +157,14 @@ public sealed class RebalancingBuyAndHoldStrategyTests
         firstSignalEvent.Should().NotBeNull();
         firstSignalEvent.Timestamp.Should().Be(_initialTimestamp);
         firstSignalEvent.StrategyName.Should().Be(_name);
-        firstSignalEvent.Signals.Should().ContainKey(new Asset("AAPL"));
-        firstSignalEvent.Signals[new Asset("AAPL")].Should().Be(SignalType.Rebalance);
+        firstSignalEvent.Signals.Should().ContainKey(new Symbol("AAPL"));
+        firstSignalEvent.Signals[new Symbol("AAPL")].Should().Be(SignalType.Rebalance);
 
         secondSignalEvent.Should().NotBeNull();
         secondSignalEvent.Timestamp.Should().Be(_initialTimestamp.AddMonths(1));
         secondSignalEvent.StrategyName.Should().Be(_name);
-        secondSignalEvent.Signals.Should().ContainKey(new Asset("AAPL"));
-        secondSignalEvent.Signals[new Asset("AAPL")].Should().Be(SignalType.Rebalance);
+        secondSignalEvent.Signals.Should().ContainKey(new Symbol("AAPL"));
+        secondSignalEvent.Signals[new Symbol("AAPL")].Should().Be(SignalType.Rebalance);
     }
 
     /// <summary>
@@ -178,15 +176,15 @@ public sealed class RebalancingBuyAndHoldStrategyTests
     public void RebalancingBuyAndHoldStrategy_DynamicUniverse_ShouldOnlySignalEligibleAssets()
     {
         // Arrange — two assets, VEA not yet available on the test date
-        var vti = new Asset("VTI");
-        var vea = new Asset("VEA");
-        var assets = new Dictionary<Asset, CurrencyCode>
+        var vti = new Symbol("VTI");
+        var vea = new Symbol("VEA");
+        var assets = new Dictionary<Symbol, CurrencyCode>
         {
             { vti, CurrencyCode.USD },
             { vea, CurrencyCode.USD }
         };
         var universeSelector = new Boutquin.Trading.Application.Universe.DynamicUniverse(
-            new Dictionary<Asset, DateOnly>
+            new Dictionary<Symbol, DateOnly>
             {
                 { vti, new DateOnly(2001, 5, 22) },
                 { vea, new DateOnly(2007, 4, 9) }
@@ -201,9 +199,9 @@ public sealed class RebalancingBuyAndHoldStrategyTests
             universeSelector: universeSelector);
 
         var testDate = new DateOnly(2003, 1, 2); // Before VEA inception
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
-            { testDate, new SortedDictionary<Asset, MarketData> { { vti, _marketData } } }
+            { testDate, new SortedDictionary<Symbol, Bar> { { vti, _marketData } } }
         };
         var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
         {
@@ -225,15 +223,15 @@ public sealed class RebalancingBuyAndHoldStrategyTests
     public void RebalancingBuyAndHoldStrategy_DynamicUniverse_AssetAppearsAfterInception()
     {
         // Arrange
-        var vti = new Asset("VTI");
-        var vea = new Asset("VEA");
-        var assets = new Dictionary<Asset, CurrencyCode>
+        var vti = new Symbol("VTI");
+        var vea = new Symbol("VEA");
+        var assets = new Dictionary<Symbol, CurrencyCode>
         {
             { vti, CurrencyCode.USD },
             { vea, CurrencyCode.USD }
         };
         var universeSelector = new Boutquin.Trading.Application.Universe.DynamicUniverse(
-            new Dictionary<Asset, DateOnly>
+            new Dictionary<Symbol, DateOnly>
             {
                 { vti, new DateOnly(2001, 5, 22) },
                 { vea, new DateOnly(2007, 4, 9) }
@@ -248,9 +246,9 @@ public sealed class RebalancingBuyAndHoldStrategyTests
             universeSelector: universeSelector);
 
         var testDate = new DateOnly(2008, 1, 2); // After both inceptions
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
-            { testDate, new SortedDictionary<Asset, MarketData> { { vti, _marketData }, { vea, _marketData } } }
+            { testDate, new SortedDictionary<Symbol, Bar> { { vti, _marketData }, { vea, _marketData } } }
         };
         var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
         {
@@ -278,9 +276,9 @@ public sealed class RebalancingBuyAndHoldStrategyTests
             _orderPriceCalculationStrategyMock.Object,
             _positionSizerMock.Object,
             RebalancingFrequency.Never);
-        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
-            { _initialTimestamp, new SortedDictionary<Asset, MarketData> { { new Asset("AAPL"), _marketData } } }
+            { _initialTimestamp, new SortedDictionary<Symbol, Bar> { { new Symbol("AAPL"), _marketData } } }
         };
         var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
         {

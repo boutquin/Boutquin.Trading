@@ -15,9 +15,6 @@
 //
 
 namespace Boutquin.Trading.Domain.Events;
-
-using ValueObjects;
-
 /// <summary>
 /// The FillEvent record encapsulates the data points for a fill
 /// event resulting from the execution of an order for a specific financial asset at a specific point in time,
@@ -26,7 +23,7 @@ using ValueObjects;
 /// <param name="Timestamp">The timestamp of the fill event,
 /// represented as a DateOnly object.
 /// </param>
-/// <param name="Asset">The name of the financial asset associated
+/// <param name="Symbol">The name of the financial asset associated
 /// with the fill event, represented as a string.
 /// </param>
 /// <param name="StrategyName">The name of the strategy associated with the fill event,
@@ -42,7 +39,7 @@ using ValueObjects;
 // A2 fix: Added TradeAction parameter to distinguish buy vs sell fills
 public sealed record FillEvent(
     DateOnly Timestamp,
-    Asset Asset,
+    Symbol Symbol,
     string StrategyName,
     TradeAction TradeAction,
     decimal FillPrice,

@@ -8,10 +8,10 @@ Independent Python verification of C# financial calculations, backtest engine, p
 Python (numpy/scipy/statsmodels/pypfopt)     C# (xUnit)
           |                                       |
           v                                       |
-   13 generate_*.py scripts                       |
+   14 generate_*.py scripts                       |
           |                                       |
           v                                       v
-    vectors/*.json  <---- 81 golden vectors ---->  *CrossLanguageTests.cs (9 test classes)
+    vectors/*.json  <---- 84 golden vectors ---->  *CrossLanguageTests.cs (10 test classes)
           |                                        CrossLanguageVerificationBase.cs
           v
     pytest (11 test files, self-consistency)
@@ -39,6 +39,7 @@ python generate_regime_vectors.py
 python generate_misc_vectors.py
 python generate_integration_vectors.py
 python generate_remaining_construction_vectors.py
+python generate_pca_construction_vectors.py
 
 # Run Python self-consistency tests
 pytest -v
@@ -223,6 +224,19 @@ Models added post-roadmap with three-layer cross-checks (31/31 hard, 2/2 quality
 | `construction_dynamic_bl.json` | Dynamic Black-Litterman: no views, absolute view, relative view, high confidence |
 | `construction_tactical_overlay_direct.json` | Tactical overlay direct algorithm: zero tilts, positive tilt, momentum, combined, floor-at-zero |
 
+### Suite 12: PCA Construction Model & Detoned Covariance Verification
+
+**Generator:** `generate_pca_construction_vectors.py`
+**C# Tests:** `PcaConstructionCrossLanguageTests.cs`
+
+Three-layer cross-checks (23/23 hard, 3/3 quality):
+
+| Vector File | What It Tests |
+|-------------|---------------|
+| `construction_pc_risk_parity.json` | PC Risk Parity: uncorrelated, perfectly correlated, N=2/5/10, block-correlated, high threshold fallback, Kaiser criterion (q<1) |
+| `construction_pca_constrained.json` | PCA-Constrained decorator: passthrough (K=N), fallback (K=0), dimensionality reduction (K<N), auto-K from MP, equal-weight and inverse-vol inner models |
+| `covariance_detoned.json` | Detoned covariance: alpha=0/0.5/1.0, N<3 delegation, 5-asset factor structure |
+
 ## Convention Alignment (Python = C#)
 
 | Convention | Implementation |
@@ -247,7 +261,7 @@ Models added post-roadmap with three-layer cross-checks (31/31 hard, 2/2 quality
 
 ## Vector Files
 
-All 81 JSON vectors are checked into `vectors/` so C# tests run without requiring Python. Regenerate after changing any formula. Vectors use deterministic seeds for reproducibility. Last regenerated: 2026-03-30 (ReturnTiltedHRP softmax fix — bear market tilt now applied).
+All 84 JSON vectors are checked into `vectors/` so C# tests run without requiring Python. Regenerate after changing any formula. Vectors use deterministic seeds for reproducibility. Last regenerated: 2026-04-02 (PCA construction models + Detoned covariance).
 
 ## File Map
 
@@ -269,6 +283,7 @@ All 81 JSON vectors are checked into `vectors/` so C# tests run without requirin
 | `generate_misc_vectors.py` | Position sizing and supplementary vectors |
 | `generate_integration_vectors.py` | End-to-end integration vectors |
 | `generate_remaining_construction_vectors.py` | HERC, DynamicBL, TacticalOverlay vectors |
+| `generate_pca_construction_vectors.py` | PC Risk Parity, PCA-Constrained, Detoned covariance vectors |
 | **Python Tests** | |
 | `test_returns.py` | Return metric self-consistency |
 | `test_risk.py` | Risk metric self-consistency |
@@ -281,4 +296,4 @@ All 81 JSON vectors are checked into `vectors/` so C# tests run without requirin
 | `test_attribution.py` | Brinson-Fachler attribution self-consistency |
 | `test_backtest_equity.py` | Backtest equity/position/cash self-consistency (16 tests) |
 | `test_backtest_metrics.py` | Backtest tearsheet metric self-consistency (25 tests) |
-| `vectors/` | 81 golden JSON test vector files (checked in) |
+| `vectors/` | 84 golden JSON test vector files (checked in) |

@@ -20,8 +20,8 @@ using Boutquin.Trading.Application.PortfolioConstruction;
 
 public sealed class BlackLittermanFullInversionTests
 {
-    private static readonly Asset s_a = new("A");
-    private static readonly Asset s_b = new("B");
+    private static readonly Symbol s_a = new("A");
+    private static readonly Symbol s_b = new("B");
 
     [Fact]
     public void ComputeTargetWeights_CorrelatedAssets_UsesFullCovariance()
@@ -29,7 +29,7 @@ public sealed class BlackLittermanFullInversionTests
         // Two assets with different expected returns but high correlation.
         // With diagonal approximation: each weight proportional to mu_i / sigma_ii.
         // With full inversion: cross-covariance affects allocation.
-        var assets = new List<Asset> { s_a, s_b };
+        var assets = new List<Symbol> { s_a, s_b };
 
         // Returns: A and B highly correlated (A = B + small noise)
         var returnsA = new decimal[30];
@@ -62,7 +62,7 @@ public sealed class BlackLittermanFullInversionTests
     {
         // Perfectly collinear returns → singular covariance matrix.
         // Should fall back to diagonal approximation and still produce valid weights.
-        var assets = new List<Asset> { s_a, s_b };
+        var assets = new List<Symbol> { s_a, s_b };
 
         var returnsA = new decimal[30];
         var returnsB = new decimal[30];

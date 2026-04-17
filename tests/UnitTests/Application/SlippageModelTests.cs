@@ -79,8 +79,8 @@ public sealed class SlippageModelTests
     [Fact]
     public void SpreadSlippage_UsesAssetSpecificSpread()
     {
-        var asset = new Asset("AAPL");
-        var halfSpreads = new Dictionary<Asset, decimal> { { asset, 0.0005m } };
+        var asset = new Symbol("AAPL");
+        var halfSpreads = new Dictionary<Symbol, decimal> { { asset, 0.0005m } };
         var model = new SpreadSlippage(halfSpreads, 0.001m);
 
         // Buy: 100 * (1 + 0.0005) = 100.05
@@ -91,8 +91,8 @@ public sealed class SlippageModelTests
     [Fact]
     public void SpreadSlippage_FallsBackToDefaultSpread()
     {
-        var asset = new Asset("UNKNOWN");
-        var halfSpreads = new Dictionary<Asset, decimal>();
+        var asset = new Symbol("UNKNOWN");
+        var halfSpreads = new Dictionary<Symbol, decimal>();
         var model = new SpreadSlippage(halfSpreads, 0.001m);
 
         // Buy: 100 * (1 + 0.001) = 100.10
@@ -103,8 +103,8 @@ public sealed class SlippageModelTests
     [Fact]
     public void SpreadSlippage_BuyPriceHigherThanSellPrice()
     {
-        var asset = new Asset("SPY");
-        var halfSpreads = new Dictionary<Asset, decimal> { { asset, 0.0002m } };
+        var asset = new Symbol("SPY");
+        var halfSpreads = new Dictionary<Symbol, decimal> { { asset, 0.0002m } };
         var model = new SpreadSlippage(halfSpreads, 0.001m);
 
         var buyPrice = model.CalculateFillPriceForAsset(100m, 100, TradeAction.Buy, asset);
@@ -116,7 +116,7 @@ public sealed class SlippageModelTests
     [Fact]
     public void SpreadSlippage_NegativeDefaultHalfSpread_ThrowsArgumentOutOfRangeException()
     {
-        var act = () => new SpreadSlippage(new Dictionary<Asset, decimal>(), -0.001m);
+        var act = () => new SpreadSlippage(new Dictionary<Symbol, decimal>(), -0.001m);
         act.Should().Throw<ArgumentOutOfRangeException>();
     }
 }

@@ -23,7 +23,7 @@ public sealed class BlackLittermanDefensiveCopyTests
     [Fact]
     public void Constructor_MutatingOriginalArray_DoesNotAffectModel()
     {
-        var assets = new List<Asset> { new("A"), new("B") };
+        var assets = new List<Symbol> { new("A"), new("B") };
         var equilibriumWeights = new[] { 0.5m, 0.5m };
 
         var returns = new[]

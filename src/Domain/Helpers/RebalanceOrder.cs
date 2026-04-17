@@ -15,20 +15,17 @@
 //
 
 namespace Boutquin.Trading.Domain.Helpers;
-
-using ValueObjects;
-
 /// <summary>
 /// Represents a single rebalance order produced by diffing target weights against current holdings.
 /// Quantity is always positive; TradeAction indicates direction.
 /// </summary>
-/// <param name="Asset">The asset to trade.</param>
+/// <param name="Symbol">The asset to trade.</param>
 /// <param name="TradeAction">Buy or Sell.</param>
 /// <param name="Quantity">Number of shares (always positive).</param>
 /// <param name="TargetWeight">The target portfolio weight for this asset.</param>
 /// <param name="CurrentWeight">The current portfolio weight for this asset.</param>
 public sealed record RebalanceOrder(
-    Asset Asset,
+    Symbol Symbol,
     TradeAction TradeAction,
     int Quantity,
     decimal TargetWeight,

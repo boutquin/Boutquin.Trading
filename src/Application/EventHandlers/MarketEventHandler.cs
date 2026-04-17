@@ -64,7 +64,7 @@ public sealed class MarketEventHandler : IEventHandler
 
         // Detect and handle dividend and split events.
         // MarketEvent may contain data for assets across multiple portfolios (e.g. portfolio + benchmark).
-        // Skip assets that don't belong to this portfolio to avoid "Asset not found" errors.
+        // Skip assets that don't belong to this portfolio to avoid "Symbol not found" errors.
         foreach (var (asset, marketData) in marketEvent.HistoricalMarketData)
         {
             if (portfolio.AssetCurrencies != null && !portfolio.AssetCurrencies.ContainsKey(asset))
@@ -72,38 +72,10 @@ public sealed class MarketEventHandler : IEventHandler
                 continue;
             }
 
-            // Detect and handle dividend events.
-            // In backtesting mode (IsLive == false), AdjustedClose already incorporates
-            // dividends — the price series does NOT drop on ex-dividend dates. Crediting
-            // dividendPerShare as cash would double-count every dividend, creating phantom
-            // value that compounds through rebalancing. ETFs with high cumulative dividend
-            // yield (e.g. SCHH with a 2.47x Close/AdjustedClose ratio) accumulate enough
-            // phantom cash to produce impossible daily returns (< -100%).
-            // Only credit dividends in live mode where raw Close is used for valuation.
-            var dividendPerShare = marketData.DividendPerShare;
-            if (portfolio.IsLive && dividendPerShare > 0)
-            {
-                portfolio.UpdateCashForDividend(asset, dividendPerShare, marketData.Close);
-            }
-
-            // Detect and handle split events.
-            // In backtesting mode (IsLive == false), AdjustedClose in the CSV already
-            // accounts for splits — adjusting positions would double-count the split,
-            // causing a spurious ~100% daily return on the split date.
-            // Only adjust positions (and historical data) in live mode where the
-            // portfolio holds actual pre-split share counts.
-            var splitCoefficient = marketData.SplitCoefficient;
-            // BUG-A06: Guard zero split coefficient and skip no-split case
-            if (splitCoefficient is 0 or 1)
-            {
-                continue;
-            }
-
-            if (portfolio.IsLive)
-            {
-                portfolio.AdjustPositionForSplit(asset, splitCoefficient);
-                portfolio.AdjustHistoricalDataForSplit(asset, splitCoefficient);
-            }
+            // Dividend and split handling requires DividendPayment and CorporateAction
+            // records from the kernel's IBacktestDataset. Until adapters emit these,
+            // both features are unavailable. In backtest mode, AdjustedClose already
+            // incorporates dividends and splits — no double-counting occurs.
         }
 
         // A4 fix: Capture GenerateSignals return value and feed each signal into the event processor

@@ -14,8 +14,6 @@
 //   limitations under the License.
 //
 
-using Boutquin.Trading.Domain.ValueObjects;
-
 namespace Boutquin.Trading.Domain.Analytics;
 
 /// <summary>
@@ -34,6 +32,6 @@ public sealed record BrinsonFachlerResult(
     decimal SelectionEffect,
     decimal InteractionEffect,
     decimal TotalActiveReturn,
-    IReadOnlyDictionary<Asset, decimal> AssetAllocationEffects,
-    IReadOnlyDictionary<Asset, decimal> AssetSelectionEffects,
-    IReadOnlyDictionary<Asset, decimal> AssetInteractionEffects);
+    IReadOnlyDictionary<Symbol, decimal> AssetAllocationEffects,
+    IReadOnlyDictionary<Symbol, decimal> AssetSelectionEffects,
+    IReadOnlyDictionary<Symbol, decimal> AssetInteractionEffects);

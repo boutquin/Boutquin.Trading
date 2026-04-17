@@ -15,21 +15,18 @@
 //
 
 namespace Boutquin.Trading.Domain.Analytics;
-
-using ValueObjects;
-
 /// <summary>
 /// Metadata for a single asset used by universe selectors to evaluate eligibility.
 /// </summary>
-/// <param name="Asset">The asset ticker.</param>
+/// <param name="Symbol">The asset ticker.</param>
 /// <param name="AumMillions">Assets under management in millions of USD.</param>
 /// <param name="InceptionDate">The date the ETF began trading.</param>
 /// <param name="AverageDailyVolume">Average daily trading volume (shares).</param>
 /// <param name="SupersededBy">Optional replacement asset. When the replacement is eligible,
 /// this asset is excluded from the universe (e.g., SCHD superseded by JEPI).</param>
 public sealed record AssetMetadata(
-    Asset Asset,
+    Symbol Symbol,
     decimal AumMillions,
     DateOnly InceptionDate,
     decimal AverageDailyVolume,
-    Asset? SupersededBy = null);
+    Symbol? SupersededBy = null);

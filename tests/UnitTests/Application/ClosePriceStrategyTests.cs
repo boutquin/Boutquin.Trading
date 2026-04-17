@@ -21,16 +21,16 @@ namespace Boutquin.Trading.Tests.UnitTests.Application;
 /// </summary>
 public sealed class ClosePriceStrategyTests
 {
-    private static readonly Asset s_testAsset = new("AAPL");
+    private static readonly Symbol s_testAsset = new("AAPL");
     private static readonly DateOnly s_testDate = new(2024, 1, 15);
 
-    private static IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>> CreateHistoricalData(
-        Asset asset, DateOnly date, decimal close)
+    private static IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> CreateHistoricalData(
+        Symbol asset, DateOnly date, decimal close)
     {
-        var md = new MarketData(date, 100m, 105m, 95m, close, close, 1000000L, 0m, 1m);
-        return new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var md = new Bar(date, 100m, 105m, 95m, close, close, 1000000L);
+        return new Dictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
-            [date] = new SortedDictionary<Asset, MarketData> { [asset] = md }
+            [date] = new SortedDictionary<Symbol, Bar> { [asset] = md }
         };
     }
 
@@ -64,13 +64,13 @@ public sealed class ClosePriceStrategyTests
     public void CalculateOrderPrices_MultipleSymbols_ReturnsCorrectAsset()
     {
         var strategy = new ClosePriceOrderPriceCalculationStrategy();
-        var msft = new Asset("MSFT");
-        var historicalData = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var msft = new Symbol("MSFT");
+        var historicalData = new Dictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
-            [s_testDate] = new SortedDictionary<Asset, MarketData>
+            [s_testDate] = new SortedDictionary<Symbol, Bar>
             {
-                [s_testAsset] = new MarketData(s_testDate, 100m, 105m, 95m, 185.92m, 185.92m, 1000000L, 0m, 1m),
-                [msft] = new MarketData(s_testDate, 400m, 410m, 395m, 405.50m, 405.50m, 500000L, 0m, 1m),
+                [s_testAsset] = new Bar(s_testDate, 100m, 105m, 95m, 185.92m, 185.92m, 1000000L),
+                [msft] = new Bar(s_testDate, 400m, 410m, 395m, 405.50m, 405.50m, 500000L),
             }
         };
 
@@ -101,7 +101,7 @@ public sealed class ClosePriceStrategyTests
         var historicalData = CreateHistoricalData(s_testAsset, s_testDate, 185.92m);
 
         var act = () => strategy.CalculateOrderPrices(
-            s_testDate, new Asset("MISSING"), TradeAction.Buy, historicalData);
+            s_testDate, new Symbol("MISSING"), TradeAction.Buy, historicalData);
 
         act.Should().Throw<ArgumentException>()
             .WithMessage("*market data*asset*");

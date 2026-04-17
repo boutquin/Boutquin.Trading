@@ -17,7 +17,6 @@
 namespace Boutquin.Trading.Application.PortfolioConstruction;
 
 using Boutquin.Trading.Domain.Enums;
-using Domain.ValueObjects;
 
 /// <summary>
 /// Adjusts a base construction model's weights based on economic regime and optional momentum scores.
@@ -27,9 +26,9 @@ using Domain.ValueObjects;
 public sealed class TacticalOverlayConstruction : IPortfolioConstructionModel
 {
     private readonly IPortfolioConstructionModel _baseModel;
-    private readonly IReadOnlyDictionary<EconomicRegime, IReadOnlyDictionary<Asset, decimal>> _regimeTilts;
+    private readonly IReadOnlyDictionary<EconomicRegime, IReadOnlyDictionary<Symbol, decimal>> _regimeTilts;
     private readonly EconomicRegime _currentRegime;
-    private readonly IReadOnlyDictionary<Asset, decimal>? _momentumScores;
+    private readonly IReadOnlyDictionary<Symbol, decimal>? _momentumScores;
     private readonly decimal _momentumStrength;
 
     /// <summary>
@@ -42,9 +41,9 @@ public sealed class TacticalOverlayConstruction : IPortfolioConstructionModel
     /// <param name="momentumStrength">Scaling factor for momentum-based tilts (0 = no momentum effect). Default 0.1.</param>
     public TacticalOverlayConstruction(
         IPortfolioConstructionModel baseModel,
-        IReadOnlyDictionary<EconomicRegime, IReadOnlyDictionary<Asset, decimal>> regimeTilts,
+        IReadOnlyDictionary<EconomicRegime, IReadOnlyDictionary<Symbol, decimal>> regimeTilts,
         EconomicRegime currentRegime,
-        IReadOnlyDictionary<Asset, decimal>? momentumScores = null,
+        IReadOnlyDictionary<Symbol, decimal>? momentumScores = null,
         decimal momentumStrength = 0.1m)
     {
         Guard.AgainstNull(() => baseModel);
@@ -72,20 +71,20 @@ public sealed class TacticalOverlayConstruction : IPortfolioConstructionModel
     }
 
     /// <inheritdoc />
-    public IReadOnlyDictionary<Asset, decimal> ComputeTargetWeights(
-        IReadOnlyList<Asset> assets,
+    public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
+        IReadOnlyList<Symbol> assets,
         decimal[][] returns)
     {
         if (assets.Count == 0)
         {
-            return new Dictionary<Asset, decimal>();
+            return new Dictionary<Symbol, decimal>();
         }
 
         // Get base weights
         var baseWeights = _baseModel.ComputeTargetWeights(assets, returns);
 
         // Apply regime tilts (constructor guarantees _currentRegime exists in _regimeTilts)
-        var adjusted = new Dictionary<Asset, decimal>();
+        var adjusted = new Dictionary<Symbol, decimal>();
         var tilts = _regimeTilts[_currentRegime];
 
         foreach (var asset in assets)

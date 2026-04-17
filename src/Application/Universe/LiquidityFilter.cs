@@ -17,7 +17,6 @@
 namespace Boutquin.Trading.Application.Universe;
 
 using Boutquin.Trading.Domain.Analytics;
-using Domain.ValueObjects;
 
 /// <summary>
 /// Filters assets by minimum average daily trading volume.
@@ -25,12 +24,12 @@ using Domain.ValueObjects;
 public sealed class LiquidityFilter : IUniverseSelector
 {
     private readonly decimal _minAverageDailyVolume;
-    private readonly IReadOnlyDictionary<Asset, AssetMetadata> _metadata;
+    private readonly IReadOnlyDictionary<Symbol, AssetMetadata> _metadata;
 
     /// <summary>Initializes a new instance with the specified minimum volume threshold and metadata.</summary>
     /// <param name="minAverageDailyVolume">The minimum average daily volume threshold.</param>
-    /// <param name="metadata">Asset metadata containing volume data.</param>
-    public LiquidityFilter(decimal minAverageDailyVolume, IReadOnlyDictionary<Asset, AssetMetadata> metadata)
+    /// <param name="metadata">Symbol metadata containing volume data.</param>
+    public LiquidityFilter(decimal minAverageDailyVolume, IReadOnlyDictionary<Symbol, AssetMetadata> metadata)
     {
         if (minAverageDailyVolume < 0m)
         {
@@ -44,7 +43,7 @@ public sealed class LiquidityFilter : IUniverseSelector
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<Asset> Select(IReadOnlyList<Asset> candidates)
+    public IReadOnlyList<Symbol> Select(IReadOnlyList<Symbol> candidates)
     {
         Guard.AgainstNull(() => candidates);
 

@@ -43,5 +43,5 @@ public sealed class RiskManagementOptions
     /// The maximum allowable exposure per asset class as a fraction of portfolio value.
     /// Set to 0 to disable.
     /// </summary>
-    public decimal MaxSectorExposurePercent { get; set; } = 0.40m;
+    public decimal MaxSectorExposurePercent { get; set; }
 }

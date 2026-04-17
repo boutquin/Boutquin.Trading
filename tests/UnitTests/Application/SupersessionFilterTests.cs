@@ -21,12 +21,12 @@ using Boutquin.Trading.Domain.Analytics;
 
 public sealed class SupersessionFilterTests
 {
-    private static readonly Asset s_schd = new("SCHD");
-    private static readonly Asset s_jepi = new("JEPI");
-    private static readonly Asset s_vti = new("VTI");
-    private static readonly Asset s_spy = new("SPY");
+    private static readonly Symbol s_schd = new("SCHD");
+    private static readonly Symbol s_jepi = new("JEPI");
+    private static readonly Symbol s_vti = new("VTI");
+    private static readonly Symbol s_spy = new("SPY");
 
-    private static AssetMetadata Meta(Asset asset, Asset? supersededBy = null) =>
+    private static AssetMetadata Meta(Symbol asset, Symbol? supersededBy = null) =>
         new(asset, AumMillions: 1000m, InceptionDate: new DateOnly(2010, 1, 1),
             AverageDailyVolume: 1_000_000m, SupersededBy: supersededBy);
 
@@ -38,7 +38,7 @@ public sealed class SupersessionFilterTests
     public void Select_SupersededAssetWithReplacementPresent_ShouldExclude()
     {
         // SCHD superseded by JEPI; JEPI is in the candidate set → SCHD excluded
-        var metadata = new Dictionary<Asset, AssetMetadata>
+        var metadata = new Dictionary<Symbol, AssetMetadata>
         {
             [s_schd] = Meta(s_schd, supersededBy: s_jepi),
             [s_jepi] = Meta(s_jepi),
@@ -46,7 +46,7 @@ public sealed class SupersessionFilterTests
         };
 
         var sut = new SupersessionFilter(metadata);
-        var candidates = new List<Asset> { s_schd, s_jepi, s_vti };
+        var candidates = new List<Symbol> { s_schd, s_jepi, s_vti };
         var result = sut.Select(candidates);
 
         result.Should().NotContain(s_schd);
@@ -58,14 +58,14 @@ public sealed class SupersessionFilterTests
     public void Select_SupersededAssetWithReplacementAbsent_ShouldInclude()
     {
         // SCHD superseded by JEPI, but JEPI not in candidates → SCHD stays
-        var metadata = new Dictionary<Asset, AssetMetadata>
+        var metadata = new Dictionary<Symbol, AssetMetadata>
         {
             [s_schd] = Meta(s_schd, supersededBy: s_jepi),
             [s_vti] = Meta(s_vti),
         };
 
         var sut = new SupersessionFilter(metadata);
-        var candidates = new List<Asset> { s_schd, s_vti };
+        var candidates = new List<Symbol> { s_schd, s_vti };
         var result = sut.Select(candidates);
 
         result.Should().Contain(s_schd);
@@ -75,14 +75,14 @@ public sealed class SupersessionFilterTests
     [Fact]
     public void Select_NoSupersession_ShouldReturnAll()
     {
-        var metadata = new Dictionary<Asset, AssetMetadata>
+        var metadata = new Dictionary<Symbol, AssetMetadata>
         {
             [s_vti] = Meta(s_vti),
             [s_spy] = Meta(s_spy),
         };
 
         var sut = new SupersessionFilter(metadata);
-        var candidates = new List<Asset> { s_vti, s_spy };
+        var candidates = new List<Symbol> { s_vti, s_spy };
         var result = sut.Select(candidates);
 
         result.Should().HaveCount(2);
@@ -92,14 +92,14 @@ public sealed class SupersessionFilterTests
     public void Select_AssetNotInMetadata_ShouldInclude()
     {
         // Unknown asset has no metadata — should pass through
-        var metadata = new Dictionary<Asset, AssetMetadata>
+        var metadata = new Dictionary<Symbol, AssetMetadata>
         {
             [s_vti] = Meta(s_vti),
         };
 
         var sut = new SupersessionFilter(metadata);
-        var unknown = new Asset("UNKNOWN");
-        var result = sut.Select(new List<Asset> { s_vti, unknown });
+        var unknown = new Symbol("UNKNOWN");
+        var result = sut.Select(new List<Symbol> { s_vti, unknown });
 
         result.Should().Contain(unknown);
     }
@@ -107,9 +107,9 @@ public sealed class SupersessionFilterTests
     [Fact]
     public void Select_EmptyCandidates_ShouldReturnEmpty()
     {
-        var metadata = new Dictionary<Asset, AssetMetadata>();
+        var metadata = new Dictionary<Symbol, AssetMetadata>();
         var sut = new SupersessionFilter(metadata);
-        var result = sut.Select(new List<Asset>());
+        var result = sut.Select(new List<Symbol>());
 
         result.Should().BeEmpty();
     }

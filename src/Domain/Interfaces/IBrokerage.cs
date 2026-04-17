@@ -47,7 +47,7 @@ public interface IBrokerage
     /// Default implementation is a no-op — only SimulatedBrokerage overrides this.
     /// </summary>
     [Obsolete("Buffered market data is not used. ProcessPendingOrdersAsync receives data directly.")]
-    void SetBufferedMarketData(IReadOnlyDictionary<DateOnly, SortedDictionary<ValueObjects.Asset, MarketData>> data) { }
+    void SetBufferedMarketData(IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> data) { }
 
     /// <summary>
     /// Processes pending orders from the previous bar against the current bar's market data.
@@ -61,6 +61,6 @@ public interface IBrokerage
     /// <param name="cancellationToken">Cancellation token.</param>
     Task ProcessPendingOrdersAsync(
         DateOnly date,
-        SortedDictionary<ValueObjects.Asset, MarketData> dayData,
+        SortedDictionary<Symbol, Bar> dayData,
         CancellationToken cancellationToken = default) => Task.CompletedTask;
 }

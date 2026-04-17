@@ -25,11 +25,11 @@ using FluentAssertions;
 /// </summary>
 public sealed class TargetAllocationHistoryTests
 {
-    private static readonly Asset s_vti = new("VTI");
-    private static readonly Asset s_bnd = new("BND");
+    private static readonly Symbol s_vti = new("VTI");
+    private static readonly Symbol s_bnd = new("BND");
 
-    private static IReadOnlyDictionary<Asset, CurrencyCode> TestAssets =>
-        new Dictionary<Asset, CurrencyCode>
+    private static IReadOnlyDictionary<Symbol, CurrencyCode> TestAssets =>
+        new Dictionary<Symbol, CurrencyCode>
         {
             [s_vti] = CurrencyCode.USD,
             [s_bnd] = CurrencyCode.USD
@@ -42,9 +42,9 @@ public sealed class TargetAllocationHistoryTests
     /// Builds 120 days of market data starting from 2024-01-02 so we have enough
     /// data for a lookback of 3 and multiple monthly rebalances.
     /// </summary>
-    private static IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>> BuildMarketData(int days = 120)
+    private static IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> BuildMarketData(int days = 120)
     {
-        var data = new Dictionary<DateOnly, SortedDictionary<Asset, MarketData>>();
+        var data = new Dictionary<DateOnly, SortedDictionary<Symbol, Bar>>();
         var baseDate = new DateOnly(2024, 1, 2);
         var vtiPrice = 200m;
         var bndPrice = 80m;
@@ -56,10 +56,10 @@ public sealed class TargetAllocationHistoryTests
             vtiPrice *= 1m + (i % 3 == 0 ? 0.01m : -0.003m);
             bndPrice *= 1m + (i % 5 == 0 ? 0.002m : -0.001m);
 
-            data[date] = new SortedDictionary<Asset, MarketData>
+            data[date] = new SortedDictionary<Symbol, Bar>
             {
-                [s_vti] = new(date, vtiPrice, vtiPrice + 1, vtiPrice - 1, vtiPrice, vtiPrice, 1_000_000, 0m),
-                [s_bnd] = new(date, bndPrice, bndPrice + 0.5m, bndPrice - 0.5m, bndPrice, bndPrice, 500_000, 0m)
+                [s_vti] = new(date, vtiPrice, vtiPrice + 1, vtiPrice - 1, vtiPrice, vtiPrice, 1_000_000),
+                [s_bnd] = new(date, bndPrice, bndPrice + 0.5m, bndPrice - 0.5m, bndPrice, bndPrice, 500_000)
             };
         }
 
@@ -213,7 +213,7 @@ public sealed class TargetAllocationHistoryTests
         // fail at compile time or at runtime. We verify the type does not expose Add.
         var history = strategy.TargetWeightHistory;
         history.Should().NotBeNull();
-        history.Should().BeAssignableTo<IReadOnlyDictionary<DateOnly, IReadOnlyDictionary<Asset, decimal>>>();
+        history.Should().BeAssignableTo<IReadOnlyDictionary<DateOnly, IReadOnlyDictionary<Symbol, decimal>>>();
 
         // Attempting direct cast to mutable dictionary — if underlying type is SortedDictionary,
         // this could succeed, but the API contract is read-only. Verify the property type is correct.

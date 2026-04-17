@@ -16,7 +16,6 @@
 
 namespace Boutquin.Trading.Application.PortfolioConstruction;
 
-using Domain.ValueObjects;
 using DownsideRisk;
 
 /// <summary>
@@ -81,15 +80,15 @@ public sealed class MeanDownsideRiskConstruction : IPortfolioConstructionModel
     }
 
     /// <inheritdoc />
-    public IReadOnlyDictionary<Asset, decimal> ComputeTargetWeights(
-        IReadOnlyList<Asset> assets,
+    public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
+        IReadOnlyList<Symbol> assets,
         decimal[][] returns)
     {
         Guard.AgainstNull(() => assets);
 
         if (assets.Count == 0)
         {
-            return new Dictionary<Asset, decimal>();
+            return new Dictionary<Symbol, decimal>();
         }
 
         if (returns is null || returns.Length != assets.Count)
@@ -194,7 +193,7 @@ public sealed class MeanDownsideRiskConstruction : IPortfolioConstructionModel
             }
         }
 
-        var weights = new Dictionary<Asset, decimal>(n);
+        var weights = new Dictionary<Symbol, decimal>(n);
         for (var i = 0; i < n; i++)
         {
             weights[assets[i]] = w[i];

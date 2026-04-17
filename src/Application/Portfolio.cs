@@ -15,9 +15,6 @@
 //
 
 namespace Boutquin.Trading.Application;
-
-using Domain.ValueObjects;
-
 /// <summary>
 /// Manages a collection of strategies, their positions, cash balances, and order routing through a brokerage.
 /// </summary>
@@ -107,7 +104,7 @@ public sealed class Portfolio : IPortfolio
     public Portfolio(
         CurrencyCode baseCurrency,
         IReadOnlyDictionary<string, IStrategy> strategies,
-        IReadOnlyDictionary<Asset, CurrencyCode> assetCurrencies,
+        IReadOnlyDictionary<Symbol, CurrencyCode> assetCurrencies,
         IReadOnlyDictionary<Type, IEventHandler> handlers,
         IBrokerage broker,
         bool isLive = false)
@@ -121,7 +118,7 @@ public sealed class Portfolio : IPortfolio
     public Portfolio(
         CurrencyCode baseCurrency,
         IReadOnlyDictionary<string, IStrategy> strategies,
-        IReadOnlyDictionary<Asset, CurrencyCode> assetCurrencies,
+        IReadOnlyDictionary<Symbol, CurrencyCode> assetCurrencies,
         IReadOnlyDictionary<Type, IEventHandler> handlers,
         IBrokerage broker,
         ILogger<Portfolio> logger,
@@ -155,12 +152,12 @@ public sealed class Portfolio : IPortfolio
     /// <summary>
     /// The AssetCurrencies property represents a read-only dictionary of assets and their respective currencies used in the portfolio.
     /// </summary>
-    public IReadOnlyDictionary<Asset, CurrencyCode> AssetCurrencies { get; }
+    public IReadOnlyDictionary<Symbol, CurrencyCode> AssetCurrencies { get; }
 
     /// <summary>
     /// The HistoricalMarketData property represents a sorted dictionary of historical market data used by the portfolio.
     /// </summary>
-    public SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>> HistoricalMarketData { get; }
+    public SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>> HistoricalMarketData { get; }
         = [];
 
     /// <summary>
@@ -220,7 +217,7 @@ public sealed class Portfolio : IPortfolio
     }
 
     /// <inheritdoc />
-    public void UpdateCashForDividend(Asset asset, decimal dividendPerShare, decimal currentPrice = 0m)
+    public void UpdateCashForDividend(Symbol asset, decimal dividendPerShare, decimal currentPrice = 0m)
     {
         Guard.AgainstNullOrWhiteSpace(() => asset.Ticker); // Throws ArgumentException
 
@@ -259,7 +256,7 @@ public sealed class Portfolio : IPortfolio
                     strategy.UpdatePositions(asset, sharesToReinvest);
                     strategy.UpdateCash(assetCurrency, -reinvestmentCost);
                     _logger.LogDebug(
-                        "DRIP: Reinvested {Shares} shares of {Asset} at {Price:N4} (dividend: {Dividend:N4})",
+                        "DRIP: Reinvested {Shares} shares of {Symbol} at {Price:N4} (dividend: {Dividend:N4})",
                         sharesToReinvest, asset.Ticker, currentPrice, dividendAmount);
                 }
             }
@@ -292,7 +289,7 @@ public sealed class Portfolio : IPortfolio
         var order = new Order(
             orderEvent.Timestamp,
             orderEvent.StrategyName,
-            orderEvent.Asset,
+            orderEvent.Symbol,
             orderEvent.TradeAction,
             orderEvent.OrderType,
             orderEvent.Quantity,
@@ -342,7 +339,7 @@ public sealed class Portfolio : IPortfolio
     /// The method implementation should ensure that the position is updated correctly 
     /// and that the new position does not lead to an inconsistent portfolio state.
     /// </remarks>
-    public void UpdatePosition(string strategyName, Asset asset, int quantity)
+    public void UpdatePosition(string strategyName, Symbol asset, int quantity)
     {
         Guard.AgainstNullOrWhiteSpace(() => strategyName); // Throws ArgumentException
         Guard.AgainstNullOrWhiteSpace(() => asset.Ticker); // Throws ArgumentException
@@ -394,7 +391,7 @@ public sealed class Portfolio : IPortfolio
     /// </summary>
     public async Task ProcessPendingOrdersAsync(
         DateOnly date,
-        SortedDictionary<Domain.ValueObjects.Asset, MarketData> dayData,
+        SortedDictionary<Symbol, Bar> dayData,
         CancellationToken cancellationToken)
     {
         _activeCancellationToken = cancellationToken;
@@ -412,7 +409,7 @@ public sealed class Portfolio : IPortfolio
     /// The method implementation should ensure that the positions are adjusted correctly and that the adjusted positions do not lead to an inconsistent portfolio state.
     /// </remarks>
     public void AdjustPositionForSplit(
-        Asset asset,
+        Symbol asset,
         decimal splitRatio)
     {
         Guard.AgainstNullOrWhiteSpace(() => asset.Ticker); // Throws ArgumentException
@@ -438,7 +435,7 @@ public sealed class Portfolio : IPortfolio
     /// The method implementation should ensure that the historical data is adjusted correctly.
     /// </remarks>
     public void AdjustHistoricalDataForSplit(
-        Asset asset,
+        Symbol asset,
         decimal splitRatio)
     {
         Guard.AgainstNullOrWhiteSpace(() => asset.Ticker); // Throws ArgumentException
@@ -446,9 +443,17 @@ public sealed class Portfolio : IPortfolio
         // Adjust the historical market data for the affected asset.
         foreach (var historicalData in HistoricalMarketData.Values)
         {
-            if (historicalData.TryGetValue(asset, out var marketData))
+            if (historicalData.TryGetValue(asset, out var bar))
             {
-                historicalData[asset] = marketData.AdjustForSplit(splitRatio);
+                // Adjust OHLCAV for split. Bar is immutable; create a new instance.
+                historicalData[asset] = new Bar(
+                    bar.Date,
+                    bar.Open / splitRatio,
+                    bar.High / splitRatio,
+                    bar.Low / splitRatio,
+                    bar.Close / splitRatio,
+                    bar.AdjustedClose / splitRatio,
+                    checked((long)Math.Round(bar.Volume * splitRatio, MidpointRounding.AwayFromZero)));
             }
         }
     }
@@ -485,13 +490,13 @@ public sealed class Portfolio : IPortfolio
     /// This method is called when the currency of a specific asset needs to be retrieved.
     /// The method implementation should ensure that the correct currency is returned, or an appropriate error is thrown if the currency cannot be found.
     /// </remarks>
-    public CurrencyCode GetAssetCurrency(Asset asset)
+    public CurrencyCode GetAssetCurrency(Symbol asset)
     {
         Guard.AgainstNullOrWhiteSpace(() => asset.Ticker); // Throws ArgumentException
 
         if (!AssetCurrencies.TryGetValue(asset, out var currency))
         {
-            throw new ArgumentException($"Asset '{asset}' not found in the portfolio.");
+            throw new ArgumentException($"Symbol '{asset}' not found in the portfolio.");
         }
 
         return currency;

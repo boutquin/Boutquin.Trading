@@ -22,5 +22,5 @@ namespace Boutquin.Trading.Domain.ValueObjects;
 /// <param name="Floors">Per-asset minimum weights. Null or empty means no floors.</param>
 /// <param name="Caps">Per-asset maximum weights. Null or empty means no caps.</param>
 public sealed record AssetWeightConstraints(
-    IReadOnlyDictionary<Asset, decimal>? Floors = null,
-    IReadOnlyDictionary<Asset, decimal>? Caps = null);
+    IReadOnlyDictionary<Symbol, decimal>? Floors = null,
+    IReadOnlyDictionary<Symbol, decimal>? Caps = null);

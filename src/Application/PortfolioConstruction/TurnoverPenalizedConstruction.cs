@@ -15,9 +15,6 @@
 //
 
 namespace Boutquin.Trading.Application.PortfolioConstruction;
-
-using Domain.ValueObjects;
-
 /// <summary>
 /// Decorator that wraps any <see cref="IPortfolioConstructionModel"/> and penalizes turnover
 /// by blending the inner model's target weights with previous weights.
@@ -43,7 +40,7 @@ public sealed class TurnoverPenalizedConstruction : IPortfolioConstructionModel
     private readonly decimal _maxWeight;
     private readonly int _maxIterations;
     private readonly decimal _tolerance;
-    private IReadOnlyDictionary<Asset, decimal>? _previousWeights;
+    private IReadOnlyDictionary<Symbol, decimal>? _previousWeights;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TurnoverPenalizedConstruction"/> class.
@@ -77,13 +74,19 @@ public sealed class TurnoverPenalizedConstruction : IPortfolioConstructionModel
         _tolerance = tolerance;
     }
 
+    /// <summary>
+    /// Resets the internal state, clearing the stored previous weights.
+    /// Call this between backtests when reusing a singleton instance.
+    /// </summary>
+    public void Reset() => _previousWeights = null;
+
     /// <inheritdoc />
     /// <remarks>
     /// Tracks previous weights internally. On first call, delegates directly to the inner model.
     /// On subsequent calls, applies turnover penalty using internally stored previous weights.
     /// </remarks>
-    public IReadOnlyDictionary<Asset, decimal> ComputeTargetWeights(
-        IReadOnlyList<Asset> assets,
+    public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
+        IReadOnlyList<Symbol> assets,
         decimal[][] returns)
     {
         var result = ComputeTargetWeights(assets, returns, _previousWeights);
@@ -95,10 +98,10 @@ public sealed class TurnoverPenalizedConstruction : IPortfolioConstructionModel
     /// Core implementation: computes inner model's target and applies turnover penalty
     /// against the given current weights via proximal gradient iteration.
     /// </summary>
-    private IReadOnlyDictionary<Asset, decimal> ComputeTargetWeights(
-        IReadOnlyList<Asset> assets,
+    private IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
+        IReadOnlyList<Symbol> assets,
         decimal[][] returns,
-        IReadOnlyDictionary<Asset, decimal>? currentWeights)
+        IReadOnlyDictionary<Symbol, decimal>? currentWeights)
     {
         // Delegate to inner model first
         var target = _inner.ComputeTargetWeights(assets, returns);
@@ -179,7 +182,7 @@ public sealed class TurnoverPenalizedConstruction : IPortfolioConstructionModel
             }
         }
 
-        var result = new Dictionary<Asset, decimal>(n);
+        var result = new Dictionary<Symbol, decimal>(n);
         for (var i = 0; i < n; i++)
         {
             result[assets[i]] = w[i];

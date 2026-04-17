@@ -80,7 +80,7 @@ public sealed class FillEventHandler : IEventHandler
 
         // Call methods on the Portfolio class to perform the necessary actions
         var strategy = portfolio.GetStrategy(fillEvent.StrategyName);
-        var assetCurrency = portfolio.GetAssetCurrency(fillEvent.Asset);
+        var assetCurrency = portfolio.GetAssetCurrency(fillEvent.Symbol);
 
         var effectiveQty = fillEvent.Quantity;
         var effectiveCommission = fillEvent.Commission;
@@ -92,7 +92,7 @@ public sealed class FillEventHandler : IEventHandler
             if (!strategy.Cash.TryGetValue(assetCurrency, out var availableCash))
             {
                 throw new InvalidOperationException(
-                    $"Asset '{fillEvent.Asset}' uses currency {assetCurrency} but strategy " +
+                    $"Symbol '{fillEvent.Symbol}' uses currency {assetCurrency} but strategy " +
                     $"'{fillEvent.StrategyName}' has no {assetCurrency} cash initialized. " +
                     "All portfolio currencies must be initialized before trading.");
             }
@@ -111,8 +111,8 @@ public sealed class FillEventHandler : IEventHandler
                     if (effectiveQty <= 0)
                     {
                         _logger.LogWarning(
-                            "Rejected buy for {Asset}: cash {AvailableCash:N2} cannot afford any shares at {FillPrice:N2}/share",
-                            fillEvent.Asset,
+                            "Rejected buy for {Symbol}: cash {AvailableCash:N2} cannot afford any shares at {FillPrice:N2}/share",
+                            fillEvent.Symbol,
                             availableCash,
                             fillEvent.FillPrice);
                         return; // Zero-quantity fill: no position or cash update
@@ -124,9 +124,9 @@ public sealed class FillEventHandler : IEventHandler
                         : 0m;
 
                     _logger.LogWarning(
-                        "Quantity-limited buy for {Asset}: requested {RequestedQty}, filled {EffectiveQty} " +
+                        "Quantity-limited buy for {Symbol}: requested {RequestedQty}, filled {EffectiveQty} " +
                         "(cash {AvailableCash:N2}, cost/share {CostPerShare:N2})",
-                        fillEvent.Asset,
+                        fillEvent.Symbol,
                         fillEvent.Quantity,
                         effectiveQty,
                         availableCash,
@@ -145,7 +145,7 @@ public sealed class FillEventHandler : IEventHandler
         var positionDelta = fillEvent.TradeAction == TradeAction.Buy
             ? effectiveQty
             : -effectiveQty;
-        strategy.UpdatePositions(fillEvent.Asset, positionDelta);
+        strategy.UpdatePositions(fillEvent.Symbol, positionDelta);
 
         strategy.UpdateCash(assetCurrency, cashDelta);
     }

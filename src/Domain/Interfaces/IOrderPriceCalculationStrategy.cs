@@ -15,9 +15,6 @@
 //
 
 namespace Boutquin.Trading.Domain.Interfaces;
-
-using ValueObjects;
-
 /// <summary>
 /// Defines an interface for calculating order prices based on historical market data, given an asset and a trade action.
 /// </summary>
@@ -41,7 +38,7 @@ public interface IOrderPriceCalculationStrategy
     (OrderType OrderType, decimal PrimaryPrice, decimal? SecondaryPrice)
         CalculateOrderPrices(
             DateOnly timestamp,
-            Asset asset,
+            Symbol asset,
             TradeAction tradeAction,
-            IReadOnlyDictionary<DateOnly, SortedDictionary<Asset, MarketData>> historicalData);
+            IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> historicalData);
 }

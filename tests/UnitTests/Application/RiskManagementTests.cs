@@ -23,32 +23,32 @@ using Moq;
 
 public sealed class RiskManagementTests
 {
-    private static readonly Asset s_vti = new("VTI");
-    private static readonly Asset s_tlt = new("TLT");
-    private static readonly Asset s_hyg = new("HYG");
+    private static readonly Symbol s_vti = new("VTI");
+    private static readonly Symbol s_tlt = new("TLT");
+    private static readonly Symbol s_hyg = new("HYG");
 
-    private static Order CreateBuyOrder(Asset asset, int quantity = 100, decimal? price = null) =>
+    private static Order CreateBuyOrder(Symbol asset, int quantity = 100, decimal? price = null) =>
         new(
             Timestamp: new DateOnly(2026, 3, 16),
             StrategyName: "TestStrategy",
-            Asset: asset,
+            Symbol: asset,
             TradeAction: TradeAction.Buy,
             OrderType: OrderType.Market,
             Quantity: quantity,
             PrimaryPrice: price);
 
-    private static Order CreateSellOrder(Asset asset, int quantity = 100) =>
+    private static Order CreateSellOrder(Symbol asset, int quantity = 100) =>
         new(
             Timestamp: new DateOnly(2026, 3, 16),
             StrategyName: "TestStrategy",
-            Asset: asset,
+            Symbol: asset,
             TradeAction: TradeAction.Sell,
             OrderType: OrderType.Market,
             Quantity: quantity);
 
     private static Mock<IPortfolio> CreatePortfolioMock(
         SortedDictionary<DateOnly, decimal>? equityCurve = null,
-        SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>? historicalData = null,
+        SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>? historicalData = null,
         Dictionary<string, IStrategy>? strategies = null)
     {
         var mock = new Mock<IPortfolio>();
@@ -61,11 +61,11 @@ public sealed class RiskManagementTests
         return mock;
     }
 
-    private static Mock<IStrategy> CreateStrategyMock(Dictionary<Asset, int>? positions = null)
+    private static Mock<IStrategy> CreateStrategyMock(Dictionary<Symbol, int>? positions = null)
     {
         var mock = new Mock<IStrategy>();
         mock.Setup(s => s.Positions)
-            .Returns((IReadOnlyDictionary<Asset, int>)(positions ?? new Dictionary<Asset, int>()));
+            .Returns((IReadOnlyDictionary<Symbol, int>)(positions ?? new Dictionary<Symbol, int>()));
         return mock;
     }
 
@@ -192,15 +192,15 @@ public sealed class RiskManagementTests
             [new DateOnly(2026, 1, 1)] = 100_000m,
         };
 
-        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
             [new DateOnly(2026, 1, 1)] = new()
             {
-                [s_vti] = new MarketData(new DateOnly(2026, 1, 1), 100m, 101m, 99m, 100m, 100m, 1_000_000, 0m),
+                [s_vti] = new Bar(new DateOnly(2026, 1, 1), 100m, 101m, 99m, 100m, 100m, 1_000_000),
             },
         };
 
-        var strategyMock = CreateStrategyMock(new Dictionary<Asset, int>());
+        var strategyMock = CreateStrategyMock(new Dictionary<Symbol, int>());
         var strategies = new Dictionary<string, IStrategy> { ["TestStrategy"] = strategyMock.Object };
         var portfolio = CreatePortfolioMock(equityCurve, marketData, strategies);
 
@@ -219,15 +219,15 @@ public sealed class RiskManagementTests
             [new DateOnly(2026, 1, 1)] = 100_000m,
         };
 
-        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
             [new DateOnly(2026, 1, 1)] = new()
             {
-                [s_vti] = new MarketData(new DateOnly(2026, 1, 1), 100m, 101m, 99m, 100m, 100m, 1_000_000, 0m),
+                [s_vti] = new Bar(new DateOnly(2026, 1, 1), 100m, 101m, 99m, 100m, 100m, 1_000_000),
             },
         };
 
-        var strategyMock = CreateStrategyMock(new Dictionary<Asset, int>());
+        var strategyMock = CreateStrategyMock(new Dictionary<Symbol, int>());
         var strategies = new Dictionary<string, IStrategy> { ["TestStrategy"] = strategyMock.Object };
         var portfolio = CreatePortfolioMock(equityCurve, marketData, strategies);
 
@@ -258,15 +258,15 @@ public sealed class RiskManagementTests
             [new DateOnly(2026, 1, 1)] = 100_000m,
         };
 
-        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
             [new DateOnly(2026, 1, 1)] = new()
             {
-                [s_vti] = new MarketData(new DateOnly(2026, 1, 1), 100m, 101m, 99m, 100m, 100m, 1_000_000, 0m),
+                [s_vti] = new Bar(new DateOnly(2026, 1, 1), 100m, 101m, 99m, 100m, 100m, 1_000_000),
             },
         };
 
-        var strategyMock = CreateStrategyMock(new Dictionary<Asset, int> { [s_vti] = 200 });
+        var strategyMock = CreateStrategyMock(new Dictionary<Symbol, int> { [s_vti] = 200 });
         var strategies = new Dictionary<string, IStrategy> { ["TestStrategy"] = strategyMock.Object };
         var portfolio = CreatePortfolioMock(equityCurve, marketData, strategies);
 
@@ -285,15 +285,15 @@ public sealed class RiskManagementTests
             [new DateOnly(2026, 1, 1)] = 100_000m,
         };
 
-        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
             [new DateOnly(2026, 1, 1)] = new()
             {
-                [s_vti] = new MarketData(new DateOnly(2026, 1, 1), 100m, 101m, 99m, 100m, 100m, 1_000_000, 0m),
+                [s_vti] = new Bar(new DateOnly(2026, 1, 1), 100m, 101m, 99m, 100m, 100m, 1_000_000),
             },
         };
 
-        var strategyMock = CreateStrategyMock(new Dictionary<Asset, int> { [s_vti] = 300 });
+        var strategyMock = CreateStrategyMock(new Dictionary<Symbol, int> { [s_vti] = 300 });
         var strategies = new Dictionary<string, IStrategy> { ["TestStrategy"] = strategyMock.Object };
         var portfolio = CreatePortfolioMock(equityCurve, marketData, strategies);
 
@@ -310,7 +310,7 @@ public sealed class RiskManagementTests
     [Fact]
     public void MaxSectorExposureRule_InvalidThreshold_ShouldThrow()
     {
-        var map = new Dictionary<Asset, AssetClassCode>();
+        var map = new Dictionary<Symbol, AssetClassCode>();
         var act = () => new MaxSectorExposureRule(0m, map);
         act.Should().Throw<ArgumentOutOfRangeException>();
     }
@@ -331,22 +331,22 @@ public sealed class RiskManagementTests
             [new DateOnly(2026, 1, 1)] = 100_000m,
         };
 
-        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
             [new DateOnly(2026, 1, 1)] = new()
             {
-                [s_vti] = new MarketData(new DateOnly(2026, 1, 1), 100m, 101m, 99m, 100m, 100m, 1_000_000, 0m),
-                [s_tlt] = new MarketData(new DateOnly(2026, 1, 1), 50m, 51m, 49m, 50m, 50m, 500_000, 0m),
+                [s_vti] = new Bar(new DateOnly(2026, 1, 1), 100m, 101m, 99m, 100m, 100m, 1_000_000),
+                [s_tlt] = new Bar(new DateOnly(2026, 1, 1), 50m, 51m, 49m, 50m, 50m, 500_000),
             },
         };
 
-        var assetClassMap = new Dictionary<Asset, AssetClassCode>
+        var assetClassMap = new Dictionary<Symbol, AssetClassCode>
         {
             [s_vti] = AssetClassCode.Equities,
             [s_tlt] = AssetClassCode.FixedIncome,
         };
 
-        var strategyMock = CreateStrategyMock(new Dictionary<Asset, int> { [s_vti] = 100 });
+        var strategyMock = CreateStrategyMock(new Dictionary<Symbol, int> { [s_vti] = 100 });
         var strategies = new Dictionary<string, IStrategy> { ["TestStrategy"] = strategyMock.Object };
         var portfolio = CreatePortfolioMock(equityCurve, marketData, strategies);
 
@@ -365,20 +365,20 @@ public sealed class RiskManagementTests
             [new DateOnly(2026, 1, 1)] = 100_000m,
         };
 
-        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
             [new DateOnly(2026, 1, 1)] = new()
             {
-                [s_vti] = new MarketData(new DateOnly(2026, 1, 1), 100m, 101m, 99m, 100m, 100m, 1_000_000, 0m),
+                [s_vti] = new Bar(new DateOnly(2026, 1, 1), 100m, 101m, 99m, 100m, 100m, 1_000_000),
             },
         };
 
-        var assetClassMap = new Dictionary<Asset, AssetClassCode>
+        var assetClassMap = new Dictionary<Symbol, AssetClassCode>
         {
             [s_vti] = AssetClassCode.Equities,
         };
 
-        var strategyMock = CreateStrategyMock(new Dictionary<Asset, int> { [s_vti] = 300 });
+        var strategyMock = CreateStrategyMock(new Dictionary<Symbol, int> { [s_vti] = 300 });
         var strategies = new Dictionary<string, IStrategy> { ["TestStrategy"] = strategyMock.Object };
         var portfolio = CreatePortfolioMock(equityCurve, marketData, strategies);
 
@@ -403,7 +403,7 @@ public sealed class RiskManagementTests
         };
 
         var portfolio = CreatePortfolioMock(equityCurve: equityCurve);
-        var assetClassMap = new Dictionary<Asset, AssetClassCode>(); // Empty — HYG not mapped
+        var assetClassMap = new Dictionary<Symbol, AssetClassCode>(); // Empty — HYG not mapped
 
         var rule = new MaxSectorExposureRule(0.40m, assetClassMap);
         var order = CreateBuyOrder(s_hyg);
@@ -425,15 +425,15 @@ public sealed class RiskManagementTests
             [new DateOnly(2026, 1, 2)] = 99_000m, // 1% drawdown
         };
 
-        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
             [new DateOnly(2026, 1, 2)] = new()
             {
-                [s_vti] = new MarketData(new DateOnly(2026, 1, 2), 100m, 101m, 99m, 100m, 100m, 1_000_000, 0m),
+                [s_vti] = new Bar(new DateOnly(2026, 1, 2), 100m, 101m, 99m, 100m, 100m, 1_000_000),
             },
         };
 
-        var strategyMock = CreateStrategyMock(new Dictionary<Asset, int>());
+        var strategyMock = CreateStrategyMock(new Dictionary<Symbol, int>());
         var strategies = new Dictionary<string, IStrategy> { ["TestStrategy"] = strategyMock.Object };
         var portfolio = CreatePortfolioMock(equityCurve, marketData, strategies);
 
@@ -541,16 +541,16 @@ public sealed class RiskManagementTests
             [new DateOnly(2026, 1, 1)] = 100_000m,
         };
 
-        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
             [new DateOnly(2026, 1, 1)] = new()
             {
-                [s_vti] = new MarketData(new DateOnly(2026, 1, 1), 100m, 101m, 99m, 100m, 100m, 1_000_000, 0m),
-                [s_tlt] = new MarketData(new DateOnly(2026, 1, 1), 50m, 51m, 49m, 50m, 50m, 500_000, 0m),
+                [s_vti] = new Bar(new DateOnly(2026, 1, 1), 100m, 101m, 99m, 100m, 100m, 1_000_000),
+                [s_tlt] = new Bar(new DateOnly(2026, 1, 1), 50m, 51m, 49m, 50m, 50m, 500_000),
             },
         };
 
-        var strategyMock = CreateStrategyMock(new Dictionary<Asset, int> { [s_vti] = 200 });
+        var strategyMock = CreateStrategyMock(new Dictionary<Symbol, int> { [s_vti] = 200 });
         var strategies = new Dictionary<string, IStrategy> { ["TestStrategy"] = strategyMock.Object };
         var portfolio = CreatePortfolioMock(equityCurve, marketData, strategies);
 
@@ -577,16 +577,16 @@ public sealed class RiskManagementTests
             [new DateOnly(2026, 1, 1)] = 100_000m,
         };
 
-        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
             [new DateOnly(2026, 1, 1)] = new()
             {
-                [s_vti] = new MarketData(new DateOnly(2026, 1, 1), 100m, 101m, 99m, 100m, 100m, 1_000_000, 0m),
-                [s_tlt] = new MarketData(new DateOnly(2026, 1, 1), 50m, 51m, 49m, 50m, 50m, 500_000, 0m),
+                [s_vti] = new Bar(new DateOnly(2026, 1, 1), 100m, 101m, 99m, 100m, 100m, 1_000_000),
+                [s_tlt] = new Bar(new DateOnly(2026, 1, 1), 50m, 51m, 49m, 50m, 50m, 500_000),
             },
         };
 
-        var strategyMock = CreateStrategyMock(new Dictionary<Asset, int> { [s_vti] = 300 });
+        var strategyMock = CreateStrategyMock(new Dictionary<Symbol, int> { [s_vti] = 300 });
         var strategies = new Dictionary<string, IStrategy> { ["TestStrategy"] = strategyMock.Object };
         var portfolio = CreatePortfolioMock(equityCurve, marketData, strategies);
 
@@ -609,15 +609,15 @@ public sealed class RiskManagementTests
             [new DateOnly(2026, 1, 1)] = 100_000m,
         };
 
-        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
             [new DateOnly(2026, 1, 1)] = new()
             {
-                [s_vti] = new MarketData(new DateOnly(2026, 1, 1), 100m, 101m, 99m, 100m, 100m, 1_000_000, 0m),
+                [s_vti] = new Bar(new DateOnly(2026, 1, 1), 100m, 101m, 99m, 100m, 100m, 1_000_000),
             },
         };
 
-        var strategyMock = CreateStrategyMock(new Dictionary<Asset, int>());
+        var strategyMock = CreateStrategyMock(new Dictionary<Symbol, int>());
         var strategies = new Dictionary<string, IStrategy> { ["TestStrategy"] = strategyMock.Object };
         var portfolio = CreatePortfolioMock(equityCurve, marketData, strategies);
 
@@ -657,22 +657,22 @@ public sealed class RiskManagementTests
             [new DateOnly(2026, 1, 1)] = 100_000m,
         };
 
-        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
             [new DateOnly(2026, 1, 1)] = new()
             {
-                [s_vti] = new MarketData(new DateOnly(2026, 1, 1), 100m, 101m, 99m, 100m, 100m, 1_000_000, 0m),
-                [s_hyg] = new MarketData(new DateOnly(2026, 1, 1), 40m, 41m, 39m, 40m, 40m, 500_000, 0m),
+                [s_vti] = new Bar(new DateOnly(2026, 1, 1), 100m, 101m, 99m, 100m, 100m, 1_000_000),
+                [s_hyg] = new Bar(new DateOnly(2026, 1, 1), 40m, 41m, 39m, 40m, 40m, 500_000),
             },
         };
 
-        var assetClassMap = new Dictionary<Asset, AssetClassCode>
+        var assetClassMap = new Dictionary<Symbol, AssetClassCode>
         {
             [s_vti] = AssetClassCode.Equities,
             [s_hyg] = AssetClassCode.Equities,
         };
 
-        var strategyMock = CreateStrategyMock(new Dictionary<Asset, int> { [s_vti] = 300 });
+        var strategyMock = CreateStrategyMock(new Dictionary<Symbol, int> { [s_vti] = 300 });
         var strategies = new Dictionary<string, IStrategy> { ["TestStrategy"] = strategyMock.Object };
         var portfolio = CreatePortfolioMock(equityCurve, marketData, strategies);
 
@@ -695,20 +695,20 @@ public sealed class RiskManagementTests
             [new DateOnly(2026, 1, 1)] = 100_000m,
         };
 
-        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
             [new DateOnly(2026, 1, 1)] = new()
             {
-                [s_vti] = new MarketData(new DateOnly(2026, 1, 1), 100m, 101m, 99m, 100m, 100m, 1_000_000, 0m),
+                [s_vti] = new Bar(new DateOnly(2026, 1, 1), 100m, 101m, 99m, 100m, 100m, 1_000_000),
             },
         };
 
-        var assetClassMap = new Dictionary<Asset, AssetClassCode>
+        var assetClassMap = new Dictionary<Symbol, AssetClassCode>
         {
             [s_vti] = AssetClassCode.Equities,
         };
 
-        var strategyMock = CreateStrategyMock(new Dictionary<Asset, int>());
+        var strategyMock = CreateStrategyMock(new Dictionary<Symbol, int>());
         var strategies = new Dictionary<string, IStrategy> { ["TestStrategy"] = strategyMock.Object };
         var portfolio = CreatePortfolioMock(equityCurve, marketData, strategies);
 
@@ -731,7 +731,7 @@ public sealed class RiskManagementTests
             [new DateOnly(2026, 1, 1)] = 100_000m,
         };
         var portfolio = CreatePortfolioMock(equityCurve: equityCurve);
-        var assetClassMap = new Dictionary<Asset, AssetClassCode>
+        var assetClassMap = new Dictionary<Symbol, AssetClassCode>
         {
             [s_vti] = AssetClassCode.Equities,
             // HYG deliberately unmapped
@@ -761,16 +761,16 @@ public sealed class RiskManagementTests
             [new DateOnly(2026, 1, 2)] = 99_000m,
         };
 
-        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
             [new DateOnly(2026, 1, 2)] = new()
             {
-                [s_vti] = new MarketData(new DateOnly(2026, 1, 2), 100m, 101m, 99m, 100m, 100m, 1_000_000, 0m),
-                [s_tlt] = new MarketData(new DateOnly(2026, 1, 2), 50m, 51m, 49m, 50m, 50m, 500_000, 0m),
+                [s_vti] = new Bar(new DateOnly(2026, 1, 2), 100m, 101m, 99m, 100m, 100m, 1_000_000),
+                [s_tlt] = new Bar(new DateOnly(2026, 1, 2), 50m, 51m, 49m, 50m, 50m, 500_000),
             },
         };
 
-        var strategyMock = CreateStrategyMock(new Dictionary<Asset, int> { [s_vti] = 200 });
+        var strategyMock = CreateStrategyMock(new Dictionary<Symbol, int> { [s_vti] = 200 });
         var strategies = new Dictionary<string, IStrategy> { ["TestStrategy"] = strategyMock.Object };
         var portfolio = CreatePortfolioMock(equityCurve, marketData, strategies);
 
@@ -861,16 +861,16 @@ public sealed class RiskManagementTests
             [new DateOnly(2026, 1, 1)] = 100_000m,
         };
 
-        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
             [new DateOnly(2026, 1, 1)] = new()
             {
                 //                                                Close  AdjClose
-                [s_vti] = new MarketData(new DateOnly(2026, 1, 1), 60m, 61m, 59m, 60m, 50m, 1_000_000, 0m),
+                [s_vti] = new Bar(new DateOnly(2026, 1, 1), 60m, 61m, 59m, 60m, 50m, 1_000_000),
             },
         };
 
-        var strategyMock = CreateStrategyMock(new Dictionary<Asset, int>());
+        var strategyMock = CreateStrategyMock(new Dictionary<Symbol, int>());
         var strategies = new Dictionary<string, IStrategy> { ["TestStrategy"] = strategyMock.Object };
         var portfolio = CreatePortfolioMock(equityCurve, marketData, strategies);
 
@@ -896,15 +896,15 @@ public sealed class RiskManagementTests
             [new DateOnly(2026, 1, 1)] = 100_000m,
         };
 
-        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Asset, MarketData>>
+        var marketData = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
             [new DateOnly(2026, 1, 1)] = new()
             {
-                [s_vti] = new MarketData(new DateOnly(2026, 1, 1), 60m, 61m, 59m, 60m, 50m, 1_000_000, 0m),
+                [s_vti] = new Bar(new DateOnly(2026, 1, 1), 60m, 61m, 59m, 60m, 50m, 1_000_000),
             },
         };
 
-        var strategyMock = CreateStrategyMock(new Dictionary<Asset, int>());
+        var strategyMock = CreateStrategyMock(new Dictionary<Symbol, int>());
         var strategies = new Dictionary<string, IStrategy> { ["TestStrategy"] = strategyMock.Object };
         var portfolio = CreatePortfolioMock(equityCurve, marketData, strategies);
 

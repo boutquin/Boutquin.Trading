@@ -22,36 +22,31 @@ using SlippageModels;
 /// <summary>
 /// SimulatedBrokerage is an implementation of the IBrokerage interface that simulates the behavior
 /// of a real-world brokerage. It is intended to be used in backtesting trading strategies.
-/// It uses an IMarketDataFetcher to retrieve market data which is used to simulate the execution of trades.
+/// Orders are queued and filled on the next bar via ProcessPendingOrdersAsync.
 /// </summary>
 public sealed class SimulatedBrokerage : IBrokerage
 {
-    private readonly IMarketDataFetcher _marketDataFetcher;
     private readonly ITransactionCostModel _costModel;
     private readonly ISlippageModel _slippageModel;
-    private readonly ITradingCalendar? _tradingCalendar;
+    private readonly IBusinessCalendar? _tradingCalendar;
     private readonly ILogger<SimulatedBrokerage> _logger;
     private readonly List<Order> _pendingOrders = [];
 
     /// <summary>
     /// Initializes a new instance of the SimulatedBrokerage class with explicit cost, slippage models, and optional trading calendar.
     /// </summary>
-    /// <param name="marketDataFetcher">An instance of an object implementing the IMarketDataFetcher interface.</param>
     /// <param name="costModel">The transaction cost model for calculating commissions.</param>
     /// <param name="slippageModel">The slippage model for adjusting fill prices. Defaults to no slippage.</param>
     /// <param name="tradingCalendar">Optional trading calendar for non-trading-day fill warnings.</param>
     /// <param name="logger">Optional logger for structured logging.</param>
     public SimulatedBrokerage(
-        IMarketDataFetcher marketDataFetcher,
         ITransactionCostModel costModel,
         ISlippageModel? slippageModel = null,
-        ITradingCalendar? tradingCalendar = null,
+        IBusinessCalendar? tradingCalendar = null,
         ILogger<SimulatedBrokerage>? logger = null)
     {
-        Guard.AgainstNull(() => marketDataFetcher);
         Guard.AgainstNull(() => costModel);
 
-        _marketDataFetcher = marketDataFetcher;
         _costModel = costModel;
         _slippageModel = slippageModel ?? new NoSlippage();
         _tradingCalendar = tradingCalendar;
@@ -62,10 +57,9 @@ public sealed class SimulatedBrokerage : IBrokerage
     /// Initializes a new instance of the SimulatedBrokerage class with a flat commission rate.
     /// Backward-compatible constructor that wraps the rate in a <see cref="PercentageOfValueCostModel"/>.
     /// </summary>
-    /// <param name="marketDataFetcher">An instance of an object implementing the IMarketDataFetcher interface.</param>
     /// <param name="commissionRate">The commission rate to apply to trades (default: 0.1%).</param>
-    public SimulatedBrokerage(IMarketDataFetcher marketDataFetcher, decimal commissionRate = 0.001m)
-        : this(marketDataFetcher, new PercentageOfValueCostModel(commissionRate))
+    public SimulatedBrokerage(decimal commissionRate = 0.001m)
+        : this(new PercentageOfValueCostModel(commissionRate))
     {
     }
 
@@ -78,7 +72,7 @@ public sealed class SimulatedBrokerage : IBrokerage
     /// Provides pre-buffered market data for backtest mode, eliminating per-order FetchMarketDataAsync calls.
     /// </summary>
     [Obsolete("Buffered market data is not used. ProcessPendingOrdersAsync receives data directly.")]
-    public void SetBufferedMarketData(IReadOnlyDictionary<DateOnly, SortedDictionary<Domain.ValueObjects.Asset, MarketData>> data)
+    public void SetBufferedMarketData(IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> data)
     {
         // No-op: retained for API compatibility.
         ArgumentNullException.ThrowIfNull(data);
@@ -108,7 +102,7 @@ public sealed class SimulatedBrokerage : IBrokerage
     /// </summary>
     public async Task ProcessPendingOrdersAsync(
         DateOnly date,
-        SortedDictionary<Domain.ValueObjects.Asset, MarketData> dayData,
+        SortedDictionary<Symbol, Bar> dayData,
         CancellationToken cancellationToken)
     {
         if (_pendingOrders.Count == 0)
@@ -116,7 +110,7 @@ public sealed class SimulatedBrokerage : IBrokerage
             return;
         }
 
-        if (_tradingCalendar is not null && !_tradingCalendar.IsTradingDay(date))
+        if (_tradingCalendar is not null && !_tradingCalendar.IsBusinessDay(date))
         {
             _logger.LogWarning("Skipping pending order processing on non-trading day {Date}. Orders will carry over to next trading day.", date);
             return;
@@ -129,9 +123,9 @@ public sealed class SimulatedBrokerage : IBrokerage
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (!dayData.TryGetValue(order.Asset, out var marketData))
+            if (!dayData.TryGetValue(order.Symbol, out var marketData))
             {
-                _logger.LogWarning("No market data for {Asset} on {Date} — order dropped", order.Asset, date);
+                _logger.LogWarning("No market data for {Symbol} on {Date} — order dropped", order.Symbol, date);
                 continue;
             }
 
@@ -149,7 +143,7 @@ public sealed class SimulatedBrokerage : IBrokerage
     /// <summary>
     /// Market orders fill at the next bar's Open price (eliminates look-ahead bias).
     /// </summary>
-    private async Task<bool> HandleMarketOrder(DateOnly fillDate, Order order, MarketData marketData, CancellationToken cancellationToken)
+    private async Task<bool> HandleMarketOrder(DateOnly fillDate, Order order, Bar marketData, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -159,7 +153,7 @@ public sealed class SimulatedBrokerage : IBrokerage
 
         var fillEvent = new FillEvent(
             fillDate,
-            order.Asset,
+            order.Symbol,
             order.StrategyName,
             order.TradeAction,
             fillPrice,
@@ -174,7 +168,7 @@ public sealed class SimulatedBrokerage : IBrokerage
     /// Limit orders check against the next bar's Low (buy) or High (sell).
     /// Fill price is the limit price (or better).
     /// </summary>
-    private async Task<bool> HandleLimitOrder(DateOnly fillDate, Order order, MarketData marketData, CancellationToken cancellationToken)
+    private async Task<bool> HandleLimitOrder(DateOnly fillDate, Order order, Bar marketData, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -195,7 +189,7 @@ public sealed class SimulatedBrokerage : IBrokerage
 
         var fillEvent = new FillEvent(
             fillDate,
-            order.Asset,
+            order.Symbol,
             order.StrategyName,
             order.TradeAction,
             fillPrice,
@@ -210,7 +204,7 @@ public sealed class SimulatedBrokerage : IBrokerage
     /// Stop orders check against the next bar's High (buy) or Low (sell) for trigger.
     /// Fill price is the stop price.
     /// </summary>
-    private async Task<bool> HandleStopOrder(DateOnly fillDate, Order order, MarketData marketData, CancellationToken cancellationToken)
+    private async Task<bool> HandleStopOrder(DateOnly fillDate, Order order, Bar marketData, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -231,7 +225,7 @@ public sealed class SimulatedBrokerage : IBrokerage
 
         var fillEvent = new FillEvent(
             fillDate,
-            order.Asset,
+            order.Symbol,
             order.StrategyName,
             order.TradeAction,
             fillPrice,
@@ -246,7 +240,7 @@ public sealed class SimulatedBrokerage : IBrokerage
     /// StopLimit orders check against the next bar's High/Low for stop trigger
     /// and Close for limit fill.
     /// </summary>
-    private async Task<bool> HandleStopLimitOrder(DateOnly fillDate, Order order, MarketData marketData, CancellationToken cancellationToken)
+    private async Task<bool> HandleStopLimitOrder(DateOnly fillDate, Order order, Bar marketData, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -276,7 +270,7 @@ public sealed class SimulatedBrokerage : IBrokerage
 
         var fillEvent = new FillEvent(
             fillDate,
-            order.Asset,
+            order.Symbol,
             order.StrategyName,
             order.TradeAction,
             fillPrice,
