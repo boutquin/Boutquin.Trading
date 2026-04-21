@@ -23,6 +23,7 @@
     <PackageReference Include="Boutquin.Domain" />
     <PackageReference Include="Boutquin.Numerics" />
     <PackageReference Include="Boutquin.MarketData.Abstractions" />
+  <PackageReference Include="Microsoft.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="MinVer" PrivateAssets="All" />

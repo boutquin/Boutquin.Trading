@@ -24,7 +24,7 @@
     <PackageVersion Include="Boutquin.MarketData.Adapter.BankOfCanada" Version="1.0.2" />
 
     <!-- Entity Framework Core -->
-    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.6" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.7" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.6" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.6" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.6" />
