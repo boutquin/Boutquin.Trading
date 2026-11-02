@@ -1,0 +1,136 @@
+{
+  "cases": {
+    "three_asset_rank_monotone": {
+      "lookback_months": 3,
+      "skip_months": 1,
+      "trading_days_per_month": 4,
+      "n_assets": 3,
+      "returns": [
+        [
+          0.02,
+          0.02,
+          0.02,
+          0.02,
+          0.02,
+          0.02,
+          0.02,
+          0.02,
+          0.02,
+          0.02,
+          0.02,
+          0.02
+        ],
+        [
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01
+        ],
+        [
+          -0.01,
+          -0.01,
+          -0.01,
+          -0.01,
+          -0.01,
+          -0.01,
+          -0.01,
+          -0.01,
+          -0.01,
+          -0.01,
+          -0.01,
+          -0.01
+        ]
+      ],
+      "scores": [
+        0.17165938100226574,
+        0.08285670562808001,
+        -0.07725530557208005
+      ]
+    },
+    "skip_month": {
+      "lookback_months": 3,
+      "skip_months": 1,
+      "trading_days_per_month": 4,
+      "n_assets": 2,
+      "returns": [
+        [
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01
+        ],
+        [
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.5,
+          0.5,
+          0.5,
+          0.5
+        ]
+      ],
+      "scores": [
+        0.08285670562808001,
+        0.08285670562808001
+      ]
+    },
+    "insufficient_history": {
+      "lookback_months": 3,
+      "skip_months": 1,
+      "trading_days_per_month": 4,
+      "n_assets": 2,
+      "returns": [
+        [
+          0.015,
+          0.015,
+          0.015,
+          0.015,
+          0.015,
+          0.015,
+          0.015,
+          0.015,
+          0.015,
+          0.015,
+          0.015,
+          0.015
+        ],
+        [
+          0.02,
+          0.02,
+          0.02,
+          0.02,
+          0.02,
+          0.02,
+          0.02,
+          0.02
+        ]
+      ],
+      "scores": [
+        0.1264925865953057,
+        null
+      ]
+    }
+  },
+  "notes": "CrossSectionalMomentumSignal (Jegadeesh-Titman 12-1 adaptation): per-asset score = trailing cumulative return over window [len - total*dpm, len - skip*dpm), excluding the most-recent skip month(s). Own-formula reference re-implementing MomentumScore.Compute; None score => omitted asset (insufficient history). PrecisionNumeric (1e-6)."
+}

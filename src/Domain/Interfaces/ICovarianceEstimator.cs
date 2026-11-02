@@ -31,6 +31,11 @@ public interface ICovarianceEstimator
     /// <returns>
     /// A symmetric NxN covariance matrix where N is the number of assets.
     /// </returns>
+    /// <remarks>
+    /// Some implementations (e.g. <c>PoetCovarianceEstimator</c> at aggressive thresholds)
+    /// may not guarantee positive semi-definiteness; callers requiring PSD should validate
+    /// or apply a nearest-PSD projection before passing the result to an optimizer.
+    /// </remarks>
     /// <exception cref="ArgumentException">Thrown when the return series have different lengths or fewer than two observations.</exception>
     decimal[,] Estimate(decimal[][] returns);
 }

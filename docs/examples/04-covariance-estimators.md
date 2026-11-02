@@ -50,8 +50,8 @@ var denoised = new DenoisedCovarianceEstimator();
 // Tracy-Widom threshold — sharper than Marcenko-Pastur when T/N < 5
 var tw = new TracyWidomDenoisedCovarianceEstimator();
 
-// Detoned — removes PC1 (market factor) to expose diversification structure
-// Recommended when pairing with PrincipalComponentRiskParityConstruction
+// Detoned — shrinks PC1's eigenvalue toward the average signal eigenvalue (trace-preserving)
+// to expose diversification structure; recommended with PrincipalComponentRiskParityConstruction
 var detoned = new DetonedCovarianceEstimator(detoningAlpha: 1.0m);
 ```
 

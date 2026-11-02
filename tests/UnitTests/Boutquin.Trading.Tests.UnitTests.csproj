@@ -7,11 +7,27 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!--
+      Microsoft.EntityFrameworkCore.Sqlite (the integration-test provider) transitively pulls
+      SQLitePCLRaw.lib.e_sqlite3, which carries GHSA-2m69-gcr7-jv3q (a bundled-SQLite advisory).
+      The advisory's vulnerable range is "<= 2.1.11" with NO patched version published, so no
+      version pin can clear it. This is a test-only dependency exercised solely against
+      self-authored in-memory fixture data — the malicious-database-file class the advisory
+      describes is unreachable here. Suppress the single advisory (not a blanket NU1903) so the
+      security audit still fails the build on any OTHER package vulnerability. Revisit when a
+      patched SQLitePCLRaw ships.
+    -->
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-2m69-gcr7-jv3q" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="coverlet.collector">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="Moq" />

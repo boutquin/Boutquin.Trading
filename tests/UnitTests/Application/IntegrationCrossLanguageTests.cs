@@ -382,10 +382,10 @@ public sealed class IntegrationCrossLanguageTests : CrossLanguageVerificationBas
         };
 
         // Build assets
-        var assets = new Dictionary<Symbol, CurrencyCode>();
+        var assets = new Dictionary<Symbol, Currency>();
         foreach (var tickerProp in marketDataElement.EnumerateObject())
         {
-            assets[new Symbol(tickerProp.Name)] = CurrencyCode.USD;
+            assets[new Symbol(tickerProp.Name)] = Currency.USD;
         }
 
         // Date range
@@ -412,7 +412,7 @@ public sealed class IntegrationCrossLanguageTests : CrossLanguageVerificationBas
             ? (ITransactionCostModel)new PercentageOfValueCostModel(commissionRate)
             : new ZeroCostModel();
         var orderPriceCalc = new ClosePriceOrderPriceCalculationStrategy();
-        var positionSizer = new DynamicWeightPositionSizer(CurrencyCode.USD);
+        var positionSizer = new DynamicWeightPositionSizer(Currency.USD);
 
         // Build synthetic benchmark first, then create portfolio
         var benchmarkPortfolio = BuildSyntheticBenchmark(
@@ -424,7 +424,7 @@ public sealed class IntegrationCrossLanguageTests : CrossLanguageVerificationBas
         var strategy = new ConstructionModelStrategy(
             "IntegrationTest",
             assets,
-            new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, initialCash } },
+            new SortedDictionary<Currency, decimal> { { Currency.USD, initialCash } },
             orderPriceCalc,
             positionSizer,
             constructionModel,
@@ -440,11 +440,11 @@ public sealed class IntegrationCrossLanguageTests : CrossLanguageVerificationBas
         };
 
         var portfolio = new Portfolio(
-            CurrencyCode.USD,
+            Currency.USD,
             new ReadOnlyDictionary<string, IStrategy>(
                 new Dictionary<string, IStrategy> { { "IntegrationTest", strategy } }),
-            new ReadOnlyDictionary<Symbol, CurrencyCode>(
-                new Dictionary<Symbol, CurrencyCode>(assets)),
+            new ReadOnlyDictionary<Symbol, Currency>(
+                new Dictionary<Symbol, Currency>(assets)),
             new ReadOnlyDictionary<Type, IEventHandler>(handlers),
             broker);
 
@@ -454,7 +454,7 @@ public sealed class IntegrationCrossLanguageTests : CrossLanguageVerificationBas
             FxRates = [],
         };
 
-        var backtest = new BackTest(portfolio, benchmarkPortfolio, CurrencyCode.USD);
+        var backtest = new BackTest(portfolio, benchmarkPortfolio, Currency.USD);
         var tearsheet = await backtest.RunAsync(dataset);
         return (tearsheet, strategy);
     }
@@ -504,7 +504,7 @@ public sealed class IntegrationCrossLanguageTests : CrossLanguageVerificationBas
         out SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>> mergedPrices)
     {
         var bmAsset = new Symbol("BM");
-        var bmAssets = new Dictionary<Symbol, CurrencyCode> { { bmAsset, CurrencyCode.USD } };
+        var bmAssets = new Dictionary<Symbol, Currency> { { bmAsset, Currency.USD } };
         var bmWeights = new Dictionary<Symbol, decimal> { { bmAsset, 1.0m } };
 
         // Collect all dates
@@ -572,13 +572,13 @@ public sealed class IntegrationCrossLanguageTests : CrossLanguageVerificationBas
         }
 
         var bmBroker = new SimulatedBrokerage(costModel, new NoSlippage());
-        var bmCash = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, initialCash } };
+        var bmCash = new SortedDictionary<Currency, decimal> { { Currency.USD, initialCash } };
         var bmPositionSizer = new FixedWeightPositionSizer(
             new ReadOnlyDictionary<Symbol, decimal>(bmWeights),
-            CurrencyCode.USD);
+            Currency.USD);
         var bmStrategy = new BuyAndHoldStrategy(
             "Benchmark",
-            new ReadOnlyDictionary<Symbol, CurrencyCode>(bmAssets),
+            new ReadOnlyDictionary<Symbol, Currency>(bmAssets),
             bmCash,
             startDate,
             orderPriceCalc,
@@ -593,10 +593,10 @@ public sealed class IntegrationCrossLanguageTests : CrossLanguageVerificationBas
         };
 
         return new Portfolio(
-            CurrencyCode.USD,
+            Currency.USD,
             new ReadOnlyDictionary<string, IStrategy>(
                 new Dictionary<string, IStrategy> { { "Benchmark", bmStrategy } }),
-            new ReadOnlyDictionary<Symbol, CurrencyCode>(bmAssets),
+            new ReadOnlyDictionary<Symbol, Currency>(bmAssets),
             new ReadOnlyDictionary<Type, IEventHandler>(bmHandlers),
             bmBroker);
     }

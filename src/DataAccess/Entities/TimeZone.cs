@@ -55,22 +55,22 @@ public sealed class TimeZone
     }
 
     /// <summary>
-    /// Gets the ISO 8601 Time Zone Code.
+    /// The ISO 8601 Time Zone Code.
     /// </summary>
     public TimeZoneCode Code { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the name of the time zone.
+    /// The name of the time zone.
     /// </summary>
     public string Name { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the time zone offset.
+    /// The time zone offset.
     /// </summary>
     public string TimeZoneOffset { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets a value indicating whether the time zone uses daylight saving time.
+    /// A value indicating whether the time zone uses daylight saving time.
     /// </summary>
     public bool UsesDaylightSaving { get; private set; } // Setter is for EF
 }

@@ -39,6 +39,11 @@ public sealed class SampleCovarianceEstimator : ICovarianceEstimator
             throw new ArgumentException("Returns array must not be null or empty.", nameof(returns));
         }
 
+        if (returns[0] is null)
+        {
+            throw new ArgumentException("Return series at index 0 must not be null.", nameof(returns));
+        }
+
         var t = returns[0].Length;
         if (t < 2)
         {
@@ -47,6 +52,11 @@ public sealed class SampleCovarianceEstimator : ICovarianceEstimator
 
         for (var i = 1; i < returns.Length; i++)
         {
+            if (returns[i] is null)
+            {
+                throw new ArgumentException($"Return series at index {i} must not be null.", nameof(returns));
+            }
+
             if (returns[i].Length != t)
             {
                 throw new ArgumentException("All return series must have the same length.", nameof(returns));

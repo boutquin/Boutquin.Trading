@@ -32,6 +32,13 @@ public interface IAfterTaxReturnCalculator
     /// <param name="disposals">Capital gain/loss disposals in the period.</param>
     /// <param name="dividends">Dividend records in the period.</param>
     /// <param name="quantity">Number of shares held.</param>
+    /// <param name="portfolioValue">
+    /// The position's total dollar base at the start of the period (shares × start price), used as the
+    /// denominator for tax drag. Supplied explicitly rather than back-derived from
+    /// <paramref name="preTaxReturn"/> so that a flat-return period (<paramref name="preTaxReturn"/> = 0)
+    /// with realized tax still reports a correct, non-zero tax drag. Must be non-negative; when 0 the tax
+    /// drag is 0 (no base to spread the tax over).
+    /// </param>
     /// <param name="accountType">The account type holding the position.</param>
     /// <param name="jurisdiction">The tax jurisdiction for gain/dividend computation.</param>
     /// <param name="withholdingSchedule">The withholding tax schedule for cross-border dividends.</param>
@@ -45,6 +52,7 @@ public interface IAfterTaxReturnCalculator
         IReadOnlyList<LotDisposal> disposals,
         IReadOnlyList<DividendRecord> dividends,
         decimal quantity,
+        decimal portfolioValue,
         AccountType accountType,
         ITaxJurisdiction jurisdiction,
         IWithholdingTaxSchedule withholdingSchedule,

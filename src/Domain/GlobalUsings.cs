@@ -16,7 +16,7 @@
 
 global using System.Collections.Immutable;
 global using System.ComponentModel;
-
+global using Boutquin.Domain.Enumerations;
 global using Boutquin.Domain.Exceptions;
 global using Boutquin.Domain.Extensions;
 global using Boutquin.Domain.Helpers;

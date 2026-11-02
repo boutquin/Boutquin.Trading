@@ -23,7 +23,7 @@ namespace Boutquin.Trading.Application.CovarianceEstimators;
 /// Identifies noise eigenvalues in the sample covariance matrix and replaces them with their
 /// average, preserving total variance (trace) while removing estimation noise.
 ///
-/// Based on Lopez de Prado (2018), "Advances in Financial Machine Learning", Chapter 2.
+/// Based on López de Prado (2020), "Machine Learning for Asset Managers", Ch. 2 (§2.2–2.5).
 ///
 /// Optionally composes with Ledoit-Wolf shrinkage for additional regularization.
 /// </summary>

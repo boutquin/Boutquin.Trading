@@ -33,6 +33,8 @@ public static class DrawdownAnalyzer
     public static IReadOnlyList<DrawdownPeriod> AnalyzeDrawdownPeriods(
         SortedDictionary<DateOnly, decimal> equityCurve)
     {
+        Guard.AgainstNull(() => equityCurve);
+
         if (equityCurve.Count == 0)
         {
             throw new ArgumentException("Equity curve must contain at least one data point.", nameof(equityCurve));

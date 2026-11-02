@@ -26,6 +26,7 @@ public sealed class EqualWeightConstruction : IPortfolioConstructionModel
         decimal[][] returns)
     {
         Guard.AgainstNull(() => assets);
+        Guard.AgainstNull(() => returns);
 
         if (assets.Count == 0)
         {

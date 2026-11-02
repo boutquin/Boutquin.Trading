@@ -34,7 +34,7 @@ public sealed class FillEventHandlerTests
         var mockPortfolio = new Mock<IPortfolio>();
 
         mockPortfolio.Setup(p => p.GetStrategy(strategyName)).Returns(mockStrategy.Object);
-        mockPortfolio.Setup(p => p.GetAssetCurrency(asset)).Returns(CurrencyCode.USD);
+        mockPortfolio.Setup(p => p.GetAssetCurrency(asset)).Returns(Currency.USD);
 
         // A2: FillEvent now includes TradeAction
         var sellFillEvent = new FillEvent(
@@ -54,7 +54,7 @@ public sealed class FillEventHandlerTests
         // Assert — sell should credit cash: tradeValue - commission
         // tradeValue = 100 * 10 = 1000, credit = 1000 - 5 = 995
         mockStrategy.Verify(
-            s => s.UpdateCash(CurrencyCode.USD, 995m),
+            s => s.UpdateCash(Currency.USD, 995m),
             Times.Once);
     }
 
@@ -71,8 +71,8 @@ public sealed class FillEventHandlerTests
         var mockPortfolio = new Mock<IPortfolio>();
 
         mockPortfolio.Setup(p => p.GetStrategy(strategyName)).Returns(mockStrategy.Object);
-        mockPortfolio.Setup(p => p.GetAssetCurrency(asset)).Returns(CurrencyCode.USD);
-        mockStrategy.Setup(s => s.Cash).Returns(new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 2000m } });
+        mockPortfolio.Setup(p => p.GetAssetCurrency(asset)).Returns(Currency.USD);
+        mockStrategy.Setup(s => s.Cash).Returns(new SortedDictionary<Currency, decimal> { { Currency.USD, 2000m } });
 
         var buyFillEvent = new FillEvent(
             new DateOnly(2024, 1, 15),
@@ -91,7 +91,7 @@ public sealed class FillEventHandlerTests
         // Assert — buy should deduct cash: -(tradeValue + commission)
         // tradeValue = 100 * 10 = 1000, deduct = -(1000 + 5) = -1005
         mockStrategy.Verify(
-            s => s.UpdateCash(CurrencyCode.USD, -1005m),
+            s => s.UpdateCash(Currency.USD, -1005m),
             Times.Once);
     }
 
@@ -110,9 +110,9 @@ public sealed class FillEventHandlerTests
         var mockPortfolio = new Mock<IPortfolio>();
 
         mockPortfolio.Setup(p => p.GetStrategy(strategyName)).Returns(mockStrategy.Object);
-        mockPortfolio.Setup(p => p.GetAssetCurrency(asset)).Returns(CurrencyCode.USD);
+        mockPortfolio.Setup(p => p.GetAssetCurrency(asset)).Returns(Currency.USD);
         mockStrategy.Setup(s => s.Cash).Returns(
-            new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.EUR, 5000m } }); // No USD!
+            new SortedDictionary<Currency, decimal> { { Currency.EUR, 5000m } }); // No USD!
 
         var buyFillEvent = new FillEvent(
             new DateOnly(2024, 1, 15),

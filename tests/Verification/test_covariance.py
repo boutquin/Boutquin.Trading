@@ -23,13 +23,15 @@ def sample_covariance(returns: np.ndarray) -> np.ndarray:
 
 def ewma_covariance(returns: np.ndarray, lam: float = 0.94) -> np.ndarray:
     """EWMA covariance matrix matching C# implementation.
-    Weights: w[k] = lambda^(T-1-k), normalized. Uses demeaned returns."""
+    Weights: w[k] = lambda^(T-1-k), normalized. Centers on the EWMA-weighted mean
+    (mu_i = sum_k w_k * r_{k,i}), not the arithmetic mean — the same centering
+    generate_vectors.py and Boutquin.Numerics' ExponentiallyWeightedCovarianceEstimator
+    use, so this helper agrees with the checked-in covariance.json vector."""
     n_assets, t = returns.shape
-    means = np.mean(returns, axis=1)
-    demeaned = returns - means[:, np.newaxis]
-
     weights = np.array([lam ** (t - 1 - k) for k in range(t)])
     weights /= weights.sum()
+    means = (returns * weights).sum(axis=1)
+    demeaned = returns - means[:, np.newaxis]
 
     cov = np.zeros((n_assets, n_assets))
     for i in range(n_assets):

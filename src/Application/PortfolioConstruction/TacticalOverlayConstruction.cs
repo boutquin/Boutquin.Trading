@@ -74,14 +74,34 @@ public sealed class TacticalOverlayConstruction : IPortfolioConstructionModel
     public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
         IReadOnlyList<Symbol> assets,
         decimal[][] returns)
+        => ComputeTargetWeightsCore(assets, returns, asOf: null);
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// Forwards <paramref name="asOf"/> to the base model's own date-aware overload (the decorator
+    /// obligation of <see cref="IPortfolioConstructionModel"/>), so a date-aware model deeper in the
+    /// composed chain receives the evaluation date; the overlay arithmetic itself is date-free.
+    /// </remarks>
+    public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
+        IReadOnlyList<Symbol> assets,
+        decimal[][] returns,
+        DateOnly asOf)
+        => ComputeTargetWeightsCore(assets, returns, asOf);
+
+    private IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeightsCore(
+        IReadOnlyList<Symbol> assets,
+        decimal[][] returns,
+        DateOnly? asOf)
     {
+        Guard.AgainstNull(() => assets);
+
         if (assets.Count == 0)
         {
             return new Dictionary<Symbol, decimal>();
         }
 
         // Get base weights
-        var baseWeights = _baseModel.ComputeTargetWeights(assets, returns);
+        var baseWeights = _baseModel.ComputeTargetWeightsAsOf(assets, returns, asOf);
 
         // Apply regime tilts (constructor guarantees _currentRegime exists in _regimeTilts)
         var adjusted = new Dictionary<Symbol, decimal>();

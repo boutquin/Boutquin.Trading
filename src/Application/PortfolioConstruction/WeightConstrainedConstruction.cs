@@ -62,13 +62,33 @@ public sealed class WeightConstrainedConstruction : IPortfolioConstructionModel
     public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
         IReadOnlyList<Symbol> assets,
         decimal[][] returns)
+        => ComputeTargetWeightsCore(assets, returns, asOf: null);
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// Forwards <paramref name="asOf"/> to the inner model's own date-aware overload (the decorator
+    /// obligation of <see cref="IPortfolioConstructionModel"/>), so a date-aware model deeper in the
+    /// composed chain receives the evaluation date; the floor/cap clamping itself is date-free.
+    /// </remarks>
+    public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
+        IReadOnlyList<Symbol> assets,
+        decimal[][] returns,
+        DateOnly asOf)
+        => ComputeTargetWeightsCore(assets, returns, asOf);
+
+    private IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeightsCore(
+        IReadOnlyList<Symbol> assets,
+        decimal[][] returns,
+        DateOnly? asOf)
     {
+        Guard.AgainstNull(() => assets);
+
         if (assets.Count == 0)
         {
             return new Dictionary<Symbol, decimal>();
         }
 
-        var baseWeights = _inner.ComputeTargetWeights(assets, returns);
+        var baseWeights = _inner.ComputeTargetWeightsAsOf(assets, returns, asOf);
 
         if (_floors is null or { Count: 0 } && _caps is null or { Count: 0 })
         {
@@ -139,6 +159,27 @@ public sealed class WeightConstrainedConstruction : IPortfolioConstructionModel
         IReadOnlyDictionary<Symbol, decimal>? floors,
         IReadOnlyDictionary<Symbol, decimal>? caps)
     {
+        // Feasibility precheck: the maximum total weight achievable under the caps
+        // (uncapped assets contribute their implicit cap of 1.0) must reach 1.0.
+        // When it cannot, no weight vector can both sum to 1.0 and respect every cap;
+        // silently renormalizing would push weights back above their caps, so reject.
+        if (caps is not null)
+        {
+            var maxAchievable = 0m;
+            foreach (var asset in assets)
+            {
+                maxAchievable += caps.TryGetValue(asset, out var cap) ? cap : 1m;
+            }
+
+            if (maxAchievable < 1m - 1e-10m)
+            {
+                throw new ArgumentException(
+                    $"Caps over the supplied assets sum to {maxAchievable}, which is below 1.0, " +
+                    "making the constraint set infeasible: no weight vector can both sum to 1.0 and respect every cap.",
+                    nameof(caps));
+            }
+        }
+
         for (var round = 0; round < 50; round++)
         {
             // Clamp to per-asset bounds

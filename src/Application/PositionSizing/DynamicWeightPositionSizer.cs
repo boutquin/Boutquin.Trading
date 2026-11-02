@@ -24,7 +24,7 @@ using Boutquin.Trading.Application.Strategies;
 /// </summary>
 public sealed class DynamicWeightPositionSizer : IPositionSizer
 {
-    private readonly CurrencyCode _baseCurrency;
+    private readonly Currency _baseCurrency;
     private readonly decimal _cashBufferPercent;
 
     /// <summary>
@@ -32,7 +32,7 @@ public sealed class DynamicWeightPositionSizer : IPositionSizer
     /// </summary>
     /// <param name="baseCurrency">The base currency used for total value calculations.</param>
     /// <param name="cashBufferPercent">Fraction of portfolio value to reserve as cash buffer (0.0–0.99). Default 0 for backward compatibility.</param>
-    public DynamicWeightPositionSizer(CurrencyCode baseCurrency, decimal cashBufferPercent = 0m)
+    public DynamicWeightPositionSizer(Currency baseCurrency, decimal cashBufferPercent = 0m)
     {
         Guard.AgainstUndefinedEnumValue(() => baseCurrency);
 
@@ -51,7 +51,7 @@ public sealed class DynamicWeightPositionSizer : IPositionSizer
         IReadOnlyDictionary<Symbol, SignalType> signalType,
         IStrategy strategy,
         IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> historicalMarketData,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Currency, decimal>> historicalFxConversionRates)
     {
         Guard.AgainstNull(() => signalType);
         Guard.AgainstNull(() => strategy);
@@ -95,20 +95,40 @@ public sealed class DynamicWeightPositionSizer : IPositionSizer
 
             var desiredValue = allocatableValue * weight;
 
-            if (!historicalMarketData.TryGetValue(timestamp, out var dayData) ||
-                dayData is null ||
-                !dayData.TryGetValue(asset, out var md))
+            // Cross-calendar fallback — forward-fill from most recent prior bar when
+            // exact-date lookup fails (e.g. CA portfolio on 2001-09-13 asking for VTI
+            // while NYSE was closed 09-11 → 09-14). See
+            // <see cref="HistoricalMarketDataLookup.TryFindMostRecentBar"/>.
+            Bar? md = null;
+            if (historicalMarketData.TryGetValue(timestamp, out var dayData) &&
+                dayData is not null &&
+                dayData.TryGetValue(asset, out var exactBar))
+            {
+                md = exactBar;
+            }
+            else
+            {
+                md = Strategies.HistoricalMarketDataLookup.TryFindMostRecentBar(
+                    historicalMarketData, asset, timestamp);
+            }
+            if (md is null)
             {
                 throw new InvalidOperationException($"Market data not found for asset '{asset}' on {timestamp}.");
             }
 
-            if (md.AdjustedClose == 0)
+            if (md.Value.AdjustedClose == 0)
             {
                 throw new InvalidOperationException($"AdjustedClose is zero for asset '{asset}' on {timestamp}.");
             }
 
+            // The target value is in base currency and the price in the asset's currency:
+            // convert the value before dividing, or a CAD target over a USD price buys
+            // fx[USD]× too many shares.
+            var desiredValueInAssetCurrency = FxConversion.FromBase(
+                desiredValue, strategy.Assets[asset], _baseCurrency, historicalFxConversionRates, timestamp);
+
             // M10: Round instead of truncate to avoid systematic downward bias
-            positionSizes[asset] = (int)Math.Round(desiredValue / md.AdjustedClose, MidpointRounding.AwayFromZero);
+            positionSizes[asset] = (int)Math.Round(desiredValueInAssetCurrency / md.Value.AdjustedClose, MidpointRounding.AwayFromZero);
         }
 
         return positionSizes;

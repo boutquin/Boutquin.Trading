@@ -227,6 +227,9 @@ def run_construction_model_backtest(
             continue  # Skip incomplete days
 
         # ── Step 1: Process pending orders (fill at today's Open) ──
+        # Same-bar fill order is sells first, then buys (stable), matching the C# brokerage
+        # (SimulatedBrokerage: asset sells -> FX conversions -> asset buys).
+        pending_orders.sort(key=lambda o: 0 if o["action"] == "sell" else 1)
         for order in pending_orders:
             ticker = order["ticker"]
             if ticker not in day_data:

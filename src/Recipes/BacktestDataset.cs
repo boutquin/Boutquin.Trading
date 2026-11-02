@@ -14,6 +14,7 @@
 //   limitations under the License.
 //
 
+using Boutquin.Domain.Enumerations;
 using Boutquin.MarketData.Abstractions.Records;
 using Boutquin.MarketData.Abstractions.ReferenceData;
 using Boutquin.MarketData.Abstractions.Results;
@@ -30,7 +31,7 @@ public sealed class BacktestDataset : IBacktestDataset
     public SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>> Prices { get; }
 
     /// <inheritdoc />
-    public SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> FxRates { get; }
+    public SortedDictionary<DateOnly, SortedDictionary<Currency, decimal>> FxRates { get; }
 
     /// <inheritdoc />
     public IReadOnlyDictionary<Symbol, IReadOnlyList<DividendPayment>> Dividends { get; }
@@ -55,7 +56,7 @@ public sealed class BacktestDataset : IBacktestDataset
     /// </summary>
     public BacktestDataset(
         SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>> prices,
-        SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> fxRates,
+        SortedDictionary<DateOnly, SortedDictionary<Currency, decimal>> fxRates,
         IReadOnlyDictionary<Symbol, IReadOnlyList<DividendPayment>> dividends,
         IReadOnlyDictionary<Symbol, IReadOnlyList<CorporateAction>> corporateActions,
         IReadOnlyDictionary<string, SortedDictionary<DateOnly, decimal>> economicSeries,

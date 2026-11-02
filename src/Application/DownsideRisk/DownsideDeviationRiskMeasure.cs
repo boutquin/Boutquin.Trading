@@ -54,6 +54,12 @@ public sealed class DownsideDeviationRiskMeasure : IDownsideRiskMeasure
         var n = weights.Length;
         var s = scenarios.Length;
 
+        if (s == 0)
+        {
+            throw new Boutquin.Trading.Domain.Exceptions.CalculationException(
+                "At least one scenario is required for downside-deviation evaluation.");
+        }
+
         var downsideSumSq = 0m;
         var gradSumSq = new decimal[n];
 

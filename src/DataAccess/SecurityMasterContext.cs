@@ -30,74 +30,74 @@ using Entities;
 public sealed class SecurityMasterContext : DbContext
 {
     /// <summary>
-    /// Gets or sets the DbSet for the AssetClass entity.
+    /// Asset classes tracked by the security master.
     /// </summary>
-    public DbSet<AssetClass> AssetClasses { get; set; }
+    public DbSet<AssetClass> AssetClasses { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the DbSet for the City entity.
+    /// Cities tracked by the security master.
     /// </summary>
-    public DbSet<City> Cities { get; set; }
+    public DbSet<City> Cities { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the DbSet for the Continent entity.
+    /// Continents tracked by the security master.
     /// </summary>
-    public DbSet<Continent> Continents { get; set; }
+    public DbSet<Continent> Continents { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the DbSet for the Country entity.
+    /// Countries tracked by the security master.
     /// </summary>
-    public DbSet<Country> Countries { get; set; }
+    public DbSet<Country> Countries { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the DbSet for the Currency entity.
+    /// Currencies tracked by the security master.
     /// </summary>
-    public DbSet<Currency> Currencies { get; set; }
+    public DbSet<Currency> Currencies { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the DbSet for the Exchange entity.
+    /// Exchanges tracked by the security master.
     /// </summary>
-    public DbSet<Exchange> Exchanges { get; set; }
+    public DbSet<Exchange> Exchanges { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the DbSet for the ExchangeHoliday entity.
+    /// Exchange holidays tracked by the security master.
     /// </summary>
-    public DbSet<ExchangeHoliday> ExchangeHolidays { get; set; }
+    public DbSet<ExchangeHoliday> ExchangeHolidays { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the DbSet for the ExchangeSchedule entity.
+    /// Exchange schedules tracked by the security master.
     /// </summary>
-    public DbSet<ExchangeSchedule> ExchangeSchedules { get; set; }
+    public DbSet<ExchangeSchedule> ExchangeSchedules { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the DbSet for the FXRate entity.
+    /// Foreign-exchange rates tracked by the security master.
     /// </summary>
-    public DbSet<FxRate> FxRates { get; set; }
+    public DbSet<FxRate> FxRates { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the DbSet for the Security entity.
+    /// Securities tracked by the security master.
     /// </summary>
-    public DbSet<Security> Securities { get; set; }
+    public DbSet<Security> Securities { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the DbSet for the SecurityPrice entity.
+    /// Security prices tracked by the security master.
     /// </summary>
-    public DbSet<SecurityPrice> SecurityPrices { get; set; }
+    public DbSet<SecurityPrice> SecurityPrices { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the DbSet for the SecuritySymbol entity.
+    /// Security symbols tracked by the security master.
     /// </summary>
-    public DbSet<SecuritySymbol> SecuritySymbols { get; set; }
+    public DbSet<SecuritySymbol> SecuritySymbols { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the DbSet for the SymbolStandard entity.
+    /// Symbol standards tracked by the security master.
     /// </summary>
-    public DbSet<SymbolStandard> SymbolStandards { get; set; }
+    public DbSet<SymbolStandard> SymbolStandards { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the DbSet for the TimeZone entity.
+    /// Time zones tracked by the security master.
     /// </summary>
-    public DbSet<TimeZone> TimeZones { get; set; }
+    public DbSet<TimeZone> TimeZones { get; set; } = null!;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SecurityMasterContext"/> class.

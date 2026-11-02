@@ -2,11 +2,16 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <!-- NU5104: NuGet version warnings; CA1305/CA2007/CA2208/xUnit1030: already excluded in CI format checks;
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <!-- NU5104: NuGet version warnings; CA1305/CA2208/xUnit1030: already excluded in CI format checks;
          CS0168/CS0414: unused variables/fields (EF backing fields, catch vars);
          RS0026: backward-compat constructor overloads with optional logger params (documented pattern in CLAUDE.md);
          RS0041: oblivious reference types in auto-generated EF migration files (#nullable disable) -->
-    <NoWarn>$(NoWarn);NU5104;CA1305;CA2007;CA2208;xUnit1030;CS0168;CS0414;RS0026;RS0041</NoWarn>
+    <!-- BNU0001: Boutquin.Numerics 2.0 deprecated its concrete-typed stats/linalg facades in
+         favour of generic-math <T> versions. The facades still function (removed only in
+         Numerics v3.0); the generic-math migration of Trading's quant layer is tracked as a
+         separate follow-up. Suppressed here to build on Numerics 2.0 in the meantime. -->
+    <NoWarn>$(NoWarn);NU5104;CA1305;CA2208;xUnit1030;CS0168;CS0414;RS0026;RS0041;BNU0001</NoWarn>
     <LangVersion>14.0</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -21,6 +26,9 @@
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageIcon>icon.png</PackageIcon>
     <MinVerTagPrefix>v</MinVerTagPrefix>
+    <!-- Package identity for builds without an explicit override. Release builds pass -p:MinVerVersionOverride=<version> and the sibling-package pins in Directory.Build.targets follow it; bump this default after each release. -->
+    <MinVerVersionOverride Condition="'$(MinVerVersionOverride)' == ''">2.3.1</MinVerVersionOverride>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <MinVerDefaultPreReleaseIdentifiers>beta</MinVerDefaultPreReleaseIdentifiers>
     <PackageVersion>$(PackageVersion)$(MinVerBuildMetadata)</PackageVersion>
     <Version>$(PackageVersion)</Version>
@@ -38,6 +46,27 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
   </ItemGroup>
+
+  <!-- DateRange and other shared value objects are owned by Boutquin.Domain. -->
+  <ItemGroup>
+    <Using Include="Boutquin.Domain.ValueObjects" />
+  </ItemGroup>
+
+  <!-- MinVer 7 deliberately emits 0.0.0.0 for every pre-1.0 build. Boutquin packages
+       instead bind within the current pre-1.0 minor line, where SemVer permits breaking
+       changes, and return to major-line binding at 1.0. This must run after MinVer writes
+       its values and before the SDK consumes AssemblyVersion. -->
+  <Target Name="ApplyBoutquinAssemblyVersionPolicy"
+          AfterTargets="MinVer"
+          BeforeTargets="GetAssemblyVersion"
+          Condition="'$(IsPackable)' == 'true'
+                     and '$(MinVerSkip)' != 'true'
+                     and '$(MinVerMajor)' != ''">
+    <PropertyGroup>
+      <AssemblyVersion Condition="'$(MinVerMajor)' == '0'">0.$(MinVerMinor).0.0</AssemblyVersion>
+      <AssemblyVersion Condition="'$(MinVerMajor)' != '0'">$(MinVerMajor).0.0.0</AssemblyVersion>
+    </PropertyGroup>
+  </Target>
 
   <!-- Public API snapshot: enforce explicit declaration of all public type and member additions.
        Note: PublicApiAnalyzers 3.x auto-includes PublicAPI.Shipped.txt and PublicAPI.Unshipped.txt

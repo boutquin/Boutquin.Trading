@@ -20,6 +20,13 @@ namespace Boutquin.Trading.Domain.TaxEngine;
 /// Result of a return-of-capital adjustment to cost basis.
 /// If ROC reduces basis below zero, the excess becomes a deemed capital gain.
 /// </summary>
+/// <param name="NewCostBasis">The adjusted cost basis after the return of capital, as currency-tagged <see cref="Money"/>.</param>
+/// <param name="DeemedCapitalGain">The deemed capital gain from basis reduced below zero, as currency-tagged <see cref="Money"/>.</param>
+/// <remarks>
+/// Both amount fields are currency-tagged <see cref="Money"/>; combining them with amounts of a
+/// different currency uses <see cref="Money"/> arithmetic, which throws
+/// <see cref="Boutquin.Domain.Exceptions.CurrencyMismatchException"/> at the caller.
+/// </remarks>
 public sealed record RocAdjustmentResult(
-    decimal NewCostBasis,
-    decimal DeemedCapitalGain);
+    Money NewCostBasis,
+    Money DeemedCapitalGain);

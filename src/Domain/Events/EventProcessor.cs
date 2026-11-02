@@ -60,7 +60,9 @@ public sealed class EventProcessor(IPortfolio portfolio, IReadOnlyDictionary<Typ
         }
         else
         {
-            throw new NotSupportedException($"Unsupported event type: {eventObj.GetType()}");
+            throw new NotSupportedException(
+                $"Unsupported event type: {eventObj.GetType()}. Register an IEventHandler for it in the portfolio's handler dictionary " +
+                "(a portfolio holding assets outside its funding currency needs FxOrderEventHandler and FxFillEventHandler alongside the four asset handlers).");
         }
     }
 }

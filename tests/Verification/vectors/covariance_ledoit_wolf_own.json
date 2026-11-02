@@ -768,22 +768,22 @@
   "expected": {
     "ledoit_wolf_covariance": [
       [
-        0.00013890226160219552,
-        8.507591644145619e-05,
-        -4.052044419302157e-06
+        0.00013856665663938557,
+        8.29001191011128e-05,
+        -3.948414298825728e-06
       ],
       [
-        8.507591644145619e-05,
-        7.851099450423521e-05,
-        1.982064050849108e-06
+        8.29001191011128e-05,
+        7.971988255223084e-05,
+        1.93137321059004e-06
       ],
       [
-        -4.052044419302157e-06,
-        1.982064050849108e-06,
-        0.00015992602983808162
+        -3.948414298825728e-06,
+        1.93137321059004e-06,
+        0.00015905274675289592
       ]
     ],
-    "ledoit_wolf_shrinkage": 0.02346900982406247
+    "ledoit_wolf_shrinkage": 0.048443569253578525
   },
   "reference": {
     "sklearn_covariance": [
@@ -804,7 +804,7 @@
       ]
     ],
     "sklearn_shrinkage": 0.048443569253578525,
-    "note": "sklearn uses a different formula variant. Our C# matches ledoit_wolf_covariance, not sklearn."
+    "note": "sklearn uses the same JMVA intensity on 1/T scale; multiply covariance by T/(T-1)."
   },
-  "notes": "Same 3-asset, 252-obs data as main vectors. Uses exact C# formula, not sklearn."
+  "notes": "Independent JMVA 2004 identity-target oracle; covariance is returned on the Bessel scale."
 }

@@ -1,0 +1,194 @@
+{
+  "cases": {
+    "sign_rule": {
+      "lookback_months": 3,
+      "trading_days_per_month": 4,
+      "vol_window": 6,
+      "trading_days_per_year": 252,
+      "n_assets": 2,
+      "returns": [
+        [
+          0.004,
+          -0.002,
+          0.004,
+          -0.002,
+          0.004,
+          -0.002,
+          0.004,
+          -0.002,
+          0.004,
+          -0.002,
+          0.004,
+          -0.002
+        ],
+        [
+          0.002,
+          -0.004,
+          0.002,
+          -0.004,
+          0.002,
+          -0.004,
+          0.002,
+          -0.004,
+          0.002,
+          -0.004,
+          0.002,
+          -0.004
+        ]
+      ],
+      "scores": [
+        19.168487759509837,
+        0.0
+      ]
+    },
+    "inverse_vol_half": {
+      "lookback_months": 3,
+      "trading_days_per_month": 4,
+      "vol_window": 6,
+      "trading_days_per_year": 252,
+      "n_assets": 2,
+      "returns": [
+        [
+          0.004,
+          -0.002,
+          0.004,
+          -0.002,
+          0.004,
+          -0.002,
+          0.004,
+          -0.002,
+          0.004,
+          -0.002,
+          0.004,
+          -0.002
+        ],
+        [
+          0.007,
+          -0.005,
+          0.007,
+          -0.005,
+          0.007,
+          -0.005,
+          0.007,
+          -0.005,
+          0.007,
+          -0.005,
+          0.007,
+          -0.005
+        ]
+      ],
+      "scores": [
+        19.168487759509837,
+        9.584243879754919
+      ]
+    },
+    "excess_with_rf": {
+      "lookback_months": 3,
+      "trading_days_per_month": 4,
+      "vol_window": 6,
+      "trading_days_per_year": 252,
+      "risk_free_id": "DGS3MO",
+      "risk_free_series": [
+        0.001,
+        0.001,
+        0.001,
+        0.001,
+        0.001,
+        0.001,
+        0.001,
+        0.001,
+        0.001,
+        0.001,
+        0.001,
+        0.001
+      ],
+      "n_assets": 1,
+      "returns": [
+        [
+          0.0025,
+          -0.0015,
+          0.0025,
+          -0.0015,
+          0.0025,
+          -0.0015,
+          0.0025,
+          -0.0015,
+          0.0025,
+          -0.0015,
+          0.0025,
+          -0.0015
+        ]
+      ],
+      "scores": [
+        0.0
+      ]
+    },
+    "raw_fallback_no_rf": {
+      "lookback_months": 3,
+      "trading_days_per_month": 4,
+      "vol_window": 6,
+      "trading_days_per_year": 252,
+      "n_assets": 1,
+      "returns": [
+        [
+          0.0025,
+          -0.0015,
+          0.0025,
+          -0.0015,
+          0.0025,
+          -0.0015,
+          0.0025,
+          -0.0015,
+          0.0025,
+          -0.0015,
+          0.0025,
+          -0.0015
+        ]
+      ],
+      "scores": [
+        28.752731639264756
+      ]
+    },
+    "insufficient_history": {
+      "lookback_months": 3,
+      "trading_days_per_month": 4,
+      "vol_window": 6,
+      "trading_days_per_year": 252,
+      "n_assets": 2,
+      "returns": [
+        [
+          0.004,
+          -0.002,
+          0.004,
+          -0.002,
+          0.004,
+          -0.002,
+          0.004,
+          -0.002,
+          0.004,
+          -0.002,
+          0.004,
+          -0.002
+        ],
+        [
+          0.004,
+          -0.002,
+          0.004,
+          -0.002,
+          0.004,
+          -0.002,
+          0.004,
+          -0.002,
+          0.004,
+          -0.002,
+          0.004
+        ]
+      ],
+      "scores": [
+        19.168487759509837,
+        null
+      ]
+    }
+  },
+  "notes": "TimeSeriesMomentumSignal (Moskowitz-Ooi-Pedersen 2012, long-only adaptation): per-asset score = effectiveSign * (1/sigma), effectiveSign = 1 if trailing 12-month EXCESS return > 0 else 0 (long-only clamp), sigma = annualized RealizedVolatility over vol_window. Excess = cumulative(asset) - cumulative(risk_free) when the risk_free_id series is present and long enough, else raw cumulative(asset) (documented fallback). None score => omitted asset (insufficient history). Own-formula reference re-implementing RealizedVolatility.Compute + the cumulative-return window; PrecisionNumeric (1e-6)."
+}

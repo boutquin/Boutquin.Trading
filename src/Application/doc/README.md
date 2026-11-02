@@ -30,10 +30,10 @@ The core application layer for a multi-asset, multi-currency, multi-strategy, ev
 | `MinimumVarianceConstruction` | Projected gradient descent minimizing portfolio variance |
 | `MeanVarianceConstruction` | Projected gradient descent maximizing Sharpe ratio |
 | `RiskParityConstruction` | Iterative inverse-MRC equalization |
-| `MaximumDiversificationConstruction` | Maximize diversification ratio (Chopin & Briand, 2008) |
+| `MaximumDiversificationConstruction` | Maximize diversification ratio (Choueifaty & Coignard, 2008) |
 | `HierarchicalRiskParityConstruction` | Lopez de Prado (2016) clustering + recursive bisection |
-| `HierarchicalEqualRiskContributionConstruction` | Cluster-based equal risk contribution |
-| `ReturnTiltedHrpConstruction` | Lohre, Rother, Schafer (2020) HRP with softmax return signal (active in all market regimes) |
+| `HierarchicalEqualRiskContributionConstruction` | Inverse-risk (1/σ) HRP variant; inspired by, but not a faithful implementation of, Raffinot (2018) HERC (no Gap-index cluster selection or dendrogram-shape split) |
+| `ReturnTiltedHrpConstruction` | Bespoke return-tilted HRP: HRP inverse-variance blended with a softmax return signal (active in all market regimes); the return-tilt is the framework's own, not from Lohre, Rother & Schafer (2020) |
 | `BlackLittermanConstruction` | Bayesian equilibrium + investor views; no-views case returns equilibrium weights directly |
 | `DynamicBlackLittermanConstruction` | Time-varying views with adaptive confidence; omega clamped to prevent singularity at confidence=1.0 |
 | `MeanDownsideRiskConstruction` | Pluggable downside risk: CVaR or Sortino via `IDownsideRiskMeasure` |

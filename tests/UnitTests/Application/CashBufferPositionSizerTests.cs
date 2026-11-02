@@ -36,7 +36,7 @@ public sealed class CashBufferPositionSizerTests
         // Arrange
         var sizer = new FixedWeightPositionSizer(
             new Dictionary<Symbol, decimal> { { s_aapl, 1m } },
-            CurrencyCode.USD,
+            Currency.USD,
             cashBufferPercent: 0m);
 
         var (strategyMock, marketData, fxRates, signals) = BuildSingleAssetScenario(
@@ -59,7 +59,7 @@ public sealed class CashBufferPositionSizerTests
         // Arrange
         var sizer = new FixedWeightPositionSizer(
             new Dictionary<Symbol, decimal> { { s_aapl, 1m } },
-            CurrencyCode.USD,
+            Currency.USD,
             cashBufferPercent: 0.05m);
 
         var (strategyMock, marketData, fxRates, signals) = BuildSingleAssetScenario(
@@ -83,12 +83,12 @@ public sealed class CashBufferPositionSizerTests
     {
         // Arrange
         var weights = new Dictionary<Symbol, decimal> { { s_aapl, 0.6m }, { s_msft, 0.4m } };
-        var sizer = new FixedWeightPositionSizer(weights, CurrencyCode.USD, cashBufferPercent: 0.05m);
+        var sizer = new FixedWeightPositionSizer(weights, Currency.USD, cashBufferPercent: 0.05m);
 
-        var assetCurrencies = new Dictionary<Symbol, CurrencyCode>
+        var assetCurrencies = new Dictionary<Symbol, Currency>
         {
-            { s_aapl, CurrencyCode.USD },
-            { s_msft, CurrencyCode.USD }
+            { s_aapl, Currency.USD },
+            { s_msft, Currency.USD }
         };
 
         var mdAapl = MakeMarketData(200m);
@@ -98,9 +98,9 @@ public sealed class CashBufferPositionSizerTests
         {
             { s_timestamp, new SortedDictionary<Symbol, Bar> { { s_aapl, mdAapl }, { s_msft, mdMsft } } }
         };
-        var fxRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
+        var fxRates = new Dictionary<DateOnly, SortedDictionary<Currency, decimal>>
         {
-            { s_timestamp, new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
+            { s_timestamp, new SortedDictionary<Currency, decimal> { { Currency.USD, 1m } } }
         };
         var signals = new Dictionary<Symbol, SignalType>
         {
@@ -112,9 +112,9 @@ public sealed class CashBufferPositionSizerTests
         strategyMock.Setup(s => s.Assets).Returns(assetCurrencies);
         strategyMock.Setup(s => s.ComputeTotalValue(
             It.IsAny<DateOnly>(),
-            It.IsAny<CurrencyCode>(),
+            It.IsAny<Currency>(),
             It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>>>(),
-            It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>>()))
+            It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Currency, decimal>>>()))
             .Returns(100_000m);
 
         // Act
@@ -135,7 +135,7 @@ public sealed class CashBufferPositionSizerTests
     public void DynamicWeight_WithFivePercentBuffer_ReducesPositionSize()
     {
         // Arrange
-        var sizer = new DynamicWeightPositionSizer(CurrencyCode.USD, cashBufferPercent: 0.05m);
+        var sizer = new DynamicWeightPositionSizer(Currency.USD, cashBufferPercent: 0.05m);
 
         var (strategyMock, marketData, fxRates, signals) = BuildSingleAssetScenario(
             s_aapl, totalValue: 100_000m, price: 100m);
@@ -156,7 +156,7 @@ public sealed class CashBufferPositionSizerTests
         // Act & Assert
         var act = () => new FixedWeightPositionSizer(
             new Dictionary<Symbol, decimal> { { s_aapl, 1m } },
-            CurrencyCode.USD,
+            Currency.USD,
             cashBufferPercent: -0.01m);
 
         act.Should().Throw<ArgumentOutOfRangeException>();
@@ -171,7 +171,7 @@ public sealed class CashBufferPositionSizerTests
         // Act & Assert
         var act = () => new FixedWeightPositionSizer(
             new Dictionary<Symbol, decimal> { { s_aapl, 1m } },
-            CurrencyCode.USD,
+            Currency.USD,
             cashBufferPercent: 1.0m);
 
         act.Should().Throw<ArgumentOutOfRangeException>();
@@ -187,7 +187,7 @@ public sealed class CashBufferPositionSizerTests
         // Arrange
         var sizer = new FixedWeightPositionSizer(
             new Dictionary<Symbol, decimal> { { s_aapl, 1m } },
-            CurrencyCode.USD,
+            Currency.USD,
             cashBufferPercent: 0.99m);
 
         var (strategyMock, marketData, fxRates, signals) = BuildSingleAssetScenario(
@@ -212,18 +212,18 @@ public sealed class CashBufferPositionSizerTests
             AdjustedClose: price,
             Volume: 1_000_000);
 
-    private static (Mock<IStrategy> Strategy, Dictionary<DateOnly, SortedDictionary<Symbol, Bar>> MarketData, Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> FxRates, Dictionary<Symbol, SignalType> Signals) BuildSingleAssetScenario(
+    private static (Mock<IStrategy> Strategy, Dictionary<DateOnly, SortedDictionary<Symbol, Bar>> MarketData, Dictionary<DateOnly, SortedDictionary<Currency, decimal>> FxRates, Dictionary<Symbol, SignalType> Signals) BuildSingleAssetScenario(
         Symbol asset, decimal totalValue, decimal price)
     {
-        var assetCurrencies = new Dictionary<Symbol, CurrencyCode> { { asset, CurrencyCode.USD } };
+        var assetCurrencies = new Dictionary<Symbol, Currency> { { asset, Currency.USD } };
         var md = MakeMarketData(price);
         var marketData = new Dictionary<DateOnly, SortedDictionary<Symbol, Bar>>
         {
             { s_timestamp, new SortedDictionary<Symbol, Bar> { { asset, md } } }
         };
-        var fxRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
+        var fxRates = new Dictionary<DateOnly, SortedDictionary<Currency, decimal>>
         {
-            { s_timestamp, new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
+            { s_timestamp, new SortedDictionary<Currency, decimal> { { Currency.USD, 1m } } }
         };
         var signals = new Dictionary<Symbol, SignalType> { { asset, SignalType.Rebalance } };
 
@@ -231,9 +231,9 @@ public sealed class CashBufferPositionSizerTests
         strategyMock.Setup(s => s.Assets).Returns(assetCurrencies);
         strategyMock.Setup(s => s.ComputeTotalValue(
             It.IsAny<DateOnly>(),
-            It.IsAny<CurrencyCode>(),
+            It.IsAny<Currency>(),
             It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>>>(),
-            It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>>()))
+            It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Currency, decimal>>>()))
             .Returns(totalValue);
 
         return (strategyMock, marketData, fxRates, signals);

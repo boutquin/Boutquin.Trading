@@ -21,9 +21,9 @@ namespace Boutquin.Trading.Domain.Events;
 /// </summary>
 /// <param name="Timestamp">The timestamp of the market event, represented as a DateOnly object.</param>
 /// <param name="HistoricalMarketData">A sorted dictionary containing the historical market data for multiple assets, with asset symbols as keys and Bar records as values.</param>
-/// <param name="HistoricalFxConversionRates">A sorted dictionary containing the historical foreign exchange (FX) conversion rates for multiple currency pairs, with DateOnly as keys and a SortedDictionary of CurrencyCode and decimal pairs as values.</param>
+/// <param name="HistoricalFxConversionRates">The FX rate table for <paramref name="Timestamp"/>, keyed by non-base currency; each value is the number of base-currency units per 1 unit of the keyed currency (the contract documented on <see cref="Helpers.FxConversion"/>).</param>
 public sealed record MarketEvent(
     DateOnly Timestamp,
     SortedDictionary<Symbol, Bar> HistoricalMarketData,
-    SortedDictionary<CurrencyCode, decimal> HistoricalFxConversionRates) : IFinancialEvent;
+    SortedDictionary<Currency, decimal> HistoricalFxConversionRates) : IFinancialEvent;
 

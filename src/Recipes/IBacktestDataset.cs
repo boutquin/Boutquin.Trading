@@ -14,6 +14,7 @@
 //   limitations under the License.
 //
 
+using Boutquin.Domain.Enumerations;
 using Boutquin.MarketData.Abstractions.Records;
 using Boutquin.MarketData.Abstractions.ReferenceData;
 using Boutquin.MarketData.Abstractions.Results;
@@ -33,9 +34,18 @@ public interface IBacktestDataset
     SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>> Prices { get; }
 
     /// <summary>
-    /// Daily FX rates grouped by date and currency pair.
+    /// Daily FX rates grouped by date, then keyed by <em>non-base</em> currency. Each value is the
+    /// number of <b>base-currency units per 1 unit of the keyed currency</b> on that date — for a
+    /// CAD-base dataset, <c>FxRates[d][USD] = 1.30</c> means 1 USD was worth 1.30 CAD on <c>d</c>.
     /// </summary>
-    SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> FxRates { get; }
+    /// <remarks>
+    /// This is the orientation every engine consumer relies on (see
+    /// <see cref="Boutquin.Trading.Domain.Helpers.FxConversion"/>): a foreign amount is multiplied by
+    /// the rate to reach base currency. The base currency is never a key. A date with no entry for a
+    /// currency the backtest needs is an FX-staleness decision made by <c>BackTest.RunAsync</c>, not by
+    /// the dataset.
+    /// </remarks>
+    SortedDictionary<DateOnly, SortedDictionary<Currency, decimal>> FxRates { get; }
 
     /// <summary>
     /// Dividend payments per asset. Empty until adapters support DividendPayment records.

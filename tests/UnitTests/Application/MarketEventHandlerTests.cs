@@ -34,7 +34,7 @@ public sealed class MarketEventHandlerTests
         {
             { asset, new Bar(date, 100m, 105m, 99m, 104m, 104m, 1000) }
         };
-        var fxRates = new SortedDictionary<CurrencyCode, decimal>();
+        var fxRates = new SortedDictionary<Currency, decimal>();
 
         var marketEvent = new MarketEvent(date, marketData, fxRates);
 

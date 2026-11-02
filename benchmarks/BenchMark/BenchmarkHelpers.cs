@@ -89,9 +89,9 @@ internal static class BenchmarkHelpers
         };
 
     internal static Portfolio BuildPortfolio(
-        CurrencyCode baseCurrency,
+        Currency baseCurrency,
         IStrategy strategy,
-        IReadOnlyDictionary<Symbol, CurrencyCode> assetCurrencies,
+        IReadOnlyDictionary<Symbol, Currency> assetCurrencies,
         IReadOnlyDictionary<Type, IEventHandler> handlers,
         IBrokerage broker) =>
         new(baseCurrency,

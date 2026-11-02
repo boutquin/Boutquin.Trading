@@ -51,12 +51,12 @@ public sealed class Continent
     }
 
     /// <summary>
-    /// Gets the code of the continent.
+    /// The code of the continent.
     /// </summary>
     public ContinentCode Code { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the name of the continent.
+    /// The name of the continent.
     /// </summary>
     public string Name { get; private set; } // Setter is for EF
 }

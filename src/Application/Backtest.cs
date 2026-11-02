@@ -39,7 +39,7 @@ public sealed class BackTest
     /// <summary>
     /// The base currency for the backtesting simulation.
     /// </summary>
-    private readonly CurrencyCode _baseCurrency;
+    private readonly Currency _baseCurrency;
 
     private readonly ILogger<BackTest> _logger;
 
@@ -55,7 +55,7 @@ public sealed class BackTest
     /// <summary>
     /// Initializes a new instance of the BackTest class (backward-compatible overload).
     /// </summary>
-    public BackTest(IPortfolio portfolio, IPortfolio benchmarkPortfolio, CurrencyCode baseCurrency)
+    public BackTest(IPortfolio portfolio, IPortfolio benchmarkPortfolio, Currency baseCurrency)
         : this(portfolio, benchmarkPortfolio, baseCurrency, NullLogger<BackTest>.Instance)
     {
     }
@@ -65,10 +65,10 @@ public sealed class BackTest
     /// </summary>
     /// <param name="portfolio">A Portfolio object representing the trading portfolio.</param>
     /// <param name="benchmarkPortfolio">A Portfolio object representing the benchmark portfolio.</param>
-    /// <param name="baseCurrency">A CurrencyCode enum value representing the base currency for the backtest.</param>
+    /// <param name="baseCurrency">A Currency enum value representing the base currency for the backtest.</param>
     /// <param name="logger">A logger for structured logging.</param>
     /// <exception cref="ArgumentNullException">Thrown when any of the provided arguments are null.</exception>
-    public BackTest(IPortfolio portfolio, IPortfolio benchmarkPortfolio, CurrencyCode baseCurrency, ILogger<BackTest> logger)
+    public BackTest(IPortfolio portfolio, IPortfolio benchmarkPortfolio, Currency baseCurrency, ILogger<BackTest> logger)
     {
         _portfolio = portfolio ?? throw new ArgumentNullException(nameof(portfolio), "The provided portfolio cannot be null.");
         _benchmarkPortfolio = benchmarkPortfolio ?? throw new ArgumentNullException(nameof(benchmarkPortfolio), "The provided benchmark portfolio cannot be null.");
@@ -82,11 +82,11 @@ public sealed class BackTest
     /// </summary>
     /// <param name="portfolio">A Portfolio object representing the trading portfolio.</param>
     /// <param name="benchmarkPortfolio">A Portfolio object representing the benchmark portfolio.</param>
-    /// <param name="baseCurrency">A CurrencyCode enum value representing the base currency for the backtest.</param>
+    /// <param name="baseCurrency">A Currency enum value representing the base currency for the backtest.</param>
     /// <param name="logger">A logger for structured logging.</param>
     /// <param name="dailyRiskFreeRate">The daily risk-free rate as a decimal (e.g., 0.05/252 for 5% annualized). Default: 0.</param>
     /// <exception cref="ArgumentNullException">Thrown when any of the provided arguments are null.</exception>
-    public BackTest(IPortfolio portfolio, IPortfolio benchmarkPortfolio, CurrencyCode baseCurrency, ILogger<BackTest> logger, decimal dailyRiskFreeRate)
+    public BackTest(IPortfolio portfolio, IPortfolio benchmarkPortfolio, Currency baseCurrency, ILogger<BackTest> logger, decimal dailyRiskFreeRate)
         : this(portfolio, benchmarkPortfolio, baseCurrency, logger)
     {
         _dailyRiskFreeRate = dailyRiskFreeRate;
@@ -97,11 +97,11 @@ public sealed class BackTest
     /// </summary>
     /// <param name="portfolio">A Portfolio object representing the trading portfolio.</param>
     /// <param name="benchmarkPortfolio">A Portfolio object representing the benchmark portfolio.</param>
-    /// <param name="baseCurrency">A CurrencyCode enum value representing the base currency.</param>
+    /// <param name="baseCurrency">A Currency enum value representing the base currency.</param>
     /// <param name="logger">A logger for structured logging.</param>
     /// <param name="dailyRiskFreeRate">The daily risk-free rate as a decimal.</param>
     /// <param name="drawdownControl">Optional daily drawdown monitor and circuit breaker.</param>
-    public BackTest(IPortfolio portfolio, IPortfolio benchmarkPortfolio, CurrencyCode baseCurrency, ILogger<BackTest> logger, decimal dailyRiskFreeRate, IDrawdownControl? drawdownControl)
+    public BackTest(IPortfolio portfolio, IPortfolio benchmarkPortfolio, Currency baseCurrency, ILogger<BackTest> logger, decimal dailyRiskFreeRate, IDrawdownControl? drawdownControl)
         : this(portfolio, benchmarkPortfolio, baseCurrency, logger, dailyRiskFreeRate)
     {
         _drawdownControl = drawdownControl;
@@ -112,12 +112,12 @@ public sealed class BackTest
     /// </summary>
     /// <param name="portfolio">A Portfolio object representing the trading portfolio.</param>
     /// <param name="benchmarkPortfolio">A Portfolio object representing the benchmark portfolio.</param>
-    /// <param name="baseCurrency">A CurrencyCode enum value representing the base currency.</param>
+    /// <param name="baseCurrency">A Currency enum value representing the base currency.</param>
     /// <param name="logger">A logger for structured logging.</param>
     /// <param name="dailyRiskFreeRate">The daily risk-free rate as a decimal.</param>
     /// <param name="drawdownControl">Optional daily drawdown monitor and circuit breaker.</param>
     /// <param name="tradingCalendar">Optional trading calendar for non-trading-day filtering and market-aware annualization.</param>
-    public BackTest(IPortfolio portfolio, IPortfolio benchmarkPortfolio, CurrencyCode baseCurrency, ILogger<BackTest> logger, decimal dailyRiskFreeRate, IDrawdownControl? drawdownControl, IBusinessCalendar? tradingCalendar)
+    public BackTest(IPortfolio portfolio, IPortfolio benchmarkPortfolio, Currency baseCurrency, ILogger<BackTest> logger, decimal dailyRiskFreeRate, IDrawdownControl? drawdownControl, IBusinessCalendar? tradingCalendar)
         : this(portfolio, benchmarkPortfolio, baseCurrency, logger, dailyRiskFreeRate, drawdownControl)
     {
         _tradingCalendar = tradingCalendar;
@@ -128,14 +128,14 @@ public sealed class BackTest
     /// </summary>
     /// <param name="portfolio">A Portfolio object representing the trading portfolio.</param>
     /// <param name="benchmarkPortfolio">A Portfolio object representing the benchmark portfolio.</param>
-    /// <param name="baseCurrency">A CurrencyCode enum value representing the base currency.</param>
+    /// <param name="baseCurrency">A Currency enum value representing the base currency.</param>
     /// <param name="logger">A logger for structured logging.</param>
     /// <param name="dailyRiskFreeRate">The daily risk-free rate as a decimal.</param>
     /// <param name="drawdownControl">Optional daily drawdown monitor and circuit breaker.</param>
     /// <param name="tradingCalendar">Optional trading calendar for non-trading-day filtering.</param>
     /// <param name="annualExpenseRatioBps">Default annual expense ratio in basis points (e.g., 20 = 0.20%). Applied to assets without a per-asset override.</param>
     /// <param name="assetExpenseRatiosBps">Per-asset annual expense ratios in basis points, keyed by ticker. Overrides the default for specified assets.</param>
-    public BackTest(IPortfolio portfolio, IPortfolio benchmarkPortfolio, CurrencyCode baseCurrency, ILogger<BackTest> logger, decimal dailyRiskFreeRate, IDrawdownControl? drawdownControl, IBusinessCalendar? tradingCalendar, decimal annualExpenseRatioBps, IReadOnlyDictionary<string, decimal>? assetExpenseRatiosBps = null)
+    public BackTest(IPortfolio portfolio, IPortfolio benchmarkPortfolio, Currency baseCurrency, ILogger<BackTest> logger, decimal dailyRiskFreeRate, IDrawdownControl? drawdownControl, IBusinessCalendar? tradingCalendar, decimal annualExpenseRatioBps, IReadOnlyDictionary<string, decimal>? assetExpenseRatiosBps = null)
         : this(portfolio, benchmarkPortfolio, baseCurrency, logger, dailyRiskFreeRate, drawdownControl, tradingCalendar)
     {
         if (annualExpenseRatioBps < 0 || annualExpenseRatioBps > 1000)
@@ -166,7 +166,7 @@ public sealed class BackTest
     /// <summary>
     /// Runs the backtest simulation asynchronously for the specified start and end dates.
     /// This overload is no longer supported because the IMarketDataFetcher interface has been removed.
-    /// Use <see cref="RunAsync(Recipes.IBacktestDataset, CancellationToken, DateOnly?, Func{IPortfolio, CancellationToken, Task}?, bool)"/> instead.
+    /// Use <see cref="RunAsync(Recipes.IBacktestDataset, CancellationToken, DateOnly?, Func{IPortfolio, CancellationToken, Task}?, bool, int)"/> instead.
     /// </summary>
     [Obsolete("Use the RunAsync(IBacktestDataset) overload. The old IMarketDataFetcher-based overload is no longer supported.")]
     public Task<Tearsheet> RunAsync(DateOnly startDate, DateOnly endDate, CancellationToken cancellationToken = default, DateOnly? burnInEndDate = null, Func<IPortfolio, CancellationToken, Task>? afterDayCallback = null)
@@ -186,15 +186,31 @@ public sealed class BackTest
     /// aborts with <see cref="InvalidOperationException"/> if the dataset contains Warning or Error
     /// level data-quality issues (e.g., unexpected date gaps, fetch failures). Set to
     /// <see langword="true"/> to log the issues and proceed anyway.</param>
+    /// <param name="maxFxRateStalenessDays">The oldest FX print, in calendar days before a bar, that
+    /// may stand in for a missing same-day print. The default <c>0</c> accepts no staleness: a bar
+    /// with no FX print for a currency the dataset carries aborts the run. FX sources skip their own
+    /// holidays while exchanges trade (Bank of Canada on Canadian bank holidays, ECB on TARGET
+    /// closing days), so a multi-currency run over such days needs an explicit bound — the worst
+    /// legitimate gap observed for USD/CAD against NYSE is 4 calendar days (Thu 2020-12-24 →
+    /// Mon 2020-12-28). A carried-forward print is logged at Debug. A currency whose FX history
+    /// begins after the first bar that needs it is never back-filled, whatever the bound.</param>
     /// <returns>A Tearsheet with performance metrics.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="maxFxRateStalenessDays"/> is negative.</exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when the dataset carries actionable data-quality issues and
+    /// <paramref name="ignoreDataQualityIssues"/> is <see langword="false"/>, or when a bar has no FX
+    /// print for a dataset currency within <paramref name="maxFxRateStalenessDays"/>.
+    /// </exception>
     public async Task<Tearsheet> RunAsync(
         Recipes.IBacktestDataset dataset,
         CancellationToken cancellationToken = default,
         DateOnly? burnInEndDate = null,
         Func<IPortfolio, CancellationToken, Task>? afterDayCallback = null,
-        bool ignoreDataQualityIssues = false)
+        bool ignoreDataQualityIssues = false,
+        int maxFxRateStalenessDays = 0)
     {
         ArgumentNullException.ThrowIfNull(dataset);
+        ArgumentOutOfRangeException.ThrowIfNegative(maxFxRateStalenessDays);
 
         var startDate = dataset.Prices.Keys.FirstOrDefault();
         var endDate = dataset.Prices.Keys.LastOrDefault();
@@ -251,6 +267,8 @@ public sealed class BackTest
                 $"Set ignoreDataQualityIssues=true to override. Issues: {summary}");
         }
 
+        var fxResolver = new FxRateResolver(dataset.FxRates, maxFxRateStalenessDays, _logger);
+
         // Event loop over pre-materialized data — no fetching
         foreach (var marketData in dataset.Prices)
         {
@@ -262,34 +280,55 @@ public sealed class BackTest
                 continue;
             }
 
+            // Resolve the bar's FX table before anything reads it: pending FX orders fill at
+            // this bar's rate, and every valuation on the bar converts through it.
+            var fxRates = fxResolver.Resolve(marketData.Key);
+
             foreach (var portfolio in new[] { _portfolio, _benchmarkPortfolio })
             {
-                await portfolio.ProcessPendingOrdersAsync(marketData.Key, marketData.Value, cancellationToken).ConfigureAwait(false);
+                await portfolio.ProcessPendingOrdersAsync(marketData.Key, marketData.Value, fxRates, cancellationToken).ConfigureAwait(false);
             }
-
-            var fxRates = dataset.FxRates.TryGetValue(marketData.Key, out var ratesForDate)
-                          ? ratesForDate
-                          : new SortedDictionary<CurrencyCode, decimal>();
 
             var marketEvent = new MarketEvent(marketData.Key, marketData.Value, fxRates);
 
             foreach (var portfolio in new[] { _portfolio, _benchmarkPortfolio })
             {
-                await portfolio.HandleEventAsync(marketEvent, cancellationToken).ConfigureAwait(false);
+                var hasDailyControl = portfolio == _portfolio && _drawdownControl is not null;
+                var markEquity = burnInEndDate is null || marketData.Key > burnInEndDate.Value;
 
-                if (portfolio == _portfolio && (_defaultDailyExpenseRate > 0 || _perAssetDailyExpenseRates.Count > 0))
+                // Evaluate the current marked portfolio before a scheduled allocation can queue
+                // competing orders. Liquidation and cash cooldown dominate strategy signals.
+                // With daily control enabled, expense is charged once before risk and targets;
+                // this can change integer rounding versus targets sized before the fee.
+                // History still advances on suppressed days; the existing strategy scheduler
+                // decides whether a rebalance is due when trading becomes eligible again.
+                if (hasDailyControl)
+                {
+                    portfolio.UpdateHistoricalData(marketEvent);
+                    if (_defaultDailyExpenseRate > 0 || _perAssetDailyExpenseRates.Count > 0)
+                    {
+                        ApplyDailyExpenseDeduction(portfolio, marketData.Key, marketData.Value);
+                    }
+                    if (markEquity)
+                    {
+                        portfolio.UpdateEquityCurve(marketData.Key);
+                    }
+                    await _drawdownControl!.CheckAsync(portfolio, marketData.Key, cancellationToken).ConfigureAwait(false);
+                }
+
+                if (!hasDailyControl || !_drawdownControl!.InCashMode)
+                {
+                    await portfolio.HandleEventAsync(marketEvent, cancellationToken).ConfigureAwait(false);
+                }
+
+                if (!hasDailyControl && portfolio == _portfolio && (_defaultDailyExpenseRate > 0 || _perAssetDailyExpenseRates.Count > 0))
                 {
                     ApplyDailyExpenseDeduction(portfolio, marketData.Key, marketData.Value);
                 }
 
-                if (burnInEndDate is null || marketData.Key > burnInEndDate.Value)
+                if (markEquity)
                 {
                     portfolio.UpdateEquityCurve(marketData.Key);
-                }
-
-                if (portfolio == _portfolio && _drawdownControl is not null)
-                {
-                    await _drawdownControl.CheckAsync(portfolio, marketData.Key, cancellationToken).ConfigureAwait(false);
                 }
 
                 if (portfolio == _portfolio && afterDayCallback is not null)
@@ -483,6 +522,98 @@ public sealed class BackTest
                     strategy.UpdateCash(currency, -cashFee);
                 }
             }
+        }
+    }
+
+    /// <summary>
+    /// Produces one complete FX table per bar from a dataset whose FX prints may skip dates the
+    /// exchange traded. Bars are visited in ascending order, so the resolver keeps a cursor over the
+    /// dataset's FX dates and the most recent print per currency instead of rescanning the map.
+    /// </summary>
+    private sealed class FxRateResolver
+    {
+        private readonly SortedDictionary<DateOnly, SortedDictionary<Currency, decimal>> _fxRates;
+        private readonly int _maxStalenessDays;
+        private readonly ILogger _logger;
+        private readonly IReadOnlyList<Currency> _currencies;
+        private readonly Dictionary<Currency, (DateOnly Date, decimal Rate)> _lastPrint = new();
+        private readonly IEnumerator<KeyValuePair<DateOnly, SortedDictionary<Currency, decimal>>> _cursor;
+        private bool _cursorHasValue;
+
+        public FxRateResolver(
+            SortedDictionary<DateOnly, SortedDictionary<Currency, decimal>> fxRates,
+            int maxStalenessDays,
+            ILogger logger)
+        {
+            _fxRates = fxRates;
+            _maxStalenessDays = maxStalenessDays;
+            _logger = logger;
+            _currencies = fxRates.Values.SelectMany(table => table.Keys).Distinct().Order().ToList();
+            _cursor = fxRates.GetEnumerator();
+            _cursorHasValue = _cursor.MoveNext();
+        }
+
+        /// <summary>
+        /// Returns the FX table for <paramref name="barDate"/>: every currency the dataset carries,
+        /// each at its same-day print or at a print no older than the staleness bound.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown when a currency has no print on <paramref name="barDate"/> and either its history
+        /// has not started yet (never back-filled) or its last print is older than the bound.
+        /// </exception>
+        public SortedDictionary<Currency, decimal> Resolve(DateOnly barDate)
+        {
+            // Advance the cursor through every FX date up to and including the bar, remembering
+            // the latest print per currency. Prints on dates the exchange did not trade still
+            // count as the most recent observation.
+            while (_cursorHasValue && _cursor.Current.Key <= barDate)
+            {
+                foreach (var (currency, rate) in _cursor.Current.Value)
+                {
+                    _lastPrint[currency] = (_cursor.Current.Key, rate);
+                }
+
+                _cursorHasValue = _cursor.MoveNext();
+            }
+
+            if (_fxRates.TryGetValue(barDate, out var exact) && exact.Count == _currencies.Count)
+            {
+                return exact;
+            }
+
+            var resolved = new SortedDictionary<Currency, decimal>();
+            foreach (var currency in _currencies)
+            {
+                if (!_lastPrint.TryGetValue(currency, out var print))
+                {
+                    var firstPrint = _fxRates.First(kvp => kvp.Value.ContainsKey(currency)).Key;
+                    throw new InvalidOperationException(
+                        $"No FX rate for {currency} on {barDate:yyyy-MM-dd}: its FX history begins {firstPrint:yyyy-MM-dd}, " +
+                        "after the first bar that needs it. The engine never back-fills an FX series; start the FX history " +
+                        "at or before the first price bar.");
+                }
+
+                var stalenessDays = barDate.DayNumber - print.Date.DayNumber;
+                if (stalenessDays > _maxStalenessDays)
+                {
+                    throw new InvalidOperationException(
+                        $"No FX rate for {currency} on {barDate:yyyy-MM-dd}: the last print is {print.Date:yyyy-MM-dd}, " +
+                        $"{stalenessDays} calendar day(s) old, above the configured maximum of {_maxStalenessDays} " +
+                        $"(RunAsync maxFxRateStalenessDays). Raise the bound to carry the {print.Date:yyyy-MM-dd} print forward, " +
+                        "or fix the FX series.");
+                }
+
+                if (stalenessDays > 0)
+                {
+                    _logger.LogDebug(
+                        "FX rate for {Currency} on {BarDate} carried forward from {PrintDate} ({StalenessDays} calendar day(s))",
+                        currency, barDate, print.Date, stalenessDays);
+                }
+
+                resolved[currency] = print.Rate;
+            }
+
+            return resolved;
         }
     }
 }

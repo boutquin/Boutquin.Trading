@@ -18,8 +18,11 @@ namespace Boutquin.Trading.Application.PortfolioConstruction;
 
 using Boutquin.Trading.Application.CovarianceEstimators;
 
+using LowerTailDependence = Boutquin.Numerics.Statistics.LowerTailDependence<double>;
+using TailOptions = Boutquin.Numerics.Statistics.TailOptions<double>;
+
 /// <summary>
-/// Return-Tilted Hierarchical Risk Parity (Lohre, Rother, Schafer 2020).
+/// A bespoke return-tilted extension of Hierarchical Risk Parity (HRP, Lopez de Prado 2016).
 /// Extends standard HRP by blending a return signal into the recursive bisection step.
 /// At each split, cluster allocation is:
 ///   alpha_tilted = (1 - kappa) * alpha_risk + kappa * alpha_return
@@ -28,6 +31,16 @@ using Boutquin.Trading.Application.CovarianceEstimators;
 ///
 /// kappa = 0 recovers pure HRP. kappa = 1 allocates purely by returns.
 /// Never inverts the covariance matrix (numerically stable).
+///
+/// <para>
+/// The return-softmax-tilt mechanism is this framework's own. It is <b>not</b> drawn from
+/// Lohre, Rother &amp; Schäfer (2020), "Hierarchical Risk Parity: Accounting for Tail Dependencies
+/// in Multi-asset Multi-factor Allocations" (<i>Machine Learning and Asset Management</i>) — that
+/// paper de-emphasizes return forecasting and instead contributes lower-tail-dependence-coefficient
+/// (LTDC) clustering. That LTDC contribution is available here as an opt-in clustering option
+/// (<see cref="ClusteringMethod.LowerTailDependence"/>); by default this class uses plain
+/// Pearson-correlation distance, as in HRP.
+/// </para>
 /// </summary>
 public sealed class ReturnTiltedHrpConstruction : IPortfolioConstructionModel
 {
@@ -35,6 +48,7 @@ public sealed class ReturnTiltedHrpConstruction : IPortfolioConstructionModel
     private readonly decimal _kappa;
     private readonly decimal _minWeight;
     private readonly decimal _maxWeight;
+    private readonly ClusteringMethod _clusteringMethod;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ReturnTiltedHrpConstruction"/> class.
@@ -43,11 +57,19 @@ public sealed class ReturnTiltedHrpConstruction : IPortfolioConstructionModel
     /// <param name="kappa">Return tilt strength in [0, 1]. 0 = pure HRP, 1 = pure return-based. Default 0.5.</param>
     /// <param name="minWeight">Minimum weight per asset. Default 0 (no floor).</param>
     /// <param name="maxWeight">Maximum weight per asset. Default 1.0 (no cap).</param>
+    /// <param name="clusteringMethod">
+    /// Distance metric for the single-linkage clustering step. Default
+    /// <see cref="ClusteringMethod.PearsonDistance"/> (standard HRP, non-breaking for
+    /// existing callers). <see cref="ClusteringMethod.LowerTailDependence"/> selects
+    /// Lohre, Rother &amp; Schäfer (2020) lower-tail-dependence-coefficient clustering,
+    /// using <c>d(i,j) = 1 - lambda(i,j)</c>.
+    /// </param>
     public ReturnTiltedHrpConstruction(
         ICovarianceEstimator? covarianceEstimator = null,
         decimal kappa = 0.5m,
         decimal minWeight = 0m,
-        decimal maxWeight = 1.0m)
+        decimal maxWeight = 1.0m,
+        ClusteringMethod clusteringMethod = ClusteringMethod.PearsonDistance)
     {
         if (kappa < 0m || kappa > 1m)
         {
@@ -58,6 +80,7 @@ public sealed class ReturnTiltedHrpConstruction : IPortfolioConstructionModel
         _kappa = kappa;
         _minWeight = minWeight;
         _maxWeight = maxWeight;
+        _clusteringMethod = clusteringMethod;
     }
 
     /// <inheritdoc />
@@ -94,9 +117,11 @@ public sealed class ReturnTiltedHrpConstruction : IPortfolioConstructionModel
 
         var cov = _covarianceEstimator.Estimate(returns);
 
-        // Step 1: Compute correlation distance matrix
-        var corr = ComputeCorrelationMatrix(cov, n);
-        var dist = ComputeDistanceMatrix(corr, n);
+        // Step 1: Compute the clustering distance matrix.
+        // Pearson distance (default, standard HRP) or Lohre et al. (2020) LTDC distance.
+        var dist = _clusteringMethod == ClusteringMethod.LowerTailDependence
+            ? ComputeLtdcDistanceMatrix(returns, n)
+            : ComputeDistanceMatrix(ComputeCorrelationMatrix(cov, n), n);
 
         // Step 2: Single-linkage agglomerative clustering -> dendrogram order
         var sortedIndices = ClusterAndReorder(dist, n);
@@ -187,6 +212,47 @@ public sealed class ReturnTiltedHrpConstruction : IPortfolioConstructionModel
                     var d = 0.5m * (1m - corr[i, j]);
                     dist[i, j] = (decimal)Math.Sqrt(Math.Max(0.0, (double)d));
                 }
+            }
+        }
+
+        return dist;
+    }
+
+    /// <summary>
+    /// Builds the Lohre, Rother &amp; Schäfer (2020) lower-tail-dependence-coefficient (LTDC)
+    /// distance matrix: <c>d(i,j) = 1 - lambda(i,j)</c>, where <c>lambda(i,j) ∈ [0, 1]</c> is the
+    /// lower tail dependence coefficient. Assets that crash together (high lambda) are placed close
+    /// together; tail-independent assets (lambda = 0) are placed at the maximum distance of 1.
+    /// Delegates the lambda estimation to
+    /// <c>Boutquin.Numerics.Statistics.LowerTailDependence&lt;double&gt;.EstimateMatrix</c> with
+    /// the GARCH pre-filter disabled.
+    /// </summary>
+    private static decimal[,] ComputeLtdcDistanceMatrix(decimal[][] returns, int n)
+    {
+        // Convert decimal return series to double[][] columns (one series per asset).
+        var columns = new double[n][];
+        for (var i = 0; i < n; i++)
+        {
+            var series = returns[i];
+            var col = new double[series.Length];
+            for (var t = 0; t < series.Length; t++)
+            {
+                col[t] = (double)series[t];
+            }
+
+            columns[i] = col;
+        }
+
+        var lambda = LowerTailDependence.EstimateMatrix(
+            columns,
+            new TailOptions(Quantiles: null, UseGarchFilter: false));
+
+        var dist = new decimal[n, n];
+        for (var i = 0; i < n; i++)
+        {
+            for (var j = 0; j < n; j++)
+            {
+                dist[i, j] = i == j ? 0m : 1m - (decimal)lambda[i, j];
             }
         }
 
@@ -302,10 +368,13 @@ public sealed class ReturnTiltedHrpConstruction : IPortfolioConstructionModel
         decimal alphaLeft;
         if (kappa > 0m)
         {
-            // Use softmax normalization: exp(r_i) / sum(exp(r_j))
-            // Softmax handles negative returns gracefully and always produces valid weights.
-            var expLeft = (decimal)Math.Exp((double)returnLeft);
-            var expRight = (decimal)Math.Exp((double)returnRight);
+            // Use softmax normalization: exp(r_i) / sum(exp(r_j)).
+            // Subtract the max first for numerical stability — unbounded cluster mean
+            // returns (e.g., from short windows with extreme moves) can overflow
+            // Math.Exp and produce PositiveInfinity, giving NaN weights on division.
+            var maxReturn = Math.Max(returnLeft, returnRight);
+            var expLeft = (decimal)Math.Exp((double)(returnLeft - maxReturn));
+            var expRight = (decimal)Math.Exp((double)(returnRight - maxReturn));
             var expSum = expLeft + expRight;
 
             var alphaReturn = expSum > 0m ? expLeft / expSum : 0.5m;

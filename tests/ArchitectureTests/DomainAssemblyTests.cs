@@ -39,6 +39,10 @@ public sealed class DomainAssemblyTests : BaseTest
             .AreClasses()
             .And()
             .AreNotStatic()
+            // CalculationException is the deliberate root of the two-member exception hierarchy
+            // introduced by feature-signal-degeneracy-disposition; every other domain class remains guarded.
+            .And()
+            .DoNotHaveName(nameof(Boutquin.Trading.Domain.Exceptions.CalculationException))
             .Should()
             .BeSealed()
             .GetResult();
@@ -46,6 +50,9 @@ public sealed class DomainAssemblyTests : BaseTest
         // E2 fix: Use IsSuccessful with descriptive because clause instead of opaque BeEmpty
         result.IsSuccessful.Should().BeTrue(
             because: $"the following types failed: [{GetFailingTypes(result)}]");
+
+        typeof(Boutquin.Trading.Domain.Exceptions.DegenerateCrossSectionException).IsSealed
+            .Should().BeTrue("the subtype remains covered by the sealed-domain-class invariant");
     }
 
     /// <summary>

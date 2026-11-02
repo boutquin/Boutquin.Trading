@@ -1,0 +1,42 @@
+{
+  "variance_of_trial_sharpes_annualized": 0.5,
+  "num_observations": 1250,
+  "annualized_sharpe": 2.5,
+  "skewness": -3.0,
+  "full_kurtosis": 10.0,
+  "trading_days_per_year": 250,
+  "series": [
+    {
+      "num_trials": 2,
+      "dsr": 0.9999415904584089
+    },
+    {
+      "num_trials": 5,
+      "dsr": 0.9986194054894644
+    },
+    {
+      "num_trials": 10,
+      "dsr": 0.9938796415275427
+    },
+    {
+      "num_trials": 50,
+      "dsr": 0.9461577366695041
+    },
+    {
+      "num_trials": 100,
+      "dsr": 0.9003968344495117
+    },
+    {
+      "num_trials": 500,
+      "dsr": 0.7313986647886872
+    },
+    {
+      "num_trials": 1000,
+      "dsr": 0.6399149553988226
+    },
+    {
+      "num_trials": 5000,
+      "dsr": 0.4229318723095838
+    }
+  ]
+}

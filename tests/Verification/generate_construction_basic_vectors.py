@@ -5,8 +5,8 @@ Generate cross-language verification vectors for basic portfolio construction mo
 Phase 2 of the verification roadmap.
 Models: EqualWeight, InverseVolatility, MinimumVariance, MeanVariance, RiskParity, MaximumDiversification.
 
-All Python reference implementations replicate the EXACT C# algorithms
-(per Phase 1 learning: own-formula > library matching).
+Most references replicate the C# algorithms. RiskParity instead uses an independent
+80-digit simultaneous Newton oracle so an iteration defect cannot be shared.
 
 CORRECTNESS VALIDATION (three layers):
   1. Library cross-references — compare our own-formula output against pypfopt (OSQP solver)
@@ -218,39 +218,14 @@ def inverse_volatility(returns: np.ndarray) -> np.ndarray:
     return inv_vols / inv_vols.sum()
 
 
-def risk_parity(cov: np.ndarray, min_weight=0.0, max_weight=1.0,
-                max_iterations=100, tolerance=1e-10) -> np.ndarray:
-    """Iterative inverse-MRC algorithm — matches C# RiskParityConstruction."""
-    n = cov.shape[0]
-    w = np.full(n, 1.0 / n)
-
-    effective_max = max(max_weight, 1.0 / n)
-    effective_min = min(min_weight, 1.0 / n)
-
-    for _ in range(max_iterations):
-        mrc = cov @ w
-        if np.any(mrc <= 0):
-            raise ValueError("Risk parity undefined for MRC <= 0")
-
-        new_w = 1.0 / mrc
-        new_w /= new_w.sum()
-
-        for _ in range(50):
-            new_w = np.clip(new_w, effective_min, effective_max)
-            clamp_sum = new_w.sum()
-            if clamp_sum <= 0:
-                break
-            new_w /= clamp_sum
-            if (np.all(new_w >= effective_min - 1e-14) and
-                    np.all(new_w <= effective_max + 1e-14)):
-                break
-
-        max_diff = np.max(np.abs(new_w - w))
-        w = new_w
-        if max_diff < tolerance:
-            break
-
-    return w
+def risk_parity(cov: np.ndarray, min_weight=0.0, max_weight=1.0) -> np.ndarray:
+    """Independent 80-digit simultaneous Newton oracle, not the C# CCD algorithm."""
+    import mpmath as mp
+    from generate_risk_parity_oracles import erc, bounded
+    matrix = [[mp.mpf(str(value)) for value in row] for row in cov]
+    weights = (erc(matrix) if min_weight == 0 and max_weight == 1
+               else bounded(matrix, min_weight, max_weight))
+    return np.array([float(value) for value in weights])
 
 
 def maximum_diversification(returns: np.ndarray, cov: np.ndarray,
@@ -528,7 +503,7 @@ def gen_risk_parity():
                 "risk_contributions": risk_contrib_5,
             },
         },
-        "notes": "RiskParity: iterative inverse-MRC. Verify w_i * MRC_i ~ constant.",
+        "notes": "RiskParity: independent 80-digit simultaneous Newton. Verify normalized risk contributions.",
     })
 
 

@@ -57,6 +57,7 @@ public sealed class MaxSectorExposureRuleTests
         var strategies = new Dictionary<string, IStrategy> { ["Test"] = strategyMock.Object };
         var portfolio = new Mock<IPortfolio>();
         portfolio.Setup(p => p.EquityCurve).Returns(equityCurve);
+        portfolio.Setup(p => p.CalculateTotalPortfolioValue(new DateOnly(2026, 1, 1))).Returns(100_000m);
         portfolio.Setup(p => p.HistoricalMarketData).Returns(marketData);
         portfolio.Setup(p => p.Strategies)
             .Returns((IReadOnlyDictionary<string, IStrategy>)strategies);
@@ -78,10 +79,10 @@ public sealed class MaxSectorExposureRuleTests
     }
 
     /// <summary>
-    /// Empty equity curve at startup is allowed (no data to evaluate).
+    /// Missing current valuation must fail closed even when reporting equity is empty.
     /// </summary>
     [Fact]
-    public void Evaluate_ShouldAllow_WhenNoEquityCurve()
+    public void Evaluate_ShouldFailClosed_WhenNoValuation()
     {
         var assetClassMap = new Dictionary<Symbol, AssetClassCode> { [s_vti] = AssetClassCode.Equities };
         var portfolio = new Mock<IPortfolio>();
@@ -96,8 +97,8 @@ public sealed class MaxSectorExposureRuleTests
             OrderType: OrderType.Market,
             Quantity: 100);
 
-        rule.Evaluate(order, portfolio.Object).IsAllowed.Should().BeTrue(
-            "empty equity curve at startup means rule cannot evaluate — allow");
+        Action act = () => rule.Evaluate(order, portfolio.Object);
+        act.Should().Throw<InvalidOperationException>().WithMessage("*Risk NAV*");
     }
 
     /// <summary>
@@ -117,6 +118,7 @@ public sealed class MaxSectorExposureRuleTests
 
         var portfolio = new Mock<IPortfolio>();
         portfolio.Setup(p => p.EquityCurve).Returns(equityCurve);
+        portfolio.Setup(p => p.CalculateTotalPortfolioValue(new DateOnly(2026, 1, 1))).Returns(100_000m);
         portfolio.Setup(p => p.HistoricalMarketData).Returns(marketData);
 
         var rule = new MaxSectorExposureRule(0.40m, assetClassMap);
@@ -170,6 +172,7 @@ public sealed class MaxSectorExposureRuleTests
         var strategies = new Dictionary<string, IStrategy> { ["Test"] = strategyMock.Object };
         var portfolio = new Mock<IPortfolio>();
         portfolio.Setup(p => p.EquityCurve).Returns(equityCurve);
+        portfolio.Setup(p => p.CalculateTotalPortfolioValue(new DateOnly(2026, 1, 1))).Returns(100_000m);
         portfolio.Setup(p => p.HistoricalMarketData).Returns(marketData);
         portfolio.Setup(p => p.Strategies)
             .Returns((IReadOnlyDictionary<string, IStrategy>)strategies);
@@ -232,6 +235,7 @@ public sealed class MaxSectorExposureRuleTests
         var strategies = new Dictionary<string, IStrategy> { ["Test"] = strategyMock.Object };
         var portfolio = new Mock<IPortfolio>();
         portfolio.Setup(p => p.EquityCurve).Returns(equityCurve);
+        portfolio.Setup(p => p.CalculateTotalPortfolioValue(new DateOnly(2026, 1, 1))).Returns(100_000m);
         portfolio.Setup(p => p.HistoricalMarketData).Returns(marketData);
         portfolio.Setup(p => p.Strategies)
             .Returns((IReadOnlyDictionary<string, IStrategy>)strategies);

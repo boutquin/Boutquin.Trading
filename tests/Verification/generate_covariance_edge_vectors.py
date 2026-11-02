@@ -5,12 +5,11 @@ Generate covariance estimator edge-case vectors for Boutquin.Trading.
 Provides reference vectors for:
   - SampleCovarianceEstimator (1-asset, 2-asset, correlated)
   - ExponentiallyWeightedCovarianceEstimator (lambda variants, T=3)
-  - LedoitWolfShrinkageEstimator (own formula — NOT sklearn, matches C# exactly)
+  - LedoitWolfShrinkageEstimator (JMVA 2004 Eq.14, independent sklearn oracle)
   - DenoisedCovarianceEstimator (Marcenko-Pastur denoising)
 
-The Ledoit-Wolf implementation here replicates the EXACT C# formula
-(Ledoit & Wolf 2004 with rho correction for scaled identity target),
-which differs slightly from sklearn's implementation.
+Ledoit-Wolf uses sklearn on its 1/T moment scale, then converts the covariance
+to the documented T-1 scale. The historical rho-subtracted identity variant is not used.
 """
 
 import json
@@ -51,12 +50,20 @@ def sample_cov(returns: np.ndarray) -> np.ndarray:
 
 
 def ewma_cov(returns: np.ndarray, lam: float) -> np.ndarray:
-    """EWMA covariance matching C# ExponentiallyWeightedCovarianceEstimator."""
+    """EWMA covariance matching C# ExponentiallyWeightedCovarianceEstimator.
+
+    Centering uses the EWMA-weighted mean (mu_i = sum_k w_k * r_{k,i}), not the
+    arithmetic mean, matching Boutquin.Numerics v2.0.0. Deviations are centered on
+    the same decay-weighted expectation that drives the covariance, removing the
+    systematic bias that arises when trending assets are centered on their
+    arithmetic mean. At lambda -> 1 the weighted mean converges to the arithmetic
+    mean, so EWMA still approaches the sample covariance.
+    """
     n, t = returns.shape
-    means = returns.mean(axis=1)
-    demeaned = returns - means[:, np.newaxis]
     weights = np.array([lam ** (t - 1 - k) for k in range(t)])
     weights /= weights.sum()
+    means = (returns * weights).sum(axis=1)
+    demeaned = returns - means[:, np.newaxis]
     cov = np.zeros((n, n))
     for i in range(n):
         for j in range(i, n):
@@ -67,61 +74,14 @@ def ewma_cov(returns: np.ndarray, lam: float) -> np.ndarray:
 
 
 def ledoit_wolf_cov(returns: np.ndarray) -> tuple[np.ndarray, float]:
-    """Ledoit-Wolf 2004 shrinkage matching C# LedoitWolfShrinkageEstimator exactly.
+    """JMVA 2004 Eq.14 identity shrinkage, reported on the Bessel scale.
 
-    returns shape: (n_assets, T)
-    Returns: (shrunk_cov, delta)
+    sklearn computes the independent 1/T estimator; T/(T-1) changes only
+    the returned scale, not the shrinkage intensity.
     """
-    n, t = returns.shape
-
-    # Step 1: Sample covariance
-    s = np.cov(returns, ddof=1)
-    # Ensure 2D for single asset
-    if s.ndim == 0:
-        s = np.array([[float(s)]])
-
-    # Step 2: Target = mu * I
-    mu = np.trace(s) / n
-
-    # Step 3: Optimal shrinkage intensity
-    means = returns.mean(axis=1)
-
-    # gamma: sum of squared Frobenius norms of (S - F)
-    target = mu * np.eye(n)
-    diff = s - target
-    gamma = np.sum(diff ** 2)
-
-    # piSum: sum of asymptotic variances
-    pi_sum = 0.0
-    for i in range(n):
-        for j in range(n):
-            total = 0.0
-            for k in range(t):
-                x = (returns[i, k] - means[i]) * (returns[j, k] - means[j]) - s[i, j]
-                total += x * x
-            pi_sum += total / t
-
-    # rhoSum: diagonal-only pi terms (for scaled identity target)
-    rho_sum = 0.0
-    for i in range(n):
-        total = 0.0
-        for k in range(t):
-            zki = returns[i, k] - means[i]
-            term = zki * zki - s[i, i]
-            total += term * term
-        rho_sum += total / t
-
-    # delta
-    if gamma == 0:
-        delta = 1.0
-    else:
-        delta = (pi_sum - rho_sum) / (t * gamma)
-    delta = max(0.0, min(1.0, delta))
-
-    # Step 4: Shrunk covariance
-    shrunk = delta * target + (1.0 - delta) * s
-
-    return shrunk, delta
+    _, t = returns.shape
+    fitted = LedoitWolf().fit(returns.T)
+    return fitted.covariance_ * t / (t - 1), float(fitted.shrinkage_)
 
 
 def denoised_cov(returns: np.ndarray, apply_lw: bool = False) -> np.ndarray:
@@ -334,7 +294,7 @@ def gen_denoised_vectors():
 
 
 def gen_ledoit_wolf_own_formula():
-    """Ledoit-Wolf using our exact formula (not sklearn) for the main 3-asset data.
+    """Independent JMVA identity-target reference for the main 3-asset data.
 
     This replaces the sklearn-based vector in covariance.json for LW verification.
     """
@@ -356,9 +316,9 @@ def gen_ledoit_wolf_own_formula():
         "reference": {
             "sklearn_covariance": lw_sklearn.covariance_,
             "sklearn_shrinkage": sklearn_delta,
-            "note": "sklearn uses a different formula variant. Our C# matches ledoit_wolf_covariance, not sklearn.",
+            "note": "sklearn uses the same JMVA intensity on 1/T scale; multiply covariance by T/(T-1).",
         },
-        "notes": "Same 3-asset, 252-obs data as main vectors. Uses exact C# formula, not sklearn.",
+        "notes": "Same 3-asset, 252-obs data as main vectors. Independent sklearn JMVA oracle, Bessel output scale.",
     })
 
 
@@ -369,7 +329,7 @@ def gen_ledoit_wolf_own_formula():
 # ═══════════════════════════════════════════════════════════════════════════
 # Correctness cross-checks (three layers)
 #
-# Layer 1: Library cross-references — compare our own-formula covariance
+# Layer 1: Library cross-references — compare covariance conventions
 #          estimators against sklearn, numpy for independent verification.
 # Layer 2: Analytical solutions — identity cov, diagonal cov, known
 #          shrinkage behavior for special cases.
@@ -438,14 +398,14 @@ def run_cross_checks():
     _hard(diff_099 < 0.1 * np.max(np.abs(our_scov)),
           f"EWMA(lambda=0.999) ~ sample cov (max_diff={diff_099:.6f})")
 
-    # Ledoit-Wolf: our formula vs sklearn (QUALITY — known to differ)
+    # Ledoit-Wolf: explicit Bessel scaling of the sklearn moment estimator.
     our_lw, our_delta = ledoit_wolf_cov(returns_3)
     lw_sklearn = LedoitWolf().fit(returns_3.T)
     sklearn_cov = lw_sklearn.covariance_
     sklearn_delta = lw_sklearn.shrinkage_
-    diff_lw = np.max(np.abs(our_lw - sklearn_cov))
-    _quality(diff_lw < 1e-4,
-             f"LW own-formula vs sklearn (max_diff={diff_lw:.6f}, "
+    diff_lw = np.max(np.abs(our_lw - sklearn_cov * returns_3.shape[1] / (returns_3.shape[1] - 1)))
+    _hard(diff_lw < 1e-15,
+             f"LW Bessel-scale sklearn (max_diff={diff_lw:.6f}, "
              f"delta_ours={our_delta:.6f}, delta_sklearn={sklearn_delta:.6f})")
 
     # Denoised: verify eigenvalue cleaning preserves trace approximately
@@ -599,7 +559,7 @@ def main():
     print("Denoised covariance:")
     gen_denoised_vectors()
 
-    print("Ledoit-Wolf own formula (3-asset main data):")
+    print("Ledoit-Wolf JMVA reference (3-asset main data):")
     gen_ledoit_wolf_own_formula()
 
     print()

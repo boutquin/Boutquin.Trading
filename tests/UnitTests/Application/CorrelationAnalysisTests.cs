@@ -142,4 +142,28 @@ public sealed class CorrelationAnalysisTests
             corr.Should().BeLessThanOrEqualTo(1.0m);
         }
     }
+
+    // --- F-L5-04: RollingCorrelation rejects null input (parity with sibling Analyze), not a silent empty result ---
+
+    [Fact]
+    public void RollingCorrelation_NullReturnsA_ShouldThrowArgumentNullException()
+    {
+        var returnsB = new[] { 0.005m, 0.01m, -0.005m, 0.015m, -0.01m };
+
+        var act = () => CorrelationAnalyzer.RollingCorrelation(null!, returnsB, windowSize: 3);
+
+        act.Should().Throw<ArgumentNullException>()
+            .WithParameterName("returnsA");
+    }
+
+    [Fact]
+    public void RollingCorrelation_NullReturnsB_ShouldThrowArgumentNullException()
+    {
+        var returnsA = new[] { 0.005m, 0.01m, -0.005m, 0.015m, -0.01m };
+
+        var act = () => CorrelationAnalyzer.RollingCorrelation(returnsA, null!, windowSize: 3);
+
+        act.Should().Throw<ArgumentNullException>()
+            .WithParameterName("returnsB");
+    }
 }

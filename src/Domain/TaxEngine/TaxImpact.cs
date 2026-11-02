@@ -19,9 +19,19 @@ namespace Boutquin.Trading.Domain.TaxEngine;
 /// <summary>
 /// Computed tax impact of capital gains disposals within a tax year.
 /// </summary>
+/// <param name="GrossGainLoss">The gross realized gain/loss, as currency-tagged <see cref="Money"/>.</param>
+/// <param name="TaxableAmount">The taxable portion of the gain, as currency-tagged <see cref="Money"/>.</param>
+/// <param name="EstimatedTax">The estimated tax owed, as currency-tagged <see cref="Money"/>.</param>
+/// <param name="ShortTermGainLoss">The short-term component of the gain/loss, as currency-tagged <see cref="Money"/>.</param>
+/// <param name="LongTermGainLoss">The long-term component of the gain/loss, as currency-tagged <see cref="Money"/>.</param>
+/// <remarks>
+/// All amount fields are currency-tagged <see cref="Money"/>; combining them with amounts of a
+/// different currency uses <see cref="Money"/> arithmetic, which throws
+/// <see cref="Boutquin.Domain.Exceptions.CurrencyMismatchException"/> at the caller.
+/// </remarks>
 public sealed record TaxImpact(
-    decimal GrossGainLoss,
-    decimal TaxableAmount,
-    decimal EstimatedTax,
-    decimal ShortTermGainLoss,
-    decimal LongTermGainLoss);
+    Money GrossGainLoss,
+    Money TaxableAmount,
+    Money EstimatedTax,
+    Money ShortTermGainLoss,
+    Money LongTermGainLoss);

@@ -31,13 +31,13 @@ public sealed class FxRate
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when <paramref name="rate"/> is less than or equal to 0, or 
     /// when <paramref name="baseCurrencyCode"/> or <paramref name="quoteCurrencyCode"/> 
-    /// are not defined in the <see cref="CurrencyCode"/> enumeration or
+    /// are not defined in the <see cref="Boutquin.Domain.Enumerations.Currency"/> enumeration or
     /// when <paramref name="rate"/> is non-positive.
     /// </exception>
     public FxRate(
         DateOnly rateDate,
-        CurrencyCode baseCurrencyCode,
-        CurrencyCode quoteCurrencyCode,
+        DomainCurrency baseCurrencyCode,
+        DomainCurrency quoteCurrencyCode,
         decimal rate
         )
     {
@@ -46,7 +46,9 @@ public sealed class FxRate
         Guard.AgainstUndefinedEnumValue(() => quoteCurrencyCode); // Throws ArgumentOutOfRangeException
         Guard.AgainstNegativeOrZero(() => rate); // Throws ArgumentOutOfRangeException
 
-        _id = -1;
+        // Assign the CLR default (0) so EF Core's on-add value generation assigns the
+        // database-generated key (a non-default sentinel would suppress generation).
+        _id = 0;
         RateDate = rateDate;
         BaseCurrencyCode = baseCurrencyCode;
         QuoteCurrencyCode = quoteCurrencyCode;
@@ -59,22 +61,22 @@ public sealed class FxRate
     private readonly int _id; // Private key for EF
 
     /// <summary>
-    /// Gets the rate date.
+    /// The rate date.
     /// </summary>
     public DateOnly RateDate { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the base ISO 4217 currency code.
+    /// The base ISO 4217 currency code.
     /// </summary>
-    public CurrencyCode BaseCurrencyCode { get; private set; } // Setter is for EF
+    public DomainCurrency BaseCurrencyCode { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the quote ISO 4217 currency code.
+    /// The quote ISO 4217 currency code.
     /// </summary>
-    public CurrencyCode QuoteCurrencyCode { get; private set; } // Setter is for EF
+    public DomainCurrency QuoteCurrencyCode { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the exchange rate value.
+    /// The exchange rate value.
     /// </summary>
     public decimal Rate { get; private set; } // Setter is for EF
 

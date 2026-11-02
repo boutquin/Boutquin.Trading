@@ -44,4 +44,42 @@ public sealed record FillEvent(
     TradeAction TradeAction,
     decimal FillPrice,
     int Quantity,
-    decimal Commission) : IFinancialEvent;
+    decimal Commission) : IFinancialEvent
+{
+    /// <summary>
+    /// Projects <see cref="FillPrice"/> as a currency-tagged <see cref="Money"/> for reporting.
+    /// </summary>
+    /// <param name="currency">
+    /// The currency in which the fill executed (the paying asset's native currency). The caller
+    /// supplies it because <see cref="FillEvent"/> stays <see cref="decimal"/>-backed — it is
+    /// produced inside the fill pipeline adjacent to the per-bar hot loop, which remains
+    /// <see cref="decimal"/>. Only this reporting projection is <see cref="Money"/>.
+    /// </param>
+    /// <returns>
+    /// A <see cref="Money"/> whose <see cref="Money.Amount"/> equals <see cref="FillPrice"/> and
+    /// whose <see cref="Money.Currency"/> is <paramref name="currency"/>.
+    /// </returns>
+    /// <remarks>
+    /// <para>
+    /// This is a pure boundary projection: it allocates a value-type <see cref="Money"/> and never
+    /// mutates the <see cref="FillEvent"/>. It exists so that fill prices can flow into
+    /// currency-safe <see cref="Money"/> aggregation (reports, ledgers) without the underlying
+    /// event ever carrying <see cref="Money"/> through the hot path.
+    /// </para>
+    /// </remarks>
+    public Money FillPriceAsMoney(Currency currency) => new(FillPrice, currency);
+
+    /// <summary>
+    /// Projects <see cref="Commission"/> as a currency-tagged <see cref="Money"/> for reporting.
+    /// </summary>
+    /// <param name="currency">
+    /// The currency in which the commission was charged. Supplied by the caller for the same
+    /// reason as <see cref="FillPriceAsMoney"/>: the field stays <see cref="decimal"/>-backed and
+    /// only the reporting projection is <see cref="Money"/>.
+    /// </param>
+    /// <returns>
+    /// A <see cref="Money"/> whose <see cref="Money.Amount"/> equals <see cref="Commission"/> and
+    /// whose <see cref="Money.Currency"/> is <paramref name="currency"/>.
+    /// </returns>
+    public Money CommissionAsMoney(Currency currency) => new(Commission, currency);
+}

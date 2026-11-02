@@ -169,6 +169,17 @@ public sealed class PcaConstrainedConstructionTests
             .WithMessage("*not compatible with hierarchical models*");
     }
 
+    [Fact]
+    public void Constructor_WrappingHERC_ThrowsArgumentException()
+    {
+        var herc = new HierarchicalEqualRiskContributionConstruction();
+
+        var act = () => new PcaConstrainedConstruction(herc);
+
+        act.Should().Throw<ArgumentException>()
+            .WithMessage("*not compatible with hierarchical models*");
+    }
+
     #endregion
 
     #region Edge cases

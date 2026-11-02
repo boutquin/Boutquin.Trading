@@ -1,0 +1,52 @@
+{
+  "cases": [
+    {
+      "observed_sharpe": 0.15811388300841897,
+      "benchmark_sharpe": 0.15811388300841897,
+      "num_observations": 1250,
+      "skewness": 0.0,
+      "full_kurtosis": 3.0,
+      "psr": 0.5
+    },
+    {
+      "observed_sharpe": 0.15811388300841897,
+      "benchmark_sharpe": 0.05,
+      "num_observations": 1250,
+      "skewness": -0.5,
+      "full_kurtosis": 4.0,
+      "psr": 0.9998671836601788
+    },
+    {
+      "observed_sharpe": 0.15811388300841897,
+      "benchmark_sharpe": 0.1,
+      "num_observations": 1250,
+      "skewness": -0.5,
+      "full_kurtosis": 4.0,
+      "psr": 0.9750131955931642
+    },
+    {
+      "observed_sharpe": 0.15811388300841897,
+      "benchmark_sharpe": 0.14,
+      "num_observations": 1250,
+      "skewness": -0.5,
+      "full_kurtosis": 4.0,
+      "psr": 0.7293948921793465
+    },
+    {
+      "observed_sharpe": 0.15811388300841897,
+      "benchmark_sharpe": 0.17,
+      "num_observations": 1250,
+      "skewness": -0.5,
+      "full_kurtosis": 4.0,
+      "psr": 0.34423933830396014
+    },
+    {
+      "observed_sharpe": 0.15811388300841897,
+      "benchmark_sharpe": 0.2,
+      "num_observations": 1250,
+      "skewness": -0.5,
+      "full_kurtosis": 4.0,
+      "psr": 0.07885361041068911
+    }
+  ]
+}

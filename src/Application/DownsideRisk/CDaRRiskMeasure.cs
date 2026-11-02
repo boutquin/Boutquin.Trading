@@ -118,14 +118,50 @@ public sealed class CDaRRiskMeasure : IDownsideRiskMeasure
             drawdown[s] = cumReturn[s] - peak[s];
         }
 
-        // --- Step 3: Set ζ analytically to the empirical drawdown VaR ---
-        // Sort drawdowns ascending (most negative first).
-        // ζ = -drawdown at the (1-α) quantile boundary.
+        // --- Step 3: Set ζ to the R-U minimizer over the candidate order statistics ---
+        // CDaR_α = min_ζ { ζ + 1/(T(1−α)) × Σ max(−dd_t − ζ, 0) }. As with CVaR, the
+        // objective is convex and piecewise-linear in ζ with kinks at ζ = −dd_t, so its
+        // minimum is attained at one of the sorted-drawdown order statistics.
+        //
+        // In the integer-tail regime T·(1−α) ≥ 1 the empirical-drawdown-quantile ζ at
+        // index min(tailCount, t−1) is PROVABLY the R-U minimizer, so we assign it
+        // directly — an O(T log T) fast path (sort only), avoiding the O(T²) candidate
+        // scan. Only in the T·(1−α) < 1 small-T regime — where tailFactor = 1/(T(1−α)) > 1
+        // over-weights the worst drawdown exceedance so the empirical quantile sits off
+        // the minimizer — do we run the full min-over-ζ scan and pick the true minimizing
+        // order statistic, restoring the correct CDaR (the worst single drawdown). Both
+        // regimes keep integer-tail values and active sets byte-identical to the prior path.
         var sortedDd = new decimal[t];
         Array.Copy(drawdown, sortedDd, t);
         Array.Sort(sortedDd); // ascending: most negative first
 
-        _zeta = -sortedDd[Math.Min(tailCount, t - 1)];
+        var quantileZeta = -sortedDd[Math.Min(tailCount, t - 1)];
+        if (t * (1m - _confidenceLevel) >= 1m)
+        {
+            _zeta = quantileZeta;
+        }
+        else
+        {
+            var minObjective = decimal.MaxValue;
+            for (var k = 0; k < t; k++)
+            {
+                var objective = RuObjective(-sortedDd[k], drawdown, tailFactor);
+                if (objective < minObjective)
+                {
+                    minObjective = objective;
+                }
+            }
+
+            _zeta = quantileZeta;
+            for (var k = t - 1; k >= 0; k--)
+            {
+                if (RuObjective(-sortedDd[k], drawdown, tailFactor) <= minObjective)
+                {
+                    _zeta = -sortedDd[k];
+                    break;
+                }
+            }
+        }
 
         // --- Step 4: Compute CDaR value and weight gradients ---
         var cdarSum = 0m;
@@ -159,5 +195,24 @@ public sealed class CDaRRiskMeasure : IDownsideRiskMeasure
         var cdar = _zeta + tailFactor * cdarSum;
 
         return (cdar, gradW);
+    }
+
+    /// <summary>
+    /// Evaluates the Rockafellar-Uryasev objective on the drawdown series
+    /// <c>ζ + tailFactor × Σ_t max(−dd_t − ζ, 0)</c> at a candidate ζ.
+    /// </summary>
+    private static decimal RuObjective(decimal zeta, decimal[] drawdown, decimal tailFactor)
+    {
+        var exceedanceSum = 0m;
+        for (var s = 0; s < drawdown.Length; s++)
+        {
+            var exceedance = -drawdown[s] - zeta;
+            if (exceedance > 0m)
+            {
+                exceedanceSum += exceedance;
+            }
+        }
+
+        return zeta + tailFactor * exceedanceSum;
     }
 }

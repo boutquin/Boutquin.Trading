@@ -48,7 +48,7 @@ public sealed class BurnInPeriodTests
         var backtest = new BackTest(
             portfolioMock.Object,
             benchmarkMock.Object,
-            CurrencyCode.USD);
+            Currency.USD);
 
         // Act
         await backtest.RunAsync(dataset);
@@ -73,7 +73,7 @@ public sealed class BurnInPeriodTests
         var backtest = new BackTest(
             portfolioMock.Object,
             benchmarkMock.Object,
-            CurrencyCode.USD);
+            Currency.USD);
 
         // Act
         await backtest.RunAsync(dataset, burnInEndDate: burnInEndDate);
@@ -114,7 +114,7 @@ public sealed class BurnInPeriodTests
         var backtest = new BackTest(
             portfolioMock.Object,
             benchmarkMock.Object,
-            CurrencyCode.USD);
+            Currency.USD);
 
         // Act
         await backtest.RunAsync(dataset, burnInEndDate: burnInEndDate);
@@ -124,10 +124,12 @@ public sealed class BurnInPeriodTests
             p => p.HandleEventAsync(It.IsAny<IFinancialEvent>(), It.IsAny<CancellationToken>()),
             Times.Exactly(s_tradingDays.Length));
 
+        // The engine calls the FX-aware overload so pending conversions can fill at the bar's rate.
         portfolioMock.Verify(
             p => p.ProcessPendingOrdersAsync(
                 It.IsAny<DateOnly>(),
                 It.IsAny<SortedDictionary<Symbol, Bar>>(),
+                It.IsAny<SortedDictionary<Currency, decimal>>(),
                 It.IsAny<CancellationToken>()),
             Times.Exactly(s_tradingDays.Length));
     }
@@ -143,7 +145,7 @@ public sealed class BurnInPeriodTests
         var backtest = new BackTest(
             portfolioMock.Object,
             benchmarkMock.Object,
-            CurrencyCode.USD);
+            Currency.USD);
 
         var burnInEndDate = new DateOnly(2024, 1, 1); // Before startDate
 
@@ -163,7 +165,7 @@ public sealed class BurnInPeriodTests
         var backtest = new BackTest(
             portfolioMock.Object,
             benchmarkMock.Object,
-            CurrencyCode.USD);
+            Currency.USD);
 
         var burnInEndDate = new DateOnly(2024, 1, 16); // After endDate
 
@@ -183,7 +185,7 @@ public sealed class BurnInPeriodTests
         var backtest = new BackTest(
             portfolioMock.Object,
             benchmarkMock.Object,
-            CurrencyCode.USD);
+            Currency.USD);
 
         var burnInEndDate = s_startDate; // Equal to startDate
 
@@ -207,7 +209,7 @@ public sealed class BurnInPeriodTests
     {
         var mock = new Mock<IPortfolio>();
 
-        var assetCurrencies = new Dictionary<Symbol, CurrencyCode> { { s_spy, CurrencyCode.USD } };
+        var assetCurrencies = new Dictionary<Symbol, Currency> { { s_spy, Currency.USD } };
 
         // Strategy mock with SPY asset
         var strategyMock = new Mock<IStrategy>();
@@ -215,7 +217,7 @@ public sealed class BurnInPeriodTests
 
         var strategies = new Dictionary<string, IStrategy> { { "Test", strategyMock.Object } };
         mock.Setup(p => p.Strategies).Returns(strategies);
-        mock.Setup(p => p.BaseCurrency).Returns(CurrencyCode.USD);
+        mock.Setup(p => p.BaseCurrency).Returns(Currency.USD);
 
         // Equity curve — populated during UpdateEquityCurve calls
         var equityCurve = new SortedDictionary<DateOnly, decimal>();
@@ -238,10 +240,11 @@ public sealed class BurnInPeriodTests
         mock.Setup(p => p.HandleEventAsync(It.IsAny<IFinancialEvent>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        // ProcessPendingOrdersAsync returns completed task
+        // ProcessPendingOrdersAsync (FX-aware overload) returns completed task
         mock.Setup(p => p.ProcessPendingOrdersAsync(
                 It.IsAny<DateOnly>(),
                 It.IsAny<SortedDictionary<Symbol, Bar>>(),
+                It.IsAny<SortedDictionary<Currency, decimal>>(),
                 It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 

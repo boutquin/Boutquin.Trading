@@ -34,3 +34,4 @@ global using Boutquin.Trading.Domain.Interfaces;
 global using Boutquin.Trading.Domain.ValueObjects;
 global using Boutquin.Trading.Tests.UnitTests.Helpers;
 global using Moq;
+global using Currency = Boutquin.Domain.Enumerations.Currency;

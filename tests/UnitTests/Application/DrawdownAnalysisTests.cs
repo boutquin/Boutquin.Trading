@@ -140,4 +140,15 @@ public sealed class DrawdownAnalysisTests
 
         act.Should().Throw<ArgumentException>();
     }
+
+    // --- F-L5-03: null equity curve throws ArgumentNullException (sibling-contract parity), not raw NRE ---
+
+    [Fact]
+    public void Analyze_NullEquityCurve_ShouldThrowArgumentNullException()
+    {
+        var act = () => DrawdownAnalyzer.AnalyzeDrawdownPeriods(null!);
+
+        act.Should().Throw<ArgumentNullException>()
+            .WithParameterName("equityCurve");
+    }
 }

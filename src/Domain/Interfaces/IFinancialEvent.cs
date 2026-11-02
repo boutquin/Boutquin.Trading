@@ -23,7 +23,7 @@ namespace Boutquin.Trading.Domain.Interfaces;
 public interface IFinancialEvent
 {
     /// <summary>
-    /// Gets the timestamp of the financial event, represented as a
+    /// The timestamp of the financial event, represented as a
     /// DateOnly object.
     /// </summary>
     DateOnly Timestamp { get; }

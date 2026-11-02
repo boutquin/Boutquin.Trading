@@ -124,4 +124,81 @@ public sealed class FactorRegressionTests
 
         act.Should().Throw<ArgumentException>();
     }
+
+    // --- M-FREG: null arguments throw ArgumentNullException (sibling-contract parity), not raw NRE ---
+
+    [Fact]
+    public void Regress_NullPortfolioReturns_ShouldThrowArgumentNullException()
+    {
+        var factorNames = new[] { "Mkt-Rf" };
+        var factorReturns = new[] { new[] { 0.01m, -0.02m, 0.015m, 0.005m } };
+
+        var act = () => FactorRegressor.Regress(null!, factorNames, factorReturns);
+
+        act.Should().Throw<ArgumentNullException>()
+            .WithParameterName("portfolioReturns");
+    }
+
+    [Fact]
+    public void Regress_NullFactorNames_ShouldThrowArgumentNullException()
+    {
+        var portfolioReturns = new[] { 0.01m, -0.02m, 0.015m, 0.005m };
+        var factorReturns = new[] { new[] { 0.01m, -0.02m, 0.015m, 0.005m } };
+
+        var act = () => FactorRegressor.Regress(portfolioReturns, null!, factorReturns);
+
+        act.Should().Throw<ArgumentNullException>()
+            .WithParameterName("factorNames");
+    }
+
+    [Fact]
+    public void Regress_NullFactorReturns_ShouldThrowArgumentNullException()
+    {
+        var portfolioReturns = new[] { 0.01m, -0.02m, 0.015m, 0.005m };
+        var factorNames = new[] { "Mkt-Rf" };
+
+        var act = () => FactorRegressor.Regress(portfolioReturns, factorNames, null!);
+
+        act.Should().Throw<ArgumentNullException>()
+            .WithParameterName("factorReturns");
+    }
+
+    // --- F-FREG-CNT: factorReturns count must match factorNames count ---
+
+    [Fact]
+    public void Regress_FewerFactorArraysThanNames_ShouldThrowArgumentException()
+    {
+        // 3 names but only 2 factor arrays — undercount would IndexOutOfRange at factorReturns[2].
+        var portfolioReturns = new[] { 0.012m, -0.015m, 0.018m, 0.003m, -0.008m };
+        var factorNames = new[] { "Mkt-Rf", "SMB", "HML" };
+        var factorReturns = new[]
+        {
+            new[] { 0.01m, -0.02m, 0.015m, 0.005m, -0.01m },
+            new[] { 0.002m, 0.001m, -0.001m, 0.003m, -0.002m }
+        };
+
+        var act = () => FactorRegressor.Regress(portfolioReturns, factorNames, factorReturns);
+
+        act.Should().Throw<ArgumentException>()
+            .WithParameterName("factorReturns");
+    }
+
+    [Fact]
+    public void Regress_MoreFactorArraysThanNames_ShouldThrowArgumentException()
+    {
+        // 2 names but 3 factor arrays — overcount would silently drop the 3rd factor.
+        var portfolioReturns = new[] { 0.012m, -0.015m, 0.018m, 0.003m, -0.008m };
+        var factorNames = new[] { "Mkt-Rf", "SMB" };
+        var factorReturns = new[]
+        {
+            new[] { 0.01m, -0.02m, 0.015m, 0.005m, -0.01m },
+            new[] { 0.002m, 0.001m, -0.001m, 0.003m, -0.002m },
+            new[] { 0.001m, 0.003m, -0.002m, -0.001m, 0.002m }
+        };
+
+        var act = () => FactorRegressor.Regress(portfolioReturns, factorNames, factorReturns);
+
+        act.Should().Throw<ArgumentException>()
+            .WithParameterName("factorReturns");
+    }
 }

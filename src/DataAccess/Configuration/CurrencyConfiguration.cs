@@ -66,19 +66,19 @@ public sealed class CurrencyConfiguration : IEntityTypeConfiguration<Currency>
 
         // Seed the currencies table with the major currencies
         builder.HasData(
-            new Currency(CurrencyCode.USD, 840, "United States dollar", "$"),
-            new Currency(CurrencyCode.CAD, 124, "Canadian dollar", "$"),
-            new Currency(CurrencyCode.MXN, 484, "Mexican peso", "$"),
-            new Currency(CurrencyCode.GBP, 826, "British pound", "£"),
-            new Currency(CurrencyCode.EUR, 978, "Euro", "€"),
-            new Currency(CurrencyCode.JPY, 392, "Japanese yen", "¥"),
-            new Currency(CurrencyCode.CNY, 156, "Chinese yuan", "¥"),
-            new Currency(CurrencyCode.INR, 356, "Indian rupee", "₹"),
-            new Currency(CurrencyCode.AUD, 36, "Australian dollar", "$"),
-            new Currency(CurrencyCode.BRL, 986, "Brazilian real", "R$"),
-            new Currency(CurrencyCode.RUB, 643, "Russian ruble", "₽"),
-            new Currency(CurrencyCode.KRW, 410, "South Korean won", "₩"),
-            new Currency(CurrencyCode.HKD, 344, "Hong Kong dollar", "HK$")
+            new Currency(DomainCurrency.USD, 840, "United States dollar", "$"),
+            new Currency(DomainCurrency.CAD, 124, "Canadian dollar", "$"),
+            new Currency(DomainCurrency.MXN, 484, "Mexican peso", "$"),
+            new Currency(DomainCurrency.GBP, 826, "British pound", "£"),
+            new Currency(DomainCurrency.EUR, 978, "Euro", "€"),
+            new Currency(DomainCurrency.JPY, 392, "Japanese yen", "¥"),
+            new Currency(DomainCurrency.CNY, 156, "Chinese yuan", "¥"),
+            new Currency(DomainCurrency.INR, 356, "Indian rupee", "₹"),
+            new Currency(DomainCurrency.AUD, 36, "Australian dollar", "$"),
+            new Currency(DomainCurrency.BRL, 986, "Brazilian real", "R$"),
+            new Currency(DomainCurrency.RUB, 643, "Russian ruble", "₽"),
+            new Currency(DomainCurrency.KRW, 410, "South Korean won", "₩"),
+            new Currency(DomainCurrency.HKD, 344, "Hong Kong dollar", "HK$")
         );
     }
 }

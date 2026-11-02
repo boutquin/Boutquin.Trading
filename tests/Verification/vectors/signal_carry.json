@@ -1,0 +1,183 @@
+{
+  "cases": {
+    "multi_class_basic": {
+      "roll_down_duration": 1.0,
+      "long_curve_id": "DGS10",
+      "short_curve_id": "DGS2",
+      "local_short_rate_id": "DGS3MO",
+      "n_assets": 3,
+      "asset_classes": [
+        "Bond",
+        "Equity",
+        "FxHedged"
+      ],
+      "per_asset_series": [
+        null,
+        [
+          0.048,
+          0.05
+        ],
+        [
+          0.055,
+          0.06
+        ]
+      ],
+      "market_series": {
+        "DGS10": [
+          0.038,
+          0.04
+        ],
+        "DGS2": [
+          0.038,
+          0.04
+        ],
+        "DGS3MO": [
+          0.009,
+          0.01
+        ]
+      },
+      "returns": [
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      ],
+      "scores": [
+        0.04,
+        0.05,
+        0.0495049504950495
+      ]
+    },
+    "bond_upward_curve": {
+      "roll_down_duration": 2.0,
+      "long_curve_id": "DGS10",
+      "short_curve_id": "DGS2",
+      "local_short_rate_id": "DGS3MO",
+      "n_assets": 1,
+      "asset_classes": [
+        "Bond"
+      ],
+      "per_asset_series": [
+        null
+      ],
+      "market_series": {
+        "DGS10": [
+          0.05
+        ],
+        "DGS2": [
+          0.03
+        ]
+      },
+      "returns": [
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      ],
+      "scores": [
+        0.09000000000000001
+      ]
+    },
+    "per_asset_omission": {
+      "roll_down_duration": 1.0,
+      "long_curve_id": "DGS10",
+      "short_curve_id": "DGS2",
+      "local_short_rate_id": "DGS3MO",
+      "n_assets": 2,
+      "asset_classes": [
+        "Equity",
+        "Equity"
+      ],
+      "per_asset_series": [
+        [
+          0.03
+        ],
+        null
+      ],
+      "market_series": {},
+      "returns": [
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      ],
+      "scores": [
+        0.03,
+        null
+      ]
+    },
+    "market_key_omission_bond": {
+      "roll_down_duration": 1.0,
+      "long_curve_id": "DGS10",
+      "short_curve_id": "DGS2",
+      "local_short_rate_id": "DGS3MO",
+      "n_assets": 2,
+      "asset_classes": [
+        "Bond",
+        "Equity"
+      ],
+      "per_asset_series": [
+        null,
+        [
+          0.03
+        ]
+      ],
+      "market_series": {
+        "DGS10": [
+          0.04
+        ]
+      },
+      "returns": [
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      ],
+      "scores": [
+        null,
+        0.03
+      ]
+    }
+  },
+  "notes": "CarrySignal (Koijen-Moskowitz-Pedersen-Vrugt 2018, long-only multi-asset-class): per-asset carry by class -- Bond = y_long + roll_down_duration*(y_long - y_short) from two market-wide curve points (flat curve => carry == yield); Equity/REIT = trailing income yield (per-asset); FxHedged = (r_foreign - r_local)/(1 + r_local), foreign per-asset, local market-wide. Every input is the LAST observation of its series. None score => omitted asset (missing series / unmapped class). Own-formula reference; PrecisionNumeric (1e-6)."
+}

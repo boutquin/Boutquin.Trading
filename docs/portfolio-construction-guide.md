@@ -74,9 +74,9 @@ Equalizes each asset's marginal risk contribution via iterative inverse-MRC. The
 
 #### MaximumDiversification
 
-Maximizes the diversification ratio DR(w) = sum(w_i * sigma_i) / sigma_portfolio (Chopin and Briand, 2008). Reformulated as MinVar on the correlation matrix.
+Maximizes the diversification ratio DR(w) = sum(w_i * sigma_i) / sigma_portfolio (Choueifaty and Coignard, 2008). For distinct assets, symmetric positive-definite covariance and feasible uniform bounds in [0,1], a correlation-matrix fast path is followed when necessary by mean-variance subproblems with the bounds applied in original asset coordinates. Every successful supported result has an exact decimal budget of one, respects the authored bounds, and carries a conservative true-DR relative-loss certificate of at most 1e-10. A projected or merely feasible portfolio is not sufficient for success. Unresolved arithmetic, repeated uncertified vectors or exhaustion of 256 outer proposals throws `InvalidOperationException`.
 
-**When to use:** When the goal is maximum exposure to idiosyncratic risk. Degenerates to inverse-volatility when all correlations are equal.
+**When to use:** When the goal is to maximize diversification measured by weighted individual volatility relative to portfolio volatility. With equal correlations and nonbinding asset bounds, the optimum is inverse-volatility. Empty/singleton behavior and legacy external-domain routes are retained; those routes do not have the certified optimality guarantee. In particular, legacy relaxation of infeasible bounds does not satisfy authored hard constraints. The constructor's `maxIterations` and `tolerance` retain their meanings for legacy gradient-descent fallback; they do not weaken the supported route's certificate.
 
 #### PrincipalComponentRiskParity
 
@@ -94,13 +94,13 @@ Lopez de Prado (2016). Three-step algorithm: (1) single-linkage clustering by co
 
 #### HierarchicalEqualRiskContribution (HERC)
 
-Extends HRP with equal risk contribution within each cluster level rather than inverse-variance bisection.
+A faithful implementation of Raffinot (2018), *The Hierarchical Equal Risk Contribution Portfolio*. Four steps: (1) single-linkage hierarchical clustering on correlation distance; (2) selection of the optimal number of clusters via the Gap index (Tibshirani et al. 2001); (3) top-down recursive division into two parts **based on the dendrogram shape** (not the number-of-assets midpoint HRP uses), with an **equal-risk-contribution** allocation between the two cluster groups (`a₁ = RC₂/(RC₁+RC₂)`, so the groups contribute equal risk); (4) naive risk parity (inverse-variance) within each cluster. Never inverts the covariance matrix.
 
-**When to use:** When you want HRP's clustering benefits but prefer equal risk contribution semantics.
+**When to use:** When you want HRP's clustering benefits but a more natural, dendrogram-driven split with equal-risk-contribution between clusters and a data-driven cluster count, rather than HRP's fixed number-of-assets bisection.
 
 #### ReturnTiltedHRP
 
-Lohre, Rother, and Schafer (2020). Blends HRP's inverse-variance allocation with a return signal at each bisection step via softmax. The kappa parameter (0 to 1) controls the tilt: kappa=0 recovers pure HRP.
+A bespoke return-tilted HRP extension. It blends HRP's inverse-variance allocation with a return signal at each bisection step via softmax: `alpha = (1 - kappa) * alpha_risk + kappa * alpha_return`. The kappa parameter (0 to 1) controls the tilt: kappa=0 recovers pure HRP. Note: this return-softmax-tilt mechanism is the framework's own; it is **not** drawn from Lohre, Rother & Schafer (2020), which de-emphasizes return forecasting and instead contributes lower-tail-dependence-coefficient (LTDC) clustering (not implemented here).
 
 **When to use:** When you want HRP's robustness but have a return signal (momentum, fundamental) worth incorporating. Active in all regimes including bear markets.
 
@@ -162,6 +162,8 @@ Applies L1 turnover penalty: minimize ||w - w_target||^2 + lambda * ||w - w_prev
 
 **When to use:** When transaction costs are material and you want to trade off optimality for stability.
 
+**As-of / single-date use:** the two-argument `ComputeTargetWeights(assets, returns)` is stateful — it reads and updates the tracked previous weights across a backtest loop. For computing penalized weights at a single as-of date without a backtest (e.g. one call per cohort, each against that cohort's own current weights), use the stateless three-argument overload `ComputeTargetWeights(assets, returns, currentWeights)`. It neither reads nor writes the tracked state, so one instance can serve many independent series without cross-contamination.
+
 ### PcaConstrained
 
 Projects N-dimensional returns onto a K-dimensional PC signal subspace before delegating to the inner model. K is determined by Marcenko-Pastur bound. Reduces noise dimensions for more stable weights and lower turnover.
@@ -196,12 +198,14 @@ Decorators (`TurnoverPenalized`, `PcaConstrained`) and models requiring external
 
 ## References
 
-- Chopin, B. and Briand, R. (2008). Maximum Diversification. *Journal of Portfolio Management*.
+- Choueifaty, Y. and Coignard, Y. (2008). Toward Maximum Diversification. *Journal of Portfolio Management*, 35(1), 40-51.
 - DeMiguel, V., Garlappi, L., and Uppal, R. (2009). Optimal versus naive diversification. *Review of Financial Studies*.
 - Ledoit, O. and Wolf, M. (2004). Honey, I shrunk the sample covariance matrix. *Journal of Portfolio Management*.
-- Lohre, H., Rother, C., and Schafer, K.A. (2020). Hierarchical Risk Parity: Accounting for Tail Dependencies in Multi-asset Multi-factor Allocations. *Machine Learning for Asset Management*.
+- Lohre, H., Rother, C., and Schafer, K.A. (2020). Hierarchical Risk Parity: Accounting for Tail Dependencies in Multi-asset Multi-factor Allocations. *Machine Learning and Asset Management*.
 - Lopez de Prado, M. (2016). Building Diversified Portfolios that Outperform Out of Sample. *Journal of Portfolio Management*.
 - Lopez de Prado, M. (2018). *Advances in Financial Machine Learning*. Chapter 2: Denoising.
 - Lopez de Prado, M. (2020). *Machine Learning for Asset Managers*. Chapter 2: Detoning.
 - Meucci, A. (2009). Managing diversification. *Risk*.
+- Raffinot, T. (2018). The Hierarchical Equal Risk Contribution Portfolio. *Journal of Alternative Investments* (SSRN 3237540).
 - Rockafellar, R.T. and Uryasev, S. (2000). Optimization of conditional value-at-risk. *Journal of Risk*.
+- Tibshirani, R., Walther, G., and Hastie, T. (2001). Estimating the number of clusters in a data set via the gap statistic. *Journal of the Royal Statistical Society, Series B*, 63(2), 411-423.

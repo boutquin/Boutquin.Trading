@@ -41,8 +41,19 @@ public static class FactorRegressor
         IReadOnlyList<string> factorNames,
         decimal[][] factorReturns)
     {
+        Guard.AgainstNull(() => portfolioReturns);
+        Guard.AgainstNull(() => factorNames);
+        Guard.AgainstNull(() => factorReturns);
+
         var t = portfolioReturns.Length;
         var k = factorNames.Count;
+
+        if (factorReturns.Length != k)
+        {
+            throw new ArgumentException(
+                $"Factor return array count ({factorReturns.Length}) must match factor name count ({k}).",
+                nameof(factorReturns));
+        }
 
         if (t < k + 2)
         {

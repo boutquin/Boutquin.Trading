@@ -48,11 +48,6 @@ public sealed class CostModelOptions
     public decimal SlippageAmount { get; set; }
 
     /// <summary>
-    /// The default bid-ask spread as a percentage (e.g., 0.0002 for 2 basis points).
-    /// </summary>
-    public decimal DefaultSpreadPercent { get; set; }
-
-    /// <summary>
     /// Maximum fraction of bar volume that can be consumed by a single order.
     /// Only used when SlippageType is "VolumeShareSlippage". Default: 0.025 (2.5%).
     /// </summary>

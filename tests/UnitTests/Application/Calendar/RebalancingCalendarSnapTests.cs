@@ -28,15 +28,15 @@ public sealed class RebalancingCalendarSnapTests
     private static readonly Symbol s_aapl = new("AAPL");
     private static readonly Symbol s_msft = new("MSFT");
 
-    private static IReadOnlyDictionary<Symbol, CurrencyCode> CreateAssets() =>
-        new Dictionary<Symbol, CurrencyCode>
+    private static IReadOnlyDictionary<Symbol, Currency> CreateAssets() =>
+        new Dictionary<Symbol, Currency>
         {
-            [s_aapl] = CurrencyCode.USD,
-            [s_msft] = CurrencyCode.USD,
+            [s_aapl] = Currency.USD,
+            [s_msft] = Currency.USD,
         };
 
-    private static SortedDictionary<CurrencyCode, decimal> CreateCash() =>
-        new() { [CurrencyCode.USD] = 100_000m };
+    private static SortedDictionary<Currency, decimal> CreateCash() =>
+        new() { [Currency.USD] = 100_000m };
 
     private static IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> CreateMarketData(
         DateOnly start, int days)
@@ -55,15 +55,15 @@ public sealed class RebalancingCalendarSnapTests
         return data;
     }
 
-    private static IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> CreateFxRates(
+    private static IReadOnlyDictionary<DateOnly, SortedDictionary<Currency, decimal>> CreateFxRates(
         DateOnly start, int days)
     {
-        var data = new SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>();
+        var data = new SortedDictionary<DateOnly, SortedDictionary<Currency, decimal>>();
         for (var i = 0; i < days; i++)
         {
-            data[start.AddDays(i)] = new SortedDictionary<CurrencyCode, decimal>
+            data[start.AddDays(i)] = new SortedDictionary<Currency, decimal>
             {
-                [CurrencyCode.USD] = 1m,
+                [Currency.USD] = 1m,
             };
         }
 
@@ -84,7 +84,7 @@ public sealed class RebalancingCalendarSnapTests
             {
                 [s_aapl] = 0.5m,
                 [s_msft] = 0.5m,
-            }, CurrencyCode.USD),
+            }, Currency.USD),
             new Boutquin.Trading.Application.PortfolioConstruction.EqualWeightConstruction(),
             RebalancingFrequency.Monthly);
 
@@ -92,7 +92,7 @@ public sealed class RebalancingCalendarSnapTests
         var marketData = CreateMarketData(new DateOnly(2025, 1, 2), 70);
         var fxRates = CreateFxRates(new DateOnly(2025, 1, 2), 70);
         var firstSignals = strategy.GenerateSignals(
-            new DateOnly(2025, 1, 2), CurrencyCode.USD, marketData, fxRates);
+            new DateOnly(2025, 1, 2), Currency.USD, marketData, fxRates);
 
         firstSignals.Signals.Should().NotBeEmpty("first call always generates signals");
         firstSignals.Signals.Should().ContainKey(s_aapl);
@@ -100,12 +100,12 @@ public sealed class RebalancingCalendarSnapTests
 
         // Feb 1 should NOT trigger (< Feb 2)
         var noRebalance = strategy.GenerateSignals(
-            new DateOnly(2025, 2, 1), CurrencyCode.USD, marketData, fxRates);
+            new DateOnly(2025, 2, 1), Currency.USD, marketData, fxRates);
         noRebalance.Signals.Should().BeEmpty("Feb 1 is before Feb 2 rebalance date");
 
         // Feb 2 SHOULD trigger (>= Feb 2) — Sunday, but no calendar to snap
         var rebalance = strategy.GenerateSignals(
-            new DateOnly(2025, 2, 2), CurrencyCode.USD, marketData, fxRates);
+            new DateOnly(2025, 2, 2), Currency.USD, marketData, fxRates);
         rebalance.Signals.Should().NotBeEmpty("Feb 2 >= next rebalance date without calendar snap");
         rebalance.Signals.Should().ContainKey(s_aapl);
         rebalance.Signals.Should().ContainKey(s_msft);
@@ -130,7 +130,7 @@ public sealed class RebalancingCalendarSnapTests
             {
                 [s_aapl] = 0.5m,
                 [s_msft] = 0.5m,
-            }, CurrencyCode.USD),
+            }, Currency.USD),
             new Boutquin.Trading.Application.PortfolioConstruction.EqualWeightConstruction(),
             RebalancingFrequency.Monthly,
             tradingCalendar: mockCalendar.Object);
@@ -139,16 +139,16 @@ public sealed class RebalancingCalendarSnapTests
         var fxRates = CreateFxRates(new DateOnly(2025, 1, 2), 70);
 
         // Initial trigger
-        strategy.GenerateSignals(new DateOnly(2025, 1, 2), CurrencyCode.USD, marketData, fxRates);
+        strategy.GenerateSignals(new DateOnly(2025, 1, 2), Currency.USD, marketData, fxRates);
 
         // Feb 2 (Sunday) should NOT trigger — snapped to Feb 3
         var feb2 = strategy.GenerateSignals(
-            new DateOnly(2025, 2, 2), CurrencyCode.USD, marketData, fxRates);
+            new DateOnly(2025, 2, 2), Currency.USD, marketData, fxRates);
         feb2.Signals.Should().BeEmpty("Feb 2 is before snapped date Feb 3");
 
         // Feb 3 (Monday) SHOULD trigger
         var feb3 = strategy.GenerateSignals(
-            new DateOnly(2025, 2, 3), CurrencyCode.USD, marketData, fxRates);
+            new DateOnly(2025, 2, 3), Currency.USD, marketData, fxRates);
         feb3.Signals.Should().NotBeEmpty("Feb 3 >= snapped rebalance date");
     }
 
@@ -166,7 +166,7 @@ public sealed class RebalancingCalendarSnapTests
             {
                 [s_aapl] = 0.5m,
                 [s_msft] = 0.5m,
-            }, CurrencyCode.USD),
+            }, Currency.USD),
             new Boutquin.Trading.Application.PortfolioConstruction.EqualWeightConstruction(),
             RebalancingFrequency.Monthly,
             tradingCalendar: mockCalendar.Object);
@@ -174,11 +174,11 @@ public sealed class RebalancingCalendarSnapTests
         var marketData = CreateMarketData(new DateOnly(2025, 1, 2), 70);
         var fxRates = CreateFxRates(new DateOnly(2025, 1, 2), 70);
 
-        strategy.GenerateSignals(new DateOnly(2025, 1, 2), CurrencyCode.USD, marketData, fxRates);
+        strategy.GenerateSignals(new DateOnly(2025, 1, 2), Currency.USD, marketData, fxRates);
 
         // Feb 2 is a trading day — should trigger normally (>= Feb 2)
         var feb2 = strategy.GenerateSignals(
-            new DateOnly(2025, 2, 2), CurrencyCode.USD, marketData, fxRates);
+            new DateOnly(2025, 2, 2), Currency.USD, marketData, fxRates);
         feb2.Signals.Should().NotBeEmpty("Feb 2 is a trading day, triggers normally");
 
         // Adjust(Following) should NOT be called since IsBusinessDay returns true
@@ -202,7 +202,7 @@ public sealed class RebalancingCalendarSnapTests
             {
                 [s_aapl] = 0.5m,
                 [s_msft] = 0.5m,
-            }, CurrencyCode.USD),
+            }, Currency.USD),
             new Boutquin.Trading.Application.PortfolioConstruction.EqualWeightConstruction(),
             RebalancingFrequency.Quarterly,
             tradingCalendar: mockCalendar.Object);
@@ -210,16 +210,16 @@ public sealed class RebalancingCalendarSnapTests
         var marketData = CreateMarketData(new DateOnly(2025, 1, 2), 120);
         var fxRates = CreateFxRates(new DateOnly(2025, 1, 2), 120);
 
-        strategy.GenerateSignals(new DateOnly(2025, 1, 2), CurrencyCode.USD, marketData, fxRates);
+        strategy.GenerateSignals(new DateOnly(2025, 1, 2), Currency.USD, marketData, fxRates);
 
         // Apr 2 should NOT trigger — holiday snapped to Apr 3
         var apr2 = strategy.GenerateSignals(
-            new DateOnly(2025, 4, 2), CurrencyCode.USD, marketData, fxRates);
+            new DateOnly(2025, 4, 2), Currency.USD, marketData, fxRates);
         apr2.Signals.Should().BeEmpty("Apr 2 is a holiday; snapped to Apr 3");
 
         // Apr 3 SHOULD trigger
         var apr3 = strategy.GenerateSignals(
-            new DateOnly(2025, 4, 3), CurrencyCode.USD, marketData, fxRates);
+            new DateOnly(2025, 4, 3), Currency.USD, marketData, fxRates);
         apr3.Signals.Should().NotBeEmpty("Apr 3 >= snapped rebalance date");
     }
 
@@ -235,7 +235,7 @@ public sealed class RebalancingCalendarSnapTests
             {
                 [s_aapl] = 0.5m,
                 [s_msft] = 0.5m,
-            }, CurrencyCode.USD),
+            }, Currency.USD),
             RebalancingFrequency.Monthly);
 
         var marketData = CreateMarketData(new DateOnly(2025, 1, 2), 70);
@@ -243,12 +243,12 @@ public sealed class RebalancingCalendarSnapTests
 
         // First call triggers
         var first = strategy.GenerateSignals(
-            new DateOnly(2025, 1, 2), CurrencyCode.USD, marketData, fxRates);
+            new DateOnly(2025, 1, 2), Currency.USD, marketData, fxRates);
         first.Signals.Should().NotBeEmpty();
 
         // Feb 2 should trigger (>= Jan 2 + 1 month) even though Sunday
         var feb2 = strategy.GenerateSignals(
-            new DateOnly(2025, 2, 2), CurrencyCode.USD, marketData, fxRates);
+            new DateOnly(2025, 2, 2), Currency.USD, marketData, fxRates);
         feb2.Signals.Should().NotBeEmpty("raw calendar math: Feb 2 >= Jan 2 + 1 month");
     }
 
@@ -267,23 +267,23 @@ public sealed class RebalancingCalendarSnapTests
             {
                 [s_aapl] = 0.5m,
                 [s_msft] = 0.5m,
-            }, CurrencyCode.USD),
+            }, Currency.USD),
             RebalancingFrequency.Monthly,
             tradingCalendar: mockCalendar.Object);
 
         var marketData = CreateMarketData(new DateOnly(2025, 1, 2), 70);
         var fxRates = CreateFxRates(new DateOnly(2025, 1, 2), 70);
 
-        strategy.GenerateSignals(new DateOnly(2025, 1, 2), CurrencyCode.USD, marketData, fxRates);
+        strategy.GenerateSignals(new DateOnly(2025, 1, 2), Currency.USD, marketData, fxRates);
 
         // Feb 2 should NOT trigger — snapped to Feb 3
         var feb2 = strategy.GenerateSignals(
-            new DateOnly(2025, 2, 2), CurrencyCode.USD, marketData, fxRates);
+            new DateOnly(2025, 2, 2), Currency.USD, marketData, fxRates);
         feb2.Signals.Should().BeEmpty("Feb 2 snapped to Feb 3");
 
         // Feb 3 should trigger
         var feb3 = strategy.GenerateSignals(
-            new DateOnly(2025, 2, 3), CurrencyCode.USD, marketData, fxRates);
+            new DateOnly(2025, 2, 3), Currency.USD, marketData, fxRates);
         feb3.Signals.Should().NotBeEmpty("Feb 3 >= snapped date");
     }
 
@@ -298,7 +298,7 @@ public sealed class RebalancingCalendarSnapTests
             {
                 [s_aapl] = 0.5m,
                 [s_msft] = 0.5m,
-            }, CurrencyCode.USD),
+            }, Currency.USD),
             RebalancingFrequency.Monthly);
 
         strategy.Should().NotBeNull();

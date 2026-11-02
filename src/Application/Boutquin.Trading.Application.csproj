@@ -14,6 +14,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Exposes internal static numerical helpers (DCC QMLE objective + estimator) to the unit
+         test assembly for direct fidelity testing; no public API surface is added. -->
+    <InternalsVisibleTo Include="Boutquin.Trading.Tests.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="..\..\Resources\icon.png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>

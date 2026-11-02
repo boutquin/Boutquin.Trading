@@ -50,6 +50,10 @@ public sealed class PoetCovarianceEstimator : ICovarianceEstimator
     /// Soft-threshold multiplier for the residual covariance. Default 0.5.
     /// Higher values produce sparser residuals; values above ~2.0 risk breaking PSD.
     /// </param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="numFactors"/> is less than 1 or
+    /// <paramref name="thresholdMultiplier"/> is negative.
+    /// </exception>
     public PoetCovarianceEstimator(int numFactors = 1, double thresholdMultiplier = 0.5)
     {
         _inner = new NumericsStats.PoetCovarianceEstimator(numFactors, thresholdMultiplier);

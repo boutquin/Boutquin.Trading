@@ -1,0 +1,136 @@
+{
+  "cases": {
+    "identity_zero_strength": {
+      "n_assets": 3,
+      "base_weights": [
+        0.5,
+        0.3,
+        0.2
+      ],
+      "signals": [
+        {
+          "scores": [
+            5.0,
+            -5.0,
+            0.0
+          ],
+          "strength": 0.0
+        }
+      ],
+      "weights": [
+        0.5,
+        0.3,
+        0.2
+      ]
+    },
+    "single_signal_three_asset": {
+      "n_assets": 3,
+      "base_weights": [
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333
+      ],
+      "signals": [
+        {
+          "scores": [
+            2.0,
+            0.0,
+            -2.0
+          ],
+          "strength": 0.1
+        }
+      ],
+      "weights": [
+        0.45580782047249224,
+        0.3333333333333333,
+        0.21085884619417442
+      ]
+    },
+    "absent_key_three_asset": {
+      "n_assets": 3,
+      "base_weights": [
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333
+      ],
+      "signals": [
+        {
+          "scores": [
+            1.0,
+            -1.0,
+            null
+          ],
+          "strength": 0.1
+        }
+      ],
+      "weights": [
+        0.43333333333333335,
+        0.2333333333333333,
+        0.3333333333333333
+      ]
+    },
+    "clamp_negative_three_asset": {
+      "n_assets": 3,
+      "base_weights": [
+        0.5,
+        0.4,
+        0.1
+      ],
+      "signals": [
+        {
+          "scores": [
+            3.0,
+            0.0,
+            -3.0
+          ],
+          "strength": 0.5
+        }
+      ],
+      "weights": [
+        0.7355148833984319,
+        0.26448511660156826,
+        0.0
+      ]
+    },
+    "two_signals_five_asset": {
+      "n_assets": 5,
+      "base_weights": [
+        0.3,
+        0.25,
+        0.2,
+        0.15,
+        0.1
+      ],
+      "signals": [
+        {
+          "scores": [
+            1.5,
+            0.5,
+            -0.5,
+            -1.5,
+            0.0
+          ],
+          "strength": 0.1
+        },
+        {
+          "scores": [
+            0.8,
+            null,
+            0.2,
+            -0.4,
+            -0.6
+          ],
+          "strength": 0.05
+        }
+      ],
+      "weights": [
+        0.504604136457477,
+        0.2894314574598431,
+        0.16232996629684968,
+        0.0,
+        0.04363443978583005
+      ]
+    }
+  },
+  "notes": "SignalTiltConstruction: w_i += sum_s strength_s * zscore_s(i), cross-sectional z-score (population sigma across scored assets), clamp negatives to 0, renormalize to sum 1. Absent (None) score => omitted asset => zero tilt. Own-formula reference; PrecisionNumeric (1e-6)."
+}

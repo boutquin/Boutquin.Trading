@@ -51,12 +51,12 @@ public sealed class AssetClass
     }
 
     /// <summary>
-    /// Gets the Code of the asset class.
+    /// The Code of the asset class.
     /// </summary>
     public AssetClassCode Id { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the description of the asset class.
+    /// The description of the asset class.
     /// </summary>
     public string Description { get; private set; } // Setter is for EF
 }

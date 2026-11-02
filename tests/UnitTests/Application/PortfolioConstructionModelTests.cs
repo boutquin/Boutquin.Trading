@@ -1190,12 +1190,14 @@ public sealed class PortfolioConstructionModelTests
     // when only 2 of 5 ETFs are eligible but maxWeight was configured for 5 (e.g., 0.30).
 
     [Fact]
-    public void MDP_TwoAssets_MaxWeight30Pct_ShouldSumToOne()
+    public void MDP_FourAssets_MaxWeight30Pct_ShouldSumToOne()
     {
+        // 30% cap needs >= 4 assets to be feasible (n * maxWeight >= 1); a 2-asset
+        // 30% cap is infeasible and the solver correctly rejects it.
         var model = new MaximumDiversificationConstruction(
             maxWeight: 0.30m, minWeight: 0.05m);
-        var assets = new List<Symbol> { s_vti, s_tlt };
-        decimal[][] returns = [FourAssetReturns[0], FourAssetReturns[1]];
+        var assets = new List<Symbol> { s_vti, s_tlt, s_gld, s_vnq };
+        decimal[][] returns = FourAssetReturns;
 
         var weights = model.ComputeTargetWeights(assets, returns);
 
@@ -1204,17 +1206,13 @@ public sealed class PortfolioConstructionModelTests
     }
 
     [Fact]
-    public void RiskParity_TwoAssets_MaxWeight25Pct_ShouldSumToOne()
+    public void RiskParity_TwoAssets_MaxWeight25Pct_RejectsInfeasibleBounds()
     {
-        var model = new RiskParityConstruction(
-            maxWeight: 0.25m, minWeight: 0.05m);
+        var model = new RiskParityConstruction(maxWeight: 0.25m, minWeight: 0.05m);
         var assets = new List<Symbol> { s_vti, s_tlt };
         decimal[][] returns = [FourAssetReturns[0], FourAssetReturns[1]];
-
-        var weights = model.ComputeTargetWeights(assets, returns);
-
-        AssertWeightsSumToOne(weights);
-        AssertAllWeightsNonNegative(weights);
+        var act = () => model.ComputeTargetWeights(assets, returns);
+        act.Should().Throw<ArgumentException>().WithMessage("*infeasible*");
     }
 
     [Fact]
@@ -1232,12 +1230,14 @@ public sealed class PortfolioConstructionModelTests
     }
 
     [Fact]
-    public void MinVar_ThreeAssets_MaxWeight30Pct_ShouldSumToOne()
+    public void MinVar_FourAssets_MaxWeight30Pct_ShouldSumToOne()
     {
+        // 30% cap needs >= 4 assets to be feasible (n * maxWeight >= 1); a 3-asset
+        // 30% cap is infeasible and the solver correctly rejects it.
         var model = new MinimumVarianceConstruction(
             maxWeight: 0.30m, minWeight: 0.05m);
-        var assets = new List<Symbol> { s_vti, s_tlt, s_gld };
-        decimal[][] returns = [FourAssetReturns[0], FourAssetReturns[1], FourAssetReturns[2]];
+        var assets = new List<Symbol> { s_vti, s_tlt, s_gld, s_vnq };
+        decimal[][] returns = FourAssetReturns;
 
         var weights = model.ComputeTargetWeights(assets, returns);
 
@@ -1549,8 +1549,10 @@ public sealed class PortfolioConstructionModelTests
     [Fact]
     public void HERC_ProducesDifferentWeightsThanHRP()
     {
-        // HERC uses 1/σ (inverse-stddev) vs HRP's 1/σ² (inverse-variance).
-        // With assets of different volatilities, these produce different allocations.
+        // True Raffinot (2018) HERC (Gap-index cluster count + dendrogram-shape ERC
+        // bisection + naive risk parity within clusters) is a genuinely different
+        // algorithm from HRP (number-of-assets midpoint + inverse-variance), so the
+        // two produce different allocations on assets of differing volatility.
         var hrp = new HierarchicalRiskParityConstruction();
         var herc = new HierarchicalEqualRiskContributionConstruction();
 
@@ -1561,10 +1563,10 @@ public sealed class PortfolioConstructionModelTests
         AssertWeightsSumToOne(hrpWeights);
         AssertWeightsSumToOne(hercWeights);
 
-        // At least one asset should differ meaningfully (inverse-σ ≠ inverse-σ²)
+        // At least one asset should differ meaningfully (Raffinot HERC ≠ HRP)
         var maxDiff = FourAssets.Max(a => Math.Abs(hrpWeights[a] - hercWeights[a]));
         maxDiff.Should().BeGreaterThan(0.001m,
-            "HERC (inverse-stddev) should differ from HRP (inverse-variance)");
+            "true Raffinot HERC should differ from HRP");
     }
 
     [Fact]

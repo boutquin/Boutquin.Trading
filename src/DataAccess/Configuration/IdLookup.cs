@@ -38,7 +38,7 @@ public static class IdLookup
     };
 
     /// <summary>
-    /// Gets the city ID by city name.
+    /// The city ID by city name.
     /// </summary>
     /// <param name="cityName">The city name.</param>
     /// <returns>The city ID.</returns>

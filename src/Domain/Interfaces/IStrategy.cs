@@ -32,31 +32,64 @@ public interface IStrategy
     string Name { get; }
 
     /// <summary>
-    /// Gets the current positions of the strategy, represented as a read-only
+    /// The current positions of the strategy, represented as a read-only
     /// dictionary where the key is the asset symbol and the value is the
     /// quantity of the asset held.
     /// </summary>
     IReadOnlyDictionary<Symbol, int> Positions { get; }
 
     /// <summary>
-    /// Gets a read-only dictionary of assets and their associated currency codes.
+    /// A read-only dictionary of assets and their associated currency codes.
     /// The key is the asset symbol and the value is the asset's currency code.
     /// </summary>
-    IReadOnlyDictionary<Symbol, CurrencyCode> Assets { get; }
+    IReadOnlyDictionary<Symbol, Currency> Assets { get; }
 
     /// <summary>
-    /// Gets the available cash for this strategy as a read-only dictionary, where the key
+    /// The available cash for this strategy as a read-only dictionary, where the key
     /// is the currency code, and the value is the amount of cash available in that currency.
     /// </summary>
-    IReadOnlyDictionary<CurrencyCode, decimal> Cash { get; }
+    IReadOnlyDictionary<Currency, decimal> Cash { get; }
 
     /// <summary>
-    /// Gets the instance of the IOrderPriceCalculationStrategy associated with the strategy.
+    /// A currency-tagged <see cref="Money"/> projection of <see cref="Cash"/>, where each
+    /// value is the bucket amount tagged with that bucket's own currency.
+    /// </summary>
+    /// <value>
+    /// A read-only dictionary keyed by <see cref="Currency"/>; each value is a <see cref="Money"/>
+    /// whose <see cref="Money.Amount"/> equals the corresponding <see cref="Cash"/> entry and whose
+    /// <see cref="Money.Currency"/> is the same key.
+    /// </value>
+    /// <remarks>
+    /// <para>
+    /// This is a boundary projection derived from the backing <see cref="Cash"/> collection — the
+    /// stored collection stays <see cref="decimal"/> (hot/internal), and this view is materialized
+    /// at the reporting boundary. The default implementation maps each bucket without entering any
+    /// per-bar path, so adopting <see cref="Money"/> here cannot perturb backtest throughput.
+    /// It never throws: each bucket is tagged with its own currency, so no cross-currency
+    /// arithmetic occurs.
+    /// </para>
+    /// </remarks>
+    IReadOnlyDictionary<Currency, Money> CashAsMoney
+    {
+        get
+        {
+            var result = new Dictionary<Currency, Money>(Cash.Count);
+            foreach (var (currency, amount) in Cash)
+            {
+                result[currency] = new Money(amount, currency);
+            }
+
+            return result;
+        }
+    }
+
+    /// <summary>
+    /// The instance of the IOrderPriceCalculationStrategy associated with the strategy.
     /// </summary>
     IOrderPriceCalculationStrategy OrderPriceCalculationStrategy { get; }
 
     /// <summary>
-    /// Gets the position sizer associated with the strategy, which is
+    /// The position sizer associated with the strategy, which is
     /// responsible for determining the size of positions taken in each asset.
     /// </summary>
     IPositionSizer PositionSizer { get; }
@@ -67,13 +100,13 @@ public interface IStrategy
     /// <param name="timestamp">The timestamp for the historical data to be used in generating the signals.</param>
     /// <param name="baseCurrency">The base currency used for the calculations and conversions within the strategy.</param>
     /// <param name="historicalMarketData">A dictionary containing historical market data, indexed by date and asset symbols.</param>
-    /// <param name="historicalFxConversionRates">A dictionary containing historical foreign exchange conversion rates, indexed by date and currency codes.</param>
+    /// <param name="historicalFxConversionRates">FX rate tables by date, each keyed by non-base currency and holding base-currency units per 1 unit of the keyed currency (see <see cref="Helpers.FxConversion"/>).</param>
     /// <returns>A SignalEvent instance containing the generated signals for the strategy.</returns>
     SignalEvent GenerateSignals(
         DateOnly timestamp,
-        CurrencyCode baseCurrency,
+        Currency baseCurrency,
         IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> historicalMarketData,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates);
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Currency, decimal>> historicalFxConversionRates);
 
     /// <summary>
     /// Computes the total value of the strategy in the base currency using historical market data and foreign exchange conversion rates.
@@ -81,13 +114,43 @@ public interface IStrategy
     /// <param name="timestamp">The timestamp for the historical data to be used in calculating the total value.</param>
     /// <param name="baseCurrency">The base currency used for the calculations and conversions within the strategy.</param>
     /// <param name="historicalMarketData">A dictionary containing historical market data, indexed by date and asset symbols.</param>
-    /// <param name="historicalFxConversionRates">A dictionary containing historical foreign exchange conversion rates, indexed by date and currency codes.</param>
+    /// <param name="historicalFxConversionRates">FX rate tables by date, each keyed by non-base currency and holding base-currency units per 1 unit of the keyed currency (see <see cref="Helpers.FxConversion"/>).</param>
     /// <returns>The total value of the strategy in the base currency.</returns>
     decimal ComputeTotalValue(
         DateOnly timestamp,
-        CurrencyCode baseCurrency,
+        Currency baseCurrency,
         IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> historicalMarketData,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates);
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Currency, decimal>> historicalFxConversionRates);
+
+    /// <summary>
+    /// Computes the total value of the strategy as a currency-tagged <see cref="Money"/> in the
+    /// base currency. The additive <see cref="Money"/> companion to <see cref="ComputeTotalValue"/>.
+    /// </summary>
+    /// <param name="timestamp">The timestamp for the historical data to be used in calculating the total value.</param>
+    /// <param name="baseCurrency">The base currency used for the calculations and conversions within the strategy; also the <see cref="Money.Currency"/> of the result.</param>
+    /// <param name="historicalMarketData">A dictionary containing historical market data, indexed by date and asset symbols.</param>
+    /// <param name="historicalFxConversionRates">FX rate tables by date, each keyed by non-base currency and holding base-currency units per 1 unit of the keyed currency (see <see cref="Helpers.FxConversion"/>).</param>
+    /// <returns>
+    /// A <see cref="Money"/> whose <see cref="Money.Amount"/> equals
+    /// <see cref="ComputeTotalValue"/> for the same arguments and whose <see cref="Money.Currency"/>
+    /// is <paramref name="baseCurrency"/>.
+    /// </returns>
+    /// <remarks>
+    /// <para>
+    /// This is a boundary projection: the default implementation tags the existing
+    /// <see cref="decimal"/> result with <paramref name="baseCurrency"/>. The per-asset
+    /// aggregation and FX conversion inside <see cref="ComputeTotalValue"/> remain
+    /// <see cref="decimal"/>; <see cref="Money"/> appears only at the reporting boundary.
+    /// </para>
+    /// </remarks>
+    Money ComputeTotalValueAsMoney(
+        DateOnly timestamp,
+        Currency baseCurrency,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> historicalMarketData,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Currency, decimal>> historicalFxConversionRates)
+        => new(
+            ComputeTotalValue(timestamp, baseCurrency, historicalMarketData, historicalFxConversionRates),
+            baseCurrency);
 
     /// <summary>
     /// Updates the cash holdings in a particular currency for this strategy.
@@ -96,7 +159,42 @@ public interface IStrategy
     /// </summary>
     /// <param name="currency">The currency of the cash holdings to be updated.</param>
     /// <param name="amount">The amount by which the cash holdings in the specified currency should be updated.</param>
-    void UpdateCash(CurrencyCode currency, decimal amount);
+    void UpdateCash(Currency currency, decimal amount);
+
+    /// <summary>
+    /// Updates the cash holdings for this strategy by a currency-tagged <see cref="Money"/> amount,
+    /// taking the target currency from <see cref="Money.Currency"/>. The additive <see cref="Money"/>
+    /// companion to <see cref="UpdateCash(Currency, decimal)"/>.
+    /// </summary>
+    /// <param name="amount">
+    /// The signed amount to add to the cash bucket named by <see cref="Money.Currency"/>. Its
+    /// currency must already be an existing cash bucket of this strategy — crediting a currency the
+    /// strategy does not hold is rejected so the wrong bucket is never silently created or credited.
+    /// </param>
+    /// <exception cref="Boutquin.Domain.Exceptions.CurrencyMismatchException">
+    /// Thrown when <paramref name="amount"/>'s currency is not one of this strategy's existing cash
+    /// buckets (a wrong-currency credit).
+    /// </exception>
+    /// <remarks>
+    /// <para>
+    /// Validates <paramref name="amount"/>'s currency against the existing <see cref="Cash"/>
+    /// buckets, then routes to the <see cref="decimal"/> core
+    /// <see cref="UpdateCash(Currency, decimal)"/>. This is a construction-boundary guard: it adds
+    /// currency safety at the point cash is mutated without changing the <see cref="decimal"/>
+    /// storage.
+    /// </para>
+    /// </remarks>
+    void UpdateCash(Money amount)
+    {
+        if (!Cash.ContainsKey(amount.Currency))
+        {
+            throw new CurrencyMismatchException(
+                $"Cannot credit {amount.Currency} cash: this strategy holds no {amount.Currency} bucket. " +
+                $"Existing buckets: {string.Join(", ", Cash.Keys)}.");
+        }
+
+        UpdateCash(amount.Currency, amount.Amount);
+    }
 
     /// <summary>
     /// Updates the position quantity for a particular asset in this strategy.
@@ -116,7 +214,7 @@ public interface IStrategy
     void SetPosition(Symbol asset, int quantity);
 
     /// <summary>
-    /// Gets the current position quantity for a specific asset.
+    /// The current position quantity for a specific asset.
     /// Returns zero if no position exists.
     /// </summary>
     /// <param name="asset">The asset to query.</param>

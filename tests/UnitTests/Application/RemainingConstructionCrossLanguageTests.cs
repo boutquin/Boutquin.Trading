@@ -107,9 +107,12 @@ public sealed class RemainingConstructionCrossLanguageTests : CrossLanguageVerif
         var model = new HierarchicalEqualRiskContributionConstruction();
         var actual = model.ComputeTargetWeights(assets, returns);
 
-        // HERC uses Jacobi eigendecomposition indirectly via clustering —
-        // use PrecisionStatistical like HRP
-        AssertWeightsMatch(actual, expected, assets, PrecisionStatistical, $"HERC {caseName}");
+        // HERC is a deterministic computation with NO eigensolver: single-linkage clustering,
+        // a Gap-index cluster count (deterministic LCG), and naive risk parity within clusters.
+        // Its only double-precision ops are Math.Sqrt/Math.Log; cross-language divergence is at
+        // decimal machine epsilon (~8e-16, well inside PrecisionNumeric). PrecisionStatistical
+        // (1e-4) would be ~12 orders too loose and would mask regression risk.
+        AssertWeightsMatch(actual, expected, assets, PrecisionNumeric, $"HERC {caseName}");
         AssertWeightsSumToOne(actual, $"HERC {caseName}");
         AssertWeightsNonNegative(actual, $"HERC {caseName}");
     }
@@ -117,8 +120,9 @@ public sealed class RemainingConstructionCrossLanguageTests : CrossLanguageVerif
     [Fact]
     public void HERC_DiffersFromHRP()
     {
-        // HERC uses 1/σ (inverse risk), HRP uses 1/σ² (inverse variance)
-        // They should produce different weights on diverse data
+        // True Raffinot HERC (Gap-index cluster count + dendrogram-shape ERC
+        // bisection + naive risk parity within clusters) is a genuinely different
+        // algorithm from HRP (number-of-assets midpoint + inverse-variance).
         var doc = LoadVector("construction_herc");
         var c = doc.RootElement.GetProperty("cases").GetProperty("five_asset");
         var returns = GetJaggedArray(c.GetProperty("returns"));
@@ -132,6 +136,52 @@ public sealed class RemainingConstructionCrossLanguageTests : CrossLanguageVerif
 
         var maxDiff = assets.Max(a => Math.Abs(hercWeights[a] - hrpWeights[a]));
         Assert.True(maxDiff > 1e-6m, "HERC and HRP should produce different weights");
+    }
+
+    /// <summary>
+    /// M-8 anti-inert fidelity proof. The pre-M-8 implementation was an inverse-risk
+    /// HRP-midpoint shortcut whose five-asset allocation on this exact panel was
+    /// [0.184675, 0.212891, 0.208786, 0.233310, 0.160337]. True Raffinot (2018) HERC
+    /// (Gap-index cluster count + dendrogram-shape ERC bisection + naive risk parity)
+    /// produces a materially different allocation. This test pins the wired production
+    /// path (public <c>ComputeTargetWeights</c>, the same method the DI factory key
+    /// "HERC" and <c>ConstructionModelStrategy</c> call) and asserts the behavior
+    /// genuinely changed AND matches the own-formula Raffinot reference vector.
+    /// </summary>
+    [Fact]
+    public void HERC_TrueRaffinot_DiffersFromOldInverseRiskShortcut_AndMatchesReference()
+    {
+        var doc = LoadVector("construction_herc");
+        var c = doc.RootElement.GetProperty("cases").GetProperty("five_asset");
+        var returns = GetJaggedArray(c.GetProperty("returns"));
+        var expected = GetWeights(c.GetProperty("weights"));
+        var assets = MakeAssets(returns.Length);
+
+        // The exact OLD (pre-M-8) inverse-risk HRP-midpoint shortcut output on this panel.
+        decimal[] oldShortcutWeights =
+        [
+            0.184675m, 0.212891m, 0.208786m, 0.233310m, 0.160337m,
+        ];
+
+        var model = new HierarchicalEqualRiskContributionConstruction();
+        var actual = model.ComputeTargetWeights(assets, returns);
+
+        // (a) Behavior genuinely changed: the new allocation differs from the old shortcut.
+        var diffFromOld = assets.Max(a => Math.Abs(actual[a] - oldShortcutWeights[assets.ToList().IndexOf(a)]));
+        Assert.True(diffFromOld > 0.05m,
+            $"M-8: true Raffinot HERC must differ materially from the old inverse-risk shortcut; maxDiff={diffFromOld}");
+
+        // (b) Matches Raffinot's four-step own-formula reference (the new vector). HERC has no
+        // eigensolver — deterministic divergence at decimal machine epsilon — so PrecisionNumeric.
+        AssertWeightsMatch(actual, expected, assets, PrecisionNumeric, "HERC Raffinot five_asset");
+        AssertWeightsSumToOne(actual, "HERC Raffinot five_asset");
+        AssertWeightsNonNegative(actual, "HERC Raffinot five_asset");
+
+        // (c) HERC != HRP.
+        var hrp = new HierarchicalRiskParityConstruction();
+        var hrpWeights = hrp.ComputeTargetWeights(assets, returns);
+        var diffFromHrp = assets.Max(a => Math.Abs(actual[a] - hrpWeights[a]));
+        Assert.True(diffFromHrp > 1e-6m, "HERC must differ from HRP");
     }
 
     // ═══════════════════════════════════════════════════════════════════════

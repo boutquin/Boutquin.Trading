@@ -28,6 +28,7 @@ public sealed class MaxSectorExposureRuleSellTests
     {
         var mock = new Mock<IPortfolio>();
         mock.Setup(p => p.EquityCurve).Returns(equityCurve);
+        mock.Setup(p => p.CalculateTotalPortfolioValue(new DateOnly(2026, 1, 1))).Returns(100_000m);
         mock.Setup(p => p.HistoricalMarketData).Returns(historicalData);
         mock.Setup(p => p.Strategies)
             .Returns((IReadOnlyDictionary<string, IStrategy>)strategies);

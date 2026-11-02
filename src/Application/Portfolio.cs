@@ -34,14 +34,14 @@ public sealed class Portfolio : IPortfolio
     public bool EnableDividendReinvestment { get; }
 
     /// <summary>
-    /// Gets the base currency of the portfolio.
+    /// The base currency of the portfolio.
     /// </summary>
     /// <value>The base currency of the portfolio.</value>
     /// <remarks>
     /// The base currency is the currency in which the portfolio's value is calculated and reported.
     /// All cash balances, asset prices, and portfolio values are converted to the base currency for calculations and reporting.
     /// </remarks>
-    public CurrencyCode BaseCurrency { get; }
+    public Currency BaseCurrency { get; }
 
     /// <summary>
     /// The EventProcessor property represents a system to process events for the portfolio.
@@ -86,7 +86,7 @@ public sealed class Portfolio : IPortfolio
     /// A Boolean flag indicating whether the portfolio is live. The default value is false.
     /// </param>
     /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown when the baseCurrency parameter is not a defined value of the CurrencyCode enumeration.
+    /// Thrown when the baseCurrency parameter is not a defined value of the Currency enumeration.
     /// </exception>
     /// <exception cref="EmptyOrNullDictionaryException">
     /// Throws this exception if either the 'strategies' or 'assetCurrencies' dictionary is null or empty.
@@ -102,9 +102,9 @@ public sealed class Portfolio : IPortfolio
     /// Initializes a new instance of the <see cref="Portfolio"/> class (backward-compatible overload).
     /// </summary>
     public Portfolio(
-        CurrencyCode baseCurrency,
+        Currency baseCurrency,
         IReadOnlyDictionary<string, IStrategy> strategies,
-        IReadOnlyDictionary<Symbol, CurrencyCode> assetCurrencies,
+        IReadOnlyDictionary<Symbol, Currency> assetCurrencies,
         IReadOnlyDictionary<Type, IEventHandler> handlers,
         IBrokerage broker,
         bool isLive = false)
@@ -116,9 +116,9 @@ public sealed class Portfolio : IPortfolio
     /// Initializes a new instance of the <see cref="Portfolio"/> class with structured logging.
     /// </summary>
     public Portfolio(
-        CurrencyCode baseCurrency,
+        Currency baseCurrency,
         IReadOnlyDictionary<string, IStrategy> strategies,
-        IReadOnlyDictionary<Symbol, CurrencyCode> assetCurrencies,
+        IReadOnlyDictionary<Symbol, Currency> assetCurrencies,
         IReadOnlyDictionary<Type, IEventHandler> handlers,
         IBrokerage broker,
         ILogger<Portfolio> logger,
@@ -142,6 +142,7 @@ public sealed class Portfolio : IPortfolio
 
         _broker = broker;
         _broker.FillOccurred += HandleFillEvent;
+        _broker.FxFillOccurred += HandleFxFillEvent;
     }
 
     /// <summary>
@@ -152,7 +153,7 @@ public sealed class Portfolio : IPortfolio
     /// <summary>
     /// The AssetCurrencies property represents a read-only dictionary of assets and their respective currencies used in the portfolio.
     /// </summary>
-    public IReadOnlyDictionary<Symbol, CurrencyCode> AssetCurrencies { get; }
+    public IReadOnlyDictionary<Symbol, Currency> AssetCurrencies { get; }
 
     /// <summary>
     /// The HistoricalMarketData property represents a sorted dictionary of historical market data used by the portfolio.
@@ -163,7 +164,7 @@ public sealed class Portfolio : IPortfolio
     /// <summary>
     /// The HistoricalFxConversionRates property represents a sorted dictionary of historical foreign exchange conversion rates used by the portfolio.
     /// </summary>
-    public SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> HistoricalFxConversionRates { get; } =
+    public SortedDictionary<DateOnly, SortedDictionary<Currency, decimal>> HistoricalFxConversionRates { get; } =
         [];
 
     /// <summary>
@@ -300,6 +301,26 @@ public sealed class Portfolio : IPortfolio
         return await _broker.SubmitOrderAsync(order, cancellationToken).ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
+    public async Task<bool> SubmitFxOrderAsync(FxOrderEvent fxOrderEvent, CancellationToken cancellationToken)
+    {
+        Guard.AgainstNull(() => fxOrderEvent); // Throws ArgumentNullException
+
+        cancellationToken.ThrowIfCancellationRequested();
+
+        // Same reason as SubmitOrderAsync: the fill callback has no token of its own.
+        _activeCancellationToken = cancellationToken;
+
+        var order = new FxOrder(
+            fxOrderEvent.Timestamp,
+            fxOrderEvent.StrategyName,
+            fxOrderEvent.SellCurrency,
+            fxOrderEvent.BuyCurrency,
+            fxOrderEvent.BuyAmount);
+
+        return await _broker.SubmitFxOrderAsync(order, cancellationToken).ConfigureAwait(false);
+    }
+
     /// <summary>
     /// Generates trading signals for each strategy in the portfolio based on updated market data.
     /// </summary>
@@ -355,12 +376,12 @@ public sealed class Portfolio : IPortfolio
     /// <param name="currency">The currency of the cash balance to be updated.</param>
     /// <param name="amount">The amount to be updated.</param>
     /// <exception cref="ArgumentException">Thrown when the <paramref name="strategyName"/> parameter is null, empty, or consists only of white-space characters.</exception>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when the <paramref name="currency"/> parameter is not a defined value of the CurrencyCode enumeration.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the <paramref name="currency"/> parameter is not a defined value of the Currency enumeration.</exception>
     /// <remarks>
     /// This method is called when the cash balance for a specific strategy and currency needs to be updated.
     /// The method implementation should ensure that the cash balance is updated correctly and that the new cash balance does not lead to an inconsistent portfolio state.
     /// </remarks>
-    public void UpdateCash(string strategyName, CurrencyCode currency, decimal amount)
+    public void UpdateCash(string strategyName, Currency currency, decimal amount)
     {
         Guard.AgainstNullOrWhiteSpace(() => strategyName); // Throws ArgumentException
         Guard.AgainstUndefinedEnumValue(() => currency); // Throws ArgumentOutOfRangeException
@@ -396,6 +417,23 @@ public sealed class Portfolio : IPortfolio
     {
         _activeCancellationToken = cancellationToken;
         await _broker.ProcessPendingOrdersAsync(date, dayData, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Processes pending asset and FX orders from the previous bar against the current bar.
+    /// Hands the bar's resolved FX table and the portfolio's base currency to the brokerage so pending
+    /// conversions fill between the bar's asset sells and asset buys.
+    /// </summary>
+    public async Task ProcessPendingOrdersAsync(
+        DateOnly date,
+        SortedDictionary<Symbol, Bar> dayData,
+        SortedDictionary<Currency, decimal> fxRates,
+        CancellationToken cancellationToken)
+    {
+        Guard.AgainstNull(() => fxRates); // Throws ArgumentNullException
+
+        _activeCancellationToken = cancellationToken;
+        await _broker.ProcessPendingOrdersAsync(date, dayData, BaseCurrency, fxRates, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -490,7 +528,7 @@ public sealed class Portfolio : IPortfolio
     /// This method is called when the currency of a specific asset needs to be retrieved.
     /// The method implementation should ensure that the correct currency is returned, or an appropriate error is thrown if the currency cannot be found.
     /// </remarks>
-    public CurrencyCode GetAssetCurrency(Symbol asset)
+    public Currency GetAssetCurrency(Symbol asset)
     {
         Guard.AgainstNullOrWhiteSpace(() => asset.Ticker); // Throws ArgumentException
 
@@ -528,5 +566,12 @@ public sealed class Portfolio : IPortfolio
         Guard.AgainstNull(() => fillEvent); // Throws ArgumentNullException when the fillEvent parameter is null
 
         await EventProcessor.ProcessEventAsync(fillEvent, _activeCancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task HandleFxFillEvent(object sender, FxFillEvent fxFillEvent)
+    {
+        Guard.AgainstNull(() => fxFillEvent); // Throws ArgumentNullException
+
+        await EventProcessor.ProcessEventAsync(fxFillEvent, _activeCancellationToken).ConfigureAwait(false);
     }
 }

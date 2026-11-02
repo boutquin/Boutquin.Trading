@@ -86,22 +86,57 @@ public sealed class CVaRRiskMeasure : IDownsideRiskMeasure
             }
         }
 
-        // --- Step 2: Set ζ analytically to the empirical VaR ---
-        // The R-U reformulation: CVaR(w) = min_ζ { ζ + 1/(S(1−α)) × Σ max(−w'r − ζ, 0) }
-        // The minimizer ζ* equals VaR_α, the (1−α)-quantile of portfolio losses.
-        // Computing this exactly eliminates the gradient-descent ζ update, which
-        // suffered from learning-rate sensitivity and state corruption during
-        // line-search evaluations. Because ζ is now a pure function of weights,
-        // there is no accumulated state — evaluation order doesn't matter.
+        // --- Step 2: Set ζ to the R-U minimizer over the candidate order statistics ---
+        // R-U reformulation: CVaR(w) = min_ζ { ζ + 1/(S(1−α)) × Σ max(−w'r − ζ, 0) }.
+        // The objective is convex and piecewise-linear in ζ with kinks at ζ = −r_s, so
+        // its minimum is attained at one of the sorted-return order statistics.
+        //
+        // In the integer-tail regime S·(1−α) ≥ 1 (the dominant case for realistic
+        // scenario counts at α ≥ 0.9) the empirical-quantile ζ at index
+        // min(tailCount, s−1) is PROVABLY the R-U minimizer, so we assign it directly —
+        // an O(S log S) fast path (sort only), avoiding the O(S²) candidate scan. Only
+        // in the S·(1−α) < 1 small-S regime — where tailFactor = 1/(S(1−α)) > 1
+        // over-weights the worst exceedance so the empirical quantile sits off the
+        // minimizer — do we run the full min-over-ζ scan and pick the true minimizing
+        // order statistic, restoring the correct CVaR (which degenerates to the worst
+        // single loss). Both regimes keep ζ a pure function of weights (no accumulated
+        // state) and integer-tail values AND gradients byte-identical to the prior path.
         var sorted = new decimal[s];
         Array.Copy(portReturns, sorted, s);
         Array.Sort(sorted); // ascending: worst returns first
 
-        // Set ζ just below the tail boundary so that tail scenarios satisfy
-        // the strict inequality (loss > 0). Using sorted[tailCount] (the best
-        // non-tail return) ensures all tailCount scenarios are counted, even
-        // when tail returns are tied at exactly the VaR threshold.
-        _zeta = -sorted[Math.Min(tailCount, s - 1)];
+        var quantileZeta = -sorted[Math.Min(tailCount, s - 1)];
+        if (s * (1m - _confidenceLevel) >= 1m)
+        {
+            // Integer-tail regime: the empirical quantile is the minimizer — assign it
+            // directly (identical value AND active set as the full scan would yield).
+            _zeta = quantileZeta;
+        }
+        else
+        {
+            // S·(1−α) < 1 regime: run the full min-over-ζ scan, then pick the minimizing
+            // order statistic (smallest such ζ — the largest k — i.e. the canonical R-U
+            // VaR among the minimizers).
+            var minObjective = decimal.MaxValue;
+            for (var k = 0; k < s; k++)
+            {
+                var objective = RuObjective(-sorted[k], portReturns, tailFactor);
+                if (objective < minObjective)
+                {
+                    minObjective = objective;
+                }
+            }
+
+            _zeta = quantileZeta;
+            for (var k = s - 1; k >= 0; k--)
+            {
+                if (RuObjective(-sorted[k], portReturns, tailFactor) <= minObjective)
+                {
+                    _zeta = -sorted[k];
+                    break;
+                }
+            }
+        }
 
         // --- Step 3: Compute CVaR value and weight gradients ---
         var cvarSum = 0m;
@@ -126,5 +161,24 @@ public sealed class CVaRRiskMeasure : IDownsideRiskMeasure
         var cvar = _zeta + tailFactor * cvarSum;
 
         return (cvar, gradW);
+    }
+
+    /// <summary>
+    /// Evaluates the Rockafellar-Uryasev objective
+    /// <c>ζ + tailFactor × Σ_t max(−r_t − ζ, 0)</c> at a candidate ζ.
+    /// </summary>
+    private static decimal RuObjective(decimal zeta, decimal[] portReturns, decimal tailFactor)
+    {
+        var exceedanceSum = 0m;
+        for (var t = 0; t < portReturns.Length; t++)
+        {
+            var exceedance = -portReturns[t] - zeta;
+            if (exceedance > 0m)
+            {
+                exceedanceSum += exceedance;
+            }
+        }
+
+        return zeta + tailFactor * exceedanceSum;
     }
 }

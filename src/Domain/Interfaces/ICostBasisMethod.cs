@@ -34,7 +34,67 @@ public interface ICostBasisMethod
     /// Computes realized gain/loss for a sale and removes/adjusts the sold lots.
     /// Returns per-lot disposal records for tax reporting.
     /// </summary>
+    /// <param name="date">The sale date.</param>
+    /// <param name="quantity">The total quantity sold.</param>
+    /// <param name="pricePerShare">The sale price per share.</param>
+    /// <param name="commission">The commission paid on the sale.</param>
+    /// <returns>Per-lot disposal records produced by the method's default relief order.</returns>
+    /// <remarks>
+    /// This state-changing operation is not idempotent. Calling it twice records two dispositions
+    /// and relieves lots twice; callers replaying a trade stream must deduplicate upstream.
+    /// </remarks>
     IReadOnlyList<LotDisposal> RecordSale(DateOnly date, decimal quantity, decimal pricePerShare, decimal commission);
+
+    /// <summary>
+    /// Computes realized gain or loss for a sale, using an optional per-disposition lot election.
+    /// </summary>
+    /// <param name="date">The sale date.</param>
+    /// <param name="quantity">The total quantity sold.</param>
+    /// <param name="pricePerShare">The sale price per share.</param>
+    /// <param name="commission">The commission paid on the sale.</param>
+    /// <param name="identifiedLots">
+    /// Lots identified at or before the sale, or <see langword="null"/> to use the method's default
+    /// relief order.
+    /// </param>
+    /// <returns>Per-lot disposal records for tax reporting.</returns>
+    /// <exception cref="ArgumentException">
+    /// The quantities in <paramref name="identifiedLots"/> do not sum to <paramref name="quantity"/>.
+    /// </exception>
+    /// <exception cref="OverflowException">
+    /// The sum of the identified quantities exceeds the range of <see cref="decimal"/>.
+    /// </exception>
+    /// <exception cref="NotSupportedException">
+    /// The implementation does not support lot identification. Pooled methods such as
+    /// AverageCostBasis must reject an election rather than silently ignore it.
+    /// </exception>
+    /// <remarks>
+    /// Identification is a per-disposition election, not standing account state. Implementations
+    /// that permit specific identification override this overload. This state-changing operation is
+    /// not idempotent; callers replaying trade streams must deduplicate upstream.
+    /// </remarks>
+    IReadOnlyList<LotDisposal> RecordSale(
+        DateOnly date,
+        decimal quantity,
+        decimal pricePerShare,
+        decimal commission,
+        IReadOnlyList<LotIdentification>? identifiedLots)
+    {
+        if (identifiedLots is null)
+        {
+            return RecordSale(date, quantity, pricePerShare, commission);
+        }
+
+        var identifiedQuantity = identifiedLots.Sum(lot => lot.Quantity);
+        if (identifiedQuantity != quantity)
+        {
+            throw new ArgumentException(
+                $"Identified quantities sum to {identifiedQuantity}, but the sale quantity is {quantity}.",
+                nameof(identifiedLots));
+        }
+
+        throw new NotSupportedException(
+            $"{GetType().Name} does not support per-disposition lot identification.");
+    }
 
     /// <summary>
     /// Adjusts cost basis for return of capital distributions.

@@ -46,7 +46,7 @@ public sealed class TurnoverPenalizedConstruction : IPortfolioConstructionModel
     /// Initializes a new instance of the <see cref="TurnoverPenalizedConstruction"/> class.
     /// </summary>
     /// <param name="inner">The inner construction model to wrap.</param>
-    /// <param name="lambda">Turnover penalty strength. Range [0, 1]. Typical: 0.01-0.10.</param>
+    /// <param name="lambda">Turnover penalty strength. Must be non-negative; 0 disables the penalty and there is no upper bound (larger values trade less). Typical: 0.01-0.10.</param>
     /// <param name="minWeight">Minimum weight per asset.</param>
     /// <param name="maxWeight">Maximum weight per asset.</param>
     /// <param name="maxIterations">Maximum solver iterations. Default 2000.</param>
@@ -89,22 +89,64 @@ public sealed class TurnoverPenalizedConstruction : IPortfolioConstructionModel
         IReadOnlyList<Symbol> assets,
         decimal[][] returns)
     {
-        var result = ComputeTargetWeights(assets, returns, _previousWeights);
+        var result = ComputeTargetWeightsCore(assets, returns, _previousWeights, asOf: null);
+        _previousWeights = result;
+        return result;
+    }
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// Stateful like the two-argument overload (reads and updates the internally tracked previous
+    /// weights), and forwards <paramref name="asOf"/> to the inner model's own date-aware overload
+    /// (the decorator obligation of <see cref="IPortfolioConstructionModel"/>), so a date-aware model
+    /// deeper in the composed chain receives the evaluation date; the turnover penalty itself is
+    /// date-free.
+    /// </remarks>
+    public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
+        IReadOnlyList<Symbol> assets,
+        decimal[][] returns,
+        DateOnly asOf)
+    {
+        var result = ComputeTargetWeightsCore(assets, returns, _previousWeights, asOf);
         _previousWeights = result;
         return result;
     }
 
     /// <summary>
-    /// Core implementation: computes inner model's target and applies turnover penalty
-    /// against the given current weights via proximal gradient iteration.
+    /// Computes penalized target weights against an explicitly-supplied <paramref name="currentWeights"/>
+    /// (w_prev) without reading or writing the instance's tracked previous weights. Use this for
+    /// as-of / single-date computation where the caller owns w_prev (e.g. per-cohort rebalancing),
+    /// so one instance can serve many independent series without cross-contamination.
     /// </summary>
-    private IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
+    /// <param name="assets">The assets to assign weights to, in the order the returns rows correspond to.</param>
+    /// <param name="returns">Per-asset return series (row <c>i</c> = <paramref name="assets"/>[<c>i</c>]), passed through to the inner model.</param>
+    /// <param name="currentWeights">
+    /// The previous weights (w_prev) to penalize deviation from. When <see langword="null"/> or empty
+    /// (or when <c>lambda == 0</c>), no penalty is applied and the inner model's target is returned unchanged.
+    /// </param>
+    /// <returns>
+    /// Penalized weights on the constrained simplex (<c>minWeight ≤ wᵢ ≤ maxWeight</c>, <c>Σw = 1</c>),
+    /// pulled toward <paramref name="currentWeights"/> in proportion to <c>lambda</c>.
+    /// </returns>
+    /// <remarks>
+    /// Pure with respect to instance state: unlike the two-argument overload, this method neither reads
+    /// nor updates the internally tracked previous weights, so interleaved calls for different series
+    /// (cohorts) never leak one series' w_prev into another.
+    /// </remarks>
+    public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
         IReadOnlyList<Symbol> assets,
         decimal[][] returns,
         IReadOnlyDictionary<Symbol, decimal>? currentWeights)
+        => ComputeTargetWeightsCore(assets, returns, currentWeights, asOf: null);
+
+    private IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeightsCore(
+        IReadOnlyList<Symbol> assets,
+        decimal[][] returns,
+        IReadOnlyDictionary<Symbol, decimal>? currentWeights,
+        DateOnly? asOf)
     {
         // Delegate to inner model first
-        var target = _inner.ComputeTargetWeights(assets, returns);
+        var target = _inner.ComputeTargetWeightsAsOf(assets, returns, asOf);
 
         // If no current weights or lambda is zero, return inner model's target
         if (currentWeights is null || currentWeights.Count == 0 || _lambda == 0m)

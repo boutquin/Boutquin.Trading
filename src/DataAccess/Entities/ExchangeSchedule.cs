@@ -42,12 +42,18 @@ public sealed class ExchangeSchedule
         // Validate parameters
         Guard.AgainstUndefinedEnumValue(() => exchangeCode); // Throws ArgumentOutOfRangeException
         Guard.AgainstUndefinedEnumValue(() => dayOfWeek); // Throws ArgumentOutOfRangeException
+        // Time-of-day must be in [00:00, 24:00). 24:00:00 is not a valid time-of-day;
+        // any positive time less than 1 day is accepted. Ticks-1 equals the largest
+        // representable TimeSpan strictly less than 1 day (23:59:59.9999999).
+        var maxTimeOfDay = TimeSpan.FromDays(1) - TimeSpan.FromTicks(1);
         Guard.AgainstOutOfRange(() => openTime,
-            TimeSpan.Zero, TimeSpan.FromHours(24)); // Throws ArgumentOutOfRangeException
+            TimeSpan.Zero, maxTimeOfDay); // Throws ArgumentOutOfRangeException
         Guard.AgainstOutOfRange(() => closeTime,
-            TimeSpan.Zero, TimeSpan.FromHours(24)); // Throws ArgumentOutOfRangeException
+            TimeSpan.Zero, maxTimeOfDay); // Throws ArgumentOutOfRangeException
 
-        _id = -1;
+        // Assign the CLR default (0) so EF Core's on-add value generation assigns the
+        // database-generated key (a non-default sentinel would suppress generation).
+        _id = 0;
         ExchangeCode = exchangeCode;
         DayOfWeek = dayOfWeek;
         OpenTime = openTime;
@@ -60,22 +66,22 @@ public sealed class ExchangeSchedule
     private readonly int _id; // Private key for EF
 
     /// <summary>
-    /// Gets ISO 10383 market identifier code of the exchange.
+    /// ISO 10383 market identifier code of the exchange.
     /// </summary>
     public ExchangeCode ExchangeCode { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the day of the week for the schedule.
+    /// The day of the week for the schedule.
     /// </summary>
     public DayOfWeek DayOfWeek { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the opening time of the exchange.
+    /// The opening time of the exchange.
     /// </summary>
     public TimeSpan OpenTime { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the closing time of the exchange.
+    /// The closing time of the exchange.
     /// </summary>
     public TimeSpan CloseTime { get; private set; } // Setter is for EF
 

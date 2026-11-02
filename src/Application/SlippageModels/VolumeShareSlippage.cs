@@ -21,8 +21,9 @@ namespace Boutquin.Trading.Application.SlippageModels;
 /// <para>
 /// Two constraints:
 /// 1. Volume limit: only a fraction of the bar's volume can be consumed (prevents
-///    unrealistic fills in illiquid names). Orders exceeding the limit are partially
-///    filled up to the allowed quantity.
+///    unrealistic fills in illiquid names). Slippage is computed using the capped
+///    quantity — the model only affects fill price, not fill quantity. True partial
+///    fills require the caller to re-issue the unfilled remainder.
 /// 2. Price impact: slippage is proportional to the fraction of bar volume consumed.
 ///    impact = priceImpact * (quantity / barVolume). Buy orders pay more, sell orders receive less.
 /// </para>
@@ -54,12 +55,12 @@ public sealed class VolumeShareSlippage : ISlippageModel
     }
 
     /// <summary>
-    /// Gets the maximum fraction of bar volume that can be consumed.
+    /// The maximum fraction of bar volume that can be consumed.
     /// </summary>
     public decimal VolumeLimit => _volumeLimit;
 
     /// <summary>
-    /// Gets the price impact coefficient.
+    /// The price impact coefficient.
     /// </summary>
     public decimal PriceImpact => _priceImpact;
 

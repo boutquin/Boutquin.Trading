@@ -18,8 +18,9 @@ namespace Boutquin.Trading.Application.Indicators;
 
 /// <summary>
 /// Computes cross-sectional momentum as the cumulative return over a trailing window,
-/// excluding the most recent month(s) to avoid short-term reversal (Jegadeesh &amp; Titman, 1993).
-/// Default: 12-1 month momentum (12 months total, skip last 1 month).
+/// excluding the most-recent skip window (configurable, in months) to avoid short-term
+/// reversal (Jegadeesh &amp; Titman, 1993).
+/// Default: 12-1 month momentum (12 months total, skip the last 1 month).
 /// </summary>
 public sealed class MomentumScore : IIndicator
 {
@@ -52,7 +53,7 @@ public sealed class MomentumScore : IIndicator
     /// <inheritdoc />
     public decimal Compute(decimal[] dailyReturns)
     {
-        Guard.AgainstNullOrEmptyArray(() => dailyReturns);
+        Guard.AgainstEmptyOrNullArray(() => dailyReturns);
 
         var requiredDays = _totalMonths * _tradingDaysPerMonth;
         if (dailyReturns.Length < requiredDays)

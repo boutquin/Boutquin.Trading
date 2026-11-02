@@ -47,7 +47,7 @@ public sealed class ConstructionModelStrategyUniverseTests
         var (strategy, historicalData, fxData) = CreateStrategy(universe);
 
         // Act
-        var signalEvent = strategy.GenerateSignals(date, CurrencyCode.USD, historicalData, fxData);
+        var signalEvent = strategy.GenerateSignals(date, Currency.USD, historicalData, fxData);
 
         // Assert: GLD should NOT be in signals (not eligible yet)
         signalEvent.Signals.Should().NotContainKey(s_gld);
@@ -67,7 +67,7 @@ public sealed class ConstructionModelStrategyUniverseTests
         var (strategy, historicalData, fxData) = CreateStrategy(universeSelector: null);
 
         // Act
-        var signalEvent = strategy.GenerateSignals(date, CurrencyCode.USD, historicalData, fxData);
+        var signalEvent = strategy.GenerateSignals(date, Currency.USD, historicalData, fxData);
 
         // Assert: all assets should be included
         signalEvent.Signals.Should().ContainKey(s_vti);
@@ -98,7 +98,7 @@ public sealed class ConstructionModelStrategyUniverseTests
         var (strategy, historicalData, fxData) = CreateStrategy(universe);
 
         // First rebalance — all three eligible
-        strategy.GenerateSignals(date1, CurrencyCode.USD, historicalData, fxData);
+        strategy.GenerateSignals(date1, Currency.USD, historicalData, fxData);
 
         // Give GLD a position
         strategy.UpdatePositions(s_gld, 50);
@@ -117,7 +117,7 @@ public sealed class ConstructionModelStrategyUniverseTests
         strategy2.UpdatePositions(s_gld, 50);
 
         // Act — trigger second rebalance with restricted universe
-        var signalEvent = strategy2.GenerateSignals(date2, CurrencyCode.USD, historicalData2, fxData2);
+        var signalEvent = strategy2.GenerateSignals(date2, Currency.USD, historicalData2, fxData2);
 
         // Assert: GLD should have a rebalance signal (to trigger sell)
         // and LastComputedWeights should have GLD=0
@@ -131,16 +131,16 @@ public sealed class ConstructionModelStrategyUniverseTests
 
     // --- Helpers ---
 
-    private static (ConstructionModelStrategy Strategy, SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>> MarketData, SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> FxData) CreateStrategy(
+    private static (ConstructionModelStrategy Strategy, SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>> MarketData, SortedDictionary<DateOnly, SortedDictionary<Currency, decimal>> FxData) CreateStrategy(
         ITimedUniverseSelector? universeSelector)
     {
-        var assets = new Dictionary<Symbol, CurrencyCode>
+        var assets = new Dictionary<Symbol, Currency>
         {
-            [s_vti] = CurrencyCode.USD,
-            [s_bnd] = CurrencyCode.USD,
-            [s_gld] = CurrencyCode.USD,
+            [s_vti] = Currency.USD,
+            [s_bnd] = Currency.USD,
+            [s_gld] = Currency.USD,
         };
-        var cash = new SortedDictionary<CurrencyCode, decimal> { [CurrencyCode.USD] = 100_000m };
+        var cash = new SortedDictionary<Currency, decimal> { [Currency.USD] = 100_000m };
 
         var mockOrderPrice = new Mock<IOrderPriceCalculationStrategy>();
         mockOrderPrice
@@ -158,6 +158,16 @@ public sealed class ConstructionModelStrategyUniverseTests
                 return a.ToDictionary(x => x, _ => w);
             });
 
+        // The strategy invokes the date-aware overload; a Moq proxy implements every interface member
+        // itself, so the default-interface-method forwarding does not run and the overload must be set
+        // up explicitly to mirror the date-free behavior.
+        mockModel.Setup(m => m.ComputeTargetWeights(It.IsAny<IReadOnlyList<Symbol>>(), It.IsAny<decimal[][]>(), It.IsAny<DateOnly>()))
+            .Returns((IReadOnlyList<Symbol> a, decimal[][] _, DateOnly _) =>
+            {
+                var w = 1m / a.Count;
+                return a.ToDictionary(x => x, _ => w);
+            });
+
         var strategy = new ConstructionModelStrategy(
             "TestStrategy", assets, cash, mockOrderPrice.Object, mockSizer.Object,
             mockModel.Object, RebalancingFrequency.Monthly, lookbackWindow: 2,
@@ -165,7 +175,7 @@ public sealed class ConstructionModelStrategyUniverseTests
 
         // Create enough historical data for weight computation
         var historicalData = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>();
-        var fxData = new SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>();
+        var fxData = new SortedDictionary<DateOnly, SortedDictionary<Currency, decimal>>();
         var baseDate = new DateOnly(2024, 5, 1);
 
         for (var i = 0; i < 70; i++)
@@ -177,7 +187,7 @@ public sealed class ConstructionModelStrategyUniverseTests
                 dayData[asset] = new Bar(date, 100m + i * 0.1m, 105m, 95m, 100m + i * 0.1m, 100m + i * 0.1m, 1_000_000L);
             }
             historicalData[date] = dayData;
-            fxData[date] = new SortedDictionary<CurrencyCode, decimal> { [CurrencyCode.USD] = 1m };
+            fxData[date] = new SortedDictionary<Currency, decimal> { [Currency.USD] = 1m };
         }
 
         return (strategy, historicalData, fxData);

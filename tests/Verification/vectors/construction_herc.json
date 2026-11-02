@@ -1274,11 +1274,11 @@
         ]
       ],
       "weights": [
-        0.18467538032236266,
-        0.21289104867351466,
-        0.20878592716483352,
-        0.23331034286032046,
-        0.16033730097896873
+        0.09728184832092764,
+        0.1292791868518266,
+        0.13671936257611791,
+        0.43247130318040655,
+        0.2042482990707214
       ]
     },
     "three_asset": {
@@ -2047,9 +2047,9 @@
         ]
       ],
       "weights": [
-        0.4863813588205181,
-        0.2559365106838936,
-        0.25768213049558825
+        0.43422491849729317,
+        0.2809646806677465,
+        0.2848104008349603
       ]
     },
     "two_asset": {
@@ -3080,8 +3080,8 @@
         ]
       ],
       "weights": [
-        0.4999999999568679,
-        0.5000000000431322
+        0.49999999995686795,
+        0.500000000043132
       ]
     },
     "single_asset": {
@@ -3144,5 +3144,5 @@
       ]
     }
   },
-  "notes": "HERC: single-linkage clustering + recursive bisection with inverse-risk (1/sigma)."
+  "notes": "HERC: TRUE Raffinot (2018) four-step method \u2014 single-linkage clustering, Gap-index optimal cluster count (Tibshirani 2001, shared deterministic LCG), dendrogram-shape top-down ERC bisection between clusters (a1 = sigma_2/(sigma_1+sigma_2)), naive risk parity (inverse-variance) within clusters. NOT the old inverse-risk HRP-midpoint shortcut."
 }

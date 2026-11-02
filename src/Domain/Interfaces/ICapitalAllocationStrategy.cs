@@ -17,7 +17,7 @@
 namespace Boutquin.Trading.Domain.Interfaces;
 /// <summary>
 /// The ICapitalAllocationStrategy interface defines a method for allocating capital across multiple strategies.
-/// This interface is used by the Portfolio class to compute the SortedDictionary&lt;CurrencyCode, decimal&gt; TargetCapital,
+/// This interface is used by the Portfolio class to compute the SortedDictionary&lt;Currency, decimal&gt; TargetCapital,
 /// which is used for generating signals in each strategy.
 /// </summary>
 public interface ICapitalAllocationStrategy
@@ -28,15 +28,15 @@ public interface ICapitalAllocationStrategy
     /// </summary>
     /// <param name="strategies">An ImmutableList of IStrategy objects representing the trading strategies to allocate capital to.</param>
     /// <param name="historicalMarketData">A read-only dictionary containing historical market data for multiple assets.</param>
-    /// <param name="historicalFxConversionRates">A read-only dictionary containing historical foreign exchange conversion rates for each currency.</param>
-    /// <returns>A sorted dictionary containing the allocated capital for each strategy, with the strategy's name as the key and a SortedDictionary&lt;CurrencyCode, decimal&gt; representing the allocated capital in each currency as the value.</returns>
+    /// <param name="historicalFxConversionRates">FX rate tables by date, each keyed by non-base currency and holding base-currency units per 1 unit of the keyed currency (see <see cref="Helpers.FxConversion"/>).</param>
+    /// <returns>A sorted dictionary containing the allocated capital for each strategy, with the strategy's name as the key and a SortedDictionary&lt;Currency, decimal&gt; representing the allocated capital in each currency as the value.</returns>
     /// <remarks>
     /// The AllocateCapital method should be implemented by the capital allocation strategy to distribute capital among the strategies
     /// based on their performance or other criteria. The method should take into account historical market data and foreign exchange
     /// conversion rates to ensure that the allocated capital is appropriate for each strategy.
     /// </remarks>
-    IReadOnlyDictionary<string, SortedDictionary<CurrencyCode, decimal>> AllocateCapital(
+    IReadOnlyDictionary<string, SortedDictionary<Currency, decimal>> AllocateCapital(
         ImmutableList<IStrategy> strategies,
         IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> historicalMarketData,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates);
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Currency, decimal>> historicalFxConversionRates);
 }

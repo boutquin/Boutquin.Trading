@@ -67,13 +67,34 @@ public sealed class RegimeWeightConstrainedConstruction : IPortfolioConstruction
     public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
         IReadOnlyList<Symbol> assets,
         decimal[][] returns)
+        => ComputeTargetWeightsCore(assets, returns, asOf: null);
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// Forwards <paramref name="asOf"/> to the inner model's own date-aware overload (the decorator
+    /// obligation of <see cref="IPortfolioConstructionModel"/>), so a date-aware model deeper in the
+    /// composed chain receives the evaluation date; the regime-constraint clamping itself is
+    /// date-free.
+    /// </remarks>
+    public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
+        IReadOnlyList<Symbol> assets,
+        decimal[][] returns,
+        DateOnly asOf)
+        => ComputeTargetWeightsCore(assets, returns, asOf);
+
+    private IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeightsCore(
+        IReadOnlyList<Symbol> assets,
+        decimal[][] returns,
+        DateOnly? asOf)
     {
+        Guard.AgainstNull(() => assets);
+
         if (assets.Count == 0)
         {
             return new Dictionary<Symbol, decimal>();
         }
 
-        var baseWeights = _inner.ComputeTargetWeights(assets, returns);
+        var baseWeights = _inner.ComputeTargetWeightsAsOf(assets, returns, asOf);
         var constraints = _regimeConstraints[_currentRegime];
 
         if (constraints.Floors is null or { Count: 0 } && constraints.Caps is null or { Count: 0 })

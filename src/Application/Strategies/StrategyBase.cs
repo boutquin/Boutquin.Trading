@@ -30,7 +30,7 @@ namespace Boutquin.Trading.Application.Strategies;
 public abstract class StrategyBase : IStrategy
 {
     private readonly SortedDictionary<Symbol, int> _positions = [];
-    private readonly SortedDictionary<CurrencyCode, decimal> _cash;
+    private readonly SortedDictionary<Currency, decimal> _cash;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StrategyBase"/> class.
@@ -45,8 +45,8 @@ public abstract class StrategyBase : IStrategy
     /// <exception cref="EmptyOrNullDictionaryException">Thrown when assets or cash dictionaries are empty or null.</exception>
     protected StrategyBase(
         string name,
-        IReadOnlyDictionary<Symbol, CurrencyCode> assets,
-        SortedDictionary<CurrencyCode, decimal> cash,
+        IReadOnlyDictionary<Symbol, Currency> assets,
+        SortedDictionary<Currency, decimal> cash,
         IOrderPriceCalculationStrategy orderPriceCalculationStrategy,
         IPositionSizer positionSizer)
     {
@@ -59,7 +59,7 @@ public abstract class StrategyBase : IStrategy
         Name = name;
         Assets = assets;
         // H6: Defensive copy — prevent external mutation via the original reference
-        _cash = new SortedDictionary<CurrencyCode, decimal>(cash);
+        _cash = new SortedDictionary<Currency, decimal>(cash);
         OrderPriceCalculationStrategy = orderPriceCalculationStrategy;
         PositionSizer = positionSizer;
     }
@@ -71,10 +71,10 @@ public abstract class StrategyBase : IStrategy
     public IReadOnlyDictionary<Symbol, int> Positions => _positions;
 
     /// <inheritdoc />
-    public IReadOnlyDictionary<Symbol, CurrencyCode> Assets { get; }
+    public IReadOnlyDictionary<Symbol, Currency> Assets { get; }
 
     /// <inheritdoc />
-    public IReadOnlyDictionary<CurrencyCode, decimal> Cash => _cash;
+    public IReadOnlyDictionary<Currency, decimal> Cash => _cash;
 
     /// <inheritdoc />
     public IOrderPriceCalculationStrategy OrderPriceCalculationStrategy { get; }
@@ -85,16 +85,16 @@ public abstract class StrategyBase : IStrategy
     /// <inheritdoc />
     public abstract SignalEvent GenerateSignals(
         DateOnly timestamp,
-        CurrencyCode baseCurrency,
+        Currency baseCurrency,
         IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> historicalMarketData,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates);
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Currency, decimal>> historicalFxConversionRates);
 
     /// <inheritdoc />
     public virtual decimal ComputeTotalValue(
         DateOnly timestamp,
-        CurrencyCode baseCurrency,
+        Currency baseCurrency,
         IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> historicalMarketData,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Currency, decimal>> historicalFxConversionRates)
     {
         Guard.AgainstUndefinedEnumValue(() => baseCurrency);
         Guard.AgainstEmptyOrNullReadOnlyDictionary(() => historicalMarketData);
@@ -106,60 +106,52 @@ public abstract class StrategyBase : IStrategy
         {
             _positions.TryGetValue(asset, out var positionSize);
 
+            Bar? marketData = null;
             if (historicalMarketData.TryGetValue(timestamp, out var assetMarketData) &&
-                assetMarketData is not null && assetMarketData.TryGetValue(asset, out var marketData))
+                assetMarketData is not null && assetMarketData.TryGetValue(asset, out var exactBar))
             {
-                var assetValue = positionSize * marketData.AdjustedClose;
-
-                if (assetCurrency != baseCurrency)
-                {
-                    if (historicalFxConversionRates.TryGetValue(timestamp, out var fxRates) &&
-                        fxRates.TryGetValue(assetCurrency, out var conversionRate))
-                    {
-                        assetValue *= conversionRate;
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException($"Conversion rate not found for currency {assetCurrency} at timestamp {timestamp}");
-                    }
-                }
-
-                totalValue += assetValue;
+                marketData = exactBar;
             }
             else if (positionSize != 0)
             {
-                // Only throw if we actually hold a position — assets with no position
-                // and no market data contribute $0 (e.g., not yet incepted in dynamic universe)
+                // Cross-calendar fallback: the portfolio runs on its own trading calendar
+                // (e.g. CA blueprints use TSX), but individual assets may be listed on a
+                // different calendar that was closed on this timestamp (e.g. VTI on NYSE
+                // during the 2001-09-11 → 2001-09-14 closure). See
+                // <see cref="HistoricalMarketDataLookup.TryFindMostRecentBar"/>.
+                marketData = HistoricalMarketDataLookup.TryFindMostRecentBar(
+                    historicalMarketData, asset, timestamp);
+            }
+
+            if (marketData is not null)
+            {
+                // The FX map holds base units per 1 unit of the asset currency (FxConversion contract).
+                totalValue += FxConversion.ToBase(
+                    positionSize * marketData.Value.AdjustedClose,
+                    assetCurrency,
+                    baseCurrency,
+                    historicalFxConversionRates,
+                    timestamp);
+            }
+            else if (positionSize != 0)
+            {
+                // Only throw if we actually hold a position AND forward-fill found nothing
+                // (asset not yet incepted, or cross-calendar gap wider than the lookback
+                // window). Assets with no position and no market data contribute $0.
                 throw new InvalidOperationException($"Market data not found for asset {asset} at timestamp {timestamp}");
             }
         }
 
-        foreach (var cashEntry in _cash)
+        foreach (var (cashCurrency, cashAmount) in _cash)
         {
-            var cashCurrency = cashEntry.Key;
-            var cashAmount = cashEntry.Value;
-
-            if (cashCurrency != baseCurrency)
-            {
-                if (historicalFxConversionRates.TryGetValue(timestamp, out var fxRates) &&
-                    fxRates.TryGetValue(cashCurrency, out var conversionRate))
-                {
-                    cashAmount *= conversionRate;
-                }
-                else
-                {
-                    throw new InvalidOperationException($"Conversion rate not found for currency {cashCurrency} at timestamp {timestamp}");
-                }
-            }
-
-            totalValue += cashAmount;
+            totalValue += FxConversion.ToBase(cashAmount, cashCurrency, baseCurrency, historicalFxConversionRates, timestamp);
         }
 
         return totalValue;
     }
 
     /// <inheritdoc />
-    public void UpdateCash(CurrencyCode currency, decimal amount)
+    public void UpdateCash(Currency currency, decimal amount)
     {
         Guard.AgainstUndefinedEnumValue(() => currency);
 
@@ -196,4 +188,5 @@ public abstract class StrategyBase : IStrategy
         // Safe: public read accessor — no position means 0 shares held
         return _positions.GetValueOrDefault(asset, 0);
     }
+
 }

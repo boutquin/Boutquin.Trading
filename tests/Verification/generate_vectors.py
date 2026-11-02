@@ -397,13 +397,15 @@ def gen_covariance_vectors(mar):
     # Sample covariance (N-1 divisor)
     sample_cov = np.cov(mar, ddof=1)  # mar is 3×252
 
-    # EWMA covariance (lambda=0.94)
+    # EWMA covariance (lambda=0.94). Centering uses the EWMA-weighted mean
+    # (mu_i = sum_k w_k * r_{k,i}), not the arithmetic mean, matching
+    # Boutquin.Numerics v2.0.0's ExponentiallyWeightedCovarianceEstimator.
     lam = 0.94
     n_assets, t = mar.shape
-    means = np.mean(mar, axis=1)
-    demeaned = mar - means[:, np.newaxis]
     weights = np.array([lam ** (t - 1 - k) for k in range(t)])
     weights /= weights.sum()
+    means = (mar * weights).sum(axis=1)
+    demeaned = mar - means[:, np.newaxis]
     ewma_cov = np.zeros((n_assets, n_assets))
     for i in range(n_assets):
         for j in range(i, n_assets):

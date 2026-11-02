@@ -15,6 +15,7 @@
 //
 
 using System.Collections.ObjectModel;
+using Boutquin.Domain.Enumerations;
 using Boutquin.MarketData.Abstractions.ReferenceData;
 using Boutquin.MarketData.Adapter.BankOfCanada;
 using Boutquin.MarketData.Adapter.FamaFrench;
@@ -67,7 +68,7 @@ var sp = host.Services;
 var logger = sp.GetRequiredService<ILoggerFactory>().CreateLogger("BackTest");
 
 // ── Backtest configuration ───────────────────────────────────────────────
-const CurrencyCode baseCurrency = CurrencyCode.USD;
+const Currency baseCurrency = Currency.USD;
 var startDate = new DateOnly(2020, 1, 2);
 var endDate = new DateOnly(2024, 12, 31);
 var initialCash = 100_000m;
@@ -92,8 +93,8 @@ var slippage = new NoSlippage();
 // ── Portfolio setup ──────────────────────────────────────────────────────
 var strategy = new BuyAndHoldStrategy(
     "US-60-30-10",
-    new SortedDictionary<Symbol, CurrencyCode>(assetCurrencies),
-    new SortedDictionary<CurrencyCode, decimal> { { baseCurrency, initialCash } },
+    new SortedDictionary<Symbol, Currency>(assetCurrencies),
+    new SortedDictionary<Currency, decimal> { { baseCurrency, initialCash } },
     startDate,
     new ClosePriceOrderPriceCalculationStrategy(),
     positionSizer);
@@ -105,13 +106,17 @@ var handlers = new Dictionary<Type, IEventHandler>
     { typeof(MarketEvent), new MarketEventHandler() },
     { typeof(FillEvent), new FillEventHandler() },
     { typeof(SignalEvent), new SignalEventHandler() },
+    // FX conversions fund any asset priced outside the base currency; inert for a
+    // single-currency universe, required the moment one asset is not.
+    { typeof(FxOrderEvent), new FxOrderEventHandler() },
+    { typeof(FxFillEvent), new FxFillEventHandler() },
 };
 
 var portfolio = new Portfolio(
     baseCurrency,
     new ReadOnlyDictionary<string, IStrategy>(
         new Dictionary<string, IStrategy> { { strategy.Name, strategy } }),
-    new SortedDictionary<Symbol, CurrencyCode>(assetCurrencies),
+    new SortedDictionary<Symbol, Currency>(assetCurrencies),
     handlers,
     broker);
 
@@ -120,8 +125,8 @@ var benchWeights = new Dictionary<Symbol, decimal> { [spy] = 1.0m };
 var benchSizer = new FixedWeightPositionSizer(benchWeights, baseCurrency);
 var benchStrategy = new BuyAndHoldStrategy(
     "SPY-Benchmark",
-    new SortedDictionary<Symbol, CurrencyCode> { { spy, baseCurrency } },
-    new SortedDictionary<CurrencyCode, decimal> { { baseCurrency, initialCash } },
+    new SortedDictionary<Symbol, Currency> { { spy, baseCurrency } },
+    new SortedDictionary<Currency, decimal> { { baseCurrency, initialCash } },
     startDate,
     new ClosePriceOrderPriceCalculationStrategy(),
     benchSizer);
@@ -133,13 +138,15 @@ var benchHandlers = new Dictionary<Type, IEventHandler>
     { typeof(MarketEvent), new MarketEventHandler() },
     { typeof(FillEvent), new FillEventHandler() },
     { typeof(SignalEvent), new SignalEventHandler() },
+    { typeof(FxOrderEvent), new FxOrderEventHandler() },
+    { typeof(FxFillEvent), new FxFillEventHandler() },
 };
 
 var benchmarkPortfolio = new Portfolio(
     baseCurrency,
     new ReadOnlyDictionary<string, IStrategy>(
         new Dictionary<string, IStrategy> { { benchStrategy.Name, benchStrategy } }),
-    new SortedDictionary<Symbol, CurrencyCode> { { spy, baseCurrency } },
+    new SortedDictionary<Symbol, Currency> { { spy, baseCurrency } },
     benchHandlers,
     benchBroker);
 
@@ -153,7 +160,8 @@ var spec = new BacktestDatasetSpec
     StartDate = startDate,
     EndDate = endDate,
     BaseCurrency = baseCurrency,
-    ForeignCurrencies = [],
+    // One FX pair (foreign/base) per non-base asset currency; empty for this all-USD universe.
+    ForeignCurrencies = [.. assetCurrencies.Values.Where(c => c != baseCurrency).Distinct()],
 };
 
 var dataset = await datasetBuilder.BuildAsync(spec).ConfigureAwait(false);

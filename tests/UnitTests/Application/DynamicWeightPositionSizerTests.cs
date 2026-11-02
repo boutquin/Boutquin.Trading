@@ -33,7 +33,7 @@ public sealed class DynamicWeightPositionSizerTests
     public void DynamicWeightPositionSizer_ShouldRoundAwayFromZero()
     {
         // Arrange
-        var positionSizer = new DynamicWeightPositionSizer(CurrencyCode.USD);
+        var positionSizer = new DynamicWeightPositionSizer(Currency.USD);
         var asset = new Symbol("XYZ");
         var signalType = new Dictionary<Symbol, SignalType> { { asset, SignalType.Rebalance } };
 
@@ -50,19 +50,19 @@ public sealed class DynamicWeightPositionSizerTests
         {
             { _timestamp, new SortedDictionary<Symbol, Bar> { { asset, marketData } } }
         };
-        var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
+        var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<Currency, decimal>>
         {
-            { _timestamp, new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
+            { _timestamp, new SortedDictionary<Currency, decimal> { { Currency.USD, 1m } } }
         };
 
         // Strategy with equal weight fallback — 1 asset gets 100% weight
         var strategyMock = new Mock<IStrategy>();
-        strategyMock.Setup(s => s.Assets).Returns(new Dictionary<Symbol, CurrencyCode> { { asset, CurrencyCode.USD } });
+        strategyMock.Setup(s => s.Assets).Returns(new Dictionary<Symbol, Currency> { { asset, Currency.USD } });
         strategyMock.Setup(s => s.ComputeTotalValue(
             It.IsAny<DateOnly>(),
-            It.IsAny<CurrencyCode>(),
+            It.IsAny<Currency>(),
             It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>>>(),
-            It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>>())).Returns(500m);
+            It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Currency, decimal>>>())).Returns(500m);
 
         // Act — desiredValue = 500 * 1.0 = 500; 500 / 333 = 1.5015... → rounds to 2
         var positionSizes = positionSizer.ComputePositionSizes(
@@ -84,19 +84,19 @@ public sealed class DynamicWeightPositionSizerTests
         var vea = new Symbol("VEA");
         var iemg = new Symbol("IEMG");
 
-        var assets = new Dictionary<Symbol, CurrencyCode>
+        var assets = new Dictionary<Symbol, Currency>
         {
-            { vti, CurrencyCode.USD },
-            { vea, CurrencyCode.USD },
-            { iemg, CurrencyCode.USD }
+            { vti, Currency.USD },
+            { vea, Currency.USD },
+            { iemg, Currency.USD }
         };
 
-        var positionSizer = new DynamicWeightPositionSizer(CurrencyCode.USD);
+        var positionSizer = new DynamicWeightPositionSizer(Currency.USD);
 
         var strategy = new ConstructionModelStrategy(
             "Test",
             assets,
-            new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 100_000m } },
+            new SortedDictionary<Currency, decimal> { { Currency.USD, 100_000m } },
             new ClosePriceOrderPriceCalculationStrategy(),
             positionSizer,
             new EqualWeightConstruction(),
@@ -123,9 +123,9 @@ public sealed class DynamicWeightPositionSizerTests
         {
             { _timestamp, new SortedDictionary<Symbol, Bar> { { vti, vtiMd } } }
         };
-        var fxRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
+        var fxRates = new Dictionary<DateOnly, SortedDictionary<Currency, decimal>>
         {
-            { _timestamp, new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
+            { _timestamp, new SortedDictionary<Currency, decimal> { { Currency.USD, 1m } } }
         };
 
         // Act
@@ -148,17 +148,17 @@ public sealed class DynamicWeightPositionSizerTests
     {
         // Arrange
         var vti = new Symbol("VTI");
-        var assets = new Dictionary<Symbol, CurrencyCode>
+        var assets = new Dictionary<Symbol, Currency>
         {
-            { vti, CurrencyCode.USD }
+            { vti, Currency.USD }
         };
 
-        var positionSizer = new DynamicWeightPositionSizer(CurrencyCode.USD);
+        var positionSizer = new DynamicWeightPositionSizer(Currency.USD);
 
         var strategy = new ConstructionModelStrategy(
             "Test",
             assets,
-            new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 100_000m } },
+            new SortedDictionary<Currency, decimal> { { Currency.USD, 100_000m } },
             new ClosePriceOrderPriceCalculationStrategy(),
             positionSizer,
             new EqualWeightConstruction(),
@@ -183,9 +183,9 @@ public sealed class DynamicWeightPositionSizerTests
         {
             { _timestamp, new SortedDictionary<Symbol, Bar> { { vti, vtiMd } } }
         };
-        var fxRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
+        var fxRates = new Dictionary<DateOnly, SortedDictionary<Currency, decimal>>
         {
-            { _timestamp, new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
+            { _timestamp, new SortedDictionary<Currency, decimal> { { Currency.USD, 1m } } }
         };
 
         // Act
@@ -211,17 +211,17 @@ public sealed class DynamicWeightPositionSizerTests
         // Arrange — ConstructionModelStrategy with no data means LastComputedWeights is null
         var asset1 = new Symbol("VTI");
         var asset2 = new Symbol("TLT");
-        var assets = new Dictionary<Symbol, CurrencyCode>
+        var assets = new Dictionary<Symbol, Currency>
         {
-            { asset1, CurrencyCode.USD },
-            { asset2, CurrencyCode.USD }
+            { asset1, Currency.USD },
+            { asset2, Currency.USD }
         };
 
-        var positionSizer = new DynamicWeightPositionSizer(CurrencyCode.USD);
+        var positionSizer = new DynamicWeightPositionSizer(Currency.USD);
         var strategy = new ConstructionModelStrategy(
             "Test",
             assets,
-            new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 100_000m } },
+            new SortedDictionary<Currency, decimal> { { Currency.USD, 100_000m } },
             new ClosePriceOrderPriceCalculationStrategy(),
             positionSizer,
             new EqualWeightConstruction(),
@@ -243,9 +243,9 @@ public sealed class DynamicWeightPositionSizerTests
         {
             { _timestamp, new SortedDictionary<Symbol, Bar> { { asset1, md1 }, { asset2, md2 } } }
         };
-        var fxRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
+        var fxRates = new Dictionary<DateOnly, SortedDictionary<Currency, decimal>>
         {
-            { _timestamp, new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
+            { _timestamp, new SortedDictionary<Currency, decimal> { { Currency.USD, 1m } } }
         };
 
         // Act & Assert — should throw, not silently use 1/N
@@ -254,5 +254,47 @@ public sealed class DynamicWeightPositionSizerTests
 
         act.Should().Throw<InvalidOperationException>()
             .WithMessage("*construction model*weight*");
+    }
+
+    /// <summary>
+    /// The target value is in base currency and the price in the asset's currency; the sizer must
+    /// convert before dividing. CAD base, USD asset: 100,000 CAD × 50% = 50,000 CAD = 38,461.54 USD
+    /// at 1.30 CAD/USD; at 100 USD a share that is 385 shares, not the 500 a naive division buys.
+    /// </summary>
+    [Fact]
+    public void DynamicWeightPositionSizer_ForeignAsset_ConvertsTargetValueIntoAssetCurrency()
+    {
+        var vgsh = new Symbol("VGSH");
+        var assets = new Dictionary<Symbol, Currency> { { vgsh, Currency.USD } };
+        var positionSizer = new DynamicWeightPositionSizer(Currency.CAD);
+
+        var strategy = new ConstructionModelStrategy(
+            "Test",
+            assets,
+            new SortedDictionary<Currency, decimal> { { Currency.CAD, 100_000m } },
+            new ClosePriceOrderPriceCalculationStrategy(),
+            positionSizer,
+            new EqualWeightConstruction(),
+            RebalancingFrequency.Quarterly,
+            lookbackWindow: 60);
+
+        typeof(ConstructionModelStrategy)
+            .GetProperty(nameof(ConstructionModelStrategy.LastComputedWeights))!
+            .SetValue(strategy, new Dictionary<Symbol, decimal> { { vgsh, 0.5m } });
+
+        var signals = new Dictionary<Symbol, SignalType> { { vgsh, SignalType.Rebalance } };
+        var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Symbol, Bar>>
+        {
+            { _timestamp, new SortedDictionary<Symbol, Bar> { { vgsh, new Bar(_timestamp, 100, 100, 100, 100, 100, 1_000_000) } } }
+        };
+        var fxRates = new Dictionary<DateOnly, SortedDictionary<Currency, decimal>>
+        {
+            { _timestamp, new SortedDictionary<Currency, decimal> { { Currency.USD, 1.30m } } }
+        };
+
+        var positionSizes = positionSizer.ComputePositionSizes(
+            _timestamp, signals, strategy, historicalMarketData, fxRates);
+
+        positionSizes[vgsh].Should().Be(385, "50,000 CAD ÷ 1.30 = 38,461.54 USD ÷ 100 USD/share, rounded");
     }
 }

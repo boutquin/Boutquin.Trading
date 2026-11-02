@@ -40,15 +40,30 @@ public sealed class NercomeCovarianceEstimator : ICovarianceEstimator
     /// Fraction of observations assigned to the first half for eigenvector estimation.
     /// Default 0.5 (equal split). Must be in (0, 1).
     /// </param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="splitFraction"/> is not in the range (0, 1).
+    /// </exception>
     public NercomeCovarianceEstimator(decimal splitFraction = 0.5m)
     {
         _inner = new NumericsStats.NercomeCovarianceEstimator(splitFraction);
     }
 
     /// <inheritdoc />
+    /// <exception cref="ArgumentException">Thrown when fewer than 4 observations are provided (2 required per half).</exception>
     public decimal[,] Estimate(decimal[][] returns)
     {
         SampleCovarianceEstimator.ValidateReturns(returns);
+
+        // The split-sample method requires at least 2 observations per half.
+        // With the default splitFraction=0.5 that means T >= 4; enforce here
+        // because the inner Numerics package accepts T=2/3 and returns degenerate output.
+        if (returns[0].Length < 4)
+        {
+            throw new ArgumentException(
+                "NercomeCovarianceEstimator requires at least 4 observations (2 per half).",
+                nameof(returns));
+        }
+
         return _inner.Estimate(new NumericsStats.ReturnsMatrix(returns).AsTimeByAsset());
     }
 }

@@ -23,8 +23,8 @@ namespace Boutquin.Trading.Domain.Analytics;
 /// <param name="TroughDate">The date of the maximum depth within this drawdown.</param>
 /// <param name="RecoveryDate">The date the equity recovered to the prior peak, or null if still in drawdown.</param>
 /// <param name="Depth">The maximum percentage decline from peak (negative value, e.g., -0.15 = -15%).</param>
-/// <param name="DurationDays">Number of calendar days from start to recovery (or to the last date if not recovered).</param>
-/// <param name="RecoveryDays">Number of calendar days from trough to recovery, or null if not recovered.</param>
+/// <param name="DurationDays">Number of trading days (equity-curve entries) from start to recovery (or to the last observed date if not recovered).</param>
+/// <param name="RecoveryDays">Number of trading days (equity-curve entries) from trough to recovery, or null if not recovered.</param>
 public sealed record DrawdownPeriod(
     DateOnly StartDate,
     DateOnly TroughDate,

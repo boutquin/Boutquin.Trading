@@ -21,10 +21,10 @@ namespace Boutquin.Trading.Domain.Helpers;
 /// for a backtested trading strategy, providing an overview of the strategy's
 /// risk and return characteristics.
 /// </summary>
-/// <param name="AnnualizedReturn">The annualized return of the strategy, expressed as a percentage.</param>
+/// <param name="AnnualizedReturn">The annualized return of the strategy as a raw decimal ratio (e.g., 0.125 for 12.5%).</param>
 /// <param name="SharpeRatio">The Sharpe ratio of the strategy.</param>
 /// <param name="SortinoRatio">The Sortino ratio of the strategy.</param>
-/// <param name="MaxDrawdown">The maximum drawdown of the strategy, expressed as a percentage.</param>
+/// <param name="MaxDrawdown">The maximum drawdown of the strategy as a raw decimal ratio (e.g., -0.25 for a 25% drawdown).</param>
 /// <param name="CAGR">The compound annual growth rate (CAGR) of the strategy.</param>
 /// <param name="Volatility">The annualized volatility of the strategy.</param>
 /// <param name="Alpha">The alpha of the strategy relative to a benchmark.</param>

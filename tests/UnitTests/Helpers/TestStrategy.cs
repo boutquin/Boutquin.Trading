@@ -22,7 +22,7 @@ namespace Boutquin.Trading.Tests.UnitTests.Helpers;
 public sealed class TestStrategy : IStrategy
 {
     private readonly SortedDictionary<Symbol, int> _positions = [];
-    private readonly SortedDictionary<CurrencyCode, decimal> _cash = [];
+    private readonly SortedDictionary<Currency, decimal> _cash = [];
 
     /// <summary>
     /// Gets or sets the name of the strategy.
@@ -46,10 +46,10 @@ public sealed class TestStrategy : IStrategy
     /// <summary>
     /// Gets or sets the assets involved in the strategy.
     /// </summary>
-    public IReadOnlyDictionary<Symbol, CurrencyCode> Assets { get; set; } = new Dictionary<Symbol, CurrencyCode>();
+    public IReadOnlyDictionary<Symbol, Currency> Assets { get; set; } = new Dictionary<Symbol, Currency>();
 
     /// <inheritdoc />
-    public IReadOnlyDictionary<CurrencyCode, decimal> Cash
+    public IReadOnlyDictionary<Currency, decimal> Cash
     {
         get => _cash;
         set
@@ -73,13 +73,13 @@ public sealed class TestStrategy : IStrategy
     public IPositionSizer PositionSizer { get; set; } = null!;
 
     /// <inheritdoc />
-    public SignalEvent GenerateSignals(DateOnly timestamp, CurrencyCode baseCurrency, IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> historicalMarketData, IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
+    public SignalEvent GenerateSignals(DateOnly timestamp, Currency baseCurrency, IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> historicalMarketData, IReadOnlyDictionary<DateOnly, SortedDictionary<Currency, decimal>> historicalFxConversionRates)
     {
         return new SignalEvent(timestamp, Name, new Dictionary<Symbol, SignalType>());
     }
 
     /// <inheritdoc />
-    public decimal ComputeTotalValue(DateOnly timestamp, CurrencyCode baseCurrency, IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> historicalMarketData, IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
+    public decimal ComputeTotalValue(DateOnly timestamp, Currency baseCurrency, IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> historicalMarketData, IReadOnlyDictionary<DateOnly, SortedDictionary<Currency, decimal>> historicalFxConversionRates)
     {
         Guard.AgainstUndefinedEnumValue(() => baseCurrency);
         Guard.AgainstEmptyOrNullReadOnlyDictionary(() => historicalMarketData);
@@ -142,7 +142,7 @@ public sealed class TestStrategy : IStrategy
     }
 
     /// <inheritdoc />
-    public void UpdateCash(CurrencyCode currency, decimal amount)
+    public void UpdateCash(Currency currency, decimal amount)
     {
         Guard.AgainstUndefinedEnumValue(() => currency);
 

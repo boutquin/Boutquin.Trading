@@ -19,8 +19,17 @@ namespace Boutquin.Trading.Domain.TaxEngine;
 /// <summary>
 /// Computed tax impact of dividend income, including jurisdiction-specific credits.
 /// </summary>
+/// <param name="GrossIncome">The gross dividend income, as currency-tagged <see cref="Money"/>.</param>
+/// <param name="TaxableIncome">The taxable portion of the dividend income, as currency-tagged <see cref="Money"/>.</param>
+/// <param name="TaxCredits">The dividend tax credits applied, as currency-tagged <see cref="Money"/>.</param>
+/// <param name="EstimatedTax">The estimated tax owed on the dividend income, as currency-tagged <see cref="Money"/>.</param>
+/// <remarks>
+/// All amount fields are currency-tagged <see cref="Money"/>; combining them with amounts of a
+/// different currency uses <see cref="Money"/> arithmetic, which throws
+/// <see cref="Boutquin.Domain.Exceptions.CurrencyMismatchException"/> at the caller.
+/// </remarks>
 public sealed record DividendTaxImpact(
-    decimal GrossIncome,
-    decimal TaxableIncome,
-    decimal TaxCredits,
-    decimal EstimatedTax);
+    Money GrossIncome,
+    Money TaxableIncome,
+    Money TaxCredits,
+    Money EstimatedTax);

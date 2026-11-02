@@ -18,7 +18,7 @@ namespace Boutquin.Trading.Domain.ValueObjects;
 
 /// <summary>
 /// Represents a security identifier (ID) in the system.
-/// See alse: https://www.fearofoblivion.com/dont-let-ef-call-the-shots
+/// See also: https://www.fearofoblivion.com/dont-let-ef-call-the-shots
 /// </summary>
 public readonly struct SecurityId : IEquatable<SecurityId>, IComparable<SecurityId>
 {

@@ -344,17 +344,22 @@ public sealed class CovarianceEstimatorCrossLanguageTests : CrossLanguageVerific
     [InlineData(typeof(ExponentiallyWeightedCovarianceEstimator))]
     [InlineData(typeof(LedoitWolfShrinkageEstimator))]
     [InlineData(typeof(DenoisedCovarianceEstimator))]
+    [InlineData(typeof(LedoitWolfConstantCorrelationEstimator))]
+    [InlineData(typeof(LedoitWolfSingleFactorEstimator))]
+    [InlineData(typeof(OracleApproximatingShrinkageEstimator))]
+    [InlineData(typeof(QuadraticInverseShrinkageEstimator))]
+    [InlineData(typeof(TracyWidomDenoisedCovarianceEstimator))]
+    [InlineData(typeof(DetonedCovarianceEstimator))]
+    [InlineData(typeof(PoetCovarianceEstimator))]
+    [InlineData(typeof(NercomeCovarianceEstimator))]
+    [InlineData(typeof(DoublySparseEstimator))]
+    [InlineData(typeof(GerberCovarianceEstimator))]
     public void AllEstimators_ProduceSymmetricMatrix(Type estimatorType)
     {
         using var doc = LoadVector("covariance");
         var returns = GetJaggedArray(doc.RootElement.GetProperty("inputs").GetProperty("returns"));
 
-        var estimator = estimatorType == typeof(ExponentiallyWeightedCovarianceEstimator)
-            ? (ICovarianceEstimator)new ExponentiallyWeightedCovarianceEstimator(0.94m)
-            : estimatorType == typeof(DenoisedCovarianceEstimator)
-                ? new DenoisedCovarianceEstimator()
-                : (ICovarianceEstimator)Activator.CreateInstance(estimatorType)!;
-
+        var estimator = CreateEstimator(estimatorType);
         var result = estimator.Estimate(returns);
         var n = result.GetLength(0);
 
@@ -373,17 +378,22 @@ public sealed class CovarianceEstimatorCrossLanguageTests : CrossLanguageVerific
     [InlineData(typeof(ExponentiallyWeightedCovarianceEstimator))]
     [InlineData(typeof(LedoitWolfShrinkageEstimator))]
     [InlineData(typeof(DenoisedCovarianceEstimator))]
+    [InlineData(typeof(LedoitWolfConstantCorrelationEstimator))]
+    [InlineData(typeof(LedoitWolfSingleFactorEstimator))]
+    [InlineData(typeof(OracleApproximatingShrinkageEstimator))]
+    [InlineData(typeof(QuadraticInverseShrinkageEstimator))]
+    [InlineData(typeof(TracyWidomDenoisedCovarianceEstimator))]
+    [InlineData(typeof(DetonedCovarianceEstimator))]
+    [InlineData(typeof(PoetCovarianceEstimator))]
+    [InlineData(typeof(NercomeCovarianceEstimator))]
+    [InlineData(typeof(DoublySparseEstimator))]
+    [InlineData(typeof(GerberCovarianceEstimator))]
     public void AllEstimators_DiagonalIsNonNegative(Type estimatorType)
     {
         using var doc = LoadVector("covariance");
         var returns = GetJaggedArray(doc.RootElement.GetProperty("inputs").GetProperty("returns"));
 
-        var estimator = estimatorType == typeof(ExponentiallyWeightedCovarianceEstimator)
-            ? (ICovarianceEstimator)new ExponentiallyWeightedCovarianceEstimator(0.94m)
-            : estimatorType == typeof(DenoisedCovarianceEstimator)
-                ? new DenoisedCovarianceEstimator()
-                : (ICovarianceEstimator)Activator.CreateInstance(estimatorType)!;
-
+        var estimator = CreateEstimator(estimatorType);
         var result = estimator.Estimate(returns);
         var n = result.GetLength(0);
 
@@ -392,5 +402,51 @@ public sealed class CovarianceEstimatorCrossLanguageTests : CrossLanguageVerific
             Assert.True(result[i, i] >= 0,
                 $"Diagonal [{i},{i}] = {result[i, i]} should be non-negative (variance)");
         }
+    }
+
+    /// <summary>
+    /// Factory for contract-invariant tests — all 13 estimators, using well-known defaults.
+    /// Estimators with no parameterless constructor are constructed explicitly.
+    /// </summary>
+    private static ICovarianceEstimator CreateEstimator(Type estimatorType)
+    {
+        if (estimatorType == typeof(ExponentiallyWeightedCovarianceEstimator))
+        {
+            return new ExponentiallyWeightedCovarianceEstimator(0.94m);
+        }
+
+        if (estimatorType == typeof(DenoisedCovarianceEstimator))
+        {
+            return new DenoisedCovarianceEstimator();
+        }
+
+        if (estimatorType == typeof(DetonedCovarianceEstimator))
+        {
+            return new DetonedCovarianceEstimator();
+        }
+
+        if (estimatorType == typeof(PoetCovarianceEstimator))
+        {
+            return new PoetCovarianceEstimator();
+        }
+
+        if (estimatorType == typeof(NercomeCovarianceEstimator))
+        {
+            return new NercomeCovarianceEstimator();
+        }
+
+        if (estimatorType == typeof(DoublySparseEstimator))
+        {
+            return new DoublySparseEstimator();
+        }
+
+        if (estimatorType == typeof(GerberCovarianceEstimator))
+        {
+            return new GerberCovarianceEstimator();
+        }
+
+        // SampleCovarianceEstimator, LW variants, OAS, QIS, TracyWidom are
+        // static-inner-based with compiler-generated parameterless constructors.
+        return (ICovarianceEstimator)Activator.CreateInstance(estimatorType)!;
     }
 }

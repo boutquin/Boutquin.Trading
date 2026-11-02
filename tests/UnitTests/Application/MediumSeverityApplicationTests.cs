@@ -118,7 +118,7 @@ public sealed class MediumSeverityApplicationTests
         var marketEvent = new MarketEvent(
             s_testDate,
             new SortedDictionary<Symbol, Bar> { { asset, marketData } },
-            new SortedDictionary<CurrencyCode, decimal>());
+            new SortedDictionary<Currency, decimal>());
 
         portfolioMock.Setup(p => p.GenerateSignals(marketEvent))
             .Returns([]);
@@ -148,7 +148,7 @@ public sealed class MediumSeverityApplicationTests
         var marketEvent = new MarketEvent(
             s_testDate,
             new SortedDictionary<Symbol, Bar> { { asset, marketData } },
-            new SortedDictionary<CurrencyCode, decimal>());
+            new SortedDictionary<Currency, decimal>());
 
         portfolioMock.Setup(p => p.GenerateSignals(marketEvent))
             .Returns([]);
@@ -167,13 +167,13 @@ public sealed class MediumSeverityApplicationTests
         // Arrange
         var asset = new Symbol("AAPL");
         var weights = new Dictionary<Symbol, decimal> { { asset, 0.5m } };
-        var sizer = new FixedWeightPositionSizer(weights, CurrencyCode.USD);
+        var sizer = new FixedWeightPositionSizer(weights, Currency.USD);
 
         var strategy = new TestStrategy
         {
             Name = "Test",
-            Assets = new Dictionary<Symbol, CurrencyCode> { { asset, CurrencyCode.USD } },
-            Cash = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 100_000m } },
+            Assets = new Dictionary<Symbol, Currency> { { asset, Currency.USD } },
+            Cash = new SortedDictionary<Currency, decimal> { { Currency.USD, 100_000m } },
         };
 
         // historicalMarketData has the date but empty inner dictionary (asset not found)
@@ -181,9 +181,9 @@ public sealed class MediumSeverityApplicationTests
         {
             { s_testDate, new SortedDictionary<Symbol, Bar>() }
         };
-        var historicalFx = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
+        var historicalFx = new Dictionary<DateOnly, SortedDictionary<Currency, decimal>>
         {
-            { s_testDate, new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
+            { s_testDate, new SortedDictionary<Currency, decimal> { { Currency.USD, 1m } } }
         };
 
         // Act
@@ -206,13 +206,13 @@ public sealed class MediumSeverityApplicationTests
         // Arrange
         var asset = new Symbol("AAPL");
         var weights = new Dictionary<Symbol, decimal> { { asset, 0.5m } };
-        var sizer = new FixedWeightPositionSizer(weights, CurrencyCode.USD);
+        var sizer = new FixedWeightPositionSizer(weights, Currency.USD);
 
         var strategy = new TestStrategy
         {
             Name = "Test",
-            Assets = new Dictionary<Symbol, CurrencyCode> { { asset, CurrencyCode.USD } },
-            Cash = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 100_000m } },
+            Assets = new Dictionary<Symbol, Currency> { { asset, Currency.USD } },
+            Cash = new SortedDictionary<Currency, decimal> { { Currency.USD, 100_000m } },
         };
 
         var zeroCloseData = new Bar(
@@ -223,9 +223,9 @@ public sealed class MediumSeverityApplicationTests
         {
             { s_testDate, new SortedDictionary<Symbol, Bar> { { asset, zeroCloseData } } }
         };
-        var historicalFx = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
+        var historicalFx = new Dictionary<DateOnly, SortedDictionary<Currency, decimal>>
         {
-            { s_testDate, new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
+            { s_testDate, new SortedDictionary<Currency, decimal> { { Currency.USD, 1m } } }
         };
 
         // Act
@@ -250,7 +250,7 @@ public sealed class MediumSeverityApplicationTests
         var weights = new Dictionary<Symbol, decimal> { { asset, -0.5m } };
 
         // Act
-        var act = () => new FixedWeightPositionSizer(weights, CurrencyCode.USD);
+        var act = () => new FixedWeightPositionSizer(weights, Currency.USD);
 
         // Assert
         act.Should().Throw<ArgumentOutOfRangeException>();
@@ -264,7 +264,7 @@ public sealed class MediumSeverityApplicationTests
         var weights = new Dictionary<Symbol, decimal> { { asset, 0m } };
 
         // Act
-        var act = () => new FixedWeightPositionSizer(weights, CurrencyCode.USD);
+        var act = () => new FixedWeightPositionSizer(weights, Currency.USD);
 
         // Assert
         act.Should().NotThrow();
@@ -337,7 +337,7 @@ public sealed class MediumSeverityApplicationTests
         var strategy = new TestStrategy
         {
             Name = "Test",
-            Assets = new Dictionary<Symbol, CurrencyCode> { { asset, CurrencyCode.USD } },
+            Assets = new Dictionary<Symbol, Currency> { { asset, Currency.USD } },
         };
 
         // AnalyzePerformanceMetrics needs sufficient equity points for all statistics.
@@ -394,7 +394,7 @@ public sealed class MediumSeverityApplicationTests
             FxRates = [],
         };
 
-        var backtest = new BackTest(portfolio.Object, benchmark.Object, CurrencyCode.USD);
+        var backtest = new BackTest(portfolio.Object, benchmark.Object, Currency.USD);
 
         // Act — dataset-driven RunAsync processes all dates in the dataset
         await backtest.RunAsync(dataset).ConfigureAwait(false);
@@ -418,7 +418,7 @@ public sealed class MediumSeverityApplicationTests
                 It.IsAny<DateOnly>(), It.IsAny<IReadOnlyDictionary<Symbol, SignalType>>(),
                 It.IsAny<IStrategy>(),
                 It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>>>(),
-                It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>>()))
+                It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Currency, decimal>>>()))
             .Returns(new Dictionary<Symbol, int>()); // Empty — no position for AAPL
 
         var orderPriceCalcMock = new Mock<IOrderPriceCalculationStrategy>();
@@ -428,7 +428,7 @@ public sealed class MediumSeverityApplicationTests
             Name = "Test",
             PositionSizer = positionSizerMock.Object,
             OrderPriceCalculationStrategy = orderPriceCalcMock.Object,
-            Assets = new Dictionary<Symbol, CurrencyCode> { { asset, CurrencyCode.USD } },
+            Assets = new Dictionary<Symbol, Currency> { { asset, Currency.USD } },
         };
 
         var portfolioMock = new Mock<IPortfolio>();
@@ -436,7 +436,7 @@ public sealed class MediumSeverityApplicationTests
         portfolioMock.Setup(p => p.HistoricalMarketData)
             .Returns(new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>());
         portfolioMock.Setup(p => p.HistoricalFxConversionRates)
-            .Returns(new SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>());
+            .Returns(new SortedDictionary<DateOnly, SortedDictionary<Currency, decimal>>());
 
         var signalEvent = new SignalEvent(s_testDate, "Test",
             new Dictionary<Symbol, SignalType> { { asset, SignalType.Overweight } });
@@ -496,17 +496,17 @@ public sealed class MediumSeverityApplicationTests
         var aapl = new Symbol("AAPL");
         var msft = new Symbol("MSFT");
         var weights = new Dictionary<Symbol, decimal> { { aapl, 0.5m } }; // No MSFT weight
-        var sizer = new FixedWeightPositionSizer(weights, CurrencyCode.USD);
+        var sizer = new FixedWeightPositionSizer(weights, Currency.USD);
 
         var strategy = new TestStrategy
         {
             Name = "Test",
-            Assets = new Dictionary<Symbol, CurrencyCode>
+            Assets = new Dictionary<Symbol, Currency>
             {
-                { aapl, CurrencyCode.USD },
-                { msft, CurrencyCode.USD },
+                { aapl, Currency.USD },
+                { msft, Currency.USD },
             },
-            Cash = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 100_000m } },
+            Cash = new SortedDictionary<Currency, decimal> { { Currency.USD, 100_000m } },
         };
 
         var md = new Bar(s_testDate, 100, 110, 90, 105, 105, 1_000_000);
@@ -514,9 +514,9 @@ public sealed class MediumSeverityApplicationTests
         {
             { s_testDate, new SortedDictionary<Symbol, Bar> { { aapl, md }, { msft, md } } }
         };
-        var historicalFx = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
+        var historicalFx = new Dictionary<DateOnly, SortedDictionary<Currency, decimal>>
         {
-            { s_testDate, new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
+            { s_testDate, new SortedDictionary<Currency, decimal> { { Currency.USD, 1m } } }
         };
 
         // Act
@@ -543,8 +543,8 @@ public sealed class MediumSeverityApplicationTests
         var strategy = new TestStrategy
         {
             Name = "Test",
-            Assets = new Dictionary<Symbol, CurrencyCode> { { asset, CurrencyCode.USD } },
-            Cash = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 100_000m } },
+            Assets = new Dictionary<Symbol, Currency> { { asset, Currency.USD } },
+            Cash = new SortedDictionary<Currency, decimal> { { Currency.USD, 100_000m } },
         };
 
         var handlers = new Dictionary<Type, IEventHandler>
@@ -553,9 +553,9 @@ public sealed class MediumSeverityApplicationTests
         };
 
         var portfolio = new Portfolio(
-            CurrencyCode.USD,
+            Currency.USD,
             new Dictionary<string, IStrategy> { { "Test", strategy } },
-            new Dictionary<Symbol, CurrencyCode> { { asset, CurrencyCode.USD } },
+            new Dictionary<Symbol, Currency> { { asset, Currency.USD } },
             handlers,
             brokerageMock.Object);
 

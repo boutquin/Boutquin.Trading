@@ -22,8 +22,8 @@ namespace Boutquin.Trading.Tests.UnitTests.Application;
 public sealed class RebalancingBuyAndHoldStrategyTests
 {
     private readonly string _name = "TestStrategy";
-    private readonly IReadOnlyDictionary<Symbol, CurrencyCode> _assets = new Dictionary<Symbol, CurrencyCode> { { new Symbol("AAPL"), CurrencyCode.USD } };
-    private readonly SortedDictionary<CurrencyCode, decimal> _cash = new() { { CurrencyCode.USD, 10000m } };
+    private readonly IReadOnlyDictionary<Symbol, Currency> _assets = new Dictionary<Symbol, Currency> { { new Symbol("AAPL"), Currency.USD } };
+    private readonly SortedDictionary<Currency, decimal> _cash = new() { { Currency.USD, 10000m } };
     private readonly Mock<IOrderPriceCalculationStrategy> _orderPriceCalculationStrategyMock = new();
     private readonly Mock<IPositionSizer> _positionSizerMock = new();
     private readonly DateOnly _initialTimestamp = new(year: 2023, month: 5, day: 1);
@@ -66,15 +66,15 @@ public sealed class RebalancingBuyAndHoldStrategyTests
         {
             { _initialTimestamp, new SortedDictionary<Symbol, Bar> { { new Symbol("AAPL"), _marketData } } }
         };
-        var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
+        var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<Currency, decimal>>
         {
-            { _initialTimestamp, new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
+            { _initialTimestamp, new SortedDictionary<Currency, decimal> { { Currency.USD, 1m } } }
         };
 
         // Act
         var signalEvent = strategy.GenerateSignals(
             _initialTimestamp,
-            CurrencyCode.USD,
+            Currency.USD,
             historicalMarketData,
             historicalFxConversionRates);
 
@@ -98,20 +98,20 @@ public sealed class RebalancingBuyAndHoldStrategyTests
         {
             { _initialTimestamp, new SortedDictionary<Symbol, Bar> { { new Symbol("AAPL"), _marketData } } }
         };
-        var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
+        var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<Currency, decimal>>
         {
-            { _initialTimestamp, new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
+            { _initialTimestamp, new SortedDictionary<Currency, decimal> { { Currency.USD, 1m } } }
         };
 
         // Act
         _ = strategy.GenerateSignals(
             _initialTimestamp,
-            CurrencyCode.USD,
+            Currency.USD,
             historicalMarketData,
             historicalFxConversionRates);
         var signalEvent = strategy.GenerateSignals(
             _initialTimestamp.AddDays(15),
-            CurrencyCode.USD,
+            Currency.USD,
             historicalMarketData,
             historicalFxConversionRates);
 
@@ -135,21 +135,21 @@ public sealed class RebalancingBuyAndHoldStrategyTests
             { _initialTimestamp, new SortedDictionary<Symbol, Bar> { { new Symbol("AAPL"), _marketData } } },
             { _initialTimestamp.AddMonths(1), new SortedDictionary<Symbol, Bar> { { new Symbol("AAPL"), _marketData } } }
         };
-        var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
+        var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<Currency, decimal>>
         {
-            { _initialTimestamp, new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } },
-            { _initialTimestamp.AddMonths(1), new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
+            { _initialTimestamp, new SortedDictionary<Currency, decimal> { { Currency.USD, 1m } } },
+            { _initialTimestamp.AddMonths(1), new SortedDictionary<Currency, decimal> { { Currency.USD, 1m } } }
         };
 
         // Act
         var firstSignalEvent = strategy.GenerateSignals(
             _initialTimestamp,
-            CurrencyCode.USD,
+            Currency.USD,
             historicalMarketData,
             historicalFxConversionRates);
         var secondSignalEvent = strategy.GenerateSignals(
             _initialTimestamp.AddMonths(1),
-            CurrencyCode.USD,
+            Currency.USD,
             historicalMarketData,
             historicalFxConversionRates);
 
@@ -178,10 +178,10 @@ public sealed class RebalancingBuyAndHoldStrategyTests
         // Arrange — two assets, VEA not yet available on the test date
         var vti = new Symbol("VTI");
         var vea = new Symbol("VEA");
-        var assets = new Dictionary<Symbol, CurrencyCode>
+        var assets = new Dictionary<Symbol, Currency>
         {
-            { vti, CurrencyCode.USD },
-            { vea, CurrencyCode.USD }
+            { vti, Currency.USD },
+            { vea, Currency.USD }
         };
         var universeSelector = new Boutquin.Trading.Application.Universe.DynamicUniverse(
             new Dictionary<Symbol, DateOnly>
@@ -203,13 +203,13 @@ public sealed class RebalancingBuyAndHoldStrategyTests
         {
             { testDate, new SortedDictionary<Symbol, Bar> { { vti, _marketData } } }
         };
-        var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
+        var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<Currency, decimal>>
         {
-            { testDate, new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
+            { testDate, new SortedDictionary<Currency, decimal> { { Currency.USD, 1m } } }
         };
 
         // Act
-        var signalEvent = strategy.GenerateSignals(testDate, CurrencyCode.USD, historicalMarketData, historicalFxConversionRates);
+        var signalEvent = strategy.GenerateSignals(testDate, Currency.USD, historicalMarketData, historicalFxConversionRates);
 
         // Assert — only VTI should have a signal, VEA should be excluded
         signalEvent.Signals.Should().ContainKey(vti);
@@ -225,10 +225,10 @@ public sealed class RebalancingBuyAndHoldStrategyTests
         // Arrange
         var vti = new Symbol("VTI");
         var vea = new Symbol("VEA");
-        var assets = new Dictionary<Symbol, CurrencyCode>
+        var assets = new Dictionary<Symbol, Currency>
         {
-            { vti, CurrencyCode.USD },
-            { vea, CurrencyCode.USD }
+            { vti, Currency.USD },
+            { vea, Currency.USD }
         };
         var universeSelector = new Boutquin.Trading.Application.Universe.DynamicUniverse(
             new Dictionary<Symbol, DateOnly>
@@ -250,13 +250,13 @@ public sealed class RebalancingBuyAndHoldStrategyTests
         {
             { testDate, new SortedDictionary<Symbol, Bar> { { vti, _marketData }, { vea, _marketData } } }
         };
-        var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
+        var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<Currency, decimal>>
         {
-            { testDate, new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
+            { testDate, new SortedDictionary<Currency, decimal> { { Currency.USD, 1m } } }
         };
 
         // Act
-        var signalEvent = strategy.GenerateSignals(testDate, CurrencyCode.USD, historicalMarketData, historicalFxConversionRates);
+        var signalEvent = strategy.GenerateSignals(testDate, Currency.USD, historicalMarketData, historicalFxConversionRates);
 
         // Assert — both assets should have signals
         signalEvent.Signals.Should().ContainKey(vti);
@@ -280,19 +280,19 @@ public sealed class RebalancingBuyAndHoldStrategyTests
         {
             { _initialTimestamp, new SortedDictionary<Symbol, Bar> { { new Symbol("AAPL"), _marketData } } }
         };
-        var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
+        var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<Currency, decimal>>
         {
-            { _initialTimestamp, new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
+            { _initialTimestamp, new SortedDictionary<Currency, decimal> { { Currency.USD, 1m } } }
         };
 
         // Act — first call should rebalance
         var firstSignals = strategy.GenerateSignals(
-            _initialTimestamp, CurrencyCode.USD, historicalMarketData, historicalFxConversionRates);
+            _initialTimestamp, Currency.USD, historicalMarketData, historicalFxConversionRates);
 
         // Second call — even far in the future — should not rebalance
         var futureDate = _initialTimestamp.AddYears(10);
         var secondSignals = strategy.GenerateSignals(
-            futureDate, CurrencyCode.USD, historicalMarketData, historicalFxConversionRates);
+            futureDate, Currency.USD, historicalMarketData, historicalFxConversionRates);
 
         // Assert
         firstSignals.Signals.Should().NotBeEmpty("First call should generate rebalance signals");

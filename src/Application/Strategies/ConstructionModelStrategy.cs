@@ -41,8 +41,8 @@ public sealed class ConstructionModelStrategy : StrategyBase
     /// </summary>
     public ConstructionModelStrategy(
         string name,
-        IReadOnlyDictionary<Symbol, CurrencyCode> assets,
-        SortedDictionary<CurrencyCode, decimal> cash,
+        IReadOnlyDictionary<Symbol, Currency> assets,
+        SortedDictionary<Currency, decimal> cash,
         IOrderPriceCalculationStrategy orderPriceCalculationStrategy,
         IPositionSizer positionSizer,
         IPortfolioConstructionModel constructionModel,
@@ -61,8 +61,8 @@ public sealed class ConstructionModelStrategy : StrategyBase
     /// </summary>
     public ConstructionModelStrategy(
         string name,
-        IReadOnlyDictionary<Symbol, CurrencyCode> assets,
-        SortedDictionary<CurrencyCode, decimal> cash,
+        IReadOnlyDictionary<Symbol, Currency> assets,
+        SortedDictionary<Currency, decimal> cash,
         IOrderPriceCalculationStrategy orderPriceCalculationStrategy,
         IPositionSizer positionSizer,
         IPortfolioConstructionModel constructionModel,
@@ -86,12 +86,12 @@ public sealed class ConstructionModelStrategy : StrategyBase
     }
 
     /// <summary>
-    /// Gets the most recently computed target weights.
+    /// The most recently computed target weights.
     /// </summary>
     public IReadOnlyDictionary<Symbol, decimal>? LastComputedWeights { get; private set; }
 
     /// <summary>
-    /// Gets the full history of target allocations keyed by rebalance date.
+    /// The full history of target allocations keyed by rebalance date.
     /// Each entry is the set of weights that was assigned to <see cref="LastComputedWeights"/> on that date.
     /// </summary>
     public IReadOnlyDictionary<DateOnly, IReadOnlyDictionary<Symbol, decimal>> TargetWeightHistory => _targetWeightHistory;
@@ -99,9 +99,9 @@ public sealed class ConstructionModelStrategy : StrategyBase
     /// <inheritdoc />
     public override SignalEvent GenerateSignals(
         DateOnly timestamp,
-        CurrencyCode baseCurrency,
+        Currency baseCurrency,
         IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> historicalMarketData,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Currency, decimal>> historicalFxConversionRates)
     {
         Guard.AgainstUndefinedEnumValue(() => baseCurrency);
         Guard.AgainstEmptyOrNullReadOnlyDictionary(() => historicalMarketData);
@@ -121,14 +121,19 @@ public sealed class ConstructionModelStrategy : StrategyBase
             ? _universeSelector.SelectAsOf(allAssets, timestamp).ToList()
             : allAssets;
         var returns = assetList.Count > 0
-            ? ExtractReturns(assetList, historicalMarketData, timestamp)
+            ? ExtractReturns(assetList, historicalMarketData, historicalFxConversionRates, baseCurrency, timestamp)
             : null;
 
         // Only proceed if we have enough data and arrays are equal length
         if (returns is not null && returns.All(r => r.Length >= 2) &&
             returns.Select(r => r.Length).Distinct().Count() == 1)
         {
-            var targetWeights = _constructionModel.ComputeTargetWeights(assetList, returns);
+            // Date-aware overload: the rebalance date is the evaluation date, so a date-aware model
+            // (e.g. SignalTiltConstruction bound to date-indexed auxiliary series) can restrict its
+            // date-indexed inputs to observations known at this decision point — the same as-of
+            // discipline ExtractReturns already applies to the price-return window. For date-free
+            // models the overload's default forwards to the two-argument form (identical behavior).
+            var targetWeights = _constructionModel.ComputeTargetWeights(assetList, returns, timestamp);
             LastComputedWeights = targetWeights;
             _logger.LogInformation("Computed target weights on {Date}: {Weights}",
                 timestamp, string.Join(", ", targetWeights.Select(kv => $"{kv.Key}={kv.Value:P2}")));
@@ -206,9 +211,18 @@ public sealed class ConstructionModelStrategy : StrategyBase
         return new SignalEvent(timestamp, Name, signalEvents);
     }
 
+    /// <summary>
+    /// Builds the return window the construction model optimizes over. Prices are converted into the
+    /// portfolio's <paramref name="baseCurrency"/> at each bar's FX rate before differencing, so a
+    /// foreign-listed asset contributes its <em>unhedged base-currency</em> return — the risk a base-currency
+    /// investor actually bears. For a base-currency asset the conversion is the identity, so a
+    /// single-currency portfolio's returns are unchanged.
+    /// </summary>
     private decimal[][]? ExtractReturns(
         List<Symbol> assetList,
         IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> historicalMarketData,
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Currency, decimal>> historicalFxConversionRates,
+        Currency baseCurrency,
         DateOnly asOf)
     {
         // Get sorted dates up to and including asOf
@@ -230,6 +244,7 @@ public sealed class ConstructionModelStrategy : StrategyBase
         for (var i = 0; i < assetList.Count; i++)
         {
             var prices = new List<decimal>();
+            var assetCurrency = Assets[assetList[i]];
 
             foreach (var date in windowDates)
             {
@@ -237,7 +252,7 @@ public sealed class ConstructionModelStrategy : StrategyBase
                     dayData is not null &&
                     dayData.TryGetValue(assetList[i], out var md))
                 {
-                    prices.Add(md.AdjustedClose);
+                    prices.Add(FxConversion.ToBase(md.AdjustedClose, assetCurrency, baseCurrency, historicalFxConversionRates, date));
                 }
             }
 
@@ -266,9 +281,9 @@ public sealed class ConstructionModelStrategy : StrategyBase
 
     private Dictionary<Symbol, decimal> ComputeCurrentWeights(
         DateOnly timestamp,
-        CurrencyCode baseCurrency,
+        Currency baseCurrency,
         IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> historicalMarketData,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Currency, decimal>> historicalFxConversionRates)
     {
         var totalValue = ComputeTotalValue(timestamp, baseCurrency, historicalMarketData, historicalFxConversionRates);
         var weights = new Dictionary<Symbol, decimal>();
@@ -288,20 +303,10 @@ public sealed class ConstructionModelStrategy : StrategyBase
                 continue;
             }
 
-            var assetValue = qty * md.AdjustedClose;
-
-            // R2C-05 fix: Missing FX rate must throw, not silently use unconverted value
-            if (assetCurrency != baseCurrency)
-            {
-                if (!historicalFxConversionRates.TryGetValue(timestamp, out var fxRates) ||
-                    !fxRates.TryGetValue(assetCurrency, out var rate))
-                {
-                    throw new InvalidOperationException(
-                        $"Missing FX rate for {assetCurrency} on {timestamp}. Cannot compute portfolio weights without currency conversion.");
-                }
-
-                assetValue *= rate;
-            }
+            // R2C-05 fix: a missing FX rate throws (InvalidOperationException, from FxConversion)
+            // rather than silently using the unconverted native-currency value.
+            var assetValue = FxConversion.ToBase(
+                qty * md.AdjustedClose, assetCurrency, baseCurrency, historicalFxConversionRates, timestamp);
 
             weights[asset] = assetValue / totalValue;
         }

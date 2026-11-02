@@ -16,6 +16,6 @@
 
 global using Boutquin.Domain.Helpers;
 global using Boutquin.MarketData.Abstractions.ReferenceData;
-
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.EntityFrameworkCore.Metadata.Builders;
+global using DomainCurrency = Boutquin.Domain.Enumerations.Currency;

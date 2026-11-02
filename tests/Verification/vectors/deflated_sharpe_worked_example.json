@@ -1,0 +1,13 @@
+{
+  "description": "Bailey & Lopez de Prado (2014) worked example, pp. 9-10",
+  "num_trials": 100,
+  "variance_of_trial_sharpes_annualized": 0.5,
+  "num_observations": 1250,
+  "annualized_sharpe": 2.5,
+  "skewness": -3.0,
+  "full_kurtosis": 10.0,
+  "trading_days_per_year": 250,
+  "expected_max_sharpe_non_annualized": 0.1131720018651079,
+  "dsr": 0.9003968344495117,
+  "dsr_excess_kurtosis_as_full": 0.9017785664394874
+}

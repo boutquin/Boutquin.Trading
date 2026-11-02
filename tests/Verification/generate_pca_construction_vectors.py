@@ -183,83 +183,15 @@ def pca_constrained(returns: np.ndarray, inner_model_fn, max_components: int = N
 # ═══════════════════════════════════════════════════════════════════════════
 
 def detoned_cov(returns: np.ndarray, detoning_alpha: float = 1.0) -> np.ndarray:
-    """Detoned covariance matching C# DetonedCovarianceEstimator."""
-    n, t = returns.shape
-
-    if n < 3:
-        return sample_cov(returns)
-
-    if detoning_alpha == 0.0:
-        return denoised_cov(returns)
-
-    # Step 1: Sample covariance → correlation
-    s = sample_cov(returns)
-    stds = np.sqrt(np.diag(s))
-    stds[stds == 0] = 1.0
-    corr = s / np.outer(stds, stds)
-
-    # Step 2: Eigendecompose
-    eigenvalues, eigenvectors = eigen_decompose(corr)
-
-    # Step 3: MP bound
-    q = t / n
-    mp_bound = (1.0 + 1.0 / np.sqrt(q)) ** 2
-
-    # Step 4: Denoise
-    noise_mask = eigenvalues <= mp_bound
-    noise_count = noise_mask.sum()
-    noise_sum = eigenvalues[noise_mask].sum() if noise_count > 0 else 0.0
-
-    if 0 < noise_count < n:
-        noise_avg = noise_sum / noise_count
-        eigenvalues[noise_mask] = noise_avg
-
-    # Step 5: Detone — shrink PC1 (index 0, largest)
-    signal_others = [eigenvalues[i] for i in range(1, n) if eigenvalues[i] > mp_bound]
-    if len(signal_others) > 0:
-        signal_avg = sum(signal_others) / len(signal_others)
-        eigenvalues[0] = (1 - detoning_alpha) * eigenvalues[0] + detoning_alpha * signal_avg
-    elif noise_count > 0:
-        noise_avg = noise_sum / noise_count
-        eigenvalues[0] = (1 - detoning_alpha) * eigenvalues[0] + detoning_alpha * noise_avg
-
-    # Step 6: Reconstruct correlation
-    cleaned_corr = eigenvectors @ np.diag(eigenvalues) @ eigenvectors.T
-
-    # Step 7: Force unit diagonal
-    np.fill_diagonal(cleaned_corr, 1.0)
-
-    # Step 8: Convert back to covariance
-    return cleaned_corr * np.outer(stds, stds)
+    """Fitted-MP denoising and market-component removal, independently in NumPy/SciPy."""
+    from detoning_reference import detoned_reference
+    return detoned_reference(returns, detoning_alpha)
 
 
 def denoised_cov(returns: np.ndarray) -> np.ndarray:
-    """Denoised covariance (no LW) matching C# DenoisedCovarianceEstimator."""
-    n, t = returns.shape
-    s = sample_cov(returns)
-    if n < 3:
-        return s
-
-    stds = np.sqrt(np.diag(s))
-    stds[stds == 0] = 1.0
-    corr = s / np.outer(stds, stds)
-
-    eigenvalues, eigenvectors = eigen_decompose(corr)
-
-    q = t / n
-    mp_bound = (1.0 + 1.0 / np.sqrt(q)) ** 2
-
-    noise_mask = eigenvalues <= mp_bound
-    if noise_mask.any() and not noise_mask.all():
-        noise_avg = eigenvalues[noise_mask].mean()
-        eigenvalues[noise_mask] = noise_avg
-
-    cleaned_corr = eigenvectors @ np.diag(eigenvalues) @ eigenvectors.T
-    diag_sqrt = np.sqrt(np.diag(cleaned_corr))
-    diag_sqrt[diag_sqrt == 0] = 1.0
-    cleaned_corr = cleaned_corr / np.outer(diag_sqrt, diag_sqrt)
-
-    return cleaned_corr * np.outer(stds, stds)
+    """Fitted-MP denoising without market-component removal."""
+    from detoning_reference import detoned_reference
+    return detoned_reference(returns, 0.0)
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -493,7 +425,7 @@ def gen_detoned_covariance_vectors():
     save("covariance_detoned", {
         "cases": cases,
         "notes": "DetonedCovarianceEstimator vectors. "
-                 "Extends denoising with PC1 shrinkage (Lopez de Prado 2020)."
+                 "Fitted-MP denoising, market-component removal and rescaling (Lopez de Prado 2020)."
     })
 
 

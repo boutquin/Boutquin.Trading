@@ -26,7 +26,11 @@ namespace Boutquin.Trading.Application.CovarianceEstimators;
 /// toward the average signal eigenvalue, letting the optimizer see residual diversification
 /// structure more clearly.
 ///
-/// Based on Lopez de Prado (2020), "Machine Learning for Symbol Managers", Chapter 2.
+/// LdP-2020-inspired trace-preserving detoning variant (shrinks rather than removes PC1).
+/// Reference: López de Prado (2020), "Machine Learning for Asset Managers", Ch. 2.
+/// Note: the book's detoning removes the market eigenvalue entirely and renormalizes;
+/// this implementation instead shrinks PC1's eigenvalue toward the average of the remaining
+/// signal eigenvalues (trace-preserving, non-singular), parameterized by <c>detoningAlpha</c>.
 ///
 /// The detoning alpha parameter controls shrinkage intensity:
 ///   alpha = 0 → no detoning (identical to denoised)
@@ -43,6 +47,9 @@ public sealed class DetonedCovarianceEstimator : ICovarianceEstimator
     /// Controls how much to shrink PC1's eigenvalue toward the mean of remaining signal eigenvalues.
     /// Must be in [0, 1]. Default is 1.0 (full detoning).
     /// </param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="detoningAlpha"/> is outside [0, 1].
+    /// </exception>
     public DetonedCovarianceEstimator(decimal detoningAlpha = 1.0m)
     {
         _inner = new NumericsStats.DetonedCovarianceEstimator(detoningAlpha);

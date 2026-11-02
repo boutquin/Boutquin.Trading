@@ -79,8 +79,8 @@ public sealed class BacktestTests
         var benchmark = CreatePortfolioWithEquityCurve(10000m, 0.6m);
         var dailyRfr = 0.05m / 252m; // 5% annualized → daily
 
-        var backtestZero = new BackTest(portfolio.Object, benchmark.Object, CurrencyCode.USD);
-        var backtestWithRfr = new BackTest(portfolio.Object, benchmark.Object, CurrencyCode.USD,
+        var backtestZero = new BackTest(portfolio.Object, benchmark.Object, Currency.USD);
+        var backtestWithRfr = new BackTest(portfolio.Object, benchmark.Object, Currency.USD,
             NullLogger<BackTest>.Instance, dailyRfr);
 
         // Act
@@ -102,8 +102,8 @@ public sealed class BacktestTests
         var benchmark = CreatePortfolioWithEquityCurve(10000m, 0.6m);
         var dailyRfr = 0.05m / 252m;
 
-        var backtestZero = new BackTest(portfolio.Object, benchmark.Object, CurrencyCode.USD);
-        var backtestWithRfr = new BackTest(portfolio.Object, benchmark.Object, CurrencyCode.USD,
+        var backtestZero = new BackTest(portfolio.Object, benchmark.Object, Currency.USD);
+        var backtestWithRfr = new BackTest(portfolio.Object, benchmark.Object, Currency.USD,
             NullLogger<BackTest>.Instance, dailyRfr);
 
         // Act
@@ -125,8 +125,8 @@ public sealed class BacktestTests
         var benchmark = CreatePortfolioWithEquityCurve(10000m, 0.6m);
         var dailyRfr = 0.05m / 252m;
 
-        var backtestZero = new BackTest(portfolio.Object, benchmark.Object, CurrencyCode.USD);
-        var backtestWithRfr = new BackTest(portfolio.Object, benchmark.Object, CurrencyCode.USD,
+        var backtestZero = new BackTest(portfolio.Object, benchmark.Object, Currency.USD);
+        var backtestWithRfr = new BackTest(portfolio.Object, benchmark.Object, Currency.USD,
             NullLogger<BackTest>.Instance, dailyRfr);
 
         // Act
@@ -147,8 +147,8 @@ public sealed class BacktestTests
         // Arrange
         var portfolio = CreatePortfolioWithEquityCurve();
         var benchmark = CreatePortfolioWithEquityCurve(10000m, 0.6m);
-        var backtestOld = new BackTest(portfolio.Object, benchmark.Object, CurrencyCode.USD);
-        var backtestNew = new BackTest(portfolio.Object, benchmark.Object, CurrencyCode.USD,
+        var backtestOld = new BackTest(portfolio.Object, benchmark.Object, Currency.USD);
+        var backtestNew = new BackTest(portfolio.Object, benchmark.Object, Currency.USD,
             NullLogger<BackTest>.Instance, 0m);
 
         // Act
@@ -177,7 +177,7 @@ public sealed class BacktestTests
         benchmarkPortfolio.Setup(p => p.EquityCurve).Returns(new SortedDictionary<DateOnly, decimal>());
         benchmarkPortfolio.Setup(p => p.Strategies).Returns(new Dictionary<string, IStrategy>());
 
-        var backtest = new BackTest(portfolio.Object, benchmarkPortfolio.Object, CurrencyCode.USD);
+        var backtest = new BackTest(portfolio.Object, benchmarkPortfolio.Object, Currency.USD);
 
         // Act & Assert — should throw, not divide by zero
         var act = backtest.AnalyzePerformanceMetrics;
@@ -193,9 +193,9 @@ public sealed class BacktestTests
     {
         // Arrange
         var portfolioStrategy = new Mock<IStrategy>();
-        portfolioStrategy.Setup(s => s.Assets).Returns(new Dictionary<Symbol, CurrencyCode>
+        portfolioStrategy.Setup(s => s.Assets).Returns(new Dictionary<Symbol, Currency>
         {
-            [new Symbol("AAPL")] = CurrencyCode.USD
+            [new Symbol("AAPL")] = Currency.USD
         });
 
         var portfolio = new Mock<IPortfolio>();
@@ -233,22 +233,22 @@ public sealed class BacktestTests
                     }
                 }
             },
-            FxRates = new SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
+            FxRates = new SortedDictionary<DateOnly, SortedDictionary<Currency, decimal>>
             {
-                { date1, new SortedDictionary<CurrencyCode, decimal>
+                { date1, new SortedDictionary<Currency, decimal>
                     {
-                        { CurrencyCode.EUR, 1.1m }
+                        { Currency.EUR, 1.1m }
                     }
                 },
-                { date2, new SortedDictionary<CurrencyCode, decimal>
+                { date2, new SortedDictionary<Currency, decimal>
                     {
-                        { CurrencyCode.EUR, 1.1m }
+                        { Currency.EUR, 1.1m }
                     }
                 }
             },
         };
 
-        var backtest = new BackTest(portfolio.Object, benchmarkPortfolio.Object, CurrencyCode.USD);
+        var backtest = new BackTest(portfolio.Object, benchmarkPortfolio.Object, Currency.USD);
 
         // Act — should not throw (may throw InvalidOperationException from AnalyzePerformanceMetrics at end)
         try { await backtest.RunAsync(dataset).ConfigureAwait(false); }
@@ -279,7 +279,7 @@ public sealed class BacktestTests
             FxRates = [],
         };
 
-        var backtest = new BackTest(portfolio.Object, benchmarkPortfolio.Object, CurrencyCode.USD);
+        var backtest = new BackTest(portfolio.Object, benchmarkPortfolio.Object, Currency.USD);
 
         // Act
         var act = () => backtest.RunAsync(dataset);
@@ -297,9 +297,9 @@ public sealed class BacktestTests
     {
         // Arrange
         var portfolioStrategy = new Mock<IStrategy>();
-        portfolioStrategy.Setup(s => s.Assets).Returns(new Dictionary<Symbol, CurrencyCode>
+        portfolioStrategy.Setup(s => s.Assets).Returns(new Dictionary<Symbol, Currency>
         {
-            [new Symbol("SHEL")] = CurrencyCode.GBP
+            [new Symbol("SHEL")] = Currency.GBP
         });
 
         var portfolio = new Mock<IPortfolio>();
@@ -341,7 +341,7 @@ public sealed class BacktestTests
         };
 
         var loggerMock = new Mock<ILogger<BackTest>>();
-        var backtest = new BackTest(portfolio.Object, benchmarkPortfolio.Object, CurrencyCode.USD, loggerMock.Object);
+        var backtest = new BackTest(portfolio.Object, benchmarkPortfolio.Object, Currency.USD, loggerMock.Object);
 
         // Act
         try { await backtest.RunAsync(dataset).ConfigureAwait(false); }

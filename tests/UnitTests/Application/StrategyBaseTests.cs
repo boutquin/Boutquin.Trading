@@ -19,16 +19,16 @@ namespace Boutquin.Trading.Tests.UnitTests.Application;
 public sealed class StrategyBaseTests
 {
     private static IStrategy CreateStrategy(
-        SortedDictionary<CurrencyCode, decimal>? cash = null,
-        IReadOnlyDictionary<Symbol, CurrencyCode>? assets = null)
+        SortedDictionary<Currency, decimal>? cash = null,
+        IReadOnlyDictionary<Symbol, Currency>? assets = null)
     {
-        var defaultAssets = assets ?? new Dictionary<Symbol, CurrencyCode>
+        var defaultAssets = assets ?? new Dictionary<Symbol, Currency>
         {
-            { new Symbol("AAPL"), CurrencyCode.USD }
+            { new Symbol("AAPL"), Currency.USD }
         };
-        var defaultCash = cash ?? new SortedDictionary<CurrencyCode, decimal>
+        var defaultCash = cash ?? new SortedDictionary<Currency, decimal>
         {
-            { CurrencyCode.USD, 10000m }
+            { Currency.USD, 10000m }
         };
 
         return new BuyAndHoldStrategy(
@@ -44,16 +44,16 @@ public sealed class StrategyBaseTests
     public void UpdateCash_AddsToExistingBalance()
     {
         var strategy = CreateStrategy();
-        strategy.UpdateCash(CurrencyCode.USD, 500m);
-        strategy.Cash[CurrencyCode.USD].Should().Be(10500m);
+        strategy.UpdateCash(Currency.USD, 500m);
+        strategy.Cash[Currency.USD].Should().Be(10500m);
     }
 
     [Fact]
     public void UpdateCash_CreatesNewCurrencyEntry()
     {
         var strategy = CreateStrategy();
-        strategy.UpdateCash(CurrencyCode.EUR, 1000m);
-        strategy.Cash[CurrencyCode.EUR].Should().Be(1000m);
+        strategy.UpdateCash(Currency.EUR, 1000m);
+        strategy.Cash[Currency.EUR].Should().Be(1000m);
     }
 
     [Fact]
@@ -106,9 +106,9 @@ public sealed class StrategyBaseTests
     {
         var strategy = CreateStrategy();
         // The compile-time type of the Cash property is IReadOnlyDictionary
-        IReadOnlyDictionary<CurrencyCode, decimal> cash = strategy.Cash;
+        IReadOnlyDictionary<Currency, decimal> cash = strategy.Cash;
         cash.Should().NotBeNull();
-        cash.Should().ContainKey(CurrencyCode.USD);
+        cash.Should().ContainKey(Currency.USD);
     }
 
     /// <summary>
@@ -121,10 +121,10 @@ public sealed class StrategyBaseTests
         // Arrange — 2 assets, only AAPL has market data; MSFT has position 0 and no data
         var aapl = new Symbol("AAPL");
         var msft = new Symbol("MSFT");
-        var assets = new Dictionary<Symbol, CurrencyCode>
+        var assets = new Dictionary<Symbol, Currency>
         {
-            { aapl, CurrencyCode.USD },
-            { msft, CurrencyCode.USD }
+            { aapl, Currency.USD },
+            { msft, Currency.USD }
         };
         var strategy = CreateStrategy(assets: assets);
         strategy.UpdatePositions(aapl, 10);
@@ -141,14 +141,14 @@ public sealed class StrategyBaseTests
                 }
             }
         };
-        var fxRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
+        var fxRates = new Dictionary<DateOnly, SortedDictionary<Currency, decimal>>
         {
-            { timestamp, new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
+            { timestamp, new SortedDictionary<Currency, decimal> { { Currency.USD, 1m } } }
         };
 
         // Act — should not throw; MSFT with position 0 and no data contributes $0
         var totalValue = strategy.ComputeTotalValue(
-            timestamp, CurrencyCode.USD, historicalMarketData, fxRates);
+            timestamp, Currency.USD, historicalMarketData, fxRates);
 
         // Assert — only AAPL contributes: 10 shares × $152 = $1,520 + $10,000 cash
         totalValue.Should().Be(10 * 152m + 10_000m);
@@ -164,10 +164,10 @@ public sealed class StrategyBaseTests
         // Arrange — 2 assets, only AAPL has market data; MSFT has position > 0 but no data
         var aapl = new Symbol("AAPL");
         var msft = new Symbol("MSFT");
-        var assets = new Dictionary<Symbol, CurrencyCode>
+        var assets = new Dictionary<Symbol, Currency>
         {
-            { aapl, CurrencyCode.USD },
-            { msft, CurrencyCode.USD }
+            { aapl, Currency.USD },
+            { msft, Currency.USD }
         };
         var strategy = CreateStrategy(assets: assets);
         strategy.UpdatePositions(aapl, 10);
@@ -184,14 +184,14 @@ public sealed class StrategyBaseTests
                 }
             }
         };
-        var fxRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
+        var fxRates = new Dictionary<DateOnly, SortedDictionary<Currency, decimal>>
         {
-            { timestamp, new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
+            { timestamp, new SortedDictionary<Currency, decimal> { { Currency.USD, 1m } } }
         };
 
         // Act & Assert — should throw because MSFT has a held position but no price
         var act = () => strategy.ComputeTotalValue(
-            timestamp, CurrencyCode.USD, historicalMarketData, fxRates);
+            timestamp, Currency.USD, historicalMarketData, fxRates);
 
         act.Should().Throw<InvalidOperationException>()
             .WithMessage("*Market data not found*MSFT*");
@@ -205,18 +205,18 @@ public sealed class StrategyBaseTests
     public void Constructor_ShouldDefensivelyCopyCash()
     {
         // Arrange
-        var originalCash = new SortedDictionary<CurrencyCode, decimal>
+        var originalCash = new SortedDictionary<Currency, decimal>
         {
-            { CurrencyCode.USD, 10000m }
+            { Currency.USD, 10000m }
         };
         var strategy = CreateStrategy(cash: originalCash);
 
         // Act — mutate the original dictionary after construction
-        originalCash[CurrencyCode.USD] = 99999m;
-        originalCash[CurrencyCode.EUR] = 5000m;
+        originalCash[Currency.USD] = 99999m;
+        originalCash[Currency.EUR] = 5000m;
 
         // Assert — strategy's cash should be unaffected
-        strategy.Cash[CurrencyCode.USD].Should().Be(10000m);
-        strategy.Cash.Should().NotContainKey(CurrencyCode.EUR);
+        strategy.Cash[Currency.USD].Should().Be(10000m);
+        strategy.Cash.Should().NotContainKey(Currency.EUR);
     }
 }

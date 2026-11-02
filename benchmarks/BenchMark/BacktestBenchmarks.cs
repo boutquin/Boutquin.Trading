@@ -23,8 +23,8 @@ namespace Boutquin.Trading.BenchMark;
 public class BuyAndHoldBenchmark
 {
     private static readonly Symbol s_spy = new("SPY");
-    private static readonly IReadOnlyDictionary<Symbol, CurrencyCode> s_assetCurrencies =
-        new Dictionary<Symbol, CurrencyCode> { { s_spy, CurrencyCode.USD } };
+    private static readonly IReadOnlyDictionary<Symbol, Currency> s_assetCurrencies =
+        new Dictionary<Symbol, Currency> { { s_spy, Currency.USD } };
 
     private FakeBacktestDataset _dataset = null!;
     private BackTest _backtest = null!;
@@ -43,8 +43,8 @@ public class BuyAndHoldBenchmark
     [IterationSetup]
     public void IterationSetup()
     {
-        const CurrencyCode usd = CurrencyCode.USD;
-        var initialCash = new SortedDictionary<CurrencyCode, decimal> { { usd, 100_000m } };
+        const Currency usd = Currency.USD;
+        var initialCash = new SortedDictionary<Currency, decimal> { { usd, 100_000m } };
         var handlers = BenchmarkHelpers.BuildHandlers();
         var sizer = new FixedWeightPositionSizer(
             new Dictionary<Symbol, decimal> { { s_spy, 1m } }, usd);
@@ -58,7 +58,7 @@ public class BuyAndHoldBenchmark
         var benchmarkStrategy = new BuyAndHoldStrategy(
             name: "Benchmark-SPY",
             assets: s_assetCurrencies,
-            cash: new SortedDictionary<CurrencyCode, decimal>(initialCash),
+            cash: new SortedDictionary<Currency, decimal>(initialCash),
             initialTimestamp: _dataset.Prices.Keys.First(),
             orderPriceCalculationStrategy: new ClosePriceOrderPriceCalculationStrategy(),
             positionSizer: sizer);
@@ -103,12 +103,12 @@ public class MinimumVarianceBenchmark
     [IterationSetup]
     public void IterationSetup()
     {
-        const CurrencyCode usd = CurrencyCode.USD;
-        var assetCurrencies = new Dictionary<Symbol, CurrencyCode>
+        const Currency usd = Currency.USD;
+        var assetCurrencies = new Dictionary<Symbol, Currency>
         {
             { s_spy, usd }, { s_tlt, usd }, { s_gld, usd },
         };
-        var initialCash = new SortedDictionary<CurrencyCode, decimal> { { usd, 100_000m } };
+        var initialCash = new SortedDictionary<Currency, decimal> { { usd, 100_000m } };
         var handlers = BenchmarkHelpers.BuildHandlers();
         var constructionModel = new MinimumVarianceConstruction(
             new LedoitWolfConstantCorrelationEstimator());
@@ -130,7 +130,7 @@ public class MinimumVarianceBenchmark
         var benchmarkStrategy = new BuyAndHoldStrategy(
             name: "Benchmark-EqualWeight",
             assets: assetCurrencies,
-            cash: new SortedDictionary<CurrencyCode, decimal>(initialCash),
+            cash: new SortedDictionary<Currency, decimal>(initialCash),
             initialTimestamp: _dataset.Prices.Keys.First(),
             orderPriceCalculationStrategy: new ClosePriceOrderPriceCalculationStrategy(),
             positionSizer: new FixedWeightPositionSizer(benchmarkWeights, usd));

@@ -32,17 +32,17 @@ public sealed class CalendarOptions
     public const string SectionName = "Calendar";
 
     /// <summary>
-    /// Gets or sets the trading calendar type. Valid: "US", "Canadian", "Composite".
+    /// The configurable trading calendar type. Valid: "US", "Canadian", "Composite".
     /// </summary>
     public string TradingCalendar { get; set; } = "US";
 
     /// <summary>
-    /// Gets or sets the composition mode for composite calendars. Valid: "Any", "All".
+    /// The configurable composition mode for composite calendars. Valid: "Any", "All".
     /// </summary>
     public string CompositionMode { get; set; } = "All";
 
     /// <summary>
-    /// Gets or sets the constituent calendar names for composite mode. Valid items: "US", "Canadian".
+    /// The configurable constituent calendar names for composite mode. Valid items: "US", "Canadian".
     /// </summary>
     public List<string> Calendars { get; set; } = [];
 }

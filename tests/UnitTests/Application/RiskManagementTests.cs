@@ -29,7 +29,7 @@ public sealed class RiskManagementTests
 
     private static Order CreateBuyOrder(Symbol asset, int quantity = 100, decimal? price = null) =>
         new(
-            Timestamp: new DateOnly(2026, 3, 16),
+            Timestamp: new DateOnly(2026, 1, 1),
             StrategyName: "TestStrategy",
             Symbol: asset,
             TradeAction: TradeAction.Buy,
@@ -39,7 +39,7 @@ public sealed class RiskManagementTests
 
     private static Order CreateSellOrder(Symbol asset, int quantity = 100) =>
         new(
-            Timestamp: new DateOnly(2026, 3, 16),
+            Timestamp: new DateOnly(2026, 1, 1),
             StrategyName: "TestStrategy",
             Symbol: asset,
             TradeAction: TradeAction.Sell,
@@ -52,6 +52,9 @@ public sealed class RiskManagementTests
         Dictionary<string, IStrategy>? strategies = null)
     {
         var mock = new Mock<IPortfolio>();
+        // Legacy cap fixtures provide a current NAV explicitly; reporting is a separate input.
+        mock.Setup(p => p.CalculateTotalPortfolioValue(It.IsAny<DateOnly>()))
+            .Returns(equityCurve?.Values.LastOrDefault() ?? 0m);
         mock.Setup(p => p.EquityCurve)
             .Returns(equityCurve ?? []);
         mock.Setup(p => p.HistoricalMarketData)
@@ -240,13 +243,14 @@ public sealed class RiskManagementTests
     }
 
     [Fact]
-    public void MaxPositionSizeRule_EmptyEquityCurve_ShouldAllow()
+    public void MaxPositionSizeRule_NoValuation_ShouldFailClosed()
     {
         var portfolio = CreatePortfolioMock();
         var rule = new MaxPositionSizeRule(0.25m);
         var order = CreateBuyOrder(s_vti);
 
-        rule.Evaluate(order, portfolio.Object).IsAllowed.Should().BeTrue();
+        Action act = () => rule.Evaluate(order, portfolio.Object);
+        act.Should().Throw<InvalidOperationException>().WithMessage("*Risk NAV*");
     }
 
     [Fact]
@@ -443,7 +447,7 @@ public sealed class RiskManagementTests
             new MaxPositionSizeRule(0.25m),
         });
 
-        var order = CreateBuyOrder(s_vti, quantity: 100);
+        var order = CreateBuyOrder(s_vti, quantity: 100) with { Timestamp = new DateOnly(2026, 1, 2) };
         manager.Evaluate(order, portfolio.Object).IsAllowed.Should().BeTrue();
     }
 
@@ -782,8 +786,8 @@ public sealed class RiskManagementTests
 
         var orders = new List<Order>
         {
-            CreateSellOrder(s_vti, quantity: 100),
-            CreateBuyOrder(s_tlt, quantity: 100),
+            CreateSellOrder(s_vti, quantity: 100) with { Timestamp = new DateOnly(2026, 1, 2) },
+            CreateBuyOrder(s_tlt, quantity: 100) with { Timestamp = new DateOnly(2026, 1, 2) },
         };
 
         manager.EvaluateBatch(orders, portfolio.Object).IsAllowed.Should().BeTrue();

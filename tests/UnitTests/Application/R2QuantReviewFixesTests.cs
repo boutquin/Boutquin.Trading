@@ -81,80 +81,14 @@ public sealed class R2QuantReviewFixesTests
     // ==================== R2Q-01: LedoitWolf rho correction ====================
 
     [Fact]
-    public void R2Q01_Estimate_KnownCovariance_ShrinkageIntensityIncludesRho()
+    public void R2Q01_Estimate_KnownCovariance_MatchesIndependentJmva2004Intensity()
     {
-        // With rho correction, shrinkage intensity should be lower than without rho.
-        // We verify by computing both:
-        //   - delta_no_rho = piSum / (T * gamma) [old formula]
-        //   - delta_with_rho = (piSum - rhoSum) / (T * gamma) [correct formula]
-        // The estimator should produce delta_with_rho.
         var returns = R2QuantReviewFixesTestData.ThreeAssetReturns;
-        var estimator = new LedoitWolfShrinkageEstimator();
-        var sample = new SampleCovarianceEstimator();
-
-        var shrunk = estimator.Estimate(returns);
-        var sampleCov = sample.Estimate(returns);
-
-        var n = returns.Length;
-        var t = returns[0].Length;
-
-        // Compute mu (average diagonal)
-        var mu = 0m;
-        for (var i = 0; i < n; i++)
-        {
-            mu += sampleCov[i, i];
-        }
-
-        mu /= n;
-
-        // Recover delta from the shrunk matrix: shrunk[0,1] = (1-delta)*sampleCov[0,1]
-        // (since target off-diagonal = 0)
-        var recoveredDelta = sampleCov[0, 1] != 0m
-            ? 1m - shrunk[0, 1] / sampleCov[0, 1]
-            : 0m;
-
-        // Compute piSum (old code's numerator)
-        var means = new decimal[n];
-        for (var i = 0; i < n; i++)
-        {
-            means[i] = returns[i].Average();
-        }
-
-        var piSum = 0m;
-        for (var i = 0; i < n; i++)
-        {
-            for (var j = 0; j < n; j++)
-            {
-                var sum = 0m;
-                for (var k = 0; k < t; k++)
-                {
-                    var x = (returns[i][k] - means[i]) * (returns[j][k] - means[j]) - sampleCov[i, j];
-                    sum += x * x;
-                }
-
-                piSum += sum / t;
-            }
-        }
-
-        // Compute gamma
-        var gamma = 0m;
-        for (var i = 0; i < n; i++)
-        {
-            for (var j = 0; j < n; j++)
-            {
-                var target = i == j ? mu : 0m;
-                var diff = sampleCov[i, j] - target;
-                gamma += diff * diff;
-            }
-        }
-
-        // delta_no_rho (old formula)
-        var deltaNoRho = gamma == 0m ? 1m : piSum / (t * gamma);
-        deltaNoRho = Math.Max(0m, Math.Min(1m, deltaNoRho));
-
-        // The corrected delta should be <= delta_no_rho (since rho >= 0)
-        recoveredDelta.Should().BeLessThanOrEqualTo(deltaNoRho + 1e-8m,
-            "Shrinkage intensity with rho correction should be <= without rho");
+        var shrunk = new LedoitWolfShrinkageEstimator().Estimate(returns);
+        var sampleCov = new SampleCovarianceEstimator().Estimate(returns);
+        var recoveredDelta = 1m - shrunk[0, 1] / sampleCov[0, 1];
+        recoveredDelta.Should().BeApproximately(0.0501794995633308526834771602m, 1e-18m,
+            "the exact-rational independent JMVA 2004 identity-target intensity applies; the historical rho variant is a different formula");
     }
 
     [Fact]
@@ -304,10 +238,10 @@ public sealed class R2QuantReviewFixesTests
         weights.Values.Sum().Should().BeApproximately(1.0m, 1e-8m);
     }
 
-    // ==================== R2Q-04: RiskParity negative MRC throw ====================
+    // ==================== R2Q-04: difficult hedge covariance must not return an unconverged iterate ====================
 
     [Fact]
-    public void R2Q04_ComputeTargetWeights_NegativeMRC_ThrowsCalculationException()
+    public void R2Q04_ComputeTargetWeights_IllConditionedHedge_ReportsConvergenceExhaustion()
     {
         var model = new RiskParityConstruction();
         var returns = R2QuantReviewFixesTestData.NegativeMrcReturns;
@@ -315,7 +249,7 @@ public sealed class R2QuantReviewFixesTests
         var act = () => model.ComputeTargetWeights(ThreeAssets, returns);
 
         act.Should().Throw<Boutquin.Trading.Domain.Exceptions.CalculationException>()
-            .WithMessage("*marginal risk contribution*");
+            .WithMessage("*did not converge*");
     }
 
     [Fact]

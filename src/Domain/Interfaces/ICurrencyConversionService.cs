@@ -42,13 +42,13 @@ public interface ICurrencyConversionService
     /// ICurrencyConversionService conversionService = new MyCustomCurrencyConversionService();
     /// DateOnly timestamp = DateOnly.Today;
     /// decimal amount = 1000;
-    /// CurrencyCode fromCurrency = CurrencyCode.USD;
-    /// CurrencyCode toCurrency = CurrencyCode.EUR;
+    /// Currency fromCurrency = Currency.USD;
+    /// Currency toCurrency = Currency.EUR;
     ///
     /// decimal convertedAmount = await conversionService.ConvertAsync(timestamp, amount, fromCurrency, toCurrency);
     /// Console.WriteLine($"Converted amount: {convertedAmount}");
     /// </code>
     /// </example>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
-    Task<decimal> ConvertAsync(DateOnly timestamp, decimal amount, CurrencyCode fromCurrency, CurrencyCode toCurrency, CancellationToken cancellationToken = default);
+    Task<decimal> ConvertAsync(DateOnly timestamp, decimal amount, Currency fromCurrency, Currency toCurrency, CancellationToken cancellationToken = default);
 }

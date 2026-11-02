@@ -47,7 +47,9 @@ public sealed class City
         Guard.AgainstUndefinedEnumValue(() => timeZoneCode); // Throws ArgumentOutOfRangeException
         Guard.AgainstUndefinedEnumValue(() => countryCode); // Throws ArgumentOutOfRangeException
 
-        _id = -1;
+        // Assign the CLR default (0) so EF Core's on-add value generation assigns the
+        // database-generated key (a non-default sentinel would suppress generation).
+        _id = 0;
         Name = name;
         TimeZoneCode = timeZoneCode;
         CountryCode = countryCode;
@@ -59,17 +61,17 @@ public sealed class City
     private readonly int _id; // Private key for EF
 
     /// <summary>
-    /// Gets the city name.
+    /// The city name.
     /// </summary>
     public string Name { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the ISO 8601 time zone code associated with the city.
+    /// The ISO 8601 time zone code associated with the city.
     /// </summary>
     public TimeZoneCode TimeZoneCode { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the ISO 3166-1:2020 alpha-2 country code associated with the city.
+    /// The ISO 3166-1:2020 alpha-2 country code associated with the city.
     /// </summary>
     public CountryCode CountryCode { get; private set; } // Setter is for EF
 

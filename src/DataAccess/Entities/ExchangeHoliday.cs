@@ -45,7 +45,9 @@ public sealed class ExchangeHoliday
         Guard.AgainstNullOrWhiteSpaceAndOverflow(() => description,
             ColumnConstants.ExchangeHoliday_Description_Length); // Throws ArgumentException for null or empty and ArgumentOutOfRangeException for overflow
 
-        _id = -1;
+        // Assign the CLR default (0) so EF Core's on-add value generation assigns the
+        // database-generated key (a non-default sentinel would suppress generation).
+        _id = 0;
         ExchangeCode = exchangeCode;
         HolidayDate = holidayDate;
         Description = description;
@@ -57,17 +59,17 @@ public sealed class ExchangeHoliday
     private readonly int _id; // Private key for EF
 
     /// <summary>
-    /// Gets the ISO 10383 market identifier code of the exchange.
+    /// The ISO 10383 market identifier code of the exchange.
     /// </summary>
     public ExchangeCode ExchangeCode { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the holiday date.
+    /// The holiday date.
     /// </summary>
     public DateOnly HolidayDate { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the holiday description.
+    /// The holiday description.
     /// </summary>
     public string Description { get; private set; } // Setter is for EF
 

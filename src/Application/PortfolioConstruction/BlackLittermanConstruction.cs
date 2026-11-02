@@ -67,7 +67,33 @@ public sealed class BlackLittermanConstruction : IPortfolioConstructionModel
     {
         Guard.AgainstNull(() => equilibriumWeights);
 
-        _equilibriumWeights = (decimal[])equilibriumWeights.Clone();
+        if (riskAversionCoefficient <= 0m)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(riskAversionCoefficient),
+                riskAversionCoefficient,
+                "Risk aversion coefficient must be strictly positive.");
+        }
+
+        // Normalize the equilibrium copy so the no-views path honors the
+        // interface sum-to-1.0 guarantee regardless of how the caller scaled
+        // its market-cap weights. (The views path renormalizes separately.)
+        var equilibriumCopy = (decimal[])equilibriumWeights.Clone();
+        var equilibriumSum = 0m;
+        foreach (var w in equilibriumCopy)
+        {
+            equilibriumSum += w;
+        }
+
+        if (equilibriumSum > 0m)
+        {
+            for (var i = 0; i < equilibriumCopy.Length; i++)
+            {
+                equilibriumCopy[i] /= equilibriumSum;
+            }
+        }
+
+        _equilibriumWeights = equilibriumCopy;
         _riskAversionCoefficient = riskAversionCoefficient;
         _tau = tau;
         _pickMatrix = pickMatrix is not null ? (decimal[,])pickMatrix.Clone() : null;

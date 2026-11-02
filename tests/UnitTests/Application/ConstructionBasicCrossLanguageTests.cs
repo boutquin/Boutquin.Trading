@@ -316,11 +316,24 @@ public sealed class ConstructionBasicCrossLanguageTests : CrossLanguageVerificat
     {
         using var doc = LoadVector("construction_risk_parity");
         var caseData = doc.RootElement.GetProperty("cases").GetProperty("three_asset");
-        var maxDev = GetDecimal(caseData, "risk_contrib_max_deviation");
+        var returns = GetJaggedArray(caseData.GetProperty("returns"));
+        var assets = MakeAssets(returns.Length);
+        var result = new RiskParityConstruction().ComputeTargetWeights(assets, returns);
+        var covariance = new Boutquin.Trading.Application.CovarianceEstimators.SampleCovarianceEstimator().Estimate(returns);
+        var contributions = new decimal[assets.Count];
+        for (var i = 0; i < assets.Count; i++)
+        {
+            for (var j = 0; j < assets.Count; j++)
+            {
+                contributions[i] += result[assets[i]] * covariance[i, j] * result[assets[j]];
+            }
+        }
 
-        // Risk contributions should be approximately equal (max deviation < 1e-6)
-        Assert.True(maxDev < PrecisionNumeric,
-            $"Risk contribution max deviation ({maxDev}) should be < {PrecisionNumeric}");
+        var variance = contributions.Sum();
+        foreach (var contribution in contributions)
+        {
+            AssertWithinTolerance(contribution / variance, 1m / assets.Count, 1e-10m);
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════════════

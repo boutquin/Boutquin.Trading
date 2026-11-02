@@ -59,6 +59,14 @@ public sealed class DynamicBlackLittermanConstruction : IPortfolioConstructionMo
     {
         Guard.AgainstNull(() => viewSpecs);
 
+        if (riskAversionCoefficient <= 0m)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(riskAversionCoefficient),
+                riskAversionCoefficient,
+                "Risk aversion coefficient must be strictly positive.");
+        }
+
         _viewSpecs = viewSpecs;
         _riskAversionCoefficient = riskAversionCoefficient;
         _tau = tau;
@@ -148,7 +156,8 @@ public sealed class DynamicBlackLittermanConstruction : IPortfolioConstructionMo
                 }
             }
 
-            // Omega Ω (K x K) — Idzorek (2005) formulation:
+            // Omega Ω (K x K) — Walters (2008) closed-form confidence mapping
+            // (the closed form for Idzorek's (2005) confidence-based view uncertainty):
             // Ω[v,v] = (1/C - 1) × P[v,:] × τΣ × P[v,:]'
             // This scales view uncertainty by the view portfolio's variance,
             // so confidence maps directly to tilt percentage: C=0.6 → 60% tilt

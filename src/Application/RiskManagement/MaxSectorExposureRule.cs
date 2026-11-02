@@ -19,19 +19,35 @@ namespace Boutquin.Trading.Application.RiskManagement;
 using Domain.ValueObjects;
 
 /// <summary>
-/// Rejects orders that would cause total exposure to any asset class
-/// to exceed a configured percentage of total portfolio value.
-/// Symbol classes are determined by a user-provided mapping.
+/// Rejects orders that would cause total exposure to any asset class to exceed a configured
+/// percentage of total portfolio value, with each holding valued in the portfolio's base currency at
+/// the decision-date bar. Symbol classes are determined by a user-provided mapping.
 /// </summary>
+/// <remarks>
+/// <para>Risk NAV is calculated from current holdings and all currency cash at the decision date;
+/// reporting equity and its burn-in window do not control admission. Nonpositive NAV throws
+/// <see cref="InvalidOperationException"/>; unavailable valuation inputs propagate their existing errors.</para>
+/// <para><b>Share-granularity tolerance:</b> the cap is enforced to within one share of each holding in
+/// the class. Position sizing rounds every holding's share count with
+/// <see cref="MidpointRounding.AwayFromZero"/>, so a class whose holdings sit exactly at their targets
+/// overshoots its cap by up to half a share per holding. The rule therefore rejects only when the
+/// projected exposure exceeds <c>cap + max(Tolerance, Σ w₁)</c>, where <c>Σ w₁</c> sums one share's
+/// base-currency weight at the decision-date <c>AdjustedClose</c> over the class's projected non-zero holdings.
+/// The fixed tolerance stays binding whenever those shares are together worth less than it, the
+/// rounding overshoot always fits inside the bound, and anything more than one share per holding over
+/// the cap is rejected. The sizers never round toward the cap.</para>
+/// <para><b>Scope:</b> <see cref="Evaluate"/> checks only the class of the order's asset, with that
+/// asset's quantity adjusted to its post-trade value; <see cref="EvaluateBatch"/> checks every class
+/// after netting the whole batch. Both net an asset's quantity across strategies before valuing it, and
+/// both skip a holding that has no bar on the decision date because it cannot be valued.</para>
+/// </remarks>
 public sealed class MaxSectorExposureRule : IRiskRule
 {
     /// <summary>
-    /// Tolerance for exposure comparison (10 basis points = 0.10%).
-    /// Sector exposure aggregates multiple positions, each with its own share-count
-    /// rounding error (~0.5bp per position). With 2-3 assets per sector, combined
-    /// error can reach 1-2bp — exceeding the 1bp tolerance that works for single
-    /// positions. 10bp absorbs multi-position rounding while still catching real
-    /// limit violations.
+    /// Floor of the exposure comparison tolerance (10 basis points = 0.10%). Sector exposure aggregates
+    /// several positions, each with its own share-count rounding, so the floor is wider than the
+    /// single-position rule's 1 bp. The tolerance actually applied is <c>max(Tolerance, Σ one share's
+    /// weight)</c> over the class's holdings — see the class remarks.
     /// </summary>
     private const decimal Tolerance = 0.001m;
 
@@ -72,23 +88,19 @@ public sealed class MaxSectorExposureRule : IRiskRule
     /// <inheritdoc />
     public string Name => "MaxSectorExposure";
 
-    /// <inheritdoc />
+    /// <summary>Checks the proposed exposure using current holdings and currency cash valued at the order's decision date.</summary>
+    /// <param name="order">The proposed order, whose timestamp selects the marks and FX.</param>
+    /// <param name="portfolio">The current portfolio; reporting equity is neither read nor changed.</param>
+    /// <returns>The existing cap/tolerance decision or a missing-input rejection.</returns>
+    /// <exception cref="ArgumentNullException">An argument is null.</exception>
+    /// <exception cref="InvalidOperationException">Current NAV is nonpositive, or a required valuation input is unavailable.</exception>
     public RiskEvaluation Evaluate(Order order, IPortfolio portfolio)
     {
         Guard.AgainstNull(() => order);
         Guard.AgainstNull(() => portfolio);
 
-        var equityCurve = portfolio.EquityCurve;
-        if (equityCurve.Count == 0)
-        {
-            return RiskEvaluation.Allowed;
-        }
-
-        var totalPortfolioValue = equityCurve.Values.Last();
-        if (totalPortfolioValue <= 0)
-        {
-            return RiskEvaluation.Allowed;
-        }
+        var date = order.Timestamp;
+        var totalPortfolioValue = RiskValuation.PositiveNav(portfolio, date);
 
         // Determine the asset class of the order's asset
         if (!_assetClassMap.TryGetValue(order.Symbol, out var orderAssetClass))
@@ -97,57 +109,22 @@ public sealed class MaxSectorExposureRule : IRiskRule
                 $"Symbol '{order.Symbol}' has no asset class mapping; cannot evaluate sector exposure.");
         }
 
-        var latestMarketData = portfolio.HistoricalMarketData.Values.LastOrDefault();
+        portfolio.HistoricalMarketData.TryGetValue(date, out var latestMarketData);
         if (latestMarketData is null)
         {
             return RiskEvaluation.Rejected(
                 "No market data available to evaluate sector exposure.");
         }
 
-        // Sum current exposure for this asset class across all strategies,
-        // tracking the order's asset position separately for post-trade adjustment.
-        var sectorExposure = 0m;
-        var existingOrderAssetQty = 0;
+        // Project the order's asset to its post-trade quantity; every other holding stays as is.
+        var projectedPositions = CollectCurrentPositions(portfolio);
+        var delta = order.TradeAction == TradeAction.Buy
+            ? order.Quantity
+            : -order.Quantity;
+        projectedPositions[order.Symbol] = projectedPositions.GetValueOrDefault(order.Symbol) + delta;
 
-        foreach (var strategy in portfolio.Strategies.Values)
-        {
-            foreach (var (asset, qty) in strategy.Positions)
-            {
-                if (_assetClassMap.TryGetValue(asset, out var assetClass) &&
-                    assetClass == orderAssetClass &&
-                    latestMarketData.TryGetValue(asset, out var md))
-                {
-                    sectorExposure += Math.Abs(qty * md.AdjustedClose);
-
-                    if (asset == order.Symbol)
-                    {
-                        existingOrderAssetQty += qty;
-                    }
-                }
-            }
-        }
-
-        // Compute post-trade exposure: adjust the order's asset from existing to post-trade quantity.
-        if (latestMarketData.TryGetValue(order.Symbol, out var orderMarketData))
-        {
-            var postTradeQty = order.TradeAction == TradeAction.Buy
-                ? existingOrderAssetQty + order.Quantity
-                : existingOrderAssetQty - order.Quantity;
-
-            sectorExposure = sectorExposure
-                - Math.Abs(existingOrderAssetQty * orderMarketData.AdjustedClose)
-                + Math.Abs(postTradeQty * orderMarketData.AdjustedClose);
-        }
-
-        var exposurePercent = sectorExposure / totalPortfolioValue;
-
-        if (exposurePercent > _maxExposurePercent + Tolerance)
-        {
-            return RiskEvaluation.Rejected(
-                $"Exposure to {orderAssetClass} would be {exposurePercent:P2}, exceeding maximum {_maxExposurePercent:P2}.");
-        }
-
-        return RiskEvaluation.Allowed;
+        return CheckProjectedExposures(
+            projectedPositions, latestMarketData, portfolio, date, totalPortfolioValue, onlyAssetClass: orderAssetClass, when: string.Empty);
     }
 
     /// <summary>
@@ -155,24 +132,28 @@ public sealed class MaxSectorExposureRule : IRiskRule
     /// Computes the net position deltas per asset, then sums sector-level exposure
     /// to check whether any sector exceeds the limit.
     /// </summary>
+    /// <param name="orders">Orders sharing one decision date; an empty batch is allowed and mixed dates are rejected.</param>
+    /// <param name="portfolio">The current portfolio; risk NAV is independent of reporting equity.</param>
+    /// <returns>The netted cap/tolerance decision, or a diagnostic rejection.</returns>
+    /// <exception cref="ArgumentNullException">An argument is null.</exception>
+    /// <exception cref="InvalidOperationException">Current NAV is nonpositive, or a required valuation input is unavailable.</exception>
     public RiskEvaluation EvaluateBatch(IReadOnlyList<Order> orders, IPortfolio portfolio)
     {
         Guard.AgainstNull(() => orders);
         Guard.AgainstNull(() => portfolio);
 
-        var equityCurve = portfolio.EquityCurve;
-        if (equityCurve.Count == 0)
+        if (orders.Count == 0)
         {
             return RiskEvaluation.Allowed;
         }
-
-        var totalPortfolioValue = equityCurve.Values.Last();
-        if (totalPortfolioValue <= 0)
+        var date = orders[0].Timestamp;
+        if (orders.Any(order => order.Timestamp != date))
         {
-            return RiskEvaluation.Allowed;
+            return RiskEvaluation.Rejected("Risk batch contains mixed decision dates; cannot select a causal valuation date.");
         }
+        var totalPortfolioValue = RiskValuation.PositiveNav(portfolio, date);
 
-        var latestMarketData = portfolio.HistoricalMarketData.Values.LastOrDefault();
+        portfolio.HistoricalMarketData.TryGetValue(date, out var latestMarketData);
         if (latestMarketData is null)
         {
             return RiskEvaluation.Rejected(
@@ -189,38 +170,61 @@ public sealed class MaxSectorExposureRule : IRiskRule
             }
         }
 
-        // 1. Collect current positions across all strategies
-        var currentPositions = new Dictionary<Symbol, int>();
-        foreach (var strategy in portfolio.Strategies.Values)
-        {
-            foreach (var (asset, qty) in strategy.Positions)
-            {
-                currentPositions[asset] = currentPositions.GetValueOrDefault(asset) + qty;
-            }
-        }
-
-        // 2. Compute net deltas from the entire batch
-        var deltas = new Dictionary<Symbol, int>();
+        // Net the whole batch onto the current positions
+        var projectedPositions = CollectCurrentPositions(portfolio);
         foreach (var order in orders)
         {
             var delta = order.TradeAction == TradeAction.Buy
                 ? order.Quantity
                 : -order.Quantity;
-            deltas[order.Symbol] = deltas.GetValueOrDefault(order.Symbol) + delta;
+            projectedPositions[order.Symbol] = projectedPositions.GetValueOrDefault(order.Symbol) + delta;
         }
 
-        // 3. Compute projected positions
-        var projectedPositions = new Dictionary<Symbol, int>(currentPositions);
-        foreach (var (asset, delta) in deltas)
+        return CheckProjectedExposures(
+            projectedPositions, latestMarketData, portfolio, date, totalPortfolioValue, onlyAssetClass: null, when: " after batch");
+    }
+
+    /// <summary>Sums each asset's quantity across all strategies.</summary>
+    private static Dictionary<Symbol, int> CollectCurrentPositions(IPortfolio portfolio)
+    {
+        var positions = new Dictionary<Symbol, int>();
+        foreach (var strategy in portfolio.Strategies.Values)
         {
-            projectedPositions[asset] = projectedPositions.GetValueOrDefault(asset) + delta;
+            foreach (var (asset, qty) in strategy.Positions)
+            {
+                positions[asset] = positions.GetValueOrDefault(asset) + qty;
+            }
         }
 
-        // 4. Sum exposure by sector using projected positions
-        var sectorExposures = new Dictionary<AssetClassCode, decimal>();
-        foreach (var (asset, qty) in projectedPositions)
+        return positions;
+    }
+
+    /// <summary>
+    /// Sums each asset class's projected base-currency exposure and one-share granularity, then compares
+    /// the exposure against the cap plus <c>max(Tolerance, Σ one share's weight)</c>; see the class remarks.
+    /// </summary>
+    /// <param name="projectedPositions">Each asset's signed quantity after the order(s) under evaluation, netted across strategies.</param>
+    /// <param name="latestMarketData">The decision-date bar per asset; a holding without one is skipped.</param>
+    /// <param name="portfolio">The portfolio whose base currency, asset currencies and FX tables apply.</param>
+    /// <param name="date">The order batch decision date used for marks and FX.</param>
+    /// <param name="totalPortfolioValue">The current marked holdings and currency-cash NAV in base currency; positive.</param>
+    /// <param name="onlyAssetClass">When set, only this class is checked; otherwise every class is.</param>
+    /// <param name="when">Suffix naming the evaluation context in the rejection message (empty, or " after batch").</param>
+    private RiskEvaluation CheckProjectedExposures(
+        IReadOnlyDictionary<Symbol, int> projectedPositions,
+        SortedDictionary<Symbol, Bar> latestMarketData,
+        IPortfolio portfolio,
+        DateOnly date,
+        decimal totalPortfolioValue,
+        AssetClassCode? onlyAssetClass,
+        string when)
+    {
+        var exposures = new Dictionary<AssetClassCode, decimal>();
+        var granularities = new Dictionary<AssetClassCode, decimal>();
+
+        foreach (var (asset, quantity) in projectedPositions)
         {
-            if (qty == 0)
+            if (quantity == 0)
             {
                 continue;
             }
@@ -230,23 +234,32 @@ public sealed class MaxSectorExposureRule : IRiskRule
                 continue;
             }
 
-            if (!latestMarketData.TryGetValue(asset, out var md))
+            if (onlyAssetClass is { } only && assetClass != only)
             {
                 continue;
             }
 
-            var value = Math.Abs(qty * md.AdjustedClose);
-            sectorExposures[assetClass] = sectorExposures.GetValueOrDefault(assetClass) + value;
+            if (!latestMarketData.TryGetValue(asset, out var bar))
+            {
+                continue;
+            }
+
+            exposures[assetClass] = exposures.GetValueOrDefault(assetClass)
+                + PositionValuation.AbsoluteValueInBase(portfolio, date, asset, quantity, bar.AdjustedClose);
+            granularities[assetClass] = granularities.GetValueOrDefault(assetClass)
+                + PositionValuation.OneShareWeight(portfolio, date, asset, bar.AdjustedClose, totalPortfolioValue);
         }
 
-        // 5. Check each sector against the limit
-        foreach (var (sector, exposure) in sectorExposures)
+        foreach (var (assetClass, exposure) in exposures)
         {
             var exposurePercent = exposure / totalPortfolioValue;
-            if (exposurePercent > _maxExposurePercent + Tolerance)
+            var tolerance = Math.Max(Tolerance, granularities[assetClass]);
+
+            if (exposurePercent > _maxExposurePercent + tolerance)
             {
                 return RiskEvaluation.Rejected(
-                    $"Exposure to {sector} would be {exposurePercent:P2} after batch, exceeding maximum {_maxExposurePercent:P2}.");
+                    $"Exposure to {assetClass} would be {exposurePercent:P2}{when}, exceeding maximum {_maxExposurePercent:P2} " +
+                    $"by more than the {tolerance:P4} tolerance (the larger of {Tolerance:P2} and one share of each holding in the class at the latest close).");
             }
         }
 

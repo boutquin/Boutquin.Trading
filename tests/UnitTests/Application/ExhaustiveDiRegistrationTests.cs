@@ -17,6 +17,7 @@
 namespace Boutquin.Trading.Tests.UnitTests.Application;
 
 using Boutquin.Trading.Application.Configuration;
+using Boutquin.Trading.Application.ExpectedReturns;
 using Boutquin.Trading.Application.PortfolioConstruction;
 using Boutquin.Trading.Application.SlippageModels;
 
@@ -43,7 +44,6 @@ public sealed class ExhaustiveDiRegistrationTests
             ["CostModel:CommissionRate"] = "10",
             ["CostModel:SlippageType"] = "NoSlippage",
             ["CostModel:SlippageAmount"] = "0",
-            ["CostModel:DefaultSpreadPercent"] = "0",
             ["CostModel:VolumeLimit"] = "0",
             ["RiskManagement:MaxDrawdownPercent"] = "0.20",
             ["RiskManagement:MaxPositionSizePercent"] = "0.25",
@@ -83,6 +83,11 @@ public sealed class ExhaustiveDiRegistrationTests
     [InlineData("RobustMeanVariance", typeof(RobustMeanVarianceConstruction))]
     [InlineData("HERC", typeof(HierarchicalEqualRiskContributionConstruction))]
     [InlineData("MeanCDaR", typeof(MeanDownsideRiskConstruction))]
+    [InlineData("MeanEVaR", typeof(MeanDownsideRiskConstruction))]
+    [InlineData("EntropyPooling", typeof(EntropyPoolingConstruction))]
+    [InlineData("NestedClusteredOptimization", typeof(NestedClusteredOptimizationConstruction))]
+    [InlineData("NCO", typeof(NestedClusteredOptimizationConstruction))]
+    [InlineData("SparseMinimumVariance", typeof(SparseMinimumVarianceConstruction))]
     public void ConstructionModel_ShouldResolve(string modelName, Type expectedType)
     {
         var sp = BuildServiceProvider(new Dictionary<string, string?>
@@ -92,6 +97,48 @@ public sealed class ExhaustiveDiRegistrationTests
 
         var model = sp.GetRequiredService<IPortfolioConstructionModel>();
         model.Should().BeOfType(expectedType);
+    }
+
+    // ============================================================
+    // Covariance estimator factory — exercised through a construction
+    // model that consumes the injected ICovarianceEstimator (wired path).
+    // ============================================================
+
+    [Theory]
+    [InlineData("Sample")]
+    [InlineData("EWMA")]
+    [InlineData("LedoitWolf")]
+    [InlineData("LedoitWolfConstantCorrelation")]
+    [InlineData("Denoised")]
+    [InlineData("Gerber")]
+    [InlineData("FactorGraphicalLasso")]
+    [InlineData("DccNl")]
+    public void CovarianceEstimator_ResolvesThroughConstructionModel(string covEstimator)
+    {
+        // MinimumVarianceConstruction takes the injected ICovarianceEstimator, so a
+        // bad/missing covariance-estimator key surfaces as a resolution failure here —
+        // this exercises the production CreateCovarianceEstimator switch, not a unit stub.
+        var sp = BuildServiceProvider(new Dictionary<string, string?>
+        {
+            ["Backtest:ConstructionModel"] = "MinimumVariance",
+            ["Backtest:CovarianceEstimator"] = covEstimator,
+        });
+
+        var model = sp.GetRequiredService<IPortfolioConstructionModel>();
+        model.Should().BeOfType<MinimumVarianceConstruction>();
+    }
+
+    [Fact]
+    public void CovarianceEstimator_Unknown_ShouldThrowArgumentOutOfRange()
+    {
+        var sp = BuildServiceProvider(new Dictionary<string, string?>
+        {
+            ["Backtest:ConstructionModel"] = "MinimumVariance",
+            ["Backtest:CovarianceEstimator"] = "NonExistentEstimator",
+        });
+
+        var act = sp.GetRequiredService<IPortfolioConstructionModel>;
+        act.Should().Throw<ArgumentOutOfRangeException>();
     }
 
     [Fact]
@@ -116,6 +163,63 @@ public sealed class ExhaustiveDiRegistrationTests
         });
 
         var act = sp.GetRequiredService<IPortfolioConstructionModel>;
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    // ============================================================
+    // Expected-return estimator factory (M-9) — IExpectedReturnEstimator
+    // registered from BacktestOptions.ExpectedReturnEstimator, mirroring the
+    // CovarianceEstimator key's factory pattern (throw on bad name, no silent default).
+    // ============================================================
+
+    [Fact]
+    public void ExpectedReturnEstimator_Default_ShouldResolveHistoricalMean()
+    {
+        // No override for Backtest:ExpectedReturnEstimator → the BacktestOptions default
+        // ("HistoricalMean") must be honored, preserving current (rear-view sample-mean) behavior.
+        var sp = BuildServiceProvider(new Dictionary<string, string?>());
+
+        var estimator = sp.GetRequiredService<IExpectedReturnEstimator>();
+        estimator.Should().BeOfType<HistoricalMeanExpectedReturnEstimator>();
+    }
+
+    [Fact]
+    public void ExpectedReturnEstimator_HistoricalMean_ShouldResolve()
+    {
+        var sp = BuildServiceProvider(new Dictionary<string, string?>
+        {
+            ["Backtest:ExpectedReturnEstimator"] = "HistoricalMean",
+        });
+
+        sp.GetRequiredService<IExpectedReturnEstimator>()
+            .Should().BeOfType<HistoricalMeanExpectedReturnEstimator>();
+    }
+
+    [Fact]
+    public void ExpectedReturnEstimator_YieldAnchored_ShouldThrowInvalidOperation()
+    {
+        // YieldAnchored needs a per-run asset-class map and constructor-bound auxiliary series
+        // that configuration cannot express — like BlackLitterman, DI registration is not
+        // supported; it must be constructed manually. A broken instance must never be produced.
+        var sp = BuildServiceProvider(new Dictionary<string, string?>
+        {
+            ["Backtest:ExpectedReturnEstimator"] = "YieldAnchored",
+        });
+
+        var act = sp.GetRequiredService<IExpectedReturnEstimator>;
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*YieldAnchored*");
+    }
+
+    [Fact]
+    public void ExpectedReturnEstimator_Unknown_ShouldThrowArgumentOutOfRange()
+    {
+        var sp = BuildServiceProvider(new Dictionary<string, string?>
+        {
+            ["Backtest:ExpectedReturnEstimator"] = "NonExistentEstimator",
+        });
+
+        var act = sp.GetRequiredService<IExpectedReturnEstimator>;
         act.Should().Throw<ArgumentOutOfRangeException>();
     }
 

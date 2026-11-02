@@ -43,7 +43,7 @@ public sealed class RebalancingSignalEventHandlerTests
 
         mockPortfolio.Setup(p => p.GetStrategy("TestStrategy")).Returns(strategy);
 
-        var handler = new RebalancingSignalEventHandler(CurrencyCode.USD);
+        var handler = new RebalancingSignalEventHandler(Currency.USD);
         var signals = new SortedDictionary<Symbol, SignalType>
         {
             [s_vti] = SignalType.Rebalance,
@@ -84,7 +84,7 @@ public sealed class RebalancingSignalEventHandlerTests
 
         mockPortfolio.Setup(p => p.GetStrategy("TestStrategy")).Returns(strategy);
 
-        var handler = new RebalancingSignalEventHandler(CurrencyCode.USD);
+        var handler = new RebalancingSignalEventHandler(Currency.USD);
         var signals = new SortedDictionary<Symbol, SignalType>
         {
             [s_vti] = SignalType.Underweight, // Not Rebalance
@@ -117,7 +117,7 @@ public sealed class RebalancingSignalEventHandlerTests
 
         mockPortfolio.Setup(p => p.GetStrategy("TestStrategy")).Returns(strategy);
 
-        var handler = new RebalancingSignalEventHandler(CurrencyCode.USD);
+        var handler = new RebalancingSignalEventHandler(Currency.USD);
         var signals = new SortedDictionary<Symbol, SignalType>
         {
             [s_vti] = SignalType.Rebalance,
@@ -138,11 +138,74 @@ public sealed class RebalancingSignalEventHandlerTests
     [Fact]
     public void Constructor_NegativeMinimumTradeValue_Throws()
     {
-        var act = () => new RebalancingSignalEventHandler(CurrencyCode.USD, -1m);
+        var act = () => new RebalancingSignalEventHandler(Currency.USD, -1m);
         act.Should().Throw<ArgumentOutOfRangeException>();
     }
 
     // --- Helpers ---
+
+    /// <summary>
+    /// The differ works in base currency, so a USD asset in a CAD portfolio must be priced in CAD
+    /// before the share count is computed. 130,000 CAD at 100% into a 100 USD share at 1.30 CAD/USD
+    /// is 1,000 shares (130 CAD each), not the 1,300 a native-price division produces.
+    /// </summary>
+    [Fact]
+    public async Task HandleEventAsync_ForeignAsset_SizesOrdersFromBaseCurrencyPrices()
+    {
+        var vgsh = new Symbol("VGSH");
+        var emittedOrders = new List<OrderEvent>();
+
+        var mockProcessor = new Mock<IEventProcessor>();
+        mockProcessor
+            .Setup(ep => ep.ProcessEventAsync(It.IsAny<IFinancialEvent>(), It.IsAny<CancellationToken>()))
+            .Callback<IFinancialEvent, CancellationToken>((evt, _) =>
+            {
+                if (evt is OrderEvent order)
+                {
+                    emittedOrders.Add(order);
+                }
+            })
+            .Returns(Task.CompletedTask);
+
+        var mockOrderPrice = new Mock<IOrderPriceCalculationStrategy>();
+        mockOrderPrice
+            .Setup(o => o.CalculateOrderPrices(It.IsAny<DateOnly>(), It.IsAny<Symbol>(), It.IsAny<TradeAction>(),
+                It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>>>()))
+            .Returns((OrderType.Market, 100m, 0m));
+
+        var strategy = new ConstructionModelStrategy(
+            "TestStrategy",
+            new Dictionary<Symbol, Currency> { [vgsh] = Currency.USD },
+            new SortedDictionary<Currency, decimal> { [Currency.CAD] = 130_000m },
+            mockOrderPrice.Object,
+            new Mock<IPositionSizer>().Object,
+            new EqualWeightConstruction(),
+            RebalancingFrequency.Monthly);
+        typeof(ConstructionModelStrategy)
+            .GetProperty(nameof(ConstructionModelStrategy.LastComputedWeights))!
+            .SetValue(strategy, new Dictionary<Symbol, decimal> { [vgsh] = 1.0m });
+
+        var mockPortfolio = new Mock<IPortfolio>();
+        mockPortfolio.Setup(p => p.GetStrategy("TestStrategy")).Returns(strategy);
+        mockPortfolio.Setup(p => p.EventProcessor).Returns(mockProcessor.Object);
+        mockPortfolio.Setup(p => p.HistoricalMarketData).Returns(new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>
+        {
+            [s_date] = new SortedDictionary<Symbol, Bar> { [vgsh] = new Bar(s_date, 100m, 100m, 100m, 100m, 100m, 1_000_000L) },
+        });
+        mockPortfolio.Setup(p => p.HistoricalFxConversionRates).Returns(new SortedDictionary<DateOnly, SortedDictionary<Currency, decimal>>
+        {
+            [s_date] = new SortedDictionary<Currency, decimal> { [Currency.USD] = 1.30m },
+        });
+
+        var handler = new RebalancingSignalEventHandler(Currency.CAD);
+        var signalEvent = new SignalEvent(s_date, "TestStrategy", new SortedDictionary<Symbol, SignalType> { [vgsh] = SignalType.Rebalance });
+
+        await handler.HandleEventAsync(mockPortfolio.Object, signalEvent, CancellationToken.None);
+
+        var order = emittedOrders.Should().ContainSingle().Which;
+        order.TradeAction.Should().Be(TradeAction.Buy);
+        order.Quantity.Should().Be(1000, "130,000 CAD ÷ (100 USD × 1.30 CAD/USD)");
+    }
 
     private static Mock<IPortfolio> CreateMockPortfolio(List<OrderEvent> capturedOrders)
     {
@@ -158,9 +221,9 @@ public sealed class RebalancingSignalEventHandlerTests
             },
         };
 
-        var fxRates = new SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
+        var fxRates = new SortedDictionary<DateOnly, SortedDictionary<Currency, decimal>>
         {
-            [s_date] = new SortedDictionary<CurrencyCode, decimal> { [CurrencyCode.USD] = 1m },
+            [s_date] = new SortedDictionary<Currency, decimal> { [Currency.USD] = 1m },
         };
 
         mockPortfolio.Setup(p => p.HistoricalMarketData).Returns(marketData);
@@ -189,15 +252,15 @@ public sealed class RebalancingSignalEventHandlerTests
         Dictionary<Symbol, decimal> targetWeights,
         decimal initialCash = 100_000m)
     {
-        var assets = new Dictionary<Symbol, CurrencyCode>
+        var assets = new Dictionary<Symbol, Currency>
         {
-            [s_vti] = CurrencyCode.USD,
-            [s_bnd] = CurrencyCode.USD,
-            [s_gld] = CurrencyCode.USD,
+            [s_vti] = Currency.USD,
+            [s_bnd] = Currency.USD,
+            [s_gld] = Currency.USD,
         };
 
         // Only include assets that are in positions or targetWeights
-        var relevantAssets = new Dictionary<Symbol, CurrencyCode>();
+        var relevantAssets = new Dictionary<Symbol, Currency>();
         foreach (var a in positions.Keys.Union(targetWeights.Keys))
         {
             if (assets.TryGetValue(a, out var cc))
@@ -206,7 +269,7 @@ public sealed class RebalancingSignalEventHandlerTests
             }
         }
 
-        var cash = new SortedDictionary<CurrencyCode, decimal> { [CurrencyCode.USD] = initialCash };
+        var cash = new SortedDictionary<Currency, decimal> { [Currency.USD] = initialCash };
         var mockOrderPrice = new Mock<IOrderPriceCalculationStrategy>();
         mockOrderPrice
             .Setup(o => o.CalculateOrderPrices(It.IsAny<DateOnly>(), It.IsAny<Symbol>(), It.IsAny<TradeAction>(),
@@ -253,11 +316,11 @@ public sealed class RebalancingSignalEventHandlerTests
             historicalData[date] = dayData;
         }
 
-        var fxData = new SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>();
+        var fxData = new SortedDictionary<DateOnly, SortedDictionary<Currency, decimal>>();
         for (var i = 0; i < 5; i++)
         {
             var date = s_date.AddDays(-10 + i);
-            fxData[date] = new SortedDictionary<CurrencyCode, decimal> { [CurrencyCode.USD] = 1m };
+            fxData[date] = new SortedDictionary<Currency, decimal> { [Currency.USD] = 1m };
         }
 
         // Call GenerateSignals to set LastComputedWeights — but we want specific weights.
@@ -266,6 +329,12 @@ public sealed class RebalancingSignalEventHandlerTests
         // Let's recreate with a mock:
         var mockModel = new Mock<IPortfolioConstructionModel>();
         mockModel.Setup(m => m.ComputeTargetWeights(It.IsAny<IReadOnlyList<Symbol>>(), It.IsAny<decimal[][]>()))
+            .Returns(targetWeights);
+
+        // The strategy invokes the date-aware overload; a Moq proxy implements every interface member
+        // itself, so the default-interface-method forwarding does not run and the overload must be set
+        // up explicitly to mirror the date-free behavior.
+        mockModel.Setup(m => m.ComputeTargetWeights(It.IsAny<IReadOnlyList<Symbol>>(), It.IsAny<decimal[][]>(), It.IsAny<DateOnly>()))
             .Returns(targetWeights);
 
         var strategy2 = new ConstructionModelStrategy(
@@ -282,15 +351,15 @@ public sealed class RebalancingSignalEventHandlerTests
         }
 
         // Trigger GenerateSignals to set LastComputedWeights
-        strategy2.GenerateSignals(s_date, CurrencyCode.USD, historicalData, fxData);
+        strategy2.GenerateSignals(s_date, Currency.USD, historicalData, fxData);
 
         return strategy2;
     }
 
     private static IStrategy CreateSimpleStrategy(Dictionary<Symbol, int> positions)
     {
-        var assets = new Dictionary<Symbol, CurrencyCode> { [s_vti] = CurrencyCode.USD };
-        var cash = new SortedDictionary<CurrencyCode, decimal> { [CurrencyCode.USD] = 100_000m };
+        var assets = new Dictionary<Symbol, Currency> { [s_vti] = Currency.USD };
+        var cash = new SortedDictionary<Currency, decimal> { [Currency.USD] = 100_000m };
 
         var mockOrderPrice = new Mock<IOrderPriceCalculationStrategy>();
         mockOrderPrice
@@ -301,7 +370,7 @@ public sealed class RebalancingSignalEventHandlerTests
         // Create a FixedWeightPositionSizer that returns position sizes
         var sizer = new FixedWeightPositionSizer(
             new Dictionary<Symbol, decimal> { [s_vti] = 1.0m },
-            CurrencyCode.USD);
+            Currency.USD);
 
         var strategy = new BuyAndHoldStrategy("TestStrategy", assets, cash, s_date, mockOrderPrice.Object, sizer);
 

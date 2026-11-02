@@ -21,15 +21,22 @@ using Boutquin.Trading.Domain.Exceptions;
 
 /// <summary>
 /// Maximizes the diversification ratio DR(w) = Σ(w_i × σ_i) / σ_portfolio
-/// (Chopin &amp; Briand, 2008).
+/// (Choueifaty &amp; Coignard, 2008).
 ///
-/// Implementation: reformulates as minimum-variance on volatility-normalized returns.
-/// If z_i = r_i / σ_i, then minimizing z'Σ_z z with simplex constraints on the
-/// normalized weights, then un-normalizing back to original space, maximizes DR.
-/// Uses projected gradient descent with line search, identical to MinimumVarianceConstruction.
-///
-/// When all assets are equally correlated, degenerates gracefully to inverse-volatility.
+/// For distinct assets, symmetric positive-definite covariance and feasible uniform bounds
+/// in [0,1], certifies exact budget/bounds and true diversification-ratio relative loss at most
+/// 1e-10. Uses the existing correlation-QP fast path, then at most 256 asset-space
+/// mean-variance proposals, with an exact rational global certificate on every returned vector.
 /// </summary>
+/// <remarks>
+/// The supported route refuses unresolved numerical results with <see cref="InvalidOperationException"/>.
+/// Empty/singleton behavior and legacy routes for non-SPD covariance, duplicate assets and
+/// nonstandard/infeasible bounds are retained; those legacy routes do not have the certified
+/// optimality guarantee, and relaxed infeasible bounds do not satisfy authored hard constraints.
+/// Exact SPD classification costs O(N³) rational operations; each certificate uses O(N²)
+/// matrix work and O(N log N) comparisons. Big-integer costs depend on input bit lengths.
+/// All solver state is per call; concurrent use requires a thread-safe covariance estimator.
+/// </remarks>
 public sealed class MaximumDiversificationConstruction : IPortfolioConstructionModel
 {
     private readonly ICovarianceEstimator _covarianceEstimator;
@@ -60,7 +67,16 @@ public sealed class MaximumDiversificationConstruction : IPortfolioConstructionM
         _tolerance = tolerance;
     }
 
-    /// <inheritdoc />
+    /// <summary>Computes diversification weights in the supplied asset order.</summary>
+    /// <param name="assets">Ordered asset symbols; distinct symbols are required by the certified route.</param>
+    /// <param name="returns">One return series per asset, passed to the configured covariance estimator.</param>
+    /// <returns>Certified weights for supported calls, or the retained legacy result for external-domain calls.</returns>
+    /// <exception cref="ArgumentNullException">The asset list is null.</exception>
+    /// <exception cref="ArgumentException">A nonempty asset list has null returns or a different series count.</exception>
+    /// <exception cref="CalculationException">An asset has zero volatility.</exception>
+    /// <exception cref="OverflowException">The legacy diagonal-volatility conversion is not representable.</exception>
+    /// <exception cref="InvalidOperationException">A supported numerical calculation is unresolved or no
+    /// emitted vector meets the universal true-DR certificate within the fixed work limit.</exception>
     public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
         IReadOnlyList<Symbol> assets,
         decimal[][] returns)
@@ -96,6 +112,18 @@ public sealed class MaximumDiversificationConstruction : IPortfolioConstructionM
                 throw new CalculationException(
                     $"Volatility is zero for asset {assets[i]}; cannot compute maximum diversification weight.");
             }
+        }
+
+        if (assets.Distinct().Count() == n &&
+            CertifiedMaximumDiversification.TrySolve(cov, vols, _minWeight, _maxWeight, out var certified, out _))
+        {
+            var result = new Dictionary<Symbol, decimal>(n);
+            for (var i = 0; i < n; i++)
+            {
+                result.Add(assets[i], certified[i]);
+            }
+
+            return result;
         }
 
         // Build correlation matrix: corr[i,j] = cov[i,j] / (σ_i * σ_j)
@@ -151,20 +179,39 @@ public sealed class MaximumDiversificationConstruction : IPortfolioConstructionM
 
         if (needsProjection)
         {
-            // Re-solve with outer bounds: the constrained MaxDiv is equivalent to
-            // constrained MinVar on the correlation matrix with transformed bounds.
-            // Since the transform w_i = (y_i/σ_i)/Σ(y_j/σ_j) is monotonic,
-            // we can solve the constrained problem by passing bounds to the inner solver.
-            // However, the exact bound transform is non-trivial, so we use MinVar on
-            // the original covariance with the outer bounds as a good approximation.
+            // Constrained maximum-diversification: keep optimizing the diversification
+            // objective (MinVar on the *correlation* matrix, i.e. on volatility-normalized
+            // returns) under the user bounds, then un-normalize back to asset space and
+            // project onto the asset-space bounds. Solving MinVar on the *covariance*
+            // matrix here would silently swap the objective to minimum-variance, which
+            // is a different optimum whenever asset volatilities differ.
+            decimal[] yc;
             try
             {
-                rawW = ActiveSetQpSolver.SolveMinVariance(cov, _minWeight, _maxWeight);
+                yc = ActiveSetQpSolver.SolveMinVariance(corr, _minWeight, _maxWeight);
             }
             catch (InvalidOperationException)
             {
-                ProjectOntoSimplex(rawW, _minWeight, _maxWeight);
+                yc = SolveMinVarGradientDescent(corr, n);
             }
+
+            var sumC = 0m;
+            for (var i = 0; i < n; i++)
+            {
+                rawW[i] = yc[i] / vols[i];
+                sumC += rawW[i];
+            }
+
+            if (sumC > 0m)
+            {
+                for (var i = 0; i < n; i++)
+                {
+                    rawW[i] /= sumC;
+                }
+            }
+
+            // Enforce the asset-space bounds the un-normalization may have breached.
+            ProjectOntoCappedSimplex(rawW, _minWeight, _maxWeight);
         }
 
         var weights = new Dictionary<Symbol, decimal>(n);
@@ -258,6 +305,165 @@ public sealed class MaximumDiversificationConstruction : IPortfolioConstructionM
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Projects <paramref name="w"/> onto { Σw_i = 1, minWeight ≤ w_i ≤ maxWeight } using
+    /// waterfilling: saturate the bounds that bind, fix those coordinates, then redistribute
+    /// the residual mass proportionally across the still-free coordinates until none breach.
+    /// Unlike the clamp-then-renormalize loop, the saturated coordinates stay fixed at the
+    /// bound, so the returned vector satisfies the box constraints to within rounding.
+    /// A final headroom-redistribution pass absorbs any residual mass left when a single round
+    /// saturates every free coordinate at once (one to maxWeight, another to minWeight), which
+    /// would otherwise leave 1 − Σw unallocated and break the sum-to-1.0 contract.
+    /// </summary>
+    private static void ProjectOntoCappedSimplex(decimal[] w, decimal minWeight, decimal maxWeight)
+    {
+        var n = w.Length;
+
+        // Auto-relax constraints when infeasible: with N assets, maxWeight must be >= 1/N
+        // and minWeight must be <= 1/N, otherwise weights can't sum to 1.0.
+        maxWeight = Math.Max(maxWeight, 1m / n);
+        minWeight = Math.Min(minWeight, 1m / n);
+
+        // Start from the renormalized non-negative vector.
+        for (var i = 0; i < n; i++)
+        {
+            w[i] = Math.Max(0m, w[i]);
+        }
+
+        var total = w.Sum();
+        if (total <= 0m)
+        {
+            for (var i = 0; i < n; i++)
+            {
+                w[i] = 1m / n;
+            }
+        }
+        else
+        {
+            for (var i = 0; i < n; i++)
+            {
+                w[i] /= total;
+            }
+        }
+
+        var fixedFlags = new bool[n];
+
+        for (var round = 0; round < n + 1; round++)
+        {
+            // Mass already committed to saturated coordinates, and the free pool's sum.
+            var fixedMass = 0m;
+            var freeSum = 0m;
+            var freeCount = 0;
+            for (var i = 0; i < n; i++)
+            {
+                if (fixedFlags[i])
+                {
+                    fixedMass += w[i];
+                }
+                else
+                {
+                    freeSum += w[i];
+                    freeCount++;
+                }
+            }
+
+            var freeTarget = 1m - fixedMass;
+            if (freeCount == 0)
+            {
+                break;
+            }
+
+            // Scale the free coordinates to absorb the residual mass.
+            if (freeSum > 0m)
+            {
+                var scale = freeTarget / freeSum;
+                for (var i = 0; i < n; i++)
+                {
+                    if (!fixedFlags[i])
+                    {
+                        w[i] *= scale;
+                    }
+                }
+            }
+            else
+            {
+                var equalShare = freeTarget / freeCount;
+                for (var i = 0; i < n; i++)
+                {
+                    if (!fixedFlags[i])
+                    {
+                        w[i] = equalShare;
+                    }
+                }
+            }
+
+            // Saturate any free coordinate that now breaches a bound and fix it.
+            var changed = false;
+            for (var i = 0; i < n; i++)
+            {
+                if (fixedFlags[i])
+                {
+                    continue;
+                }
+
+                if (w[i] > maxWeight)
+                {
+                    w[i] = maxWeight;
+                    fixedFlags[i] = true;
+                    changed = true;
+                }
+                else if (w[i] < minWeight)
+                {
+                    w[i] = minWeight;
+                    fixedFlags[i] = true;
+                    changed = true;
+                }
+            }
+
+            if (!changed)
+            {
+                break;
+            }
+        }
+
+        // A waterfilling round can saturate every free coordinate at once — one to maxWeight,
+        // another to minWeight — so the loop exits with freeCount==0 while residual mass remains.
+        // Pour that residual into the coordinates that still have headroom toward the unsaturated
+        // bound. A feasible point exists whenever n·maxWeight ≥ 1 ≥ n·minWeight (guaranteed by the
+        // auto-relax above), so headroom is always available while |Σw − 1| > tolerance.
+        for (var round = 0; round < n + 1; round++)
+        {
+            var residual = 1m - w.Sum();
+            if (Math.Abs(residual) <= 1e-14m)
+            {
+                break;
+            }
+
+            // Total headroom in the direction we need to move: toward max if under-allocated,
+            // toward min if over-allocated.
+            var headroom = 0m;
+            for (var i = 0; i < n; i++)
+            {
+                headroom += residual > 0m ? maxWeight - w[i] : w[i] - minWeight;
+            }
+
+            if (headroom <= 0m)
+            {
+                break;
+            }
+
+            // Distribute the residual proportionally to each coordinate's available headroom,
+            // clamping at the bound so no coordinate breaches the box.
+            for (var i = 0; i < n; i++)
+            {
+                var coordHeadroom = residual > 0m ? maxWeight - w[i] : w[i] - minWeight;
+                var delta = residual * (coordHeadroom / headroom);
+                w[i] += delta;
+                w[i] = Math.Max(minWeight, Math.Min(maxWeight, w[i]));
+            }
+        }
     }
 
     private static void ProjectOntoSimplex(decimal[] w, decimal minWeight, decimal maxWeight)

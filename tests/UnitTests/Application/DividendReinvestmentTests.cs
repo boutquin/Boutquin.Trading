@@ -40,13 +40,13 @@ public sealed class DividendReinvestmentTests
         var testStrategy = new TestStrategy
         {
             Positions = new SortedDictionary<Symbol, int> { { asset, 100 } },
-            Cash = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 10_000m } }
+            Cash = new SortedDictionary<Currency, decimal> { { Currency.USD, 10_000m } }
         };
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", testStrategy } };
-        var assetCurrencies = new Dictionary<Symbol, CurrencyCode> { { asset, CurrencyCode.USD } };
+        var assetCurrencies = new Dictionary<Symbol, Currency> { { asset, Currency.USD } };
 
         var portfolio = new Portfolio(
-            CurrencyCode.USD,
+            Currency.USD,
             new ReadOnlyDictionary<string, IStrategy>(strategies),
             assetCurrencies,
             _handlers,
@@ -60,7 +60,7 @@ public sealed class DividendReinvestmentTests
         portfolio.UpdateCashForDividend(asset, 0.50m, currentPrice: 200m);
 
         // Assert — cash credited, positions unchanged
-        testStrategy.Cash[CurrencyCode.USD].Should().Be(10_050m);
+        testStrategy.Cash[Currency.USD].Should().Be(10_050m);
         testStrategy.Positions[asset].Should().Be(100);
     }
 
@@ -72,13 +72,13 @@ public sealed class DividendReinvestmentTests
         var testStrategy = new TestStrategy
         {
             Positions = new SortedDictionary<Symbol, int> { { asset, 100 } },
-            Cash = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 10_000m } }
+            Cash = new SortedDictionary<Currency, decimal> { { Currency.USD, 10_000m } }
         };
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", testStrategy } };
-        var assetCurrencies = new Dictionary<Symbol, CurrencyCode> { { asset, CurrencyCode.USD } };
+        var assetCurrencies = new Dictionary<Symbol, Currency> { { asset, Currency.USD } };
 
         var portfolio = new Portfolio(
-            CurrencyCode.USD,
+            Currency.USD,
             new ReadOnlyDictionary<string, IStrategy>(strategies),
             assetCurrencies,
             _handlers,
@@ -94,7 +94,7 @@ public sealed class DividendReinvestmentTests
 
         // Assert
         // Cash: 10000 + 200 (dividend) - 200 (reinvestment) = 10000
-        testStrategy.Cash[CurrencyCode.USD].Should().Be(10_000m);
+        testStrategy.Cash[Currency.USD].Should().Be(10_000m);
         // Position: 100 + 4 = 104
         testStrategy.Positions[asset].Should().Be(104);
     }
@@ -107,13 +107,13 @@ public sealed class DividendReinvestmentTests
         var testStrategy = new TestStrategy
         {
             Positions = new SortedDictionary<Symbol, int> { { asset, 100 } },
-            Cash = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 10_000m } }
+            Cash = new SortedDictionary<Currency, decimal> { { Currency.USD, 10_000m } }
         };
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", testStrategy } };
-        var assetCurrencies = new Dictionary<Symbol, CurrencyCode> { { asset, CurrencyCode.USD } };
+        var assetCurrencies = new Dictionary<Symbol, Currency> { { asset, Currency.USD } };
 
         var portfolio = new Portfolio(
-            CurrencyCode.USD,
+            Currency.USD,
             new ReadOnlyDictionary<string, IStrategy>(strategies),
             assetCurrencies,
             _handlers,
@@ -129,7 +129,7 @@ public sealed class DividendReinvestmentTests
 
         // Assert
         // Cash: 10000 + 75 (dividend) - 50 (1 share reinvestment) = 10025
-        testStrategy.Cash[CurrencyCode.USD].Should().Be(10_025m);
+        testStrategy.Cash[Currency.USD].Should().Be(10_025m);
         // Position: 100 + 1 = 101
         testStrategy.Positions[asset].Should().Be(101);
     }
@@ -142,13 +142,13 @@ public sealed class DividendReinvestmentTests
         var testStrategy = new TestStrategy
         {
             Positions = new SortedDictionary<Symbol, int> { { asset, 10 } },
-            Cash = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 10_000m } }
+            Cash = new SortedDictionary<Currency, decimal> { { Currency.USD, 10_000m } }
         };
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", testStrategy } };
-        var assetCurrencies = new Dictionary<Symbol, CurrencyCode> { { asset, CurrencyCode.USD } };
+        var assetCurrencies = new Dictionary<Symbol, Currency> { { asset, Currency.USD } };
 
         var portfolio = new Portfolio(
-            CurrencyCode.USD,
+            Currency.USD,
             new ReadOnlyDictionary<string, IStrategy>(strategies),
             assetCurrencies,
             _handlers,
@@ -163,7 +163,7 @@ public sealed class DividendReinvestmentTests
         portfolio.UpdateCashForDividend(asset, 0.10m, currentPrice: 200m);
 
         // Assert — cash credited but no reinvestment
-        testStrategy.Cash[CurrencyCode.USD].Should().Be(10_001m);
+        testStrategy.Cash[Currency.USD].Should().Be(10_001m);
         testStrategy.Positions[asset].Should().Be(10);
     }
 
@@ -175,22 +175,22 @@ public sealed class DividendReinvestmentTests
         var strategy1 = new TestStrategy
         {
             Positions = new SortedDictionary<Symbol, int> { { asset, 100 } },
-            Cash = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 5_000m } }
+            Cash = new SortedDictionary<Currency, decimal> { { Currency.USD, 5_000m } }
         };
         var strategy2 = new TestStrategy
         {
             Positions = new SortedDictionary<Symbol, int> { { asset, 50 } },
-            Cash = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 3_000m } }
+            Cash = new SortedDictionary<Currency, decimal> { { Currency.USD, 3_000m } }
         };
         var strategies = new Dictionary<string, IStrategy>
         {
             { "Strategy1", strategy1 },
             { "Strategy2", strategy2 }
         };
-        var assetCurrencies = new Dictionary<Symbol, CurrencyCode> { { asset, CurrencyCode.USD } };
+        var assetCurrencies = new Dictionary<Symbol, Currency> { { asset, Currency.USD } };
 
         var portfolio = new Portfolio(
-            CurrencyCode.USD,
+            Currency.USD,
             new ReadOnlyDictionary<string, IStrategy>(strategies),
             assetCurrencies,
             _handlers,
@@ -206,11 +206,11 @@ public sealed class DividendReinvestmentTests
         portfolio.UpdateCashForDividend(asset, 1.00m, currentPrice: 25m);
 
         // Assert Strategy1
-        strategy1.Cash[CurrencyCode.USD].Should().Be(5_000m); // 5000 + 100 - 100
+        strategy1.Cash[Currency.USD].Should().Be(5_000m); // 5000 + 100 - 100
         strategy1.Positions[asset].Should().Be(104);
 
         // Assert Strategy2
-        strategy2.Cash[CurrencyCode.USD].Should().Be(3_000m); // 3000 + 50 - 50
+        strategy2.Cash[Currency.USD].Should().Be(3_000m); // 3000 + 50 - 50
         strategy2.Positions[asset].Should().Be(52);
     }
 
@@ -222,13 +222,13 @@ public sealed class DividendReinvestmentTests
         var testStrategy = new TestStrategy
         {
             Positions = new SortedDictionary<Symbol, int> { { asset, 100 } },
-            Cash = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 10_000m } }
+            Cash = new SortedDictionary<Currency, decimal> { { Currency.USD, 10_000m } }
         };
         var strategies = new Dictionary<string, IStrategy> { { "TestStrategy", testStrategy } };
-        var assetCurrencies = new Dictionary<Symbol, CurrencyCode> { { asset, CurrencyCode.USD } };
+        var assetCurrencies = new Dictionary<Symbol, Currency> { { asset, Currency.USD } };
 
         var portfolio = new Portfolio(
-            CurrencyCode.USD,
+            Currency.USD,
             new ReadOnlyDictionary<string, IStrategy>(strategies),
             assetCurrencies,
             _handlers,
@@ -242,7 +242,7 @@ public sealed class DividendReinvestmentTests
         portfolio.UpdateCashForDividend(asset, 0.50m);
 
         // Assert — dividend credited, no reinvestment
-        testStrategy.Cash[CurrencyCode.USD].Should().Be(10_050m);
+        testStrategy.Cash[Currency.USD].Should().Be(10_050m);
         testStrategy.Positions[asset].Should().Be(100);
     }
 }

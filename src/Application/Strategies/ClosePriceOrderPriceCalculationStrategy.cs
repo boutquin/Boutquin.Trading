@@ -41,14 +41,17 @@ public sealed class ClosePriceOrderPriceCalculationStrategy : IOrderPriceCalcula
             TradeAction tradeAction,
             IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> historicalData)
     {
-        // Check if there is market data for the specified timestamp.
-        if (!historicalData.TryGetValue(timestamp, out var marketDataForDate))
-        {
-            throw new ArgumentException($"No market data found for the specified date: {timestamp}");
-        }
+        // Exact-date lookup first, then cross-calendar fallback to the most recent prior bar.
+        // See <see cref="HistoricalMarketDataLookup.TryFindMostRecentBar"/> for rationale — a
+        // CA portfolio placing an order on a TSX trading day that happens to be a US holiday
+        // (or where the provider has a data gap) would otherwise throw, aborting the backtest.
+        Bar? marketData = historicalData.TryGetValue(timestamp, out var marketDataForDate) &&
+            marketDataForDate is not null &&
+            marketDataForDate.TryGetValue(asset, out var exactBar)
+            ? exactBar
+            : HistoricalMarketDataLookup.TryFindMostRecentBar(historicalData, asset, timestamp);
 
-        // Check if there is market data for the specified asset.
-        if (marketDataForDate == null || !marketDataForDate.TryGetValue(asset, out var marketData))
+        if (marketData is null)
         {
             throw new ArgumentException($"No market data found for the specified asset: {asset.Ticker} on date: {timestamp}");
         }
@@ -57,7 +60,7 @@ public sealed class ClosePriceOrderPriceCalculationStrategy : IOrderPriceCalcula
         // Use AdjustedClose so that fill prices are consistent with position sizing
         // and valuation (both use AdjustedClose). Using raw Close creates a price
         // mismatch on split dates where Close is discontinuous but AdjustedClose is not.
-        var primaryPrice = marketData.AdjustedClose;
+        var primaryPrice = marketData.Value.AdjustedClose;
 
         // TYP-A02: Return null for SecondaryPrice when not applicable
         return (OrderType, primaryPrice, null);

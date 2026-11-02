@@ -63,28 +63,28 @@ public sealed class Exchange
     }
 
     /// <summary>
-    /// Gets the ISO 10383 market identifier code of the exchange.
+    /// The ISO 10383 market identifier code of the exchange.
     /// </summary>
     public ExchangeCode Code { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the exchange name.
+    /// The exchange name.
     /// </summary>
     public string Name { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the city where the exchange resides.
+    /// The city where the exchange resides.
     /// </summary>
     public City City { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the collection of ExchangeSchedule entities associated with the Exchange.
+    /// The collection of ExchangeSchedule entities associated with the Exchange.
     /// </summary>
     public ICollection<ExchangeSchedule> ExchangeSchedules { get; private set; } // Setter is for EF
         = [];
 
     /// <summary>
-    /// Gets the collection of ExchangeHoliday entities associated with the Exchange.
+    /// The collection of ExchangeHoliday entities associated with the Exchange.
     /// </summary>
     public ICollection<ExchangeHoliday> ExchangeHolidays { get; private set; } // Setter is for EF
         = [];

@@ -21,7 +21,6 @@ Boutquin.Trading/
 │   └── BenchMark/              # BenchmarkDotNet suite
 ├── docs/                       # Documentation
 │   └── examples/               # Worked examples
-├── specs/                      # Internal specifications (gitignored in public release)
 ├── hooks/                      # Git hooks
 └── Resources/                  # Shared assets (icon)
 ```
@@ -52,8 +51,8 @@ Core business logic, contracts, and value types. No implementation dependencies.
 - **Enums/** — 9 backtest-specific enums: `OrderType`, `TradeAction`, `SignalType`, `EconomicRegime`, `RebalancingFrequency`, `AccountType`, `HoldingPeriod`, `CanadianProvince`, `UsState` (market data enums such as `CurrencyCode` and `AssetClassCode` live in `Boutquin.MarketData.Abstractions.ReferenceData`)
 - **Extensions/** — `DecimalArrayExtensions` (28+ financial metrics), `EquityCurveExtensions` (drawdown tracking, monthly/annual returns)
 - **Analytics/** — Sealed record types for analytics results: `BrinsonFachlerResult`, `FactorRegressionResult`, `CorrelationAnalysisResult`, `DrawdownPeriod`, `WalkForwardResult`, `MonteCarloResult`, `CurrencyReturnDecomposition`
-- **TaxEngine/** — 9 tax domain records: `TaxLot`, `LotDisposal`, `TaxImpact`, `DividendRecord`, `DividendTaxImpact`, `LossHarvestingResult`, `TradeRecord`, `PositionSnapshot`, `RocAdjustmentResult`
-- **Helpers/** — `TearSheet` (21 performance metrics), `RebalanceOrder`
+- **TaxEngine/** — 9 tax domain records: `TaxLot`, `LotDisposal`, `TaxImpact`, `DividendRecord`, `DividendTaxImpact`, `LossHarvestingResult`, `TradeRecord`, `PositionSnapshot`, `RocAdjustmentResult` (amount fields are currency-tagged `Money`; rate fields stay `decimal` — see [Money Boundary APIs](#money-boundary-apis))
+- **Helpers/** — `TearSheet` (21 performance metrics), `RebalanceOrder`, `FxConversion` (the single FX lookup: the map is keyed by non-base currency and holds base units per 1 unit of it)
 - **ValueObjects/** — `RiskEvaluation`, `BatchRiskEvaluation`, `AssetWeightConstraints`
 - **Exceptions/** — `CalculationException` for degenerate-input guards
 
@@ -63,7 +62,7 @@ All implementations of domain interfaces, the backtest engine, and DI wiring. De
 
 - **Portfolio.cs** — Core portfolio: multi-currency cash management, position tracking, equity curve, DRIP
 - **Backtest.cs** — Event-driven backtest runner with data quality gate and expense ratio deduction
-- **Brokers/** — `SimulatedBrokerage` (market, limit, stop, stop-limit orders; slippage and commission models; next-bar Open fill; quantity-limiting)
+- **Brokers/** — `SimulatedBrokerage` (market, limit, stop, stop-limit and FX orders; slippage, commission and FX-spread models; next-bar Open fill in the order asset sells → FX conversions → asset buys; quantity-limiting)
 - **Strategies/** — `BuyAndHoldStrategy`, `RebalancingBuyAndHoldStrategy`, `ConstructionModelStrategy`
 - **PortfolioConstruction/** — 19 base models + 2 decorators (see [Portfolio Construction Guide](portfolio-construction-guide.md))
 - **CovarianceEstimators/** — 13 estimators: Sample, EWMA, LedoitWolfShrinkage, LedoitWolfConstantCorrelation, LedoitWolfSingleFactor, OAS, QIS, Denoised (RMT), TracyWidomDenoised, Detoned, POET, NERCOME, DoublySparse
@@ -76,8 +75,8 @@ All implementations of domain interfaces, the backtest engine, and DI wiring. De
 - **PositionSizing/** — `FixedWeightPositionSizer`, `DynamicWeightPositionSizer`
 - **RiskManagement/** — `RiskManager` (composite), MaxDrawdown/MaxPositionSize/MaxSectorExposure rules, `DrawdownCircuitBreaker`
 - **Reporting/** — `HtmlReportGenerator` (SVG tearsheet), `BenchmarkComparisonReport`
-- **EventHandlers/** — Market, Signal, Order, Fill, RebalancingSignal handlers
-- **CostModels/** — Fixed, PerShare, Percentage, Tiered, Composite transaction cost models
+- **EventHandlers/** — Market, Signal, Order, Fill, RebalancingSignal, FxOrder, FxFill handlers (the two FX handlers are registered by any portfolio holding assets outside its funding currency; `FxFundingPlanner` in `Helpers/` sizes the conversions)
+- **CostModels/** — Fixed, PerShare, Percentage, Tiered, Composite transaction cost models; `SpreadFxCostModel` (basis points of the amount sold) for FX conversions
 - **SlippageModels/** — Fixed, No, Percentage, Spread, VolumeShare slippage models
 - **Configuration/** — `ServiceCollectionExtensions` (`AddBoutquinTrading`), `BacktestOptions`, `CostModelOptions`, `RiskManagementOptions`, `CacheOptions`, `CalendarOptions`
 
@@ -117,10 +116,58 @@ EF Core persistence for the SecurityMaster database.
 - **Publish:** GitHub Actions (`publish.yml`) — tag-triggered NuGet push with version verification
 - **Deterministic builds:** SourceLink, symbol packages (.snupkg)
 
+## Money Boundary APIs
+
+Monetary amounts are reported and constructed through currency-tagged
+[`Boutquin.Domain.Money`](https://www.nuget.org/packages/Boutquin.Domain) companions that sit
+**alongside** the existing `decimal` members. `Money` is adopted only at the construction and
+reporting boundaries; the per-bar backtest loop, FX-rate stores, equity-curve/cash backing
+collections, weights, ratios, and bps stay `decimal`, so backtest throughput is unaffected.
+
+| Surface | `Money` API | Notes |
+|---------|-------------|-------|
+| Total value (reporting) | `IPortfolio.CalculateTotalPortfolioValueAsMoney(timestamp)`, `IStrategy.ComputeTotalValueAsMoney(...)` | The existing `decimal` total tagged with the base currency. |
+| Equity curve & cash (reporting) | `IPortfolio.EquityCurveAsMoney`, `IStrategy.CashAsMoney` | Derived views over the `decimal`-keyed `EquityCurve`/`Cash` collections — equity values tagged with the base currency, cash buckets each tagged with their own currency. The backing collections stay `decimal`. |
+| Cash mutation (construction) | `IPortfolio.UpdateCash(strategyName, Money)`, `IStrategy.UpdateCash(Money)`, `IPortfolio.UpdateCashForDividend(asset, Money dividendPerShare, Money currentPrice)` | The currency is taken from the `Money` argument, validated against the target bucket, then routed to the `decimal` core. |
+| Fill / commission (reporting) | `FillEvent.FillPriceAsMoney(currency)`, `FillEvent.CommissionAsMoney(currency)` | Project the `decimal`-backed fill fields as currency-tagged `Money`; the `FillEvent` fields stay `decimal`. |
+
+**Currency safety.** The `Money`-accepting cash-mutation overloads reject a wrong-currency amount
+by throwing `Boutquin.Domain.Exceptions.CurrencyMismatchException` rather than silently crediting
+the wrong bucket: `UpdateCash(Money)` rejects a currency the strategy holds no bucket for, and
+`UpdateCashForDividend(asset, Money, Money)` rejects a dividend/price whose currency does not match
+the asset's native currency. The reporting projections never throw — each value is tagged with the
+single correct currency, so no cross-currency arithmetic occurs.
+
+**Non-breaking.** These APIs are C# default interface methods (or instance methods on `FillEvent`),
+so existing `IPortfolio`/`IStrategy` implementers and `FillEvent` consumers compile unchanged.
+
+**TaxEngine records adopt `Money` on their amount fields (breaking).** The seven tax domain records
+in `Domain/TaxEngine/` carry currency-tagged `Money` on every genuinely monetary field, while
+dimensionless rate fields (e.g. `WithholdingTaxRate`) stay `decimal`. This makes cross-currency
+errors a compile-time / throw-time signal instead of a silent miscomputation — summing two records'
+amounts across currencies throws `CurrencyMismatchException` at the caller (`Money` arithmetic is
+currency-checked) where the pre-`Money` `decimal` code computed silently.
+
+| Record | `Money` fields | Stays `decimal` |
+|--------|----------------|-----------------|
+| `LotDisposal` | `CostPerShare`, `SalePrice`, `Commission`, `RealizedGainLoss` | `Quantity` |
+| `TaxLot` | `CostPerShare`, `Commission` | `Quantity` |
+| `DividendRecord` | `AmountPerShare` | `WithholdingTaxRate` |
+| `TaxImpact` | `GrossGainLoss`, `TaxableAmount`, `EstimatedTax`, `ShortTermGainLoss`, `LongTermGainLoss` | — |
+| `DividendTaxImpact` | `GrossIncome`, `TaxableIncome`, `TaxCredits`, `EstimatedTax` | — |
+| `LossHarvestingResult` | `DisallowedAmount`, `AllowedAmount` | `IsLossDisallowed` |
+| `RocAdjustmentResult` | `NewCostBasis`, `DeemedCapitalGain` | — |
+
+`DividendRecord` carries a **single currency source**: after `AmountPerShare` became `Money`, the
+former standalone `Currency` field is removed; `DividendRecord.Currency` is now a derived
+`=> AmountPerShare.Currency` accessor, never an independently stored value — a single dividend
+cannot carry two divergent currencies.
+
 ## Key Design Decisions
 
 | Decision | Rationale |
 |----------|-----------|
+| `Money` only at boundaries | Currency-tagged amounts where they are constructed/reported; the hot numeric paths stay `decimal` for throughput, and wrong-currency crediting throws `CurrencyMismatchException` instead of failing silently |
 | Sample divisor (N-1) | Standard for financial time series estimation from a sample |
 | `CalculationException` for degenerate inputs | Zero denominators and undefined scenarios are surfaced, not silently propagated |
 | Next-bar Open fills | Eliminates look-ahead bias; matches zipline/QuantConnect/backtrader convention |

@@ -39,8 +39,8 @@ public sealed class RateOfChangeIndicator : IMacroIndicator
     /// <inheritdoc />
     public decimal Compute(decimal[] series1, decimal[] series2)
     {
-        Guard.AgainstNullOrEmptyArray(() => series1);
-        Guard.AgainstNullOrEmptyArray(() => series2);
+        Guard.AgainstEmptyOrNullArray(() => series1);
+        Guard.AgainstEmptyOrNullArray(() => series2);
 
         if (series1.Length != series2.Length)
         {

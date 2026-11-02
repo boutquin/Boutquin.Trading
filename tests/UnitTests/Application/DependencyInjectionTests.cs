@@ -40,7 +40,6 @@ public sealed class DependencyInjectionTests
             ["CostModel:CommissionRate"] = "10",
             ["CostModel:SlippageType"] = "NoSlippage",
             ["CostModel:SlippageAmount"] = "0",
-            ["CostModel:DefaultSpreadPercent"] = "0",
             ["RiskManagement:MaxDrawdownPercent"] = "0.20",
             ["RiskManagement:MaxPositionSizePercent"] = "0.25",
             ["RiskManagement:MaxSectorExposurePercent"] = "0.40",
@@ -260,7 +259,7 @@ public sealed class DependencyInjectionTests
     {
         var strategyMock = new Mock<IStrategy>();
         strategyMock.Setup(s => s.Name).Returns("Test");
-        strategyMock.Setup(s => s.Assets).Returns(new Dictionary<Symbol, CurrencyCode> { [new Symbol("VTI")] = CurrencyCode.USD });
+        strategyMock.Setup(s => s.Assets).Returns(new Dictionary<Symbol, Currency> { [new Symbol("VTI")] = Currency.USD });
         strategyMock.Setup(s => s.Positions).Returns(new Dictionary<Symbol, int>());
 
         var brokerMock = new Mock<IBrokerage>();
@@ -268,9 +267,9 @@ public sealed class DependencyInjectionTests
 
         // This uses the backward-compatible constructor that defaults to NullLogger
         var act = () => new Portfolio(
-            CurrencyCode.USD,
+            Currency.USD,
             new Dictionary<string, IStrategy> { ["Test"] = strategyMock.Object },
-            new Dictionary<Symbol, CurrencyCode> { [new Symbol("VTI")] = CurrencyCode.USD },
+            new Dictionary<Symbol, Currency> { [new Symbol("VTI")] = Currency.USD },
             new Dictionary<Type, IEventHandler> { [typeof(MarketEvent)] = handlerMock.Object },
             brokerMock.Object);
 
@@ -285,7 +284,7 @@ public sealed class DependencyInjectionTests
         portfolioMock.Setup(p => p.EquityCurve).Returns(new SortedDictionary<DateOnly, decimal>());
 
         // This uses the backward-compatible constructor that defaults to NullLogger
-        var act = () => new BackTest(portfolioMock.Object, portfolioMock.Object, CurrencyCode.USD);
+        var act = () => new BackTest(portfolioMock.Object, portfolioMock.Object, Currency.USD);
         act.Should().NotThrow();
     }
 
@@ -466,12 +465,18 @@ public sealed class DependencyInjectionTests
         });
 
         var manager = sp.GetRequiredService<IRiskManager>();
-        // With rule disabled, any order should be allowed
+        // Sector mapping is unnecessary when disabled; the installed position rule still evaluates current NAV.
         var order = new Order(
             new DateOnly(2026, 1, 1), "Test", new Symbol("VTI"),
             TradeAction.Buy, OrderType.Market, 100);
         var portfolioMock = new Mock<IPortfolio>();
         portfolioMock.Setup(p => p.EquityCurve).Returns(new SortedDictionary<DateOnly, decimal>());
+        portfolioMock.Setup(p => p.CalculateTotalPortfolioValue(order.Timestamp)).Returns(100_000m);
+        portfolioMock.Setup(p => p.Strategies).Returns(new Dictionary<string, IStrategy>());
+        portfolioMock.Setup(p => p.HistoricalMarketData).Returns(new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>
+        {
+            [order.Timestamp] = new() { [order.Symbol] = new Bar(order.Timestamp, 100m, 100m, 100m, 100m, 100m, 1000000) },
+        });
         manager.Evaluate(order, portfolioMock.Object).IsAllowed.Should().BeTrue();
     }
 }

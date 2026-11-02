@@ -55,7 +55,7 @@ public sealed class OrderEventHandlerTests
             x => x.Log(
                 LogLevel.Warning,
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Order submission failed")),
+                It.Is<It.IsAnyType>((v, t) => v != null && v.ToString()!.Contains("Order submission failed")),
                 It.IsAny<Exception?>(),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);

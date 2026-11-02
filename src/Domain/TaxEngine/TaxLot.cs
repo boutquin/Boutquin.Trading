@@ -20,8 +20,18 @@ namespace Boutquin.Trading.Domain.TaxEngine;
 /// Represents a single purchase lot for cost basis tracking.
 /// Used by FIFO and Specific Identification methods.
 /// </summary>
+/// <param name="PurchaseDate">The date the lot was acquired.</param>
+/// <param name="Quantity">The number of shares in the lot (dimensionless; not a monetary amount).</param>
+/// <param name="CostPerShare">The per-share acquisition cost, as currency-tagged <see cref="Money"/>.</param>
+/// <param name="Commission">The commission paid to acquire the lot, as currency-tagged <see cref="Money"/>.</param>
+/// <remarks>
+/// The <see cref="Money"/>-typed amount fields carry their own currency; combining them across
+/// lots uses <see cref="Money"/> arithmetic, which throws
+/// <see cref="Boutquin.Domain.Exceptions.CurrencyMismatchException"/> at the caller on a currency
+/// mismatch. <see cref="Quantity"/> stays a dimensionless <see cref="decimal"/>.
+/// </remarks>
 public sealed record TaxLot(
     DateOnly PurchaseDate,
     decimal Quantity,
-    decimal CostPerShare,
-    decimal Commission);
+    Money CostPerShare,
+    Money Commission);

@@ -15,6 +15,7 @@
 //
 
 global using System.Collections.ObjectModel;
+global using Boutquin.Domain.Enumerations;
 global using Boutquin.MarketData.Abstractions.Records;
 global using Boutquin.MarketData.Abstractions.ReferenceData;
 global using Boutquin.Trading.Application;
@@ -26,6 +27,7 @@ global using Boutquin.Trading.Application.EventHandlers;
 global using Boutquin.Trading.Application.PortfolioConstruction;
 global using Boutquin.Trading.Application.PositionSizing;
 global using Boutquin.Trading.Application.Rebalancing;
+global using Boutquin.Trading.Application.Signals;
 global using Boutquin.Trading.Application.SlippageModels;
 global using Boutquin.Trading.Application.Strategies;
 global using Boutquin.Trading.Domain.Analytics;
@@ -33,4 +35,5 @@ global using Boutquin.Trading.Domain.Enums;
 global using Boutquin.Trading.Domain.Events;
 global using Boutquin.Trading.Domain.Helpers;
 global using Boutquin.Trading.Domain.Interfaces;
+global using Boutquin.Trading.Domain.ValueObjects;
 global using Boutquin.Trading.Recipes.Testing;

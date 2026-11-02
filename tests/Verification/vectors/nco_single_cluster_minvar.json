@@ -1,0 +1,30 @@
+{
+  "description": "Single-cluster NCO reduces to plain minimum-variance.",
+  "inputs": {
+    "covariance": [
+      [
+        0.0001,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0004,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0016
+      ]
+    ]
+  },
+  "expected": {
+    "minvar_weights": [
+      0.7619047619047619,
+      0.19047619047619047,
+      0.047619047619047616
+    ],
+    "weights_sum": 1.0
+  }
+}

@@ -142,4 +142,134 @@ public sealed class TurnoverPenalizedConstructionTests
 
         act.Should().Throw<ArgumentOutOfRangeException>();
     }
+
+    // ----------------------------------------------------------------------
+    // Stateless explicit-currentWeights overload (as-of / per-cohort path).
+    // ----------------------------------------------------------------------
+
+    private static readonly IReadOnlyDictionary<Symbol, decimal> s_vtiHeavyPrev =
+        new Dictionary<Symbol, decimal> { [s_vti] = 0.8m, [s_tlt] = 0.1m, [s_gld] = 0.1m };
+
+    private static readonly IReadOnlyDictionary<Symbol, decimal> s_gldHeavyPrev =
+        new Dictionary<Symbol, decimal> { [s_vti] = 0.1m, [s_tlt] = 0.1m, [s_gld] = 0.8m };
+
+    /// <summary>
+    /// Leaf 1: with lambda &gt; 0 and an explicit w_prev distinct from the inner target,
+    /// the result is pulled toward w_prev relative to the no-penalty target (equal weight).
+    /// </summary>
+    [Fact]
+    public void ComputeTargetWeights_ExplicitCurrentWeights_PullsTowardPrevious()
+    {
+        var inner = new EqualWeightConstruction();
+        var model = new TurnoverPenalizedConstruction(inner, lambda: 0.10m);
+
+        var weights = model.ComputeTargetWeights(ThreeAssets, ThreeAssetReturns, s_vtiHeavyPrev);
+
+        weights[s_vti].Should().BeGreaterThan(1m / 3m,
+            "the VTI-heavy previous weights should pull VTI above its equal-weight target");
+        AssertWeightsSumToOne(weights);
+    }
+
+    /// <summary>
+    /// Leaf 2: a null explicit w_prev short-circuits to the inner model's target unchanged.
+    /// </summary>
+    [Fact]
+    public void ComputeTargetWeights_NullCurrentWeights_ReturnsInnerTarget()
+    {
+        var inner = new EqualWeightConstruction();
+        var model = new TurnoverPenalizedConstruction(inner, lambda: 0.10m);
+
+        var weights = model.ComputeTargetWeights(ThreeAssets, ThreeAssetReturns, currentWeights: null);
+
+        foreach (var (_, weight) in weights)
+        {
+            weight.Should().BeApproximately(1m / 3m, 1e-8m,
+                "null current weights means no penalty — inner equal-weight target");
+        }
+    }
+
+    /// <summary>
+    /// Leaf 3 (load-bearing): the explicit overload does not mutate instance state.
+    /// After a 3-arg call, a subsequent 2-arg call behaves as a <em>first</em> call
+    /// (delegates to inner, no penalty), proving <c>_previousWeights</c> was left untouched.
+    /// </summary>
+    [Fact]
+    public void ComputeTargetWeights_ExplicitOverload_DoesNotMutateTrackedState()
+    {
+        var inner = new EqualWeightConstruction();
+        var model = new TurnoverPenalizedConstruction(inner, lambda: 0.10m);
+        model.Reset();
+
+        _ = model.ComputeTargetWeights(ThreeAssets, ThreeAssetReturns, s_vtiHeavyPrev);
+
+        // If the 3-arg call had seeded _previousWeights, this 2-arg call would be penalized.
+        var stateful = model.ComputeTargetWeights(ThreeAssets, ThreeAssetReturns);
+
+        foreach (var (_, weight) in stateful)
+        {
+            weight.Should().BeApproximately(1m / 3m, 1e-8m,
+                "the 2-arg call must behave as a first call — the 3-arg overload left no state");
+        }
+    }
+
+    /// <summary>
+    /// Leaf 4: two explicit calls with different w_prev each penalize against their own
+    /// previous weights — one instance serves independent cohorts without cross-contamination.
+    /// </summary>
+    [Fact]
+    public void ComputeTargetWeights_DifferentCurrentWeights_DoNotCrossContaminate()
+    {
+        var inner = new EqualWeightConstruction();
+        var model = new TurnoverPenalizedConstruction(inner, lambda: 0.10m);
+
+        var vtiCohort = model.ComputeTargetWeights(ThreeAssets, ThreeAssetReturns, s_vtiHeavyPrev);
+        var gldCohort = model.ComputeTargetWeights(ThreeAssets, ThreeAssetReturns, s_gldHeavyPrev);
+
+        vtiCohort[s_vti].Should().BeGreaterThan(gldCohort[s_vti],
+            "the VTI-heavy cohort must tilt to VTI more than the GLD-heavy cohort");
+        gldCohort[s_gld].Should().BeGreaterThan(vtiCohort[s_gld],
+            "the GLD-heavy cohort must tilt to GLD more than the VTI-heavy cohort");
+    }
+
+    /// <summary>
+    /// Leaf 5 (SPEC-REPRO): identical inputs yield byte-identical weights — no wall-clock,
+    /// random, or iteration-order leakage.
+    /// </summary>
+    [Fact]
+    public void ComputeTargetWeights_ExplicitOverload_IsDeterministic()
+    {
+        var inner = new EqualWeightConstruction();
+        var model = new TurnoverPenalizedConstruction(inner, lambda: 0.07m);
+
+        var first = model.ComputeTargetWeights(ThreeAssets, ThreeAssetReturns, s_vtiHeavyPrev);
+        var second = model.ComputeTargetWeights(ThreeAssets, ThreeAssetReturns, s_vtiHeavyPrev);
+
+        foreach (var symbol in ThreeAssets)
+        {
+            second[symbol].Should().Be(first[symbol],
+                "same (assets, returns, currentWeights) must produce byte-identical weights");
+        }
+    }
+
+    /// <summary>
+    /// Leaf 6 (characterization): the stateful 2-arg path is byte-identical after the refactor —
+    /// first call delegates to inner, a repeated call with the same target/previous holds steady.
+    /// </summary>
+    [Fact]
+    public void ComputeTargetWeights_TwoArgPath_CharacterizationUnchanged()
+    {
+        var inner = new EqualWeightConstruction();
+        var model = new TurnoverPenalizedConstruction(inner, lambda: 0.05m);
+
+        var first = model.ComputeTargetWeights(ThreeAssets, ThreeAssetReturns);
+        var second = model.ComputeTargetWeights(ThreeAssets, ThreeAssetReturns);
+
+        foreach (var symbol in ThreeAssets)
+        {
+            first[symbol].Should().BeApproximately(1m / 3m, 1e-8m,
+                "first 2-arg call delegates to the inner equal-weight model");
+            second[symbol].Should().BeApproximately(1m / 3m, 1e-6m,
+                "second 2-arg call with identical target and previous holds at equal weight");
+        }
+    }
 }

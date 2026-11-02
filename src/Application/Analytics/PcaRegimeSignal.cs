@@ -149,33 +149,64 @@ public static class PcaRegimeSignal
         var eigenA = JacobiEigenDecomposition.Decompose(corrA);
         var eigenB = JacobiEigenDecomposition.Decompose(corrB);
 
+        // Match each eigenvector of A to the eigenvector of B with the highest |cosine|,
+        // rather than pairing by sorted position. JacobiEigenDecomposition sorts each matrix
+        // independently by descending eigenvalue, so a regime shift that swaps the variance
+        // rank of two factors (the case this method targets) would otherwise compare different
+        // underlying components at the same column index. Greedy max-|cosine| assignment with
+        // a one-to-one constraint recovers the true component correspondence.
         var similarities = new decimal[nA];
+        var bUsed = new bool[nA];
         for (var k = 0; k < nA; k++)
         {
-            // Extract k-th eigenvector from each decomposition
-            var dotProduct = 0m;
-            var normA = 0m;
-            var normB = 0m;
+            var bestSimilarity = 0m;
+            var bestIndex = -1;
 
-            for (var i = 0; i < nA; i++)
+            for (var m = 0; m < nA; m++)
             {
-                var a = eigenA.Vectors[i, k];
-                var b = eigenB.Vectors[i, k];
-                dotProduct += a * b;
-                normA += a * a;
-                normB += b * b;
+                if (bUsed[m])
+                {
+                    continue;
+                }
+
+                var dotProduct = 0m;
+                var normA = 0m;
+                var normB = 0m;
+
+                for (var i = 0; i < nA; i++)
+                {
+                    var a = eigenA.Vectors[i, k];
+                    var b = eigenB.Vectors[i, m];
+                    dotProduct += a * b;
+                    normA += a * a;
+                    normB += b * b;
+                }
+
+                if (normA > 0m && normB > 0m)
+                {
+                    var cosine = dotProduct / ((decimal)Math.Sqrt((double)normA) * (decimal)Math.Sqrt((double)normB));
+                    // Use absolute value — eigenvectors can have arbitrary sign
+                    var similarity = Math.Abs(cosine);
+                    if (bestIndex < 0 || similarity > bestSimilarity)
+                    {
+                        bestSimilarity = similarity;
+                        bestIndex = m;
+                    }
+                }
+                else if (bestIndex < 0)
+                {
+                    // Degenerate B-vector; record as a candidate so a B-vector is still consumed.
+                    bestSimilarity = 0m;
+                    bestIndex = m;
+                }
             }
 
-            if (normA > 0m && normB > 0m)
+            if (bestIndex >= 0)
             {
-                var cosine = dotProduct / ((decimal)Math.Sqrt((double)normA) * (decimal)Math.Sqrt((double)normB));
-                // Use absolute value — eigenvectors can have arbitrary sign
-                similarities[k] = Math.Abs(cosine);
+                bUsed[bestIndex] = true;
             }
-            else
-            {
-                similarities[k] = 0m;
-            }
+
+            similarities[k] = bestSimilarity;
         }
 
         return new EigenvectorStabilityResult(similarities[0], similarities);

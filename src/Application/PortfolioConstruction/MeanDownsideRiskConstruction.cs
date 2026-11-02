@@ -16,6 +16,7 @@
 
 namespace Boutquin.Trading.Application.PortfolioConstruction;
 
+using Boutquin.Trading.Application.ExpectedReturns;
 using DownsideRisk;
 
 /// <summary>
@@ -45,6 +46,7 @@ using DownsideRisk;
 /// </summary>
 public sealed class MeanDownsideRiskConstruction : IPortfolioConstructionModel
 {
+    private readonly IExpectedReturnEstimator _expectedReturnEstimator;
     private readonly IDownsideRiskMeasure _riskMeasure;
     private readonly decimal _minWeight;
     private readonly decimal _maxWeight;
@@ -53,7 +55,8 @@ public sealed class MeanDownsideRiskConstruction : IPortfolioConstructionModel
     private readonly decimal _tolerance;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="MeanDownsideRiskConstruction"/> class.
+    /// Initializes a new instance of the <see cref="MeanDownsideRiskConstruction"/> class with the default
+    /// <see cref="HistoricalMeanExpectedReturnEstimator"/> (sample-mean μ — the historical behavior).
     /// </summary>
     /// <param name="riskMeasure">The downside risk measure to optimize against.</param>
     /// <param name="minWeight">Minimum weight per asset. Default 0 (long-only).</param>
@@ -68,9 +71,45 @@ public sealed class MeanDownsideRiskConstruction : IPortfolioConstructionModel
         decimal riskAversion = 1.0m,
         int maxIterations = 5000,
         decimal tolerance = 1e-12m)
+        : this(
+            new HistoricalMeanExpectedReturnEstimator(),
+            riskMeasure,
+            minWeight,
+            maxWeight,
+            riskAversion,
+            maxIterations,
+            tolerance)
     {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MeanDownsideRiskConstruction"/> class with an explicit
+    /// <see cref="IExpectedReturnEstimator"/> for the expected-return vector μ.
+    /// </summary>
+    /// <param name="expectedReturnEstimator">
+    /// The expected-return estimator supplying μ (for example
+    /// <see cref="HistoricalMeanExpectedReturnEstimator"/> or <see cref="YieldAnchoredExpectedReturnEstimator"/>).
+    /// </param>
+    /// <param name="riskMeasure">The downside risk measure to optimize against.</param>
+    /// <param name="minWeight">Minimum weight per asset. Default 0 (long-only).</param>
+    /// <param name="maxWeight">Maximum weight per asset. Default 1.0 (no cap).</param>
+    /// <param name="riskAversion">Risk aversion parameter λ. Higher values penalize risk more. Default 1.0.</param>
+    /// <param name="maxIterations">Maximum optimization iterations. Default 5000.</param>
+    /// <param name="tolerance">Convergence tolerance. Default 1e-12.</param>
+    /// <exception cref="ArgumentNullException">Thrown when an argument is <see langword="null"/>.</exception>
+    public MeanDownsideRiskConstruction(
+        IExpectedReturnEstimator expectedReturnEstimator,
+        IDownsideRiskMeasure riskMeasure,
+        decimal minWeight = 0m,
+        decimal maxWeight = 1.0m,
+        decimal riskAversion = 1.0m,
+        int maxIterations = 5000,
+        decimal tolerance = 1e-12m)
+    {
+        Guard.AgainstNull(() => expectedReturnEstimator);
         Guard.AgainstNull(() => riskMeasure);
 
+        _expectedReturnEstimator = expectedReturnEstimator;
         _riskMeasure = riskMeasure;
         _minWeight = minWeight;
         _maxWeight = maxWeight;
@@ -83,6 +122,25 @@ public sealed class MeanDownsideRiskConstruction : IPortfolioConstructionModel
     public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
         IReadOnlyList<Symbol> assets,
         decimal[][] returns)
+        => ComputeTargetWeightsCore(assets, returns, asOf: null);
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// Forwards <paramref name="asOf"/> to the expected-return estimator's own date-aware overload, so
+    /// an estimator holding date-indexed auxiliary series (a dated
+    /// <c>YieldAnchoredExpectedReturnEstimator</c>) restricts every yield/macro term to observations
+    /// known at the evaluation date; the downside-risk optimization itself is date-free.
+    /// </remarks>
+    public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
+        IReadOnlyList<Symbol> assets,
+        decimal[][] returns,
+        DateOnly asOf)
+        => ComputeTargetWeightsCore(assets, returns, asOf);
+
+    private IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeightsCore(
+        IReadOnlyList<Symbol> assets,
+        decimal[][] returns,
+        DateOnly? asOf)
     {
         Guard.AgainstNull(() => assets);
 
@@ -97,6 +155,13 @@ public sealed class MeanDownsideRiskConstruction : IPortfolioConstructionModel
         }
 
         var n = assets.Count;
+
+        if (returns[0] is null)
+        {
+            throw new ArgumentException(
+                "Return series must not be null.", nameof(returns));
+        }
+
         var s = returns[0].Length;
 
         if (s < 2)
@@ -104,12 +169,18 @@ public sealed class MeanDownsideRiskConstruction : IPortfolioConstructionModel
             throw new ArgumentException("At least 2 return observations are required.", nameof(returns));
         }
 
-        // Compute mean returns
-        var means = new decimal[n];
-        for (var i = 0; i < n; i++)
+        for (var i = 1; i < n; i++)
         {
-            means[i] = returns[i].Average();
+            if (returns[i] is null || returns[i].Length != s)
+            {
+                throw new ArgumentException(
+                    "All return series must have the same length.", nameof(returns));
+            }
         }
+
+        // Compute mean returns via the pluggable expected-return estimator (default:
+        // HistoricalMeanExpectedReturnEstimator == returns[i].Average(), preserving prior behavior).
+        var means = _expectedReturnEstimator.EstimateExpectedReturnsAsOf(assets, returns, asOf);
 
         // Transpose returns for scenario-based access: scenarios[t][asset]
         var scenarios = new decimal[s][];

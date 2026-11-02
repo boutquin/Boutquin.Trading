@@ -17,14 +17,24 @@
 namespace Boutquin.Trading.Application.PortfolioConstruction;
 
 using Boutquin.Trading.Application.CovarianceEstimators;
+using Boutquin.Trading.Application.ExpectedReturns;
 
 /// <summary>
 /// Computes mean-variance optimal (maximum Sharpe ratio) portfolio weights.
 /// Maximizes utility U(w) = w'μ - (λ/2)*w'Σw subject to minWeight ≤ w_i ≤ maxWeight, Σw_i = 1.
 /// Uses projected gradient ascent with iterative constraint projection.
 /// </summary>
+/// <remarks>
+/// The expected-return vector μ is supplied by a pluggable <see cref="IExpectedReturnEstimator"/>. The
+/// parameterless / covariance-only constructors chain to the estimator-taking overload with a
+/// <see cref="HistoricalMeanExpectedReturnEstimator"/> — the sample mean <c>returns[i].Average()</c> the
+/// model historically computed inline — so their output is preserved byte-identically. Supply a
+/// <see cref="YieldAnchoredExpectedReturnEstimator"/> to anchor μ on forward-looking building blocks
+/// instead (Ilmanen 2012).
+/// </remarks>
 public sealed class MeanVarianceConstruction : IPortfolioConstructionModel
 {
+    private readonly IExpectedReturnEstimator _expectedReturnEstimator;
     private readonly ICovarianceEstimator _covarianceEstimator;
     private readonly decimal _minWeight;
     private readonly decimal _maxWeight;
@@ -33,7 +43,8 @@ public sealed class MeanVarianceConstruction : IPortfolioConstructionModel
     private readonly decimal _tolerance;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="MeanVarianceConstruction"/> class.
+    /// Initializes a new instance of the <see cref="MeanVarianceConstruction"/> class with the default
+    /// <see cref="HistoricalMeanExpectedReturnEstimator"/> (sample-mean μ — the historical behavior).
     /// </summary>
     /// <param name="covarianceEstimator">The covariance estimator. Defaults to <see cref="SampleCovarianceEstimator"/>.</param>
     /// <param name="minWeight">Minimum weight per asset. Default 0 (no floor).</param>
@@ -48,7 +59,44 @@ public sealed class MeanVarianceConstruction : IPortfolioConstructionModel
         decimal riskAversion = 1.0m,
         int maxIterations = 5000,
         decimal tolerance = 1e-12m)
+        : this(
+            new HistoricalMeanExpectedReturnEstimator(),
+            covarianceEstimator,
+            minWeight,
+            maxWeight,
+            riskAversion,
+            maxIterations,
+            tolerance)
     {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MeanVarianceConstruction"/> class with an explicit
+    /// <see cref="IExpectedReturnEstimator"/> for the expected-return vector μ.
+    /// </summary>
+    /// <param name="expectedReturnEstimator">
+    /// The expected-return estimator supplying μ (for example
+    /// <see cref="HistoricalMeanExpectedReturnEstimator"/> or <see cref="YieldAnchoredExpectedReturnEstimator"/>).
+    /// </param>
+    /// <param name="covarianceEstimator">The covariance estimator. Defaults to <see cref="SampleCovarianceEstimator"/>.</param>
+    /// <param name="minWeight">Minimum weight per asset. Default 0 (no floor).</param>
+    /// <param name="maxWeight">Maximum weight per asset. Default 1.0 (no cap).</param>
+    /// <param name="riskAversion">Risk aversion parameter λ. Higher values penalize variance more. Default 1.0.</param>
+    /// <param name="maxIterations">Maximum gradient descent iterations. Default 5000.</param>
+    /// <param name="tolerance">Convergence tolerance. Default 1e-12.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="expectedReturnEstimator"/> is <see langword="null"/>.</exception>
+    public MeanVarianceConstruction(
+        IExpectedReturnEstimator expectedReturnEstimator,
+        ICovarianceEstimator? covarianceEstimator = null,
+        decimal minWeight = 0m,
+        decimal maxWeight = 1.0m,
+        decimal riskAversion = 1.0m,
+        int maxIterations = 5000,
+        decimal tolerance = 1e-12m)
+    {
+        Guard.AgainstNull(() => expectedReturnEstimator);
+
+        _expectedReturnEstimator = expectedReturnEstimator;
         _covarianceEstimator = covarianceEstimator ?? new SampleCovarianceEstimator();
         _minWeight = minWeight;
         _maxWeight = maxWeight;
@@ -61,6 +109,25 @@ public sealed class MeanVarianceConstruction : IPortfolioConstructionModel
     public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
         IReadOnlyList<Symbol> assets,
         decimal[][] returns)
+        => ComputeTargetWeightsCore(assets, returns, asOf: null);
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// Forwards <paramref name="asOf"/> to the expected-return estimator's own date-aware overload, so
+    /// an estimator holding date-indexed auxiliary series (a dated
+    /// <c>YieldAnchoredExpectedReturnEstimator</c>) restricts every yield/macro term to observations
+    /// known at the evaluation date; the mean-variance optimization itself is date-free.
+    /// </remarks>
+    public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
+        IReadOnlyList<Symbol> assets,
+        decimal[][] returns,
+        DateOnly asOf)
+        => ComputeTargetWeightsCore(assets, returns, asOf);
+
+    private IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeightsCore(
+        IReadOnlyList<Symbol> assets,
+        decimal[][] returns,
+        DateOnly? asOf)
     {
         Guard.AgainstNull(() => assets);
 
@@ -76,12 +143,7 @@ public sealed class MeanVarianceConstruction : IPortfolioConstructionModel
 
         var n = assets.Count;
         var cov = _covarianceEstimator.Estimate(returns);
-        var means = new decimal[n];
-
-        for (var i = 0; i < n; i++)
-        {
-            means[i] = returns[i].Average();
-        }
+        var means = _expectedReturnEstimator.EstimateExpectedReturnsAsOf(assets, returns, asOf);
 
         decimal[] w;
         try

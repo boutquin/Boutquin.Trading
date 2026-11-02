@@ -25,8 +25,9 @@ namespace Boutquin.Trading.Application.CovarianceEstimators;
 /// partition signal from noise eigenvalues.
 /// </summary>
 /// <remarks>
-/// Reference: "Doubly Sparse Estimation of High-Dimensional Covariance Matrices."
-/// Econometrics and Statistics (2024).
+/// Reference: Kutateladze, V. &amp; Seregina, E. (2024). "Doubly Sparse Estimator for
+/// High-Dimensional Covariance Matrices." Econometrics and Statistics.
+/// DOI 10.1016/j.ecosta.2024.06.001.
 /// </remarks>
 public sealed class DoublySparseEstimator : ICovarianceEstimator
 {
@@ -40,6 +41,9 @@ public sealed class DoublySparseEstimator : ICovarianceEstimator
     /// value below this threshold are zeroed and the eigenvector is re-normalized.
     /// Default 0.1. Increase for sparser (more interpretable) factor structure.
     /// </param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="eigenvectorThreshold"/> is negative.
+    /// </exception>
     public DoublySparseEstimator(decimal eigenvectorThreshold = 0.1m)
     {
         _inner = new NumericsStats.DoublySparseEstimator(eigenvectorThreshold);

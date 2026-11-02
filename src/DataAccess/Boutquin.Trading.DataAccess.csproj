@@ -33,6 +33,8 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <!-- SqlClient's minimum Pkcs version predates the October 2026 security fixes. -->
+    <PackageReference Include="System.Security.Cryptography.Pkcs" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

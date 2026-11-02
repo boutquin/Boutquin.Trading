@@ -82,16 +82,39 @@ public sealed class ClosePriceStrategyTests
     }
 
     [Fact]
-    public void CalculateOrderPrices_MissingDate_ThrowsArgumentException()
+    public void CalculateOrderPrices_MissingDateWithinLookbackWindow_FallsBackToMostRecentBar()
+    {
+        // Updated semantics (2026-04-21): when the requested timestamp has no bar for the
+        // asset but a prior bar exists within the 14-day cross-calendar lookback window,
+        // the strategy returns the most recent prior bar's AdjustedClose rather than
+        // throwing. This closes the class of "provider data gap mid-backtest" errors that
+        // were aborting CA blueprints on random TSX trading days where TwelveData had a
+        // single-day hole in the price series. Exception path still fires when the gap
+        // exceeds the lookback — covered by the companion test below.
+        var strategy = new ClosePriceOrderPriceCalculationStrategy();
+        var historicalData = CreateHistoricalData(s_testAsset, s_testDate, 185.92m);
+
+        // s_testDate = 2024-01-15; requesting 2024-01-20 (5 days later) falls within the
+        // 14-day window, so the 2024-01-15 bar's AdjustedClose is returned.
+        var (_, primaryPrice, _) = strategy.CalculateOrderPrices(
+            new DateOnly(2024, 1, 20), s_testAsset, TradeAction.Buy, historicalData);
+
+        primaryPrice.Should().Be(185.92m);
+    }
+
+    [Fact]
+    public void CalculateOrderPrices_MissingDateBeyondLookbackWindow_ThrowsArgumentException()
     {
         var strategy = new ClosePriceOrderPriceCalculationStrategy();
         var historicalData = CreateHistoricalData(s_testAsset, s_testDate, 185.92m);
 
+        // s_testDate = 2024-01-15; requesting 2024-02-15 (31 days later) exceeds the
+        // 14-day lookback, so the fallback exhausts and the strategy throws as before.
         var act = () => strategy.CalculateOrderPrices(
-            new DateOnly(2024, 1, 20), s_testAsset, TradeAction.Buy, historicalData);
+            new DateOnly(2024, 2, 15), s_testAsset, TradeAction.Buy, historicalData);
 
         act.Should().Throw<ArgumentException>()
-            .WithMessage("*market data*date*");
+            .WithMessage("*market data*asset*");
     }
 
     [Fact]

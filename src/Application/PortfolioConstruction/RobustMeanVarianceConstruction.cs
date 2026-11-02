@@ -15,21 +15,34 @@
 //
 
 namespace Boutquin.Trading.Application.PortfolioConstruction;
+
+using Boutquin.Trading.Application.ExpectedReturns;
+
 /// <summary>
-/// Robust mean-variance portfolio construction that maximizes the worst-case Sharpe ratio
-/// across a set of covariance scenarios (minimax optimization).
+/// Robust mean-variance portfolio construction that maximizes the worst-case mean-variance
+/// utility across a set of covariance scenarios (minimax optimization).
 ///
-/// Solves: max_w min_s { w'μ / sqrt(w' Σ_s w) } subject to sum(w) = 1, minW ≤ w_i ≤ maxW
+/// Solves: max_w min_s { w'μ − (λ/2) · w' Σ_s w } subject to sum(w) = 1, minW ≤ w_i ≤ maxW
 ///
 /// Uses alternating optimization:
-/// 1. Fix scenario → optimize weights (projected gradient ascent on Sharpe)
-/// 2. Fix weights → find worst scenario (minimum Sharpe across scenarios)
+/// 1. Fix scenario → optimize weights (projected gradient ascent on mean-variance utility)
+/// 2. Fix weights → find worst scenario (minimum utility across scenarios)
 /// 3. Repeat until convergence
 ///
 /// When called without scenarios (base interface), uses a single sample covariance matrix.
 /// </summary>
+/// <remarks>
+/// The expected-return vector μ is supplied by a pluggable <see cref="IExpectedReturnEstimator"/>. The
+/// covariance-only constructor chains to the estimator-taking overload with a
+/// <see cref="HistoricalMeanExpectedReturnEstimator"/> — the sample mean <c>returns[i].Average()</c> the
+/// model historically computed inline — so its output is preserved byte-identically, the same equivalence
+/// contract the other expected-return-aware models follow.
+/// Supply a <see cref="YieldAnchoredExpectedReturnEstimator"/> to anchor μ on forward-looking building
+/// blocks instead (Ilmanen 2012).
+/// </remarks>
 public sealed class RobustMeanVarianceConstruction : IRobustConstructionModel
 {
+    private readonly IExpectedReturnEstimator _expectedReturnEstimator;
     private readonly ICovarianceEstimator _covarianceEstimator;
     private readonly decimal _minWeight;
     private readonly decimal _maxWeight;
@@ -39,7 +52,8 @@ public sealed class RobustMeanVarianceConstruction : IRobustConstructionModel
     private readonly decimal _tolerance;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="RobustMeanVarianceConstruction"/> class.
+    /// Initializes a new instance of the <see cref="RobustMeanVarianceConstruction"/> class with the default
+    /// <see cref="HistoricalMeanExpectedReturnEstimator"/> (sample-mean μ — the historical behavior).
     /// </summary>
     /// <param name="covarianceEstimator">Estimator for fallback single-scenario mode.</param>
     /// <param name="minWeight">Minimum weight per asset. Default 0.</param>
@@ -56,9 +70,51 @@ public sealed class RobustMeanVarianceConstruction : IRobustConstructionModel
         int maxIterations = 3000,
         int maxAlternatingRounds = 20,
         decimal tolerance = 1e-10m)
+        : this(
+            new HistoricalMeanExpectedReturnEstimator(),
+            covarianceEstimator,
+            minWeight,
+            maxWeight,
+            riskAversion,
+            maxIterations,
+            maxAlternatingRounds,
+            tolerance)
     {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RobustMeanVarianceConstruction"/> class with an explicit
+    /// <see cref="IExpectedReturnEstimator"/> for the expected-return vector μ.
+    /// </summary>
+    /// <param name="expectedReturnEstimator">
+    /// The expected-return estimator supplying μ (for example
+    /// <see cref="HistoricalMeanExpectedReturnEstimator"/> or <see cref="YieldAnchoredExpectedReturnEstimator"/>).
+    /// </param>
+    /// <param name="covarianceEstimator">Estimator for fallback single-scenario mode.</param>
+    /// <param name="minWeight">Minimum weight per asset. Default 0.</param>
+    /// <param name="maxWeight">Maximum weight per asset. Default 1.0.</param>
+    /// <param name="riskAversion">Risk aversion parameter. Default 1.0.</param>
+    /// <param name="maxIterations">Max gradient iterations per round. Default 3000.</param>
+    /// <param name="maxAlternatingRounds">Max alternating optimization rounds. Default 20.</param>
+    /// <param name="tolerance">Convergence tolerance. Default 1e-10.</param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="expectedReturnEstimator"/> or <paramref name="covarianceEstimator"/> is
+    /// <see langword="null"/>.
+    /// </exception>
+    public RobustMeanVarianceConstruction(
+        IExpectedReturnEstimator expectedReturnEstimator,
+        ICovarianceEstimator covarianceEstimator,
+        decimal minWeight = 0m,
+        decimal maxWeight = 1.0m,
+        decimal riskAversion = 1.0m,
+        int maxIterations = 3000,
+        int maxAlternatingRounds = 20,
+        decimal tolerance = 1e-10m)
+    {
+        Guard.AgainstNull(() => expectedReturnEstimator);
         Guard.AgainstNull(() => covarianceEstimator);
 
+        _expectedReturnEstimator = expectedReturnEstimator;
         _covarianceEstimator = covarianceEstimator;
         _minWeight = minWeight;
         _maxWeight = maxWeight;
@@ -89,7 +145,36 @@ public sealed class RobustMeanVarianceConstruction : IRobustConstructionModel
         }
 
         var cov = _covarianceEstimator.Estimate(returns);
-        return ComputeTargetWeights(assets, returns, new[] { cov });
+        return ComputeTargetWeightsCore(assets, returns, new[] { cov }, asOf: null);
+    }
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// Single-scenario fallback like the date-free overload, forwarding <paramref name="asOf"/> to the
+    /// expected-return estimator's own date-aware overload, so an estimator holding date-indexed
+    /// auxiliary series (a dated <c>YieldAnchoredExpectedReturnEstimator</c>) restricts every
+    /// yield/macro term to observations known at the evaluation date; the minimax optimization itself
+    /// is date-free.
+    /// </remarks>
+    public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
+        IReadOnlyList<Symbol> assets,
+        decimal[][] returns,
+        DateOnly asOf)
+    {
+        Guard.AgainstNull(() => assets);
+
+        if (assets.Count == 0)
+        {
+            return new Dictionary<Symbol, decimal>();
+        }
+
+        if (returns is null || returns.Length != assets.Count)
+        {
+            throw new ArgumentException("Returns array must have one series per asset.", nameof(returns));
+        }
+
+        var cov = _covarianceEstimator.Estimate(returns);
+        return ComputeTargetWeightsCore(assets, returns, new[] { cov }, asOf);
     }
 
     /// <inheritdoc />
@@ -97,6 +182,13 @@ public sealed class RobustMeanVarianceConstruction : IRobustConstructionModel
         IReadOnlyList<Symbol> assets,
         decimal[][] returns,
         IReadOnlyList<decimal[,]> covarianceScenarios)
+        => ComputeTargetWeightsCore(assets, returns, covarianceScenarios, asOf: null);
+
+    private IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeightsCore(
+        IReadOnlyList<Symbol> assets,
+        decimal[][] returns,
+        IReadOnlyList<decimal[,]> covarianceScenarios,
+        DateOnly? asOf)
     {
         Guard.AgainstNull(() => assets);
         Guard.AgainstNull(() => covarianceScenarios);
@@ -117,12 +209,34 @@ public sealed class RobustMeanVarianceConstruction : IRobustConstructionModel
             throw new ArgumentException("Returns array must have one series per asset.", nameof(returns));
         }
 
-        // Compute mean returns
-        var means = new decimal[n];
-        for (var i = 0; i < n; i++)
+        if (returns[0] is null || returns[0].Length == 0)
         {
-            means[i] = returns[i].Average();
+            throw new ArgumentException(
+                "Each return series must contain at least one observation.", nameof(returns));
         }
+
+        var seriesLength = returns[0].Length;
+        for (var i = 1; i < n; i++)
+        {
+            if (returns[i] is null || returns[i].Length != seriesLength)
+            {
+                throw new ArgumentException(
+                    "All return series must have the same length.", nameof(returns));
+            }
+        }
+
+        for (var s = 0; s < covarianceScenarios.Count; s++)
+        {
+            var scenario = covarianceScenarios[s];
+            if (scenario is null || scenario.GetLength(0) != n || scenario.GetLength(1) != n)
+            {
+                throw new ArgumentException(
+                    $"Covariance scenario {s} must be {n}x{n} to match the asset count.",
+                    nameof(covarianceScenarios));
+            }
+        }
+
+        var means = _expectedReturnEstimator.EstimateExpectedReturnsAsOf(assets, returns, asOf);
 
         // Initialize with equal weights
         var w = new decimal[n];

@@ -23,5 +23,5 @@ public interface IDividendClassifier
     /// <summary>
     /// Classifies a raw dividend based on asset metadata and investor jurisdiction.
     /// </summary>
-    DividendType Classify(Symbol asset, CurrencyCode assetCurrency, CurrencyCode investorBaseCurrency);
+    DividendType Classify(Symbol asset, Currency assetCurrency, Currency investorBaseCurrency);
 }

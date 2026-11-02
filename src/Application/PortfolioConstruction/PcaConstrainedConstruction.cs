@@ -39,6 +39,7 @@ public sealed class PcaConstrainedConstruction : IPortfolioConstructionModel
     private static readonly HashSet<Type> s_hierarchicalTypes =
     [
         typeof(HierarchicalRiskParityConstruction),
+        typeof(HierarchicalEqualRiskContributionConstruction),
         typeof(ReturnTiltedHrpConstruction)
     ];
 
@@ -78,6 +79,25 @@ public sealed class PcaConstrainedConstruction : IPortfolioConstructionModel
     public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
         IReadOnlyList<Symbol> assets,
         decimal[][] returns)
+        => ComputeTargetWeightsCore(assets, returns, asOf: null);
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// Forwards <paramref name="asOf"/> to the inner model's own date-aware overload (the decorator
+    /// obligation of <see cref="IPortfolioConstructionModel"/>) on both inner-delegation paths — the
+    /// K=N passthrough and the K-dimensional projected-space delegation; the PCA projection itself is
+    /// date-free.
+    /// </remarks>
+    public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
+        IReadOnlyList<Symbol> assets,
+        decimal[][] returns,
+        DateOnly asOf)
+        => ComputeTargetWeightsCore(assets, returns, asOf);
+
+    private IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeightsCore(
+        IReadOnlyList<Symbol> assets,
+        decimal[][] returns,
+        DateOnly? asOf)
     {
         Guard.AgainstNull(() => assets);
 
@@ -128,7 +148,7 @@ public sealed class PcaConstrainedConstruction : IPortfolioConstructionModel
         // Step 4: K=N → passthrough (no dimensionality reduction needed)
         if (k >= n)
         {
-            return _innerModel.ComputeTargetWeights(assets, returns);
+            return _innerModel.ComputeTargetWeightsAsOf(assets, returns, asOf);
         }
 
         // Step 5: Project N-dimensional returns onto K-dimensional PC space
@@ -154,7 +174,7 @@ public sealed class PcaConstrainedConstruction : IPortfolioConstructionModel
         }
 
         // Step 6: Delegate to inner model in K-dimensional space
-        var pcWeights = _innerModel.ComputeTargetWeights(syntheticAssets, projectedReturns);
+        var pcWeights = _innerModel.ComputeTargetWeightsAsOf(syntheticAssets, projectedReturns, asOf);
 
         // Step 7: Map K-dimensional weights back to N-dimensional asset weights
         // w_asset[j] = Σ_pc pcWeight[pc] * eigenvectors[j, pc]

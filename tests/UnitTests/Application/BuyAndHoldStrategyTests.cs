@@ -23,8 +23,8 @@ public sealed class BuyAndHoldStrategyTests
 {
     private readonly Mock<IOrderPriceCalculationStrategy> _orderPriceCalculationStrategyMock = new();
     private readonly Mock<IPositionSizer> _positionSizerMock = new();
-    private readonly SortedDictionary<CurrencyCode, decimal> _cash = new() { { CurrencyCode.USD, 10000m } };
-    private readonly IReadOnlyDictionary<Symbol, CurrencyCode> _assets = new Dictionary<Symbol, CurrencyCode> { { new Symbol("AAPL"), CurrencyCode.USD } };
+    private readonly SortedDictionary<Currency, decimal> _cash = new() { { Currency.USD, 10000m } };
+    private readonly IReadOnlyDictionary<Symbol, Currency> _assets = new Dictionary<Symbol, Currency> { { new Symbol("AAPL"), Currency.USD } };
     private readonly string _name = "TestStrategy";
     private readonly DateOnly _initialTimestamp = new DateOnly(2024, 1, 15);
 
@@ -54,7 +54,7 @@ public sealed class BuyAndHoldStrategyTests
         Assert.Throws<ArgumentException>(() => new BuyAndHoldStrategy(string.Empty, _assets, _cash, _initialTimestamp, _orderPriceCalculationStrategyMock.Object, _positionSizerMock.Object));
         Assert.Throws<ArgumentException>(() => new BuyAndHoldStrategy(" ", _assets, _cash, _initialTimestamp, _orderPriceCalculationStrategyMock.Object, _positionSizerMock.Object));
         Assert.Throws<ArgumentException>(() => new BuyAndHoldStrategy("  ", _assets, _cash, _initialTimestamp, _orderPriceCalculationStrategyMock.Object, _positionSizerMock.Object));
-        Assert.Throws<EmptyOrNullDictionaryException>(() => new BuyAndHoldStrategy(_name, new Dictionary<Symbol, CurrencyCode>(), _cash, _initialTimestamp, _orderPriceCalculationStrategyMock.Object, _positionSizerMock.Object));
+        Assert.Throws<EmptyOrNullDictionaryException>(() => new BuyAndHoldStrategy(_name, new Dictionary<Symbol, Currency>(), _cash, _initialTimestamp, _orderPriceCalculationStrategyMock.Object, _positionSizerMock.Object));
         Assert.Throws<EmptyOrNullDictionaryException>(() => new BuyAndHoldStrategy(_name, _assets, [], _initialTimestamp, _orderPriceCalculationStrategyMock.Object, _positionSizerMock.Object));
         Assert.Throws<ArgumentNullException>(() => new BuyAndHoldStrategy(_name, _assets, _cash, _initialTimestamp, null!, _positionSizerMock.Object));
         Assert.Throws<ArgumentNullException>(() => new BuyAndHoldStrategy(_name, _assets, _cash, _initialTimestamp, _orderPriceCalculationStrategyMock.Object, null!));
@@ -81,15 +81,15 @@ public sealed class BuyAndHoldStrategyTests
                     {
                         { _initialTimestamp, new SortedDictionary<Symbol, Bar> { { new Symbol("AAPL"), marketData } } }
                     };
-        var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
+        var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<Currency, decimal>>
                     {
-                        { _initialTimestamp, new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
+                        { _initialTimestamp, new SortedDictionary<Currency, decimal> { { Currency.USD, 1m } } }
                     };
 
         // Act
         var signalEvent = strategy.GenerateSignals(
             _initialTimestamp,
-            CurrencyCode.USD,
+            Currency.USD,
             historicalMarketData,
             historicalFxConversionRates);
 
@@ -122,15 +122,15 @@ public sealed class BuyAndHoldStrategyTests
                     {
                         { _initialTimestamp.AddDays(1), new SortedDictionary<Symbol, Bar> { { new Symbol("AAPL"), marketData } } }
                     };
-        var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>
+        var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<Currency, decimal>>
                     {
-                        { _initialTimestamp.AddDays(1), new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 1m } } }
+                        { _initialTimestamp.AddDays(1), new SortedDictionary<Currency, decimal> { { Currency.USD, 1m } } }
                     };
 
         // Act
         var signalEvent = strategy.GenerateSignals(
             _initialTimestamp.AddDays(1),
-            CurrencyCode.USD,
+            Currency.USD,
             historicalMarketData,
             historicalFxConversionRates);
 

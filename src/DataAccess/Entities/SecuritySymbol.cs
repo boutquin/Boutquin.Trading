@@ -43,7 +43,9 @@ public sealed class SecuritySymbol
             ColumnConstants.SecuritySymbol_Symbol_Length); // Throws ArgumentException for null or empty and ArgumentOutOfRangeException for overflow
         Guard.AgainstUndefinedEnumValue(() => standard); // Throws ArgumentOutOfRangeException
 
-        _id = -1;
+        // Assign the CLR default (0) so EF Core's on-add value generation assigns the
+        // database-generated key (a non-default sentinel would suppress generation).
+        _id = 0;
         SecurityId = securityId;
         Symbol = symbol;
         Standard = standard;
@@ -55,17 +57,17 @@ public sealed class SecuritySymbol
     private readonly int _id; // Private key for EF
 
     /// <summary>
-    /// Gets the identifier of the security.
+    /// The identifier of the security.
     /// </summary>
     public int SecurityId { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the symbol of the security.
+    /// The symbol of the security.
     /// </summary>
     public string Symbol { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the security symbol standard.
+    /// The security symbol standard.
     /// </summary>
     public SecuritySymbolStandard Standard { get; private set; } // Setter is for EF
 

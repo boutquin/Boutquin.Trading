@@ -36,24 +36,24 @@ public sealed class BacktestCalendarTests
         var mockBenchmark = CreateMockPortfolio(equity);
 
         // 3-param
-        var bt1 = new BackTest(mockPortfolio.Object, mockBenchmark.Object, CurrencyCode.USD);
+        var bt1 = new BackTest(mockPortfolio.Object, mockBenchmark.Object, Currency.USD);
         bt1.Should().NotBeNull();
 
         // 4-param (with logger)
-        var bt2 = new BackTest(mockPortfolio.Object, mockBenchmark.Object, CurrencyCode.USD, NullLogger<BackTest>.Instance);
+        var bt2 = new BackTest(mockPortfolio.Object, mockBenchmark.Object, Currency.USD, NullLogger<BackTest>.Instance);
         bt2.Should().NotBeNull();
 
         // 5-param (with dailyRiskFreeRate)
-        var bt3 = new BackTest(mockPortfolio.Object, mockBenchmark.Object, CurrencyCode.USD, NullLogger<BackTest>.Instance, 0m);
+        var bt3 = new BackTest(mockPortfolio.Object, mockBenchmark.Object, Currency.USD, NullLogger<BackTest>.Instance, 0m);
         bt3.Should().NotBeNull();
 
         // 6-param (with drawdownControl)
-        var bt4 = new BackTest(mockPortfolio.Object, mockBenchmark.Object, CurrencyCode.USD, NullLogger<BackTest>.Instance, 0m, null);
+        var bt4 = new BackTest(mockPortfolio.Object, mockBenchmark.Object, Currency.USD, NullLogger<BackTest>.Instance, 0m, null);
         bt4.Should().NotBeNull();
 
         // 7-param (with calendar)
         var mockCalendar = new Mock<IBusinessCalendar>();
-        var bt5 = new BackTest(mockPortfolio.Object, mockBenchmark.Object, CurrencyCode.USD, NullLogger<BackTest>.Instance, 0m, null, mockCalendar.Object);
+        var bt5 = new BackTest(mockPortfolio.Object, mockBenchmark.Object, Currency.USD, NullLogger<BackTest>.Instance, 0m, null, mockCalendar.Object);
         bt5.Should().NotBeNull();
     }
 
@@ -143,9 +143,9 @@ public sealed class BacktestCalendarTests
         };
 
         var backtest = tradingCalendar is not null
-            ? new BackTest(portfolio.Object, benchmark.Object, CurrencyCode.USD,
+            ? new BackTest(portfolio.Object, benchmark.Object, Currency.USD,
                 NullLogger<BackTest>.Instance, 0m, null, tradingCalendar)
-            : new BackTest(portfolio.Object, benchmark.Object, CurrencyCode.USD,
+            : new BackTest(portfolio.Object, benchmark.Object, Currency.USD,
                 NullLogger<BackTest>.Instance, 0m, null);
 
         return (backtest, portfolio, benchmark, dataset);

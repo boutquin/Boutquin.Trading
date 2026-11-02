@@ -372,10 +372,33 @@ FodyWeavers.xsd
 # Claude Code
 sessions/
 CLAUDE.local.md
-specs/
+
+# build-arena: per-run artifacts (never shipped)
+.build-arena/
+
+# Arena run EVIDENCE is git-tracked (findings, verdicts, fixes, audits, ledger).
+# Ignore ONLY machine state; durable evidence remains versioned.
+.code-arena/locks/
+.code-arena/**/reduced-supervisor-state.json
+.code-arena/**/preflight-ok.txt
+.code-arena/**/.preflight
+.code-arena/**/PENDING-SPAWNS.md
+.code-arena/**/__pycache__/
+.code-arena/**/*.pyc
+!.code-arena/**/*.log
+.code-arena/**/reference.txt
+.code-arena/reference/
+
+# code-arena-reference: raw third-party source corpus (copyrighted PDFs +
+# re-downloadable public-domain sources). Never tracked. Whole-dir form, NOT a
+# *.pdf glob (which would leak the next .txt/.epub source into tracking).
+# Tracked ground-truth outputs live in specs/code-arena-reference/ instead.
+specs/reference/
 
 # JetBrains Rider
 .idea/
 
 # macOS
 .DS_Store
+
+nupkg/

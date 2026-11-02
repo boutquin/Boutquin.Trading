@@ -32,7 +32,7 @@ namespace Boutquin.Trading.Domain.ValueObjects;
 public readonly record struct StrategyName
 {
     /// <summary>
-    /// Gets the strategy name value.
+    /// The strategy name value.
     /// </summary>
     public string Value { get; }
 

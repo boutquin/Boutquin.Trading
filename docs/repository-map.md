@@ -15,7 +15,7 @@ The contract layer. Zero project references — depends only on NuGet packages.
 | `Analytics/` | Result records: `BrinsonFachlerResult`, `FactorRegressionResult`, `CorrelationAnalysisResult`, `DrawdownPeriod`, `WalkForwardResult`, `MonteCarloResult`, `CurrencyReturnDecomposition` |
 | `TaxEngine/` | Tax records: `TaxLot`, `LotDisposal`, `TaxImpact`, `DividendRecord`, `DividendTaxImpact`, `LossHarvestingResult`, `TradeRecord`, `PositionSnapshot`, `RocAdjustmentResult` |
 | `ValueObjects/` | `RiskEvaluation`, `BatchRiskEvaluation`, `AssetWeightConstraints` |
-| `Helpers/` | `TearSheet` (21 metrics), `RebalanceOrder` |
+| `Helpers/` | `TearSheet` (21 metrics), `RebalanceOrder`, `FxConversion` (the FX-map contract: base units per 1 unit of the keyed currency) |
 | `Exceptions/` | `CalculationException` |
 
 > Market data types (`Symbol`, `CurrencyCode`, `AssetClassCode`, etc.) are consumed from `Boutquin.MarketData.Abstractions.ReferenceData` — they are not duplicated in the Domain layer.
@@ -28,7 +28,7 @@ All implementations. Depends on Domain, Boutquin.MarketData.Abstractions, and Bo
 |-----------|----------|
 | `Portfolio.cs` | Core portfolio: multi-currency cash, positions, equity curve, DRIP |
 | `Backtest.cs` | Event-driven backtest runner with data quality gate and expense ratio |
-| `Brokers/` | `SimulatedBrokerage` — market, limit, stop, stop-limit orders |
+| `Brokers/` | `SimulatedBrokerage` — market, limit, stop, stop-limit and FX orders; same-bar fills run sells → FX → buys |
 | `Strategies/` | `BuyAndHoldStrategy`, `RebalancingBuyAndHoldStrategy`, `ConstructionModelStrategy` |
 | `PortfolioConstruction/` | 19 base models + 2 decorators (see [guide](portfolio-construction-guide.md)) |
 | `CovarianceEstimators/` | 13 estimators: Sample, EWMA, LedoitWolfShrinkage, LedoitWolfConstantCorrelation, LedoitWolfSingleFactor, OAS, QIS, Denoised (RMT), TracyWidomDenoised, Detoned, POET, NERCOME, DoublySparse |
@@ -40,10 +40,10 @@ All implementations. Depends on Domain, Boutquin.MarketData.Abstractions, and Bo
 | `Rebalancing/` | `CalendarRebalancingTrigger`, `ThresholdRebalancingTrigger` |
 | `PositionSizing/` | `FixedWeightPositionSizer`, `DynamicWeightPositionSizer` |
 | `RiskManagement/` | `RiskManager` (composite), MaxDrawdown/MaxPositionSize/MaxSectorExposure rules, `DrawdownCircuitBreaker` |
-| `CostModels/` | Fixed, PerShare, Percentage, Tiered, Composite transaction cost models |
+| `CostModels/` | Fixed, PerShare, Percentage, Tiered, Composite transaction cost models; `SpreadFxCostModel` for FX conversions |
 | `SlippageModels/` | Fixed, No, Percentage, Spread, VolumeShare slippage models |
 | `Reporting/` | `HtmlReportGenerator` (SVG tearsheet), `BenchmarkComparisonReport` |
-| `EventHandlers/` | Market, Signal, Order, Fill, RebalancingSignal handlers |
+| `EventHandlers/` | Market, Signal, Order, Fill, RebalancingSignal, FxOrder, FxFill handlers |
 | `Configuration/` | `ServiceCollectionExtensions`, `BacktestOptions`, `CostModelOptions`, `RiskManagementOptions`, `CacheOptions`, `CalendarOptions` |
 
 > Covariance estimators delegate all matrix math to `Boutquin.Numerics.Statistics`. Analytics classes (`FactorRegressor`, `CorrelationAnalyzer`, `MonteCarloSimulator`, etc.) delegate to `Boutquin.Numerics.LinearAlgebra`, `Boutquin.Numerics.MonteCarlo`, and `Boutquin.Numerics.Distributions`.

@@ -54,17 +54,33 @@ public static class BrinsonFachlerAttributor
         Guard.AgainstNull(() => portfolioReturns);
         Guard.AgainstNull(() => benchmarkReturns);
 
-        // Validate all asset names exist in all dictionaries
+        // Validate all asset names exist in all dictionaries. Name the specific
+        // missing dictionary so callers can fix the input rather than guess.
         foreach (var asset in assetNames)
         {
-            if (!portfolioWeights.ContainsKey(asset) ||
-                !benchmarkWeights.ContainsKey(asset) ||
-                !portfolioReturns.ContainsKey(asset) ||
-                !benchmarkReturns.ContainsKey(asset))
+            string? missingParam = null;
+            if (!portfolioWeights.ContainsKey(asset))
+            {
+                missingParam = nameof(portfolioWeights);
+            }
+            else if (!benchmarkWeights.ContainsKey(asset))
+            {
+                missingParam = nameof(benchmarkWeights);
+            }
+            else if (!portfolioReturns.ContainsKey(asset))
+            {
+                missingParam = nameof(portfolioReturns);
+            }
+            else if (!benchmarkReturns.ContainsKey(asset))
+            {
+                missingParam = nameof(benchmarkReturns);
+            }
+
+            if (missingParam is not null)
             {
                 throw new ArgumentException(
-                    $"Symbol '{asset}' is missing from one or more input dictionaries.",
-                    nameof(assetNames));
+                    $"Symbol '{asset}' is missing from {missingParam}.",
+                    missingParam);
             }
         }
 

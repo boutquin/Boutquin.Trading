@@ -24,8 +24,8 @@ public sealed class SpreadIndicator : IMacroIndicator
     /// <inheritdoc />
     public decimal Compute(decimal[] series1, decimal[] series2)
     {
-        Guard.AgainstNullOrEmptyArray(() => series1);
-        Guard.AgainstNullOrEmptyArray(() => series2);
+        Guard.AgainstEmptyOrNullArray(() => series1);
+        Guard.AgainstEmptyOrNullArray(() => series2);
 
         return series1[^1] - series2[^1];
     }

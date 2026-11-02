@@ -1,0 +1,14 @@
+<Project>
+  <!-- Build and test before producing the immutable artifact set explicitly. -->
+  <PropertyGroup>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+  </PropertyGroup>
+  <!-- Keep sibling packages on one exact qualified version in every nuspec. -->
+  <Target Name="PinTradingProjectDependencies" AfterTargets="_GetProjectReferenceVersions">
+    <ItemGroup>
+      <_ProjectReferencesWithVersions Update="@(_ProjectReferencesWithVersions)">
+        <ProjectVersion>[$(MinVerVersionOverride)]</ProjectVersion>
+      </_ProjectReferencesWithVersions>
+    </ItemGroup>
+  </Target>
+</Project>

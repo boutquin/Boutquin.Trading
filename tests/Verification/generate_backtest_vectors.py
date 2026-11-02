@@ -199,7 +199,10 @@ def run_buy_and_hold_backtest(
             continue
 
         # --- Process pending orders from previous bar at today's Open ---
+        # Same-bar fill order is sells first, then buys (stable), matching the C# brokerage
+        # (SimulatedBrokerage: asset sells -> FX conversions -> asset buys).
         if pending_orders:
+            pending_orders.sort(key=lambda o: 0 if o["action"] == "Sell" else 1)
             for order in pending_orders:
                 ticker = order["ticker"]
                 qty = order["quantity"]
@@ -345,7 +348,10 @@ def run_rebalancing_backtest(
             continue
 
         # --- Process pending orders from previous bar at today's Open ---
+        # Same-bar fill order is sells first, then buys (stable), matching the C# brokerage
+        # (SimulatedBrokerage: asset sells -> FX conversions -> asset buys).
         if pending_orders:
+            pending_orders.sort(key=lambda o: 0 if o["action"] == "Sell" else 1)
             for order in pending_orders:
                 ticker = order["ticker"]
                 qty = order["quantity"]
@@ -1052,7 +1058,10 @@ def run_calendar_rebalancing_backtest(
         current_date = date.fromisoformat(date_str)
 
         # --- Process pending orders from previous bar at today's Open ---
+        # Same-bar fill order is sells first, then buys (stable), matching the C# brokerage
+        # (SimulatedBrokerage: asset sells -> FX conversions -> asset buys).
         if pending_orders:
+            pending_orders.sort(key=lambda o: 0 if o["action"] == "Sell" else 1)
             for order in pending_orders:
                 ticker = order["ticker"]
                 qty = order["quantity"]

@@ -17,6 +17,7 @@
 global using System.Collections.ObjectModel;
 global using BenchmarkDotNet.Attributes;
 global using BenchmarkDotNet.Running;
+global using Boutquin.Domain.Enumerations;
 global using Boutquin.MarketData.Abstractions.Records;
 global using Boutquin.MarketData.Abstractions.ReferenceData;
 global using Boutquin.Trading.Application;

@@ -14,6 +14,7 @@
 //   limitations under the License.
 //
 
+using Boutquin.Domain.Enumerations;
 using Boutquin.MarketData.Abstractions.Records;
 using Boutquin.MarketData.Abstractions.ReferenceData;
 using Boutquin.MarketData.Abstractions.Results;
@@ -30,7 +31,7 @@ public sealed class FakeBacktestDataset : IBacktestDataset
     public SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>> Prices { get; init; } = [];
 
     /// <inheritdoc />
-    public SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> FxRates { get; init; } = [];
+    public SortedDictionary<DateOnly, SortedDictionary<Currency, decimal>> FxRates { get; init; } = [];
 
     /// <inheritdoc />
     public IReadOnlyDictionary<Symbol, IReadOnlyList<DividendPayment>> Dividends { get; init; } =

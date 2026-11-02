@@ -34,15 +34,22 @@ public sealed class SignalEventHandlerTests
         var priceStrategyMock = new Mock<IOrderPriceCalculationStrategy>();
         var eventProcessorMock = new Mock<IEventProcessor>();
 
+        strategyMock.Setup(s => s.Name).Returns(StrategyName);
         strategyMock.Setup(s => s.PositionSizer).Returns(sizerMock.Object);
         strategyMock.Setup(s => s.OrderPriceCalculationStrategy).Returns(priceStrategyMock.Object);
         strategyMock.Setup(s => s.Positions).Returns(new Dictionary<Symbol, int>());
+        // The handler plans FX funding from the strategy's cash and asset currencies; a
+        // single-currency (USD-only) strategy never needs an FX order.
+        strategyMock.Setup(s => s.Cash).Returns(new SortedDictionary<Currency, decimal> { [Currency.USD] = 1_000_000m });
+        strategyMock.Setup(s => s.Assets).Returns(new Dictionary<Symbol, Currency>());
 
+        portfolioMock.Setup(p => p.BaseCurrency).Returns(Currency.USD);
+        portfolioMock.Setup(p => p.GetAssetCurrency(It.IsAny<Symbol>())).Returns(Currency.USD);
         portfolioMock.Setup(p => p.GetStrategy(StrategyName)).Returns(strategyMock.Object);
         portfolioMock.Setup(p => p.HistoricalMarketData).Returns(
             new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>());
         portfolioMock.Setup(p => p.HistoricalFxConversionRates).Returns(
-            new SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>());
+            new SortedDictionary<DateOnly, SortedDictionary<Currency, decimal>>());
         portfolioMock.Setup(p => p.EventProcessor).Returns(eventProcessorMock.Object);
 
         return (portfolioMock, strategyMock, sizerMock, priceStrategyMock, eventProcessorMock);
@@ -57,7 +64,7 @@ public sealed class SignalEventHandlerTests
                 It.IsAny<DateOnly>(), It.IsAny<IReadOnlyDictionary<Symbol, SignalType>>(),
                 It.IsAny<IStrategy>(),
                 It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>>>(),
-                It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>>()))
+                It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Currency, decimal>>>()))
             .Returns(new Dictionary<Symbol, int> { [s_testAsset] = 100 });
 
         priceStrategy.Setup(p => p.CalculateOrderPrices(
@@ -90,7 +97,7 @@ public sealed class SignalEventHandlerTests
                 It.IsAny<DateOnly>(), It.IsAny<IReadOnlyDictionary<Symbol, SignalType>>(),
                 It.IsAny<IStrategy>(),
                 It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>>>(),
-                It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>>()))
+                It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Currency, decimal>>>()))
             .Returns(new Dictionary<Symbol, int> { [s_testAsset] = 0 });
 
         priceStrategy.Setup(p => p.CalculateOrderPrices(
@@ -122,7 +129,7 @@ public sealed class SignalEventHandlerTests
                 It.IsAny<DateOnly>(), It.IsAny<IReadOnlyDictionary<Symbol, SignalType>>(),
                 It.IsAny<IStrategy>(),
                 It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>>>(),
-                It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>>()))
+                It.IsAny<IReadOnlyDictionary<DateOnly, SortedDictionary<Currency, decimal>>>()))
             .Returns(new Dictionary<Symbol, int> { [s_testAsset] = 100 });
 
         var signalEvent = new SignalEvent(s_testDate, StrategyName,
@@ -153,7 +160,7 @@ public sealed class SignalEventHandlerTests
         var handler = new SignalEventHandler();
         var marketEvent = new MarketEvent(s_testDate,
             new SortedDictionary<Symbol, Bar>(),
-            new SortedDictionary<CurrencyCode, decimal>());
+            new SortedDictionary<Currency, decimal>());
 
         var act = () => handler.HandleEventAsync(portfolioMock.Object, marketEvent, CancellationToken.None);
         await act.Should().ThrowAsync<ArgumentException>()

@@ -28,25 +28,25 @@ public sealed class CancellationTokenTests
         // Arrange: create a minimal backtest setup
         var strategyMock = new Mock<IStrategy>();
         strategyMock.Setup(s => s.Name).Returns("Test");
-        strategyMock.Setup(s => s.Assets).Returns(new Dictionary<Symbol, CurrencyCode> { [s_vti] = CurrencyCode.USD });
+        strategyMock.Setup(s => s.Assets).Returns(new Dictionary<Symbol, Currency> { [s_vti] = Currency.USD });
         strategyMock.Setup(s => s.Positions).Returns(new Dictionary<Symbol, int>());
-        strategyMock.Setup(s => s.Cash).Returns(new Dictionary<CurrencyCode, decimal> { [CurrencyCode.USD] = 100_000m });
+        strategyMock.Setup(s => s.Cash).Returns(new Dictionary<Currency, decimal> { [Currency.USD] = 100_000m });
 
         var portfolioMock = new Mock<IPortfolio>();
         portfolioMock.Setup(p => p.Strategies).Returns(new Dictionary<string, IStrategy> { ["Test"] = strategyMock.Object });
-        portfolioMock.Setup(p => p.BaseCurrency).Returns(CurrencyCode.USD);
+        portfolioMock.Setup(p => p.BaseCurrency).Returns(Currency.USD);
         portfolioMock.Setup(p => p.EquityCurve).Returns(new SortedDictionary<DateOnly, decimal>());
 
         var benchmarkMock = new Mock<IPortfolio>();
         benchmarkMock.Setup(p => p.Strategies).Returns(new Dictionary<string, IStrategy> { ["Bench"] = strategyMock.Object });
-        benchmarkMock.Setup(p => p.BaseCurrency).Returns(CurrencyCode.USD);
+        benchmarkMock.Setup(p => p.BaseCurrency).Returns(Currency.USD);
         benchmarkMock.Setup(p => p.EquityCurve).Returns(new SortedDictionary<DateOnly, decimal>());
 
         // Market data that yields data slowly
         var marketData = CreateMarketDataStream();
         var fxData = CreateEmptyFxStream();
 
-        var backtest = new BackTest(portfolioMock.Object, benchmarkMock.Object, CurrencyCode.USD);
+        var backtest = new BackTest(portfolioMock.Object, benchmarkMock.Object, Currency.USD);
 
         // Build dataset from market data stream
         var prices = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>();
@@ -79,15 +79,15 @@ public sealed class CancellationTokenTests
 
         var strategyMock = new Mock<IStrategy>();
         strategyMock.Setup(s => s.Name).Returns("Test");
-        strategyMock.Setup(s => s.Assets).Returns(new Dictionary<Symbol, CurrencyCode> { [s_vti] = CurrencyCode.USD });
+        strategyMock.Setup(s => s.Assets).Returns(new Dictionary<Symbol, Currency> { [s_vti] = Currency.USD });
         strategyMock.Setup(s => s.Positions).Returns(new Dictionary<Symbol, int>());
 
         var brokerMock = new Mock<IBrokerage>();
 
         var portfolio = new Portfolio(
-            CurrencyCode.USD,
+            Currency.USD,
             new Dictionary<string, IStrategy> { ["Test"] = strategyMock.Object },
-            new Dictionary<Symbol, CurrencyCode> { [s_vti] = CurrencyCode.USD },
+            new Dictionary<Symbol, Currency> { [s_vti] = Currency.USD },
             new Dictionary<Type, IEventHandler> { [typeof(MarketEvent)] = handlerMock.Object },
             brokerMock.Object);
 
@@ -97,7 +97,7 @@ public sealed class CancellationTokenTests
         var marketEvent = new MarketEvent(
             new DateOnly(2026, 1, 1),
             new SortedDictionary<Symbol, Bar>(),
-            new SortedDictionary<CurrencyCode, decimal>());
+            new SortedDictionary<Currency, decimal>());
 
         // Act & Assert
         var act = () => portfolio.HandleEventAsync(marketEvent, cts.Token);
@@ -109,7 +109,7 @@ public sealed class CancellationTokenTests
     {
         var strategyMock = new Mock<IStrategy>();
         strategyMock.Setup(s => s.Name).Returns("Test");
-        strategyMock.Setup(s => s.Assets).Returns(new Dictionary<Symbol, CurrencyCode> { [s_vti] = CurrencyCode.USD });
+        strategyMock.Setup(s => s.Assets).Returns(new Dictionary<Symbol, Currency> { [s_vti] = Currency.USD });
         strategyMock.Setup(s => s.Positions).Returns(new Dictionary<Symbol, int>());
 
         var brokerMock = new Mock<IBrokerage>();
@@ -118,9 +118,9 @@ public sealed class CancellationTokenTests
 
         var handlerMock = new Mock<IEventHandler>();
         var portfolio = new Portfolio(
-            CurrencyCode.USD,
+            Currency.USD,
             new Dictionary<string, IStrategy> { ["Test"] = strategyMock.Object },
-            new Dictionary<Symbol, CurrencyCode> { [s_vti] = CurrencyCode.USD },
+            new Dictionary<Symbol, Currency> { [s_vti] = Currency.USD },
             new Dictionary<Type, IEventHandler> { [typeof(MarketEvent)] = handlerMock.Object },
             brokerMock.Object);
 
@@ -154,7 +154,7 @@ public sealed class CancellationTokenTests
         }
     }
 
-    private static async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<CurrencyCode, decimal>>> CreateEmptyFxStream()
+    private static async IAsyncEnumerable<KeyValuePair<DateOnly, SortedDictionary<Currency, decimal>>> CreateEmptyFxStream()
     {
         yield break;
     }

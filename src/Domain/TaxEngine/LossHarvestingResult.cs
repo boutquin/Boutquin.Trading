@@ -19,8 +19,51 @@ namespace Boutquin.Trading.Domain.TaxEngine;
 /// <summary>
 /// Result of evaluating a loss harvesting rule (wash sale or superficial loss).
 /// </summary>
+/// <param name="IsLossDisallowed">Whether the loss is disallowed by the rule.</param>
+/// <param name="DisallowedAmount">The disallowed portion of the loss, as currency-tagged <see cref="Money"/>.</param>
+/// <param name="AllowedAmount">The allowed (deductible) portion of the loss, as currency-tagged <see cref="Money"/>.</param>
+/// <param name="Rule">The name of the rule that was evaluated.</param>
+/// <remarks>
+/// The amount fields are currency-tagged <see cref="Money"/>; combining them with amounts of a
+/// different currency uses <see cref="Money"/> arithmetic, which throws
+/// <see cref="Boutquin.Domain.Exceptions.CurrencyMismatchException"/> at the caller.
+/// <see cref="IsLossDisallowed"/> and <see cref="Rule"/> stay non-monetary.
+/// When <see cref="IsLossDisallowed"/> is <see langword="false"/>, consumers do not consult
+/// <see cref="Disposition"/>. Within the current rule scope, acquisition in an IRA or Roth IRA is
+/// the sole wash-sale case that uses <see cref="DisallowedLossDisposition.PermanentlyLost"/>;
+/// other US wash sales and Canadian superficial losses add the loss to replacement basis.
+/// The original positional constructor remains the JSON constructor, so existing four-field
+/// payloads remain readable; the optional disposition is restored through its init property.
+/// </remarks>
+[method: System.Text.Json.Serialization.JsonConstructor]
 public sealed record LossHarvestingResult(
     bool IsLossDisallowed,
-    decimal DisallowedAmount,
-    decimal AllowedAmount,
-    string Rule);
+    Money DisallowedAmount,
+    Money AllowedAmount,
+    string Rule)
+{
+    /// <summary>
+    /// Destination to which a disallowed loss is carried.
+    /// </summary>
+    public DisallowedLossDisposition Disposition { get; init; } =
+        DisallowedLossDisposition.AddedToReplacementBasis;
+
+    /// <summary>
+    /// Initializes a result with an explicit disallowed-loss disposition.
+    /// </summary>
+    /// <param name="IsLossDisallowed">Whether the loss is disallowed by the rule.</param>
+    /// <param name="DisallowedAmount">The disallowed portion of the loss.</param>
+    /// <param name="AllowedAmount">The allowed portion of the loss.</param>
+    /// <param name="Rule">The name of the rule that was evaluated.</param>
+    /// <param name="disposition">The destination of the disallowed loss.</param>
+    public LossHarvestingResult(
+        bool IsLossDisallowed,
+        Money DisallowedAmount,
+        Money AllowedAmount,
+        string Rule,
+        DisallowedLossDisposition disposition)
+        : this(IsLossDisallowed, DisallowedAmount, AllowedAmount, Rule)
+    {
+        Disposition = disposition;
+    }
+}

@@ -42,20 +42,20 @@ public interface IPortfolio
     public bool IsLive { get; }
 
     /// <summary>
-    /// When true, dividends credited via <see cref="UpdateCashForDividend"/> are
+    /// When true, dividends credited via <see cref="UpdateCashForDividend(Symbol, decimal, decimal)"/> are
     /// automatically reinvested into the paying asset (whole shares at Close price).
     /// </summary>
     bool EnableDividendReinvestment { get; }
 
     /// <summary>
-    /// Gets the base currency of the portfolio.
+    /// The base currency of the portfolio.
     /// </summary>
     /// <value>The base currency of the portfolio.</value>
     /// <remarks>
     /// The base currency is the currency in which the portfolio's value is calculated and reported.
     /// All cash balances, asset prices, and portfolio values are converted to the base currency for calculations and reporting.
     /// </remarks>
-    CurrencyCode BaseCurrency { get; }
+    Currency BaseCurrency { get; }
 
     /// <summary>
     /// The EventProcessor property represents a system to process events for the portfolio.
@@ -70,7 +70,7 @@ public interface IPortfolio
     /// <summary>
     /// The AssetCurrencies property represents a read-only dictionary of assets and their respective currencies used in the portfolio.
     /// </summary>
-    IReadOnlyDictionary<Symbol, CurrencyCode> AssetCurrencies { get; }
+    IReadOnlyDictionary<Symbol, Currency> AssetCurrencies { get; }
 
     /// <summary>
     /// The HistoricalMarketData property represents a sorted dictionary of historical market data used by the portfolio.
@@ -78,14 +78,48 @@ public interface IPortfolio
     SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>> HistoricalMarketData { get; }
 
     /// <summary>
-    /// The HistoricalFxConversionRates property represents a sorted dictionary of historical foreign exchange conversion rates used by the portfolio.
+    /// The FX rate tables the portfolio has received, by date. Each table is keyed by non-base
+    /// currency and holds the number of base-currency units per 1 unit of the keyed currency
+    /// (the contract documented on <see cref="Helpers.FxConversion"/>).
     /// </summary>
-    SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> HistoricalFxConversionRates { get; }
+    SortedDictionary<DateOnly, SortedDictionary<Currency, decimal>> HistoricalFxConversionRates { get; }
 
     /// <summary>
     /// The EquityCurve property represents a sorted dictionary of equity values over time.
     /// </summary>
     SortedDictionary<DateOnly, decimal> EquityCurve { get; }
+
+    /// <summary>
+    /// A currency-tagged <see cref="Money"/> projection of <see cref="EquityCurve"/>, where
+    /// each value is the equity amount tagged with the portfolio's <see cref="BaseCurrency"/>.
+    /// </summary>
+    /// <value>
+    /// A read-only dictionary keyed by <see cref="DateOnly"/>; each value is a <see cref="Money"/>
+    /// whose <see cref="Money.Amount"/> equals the corresponding <see cref="EquityCurve"/> entry and
+    /// whose <see cref="Money.Currency"/> is <see cref="BaseCurrency"/>.
+    /// </value>
+    /// <remarks>
+    /// <para>
+    /// This is a boundary projection derived from the backing <see cref="EquityCurve"/> collection —
+    /// the stored collection stays <see cref="decimal"/> (hot/internal; written from inside the
+    /// per-bar loop), and this view is materialized at the reporting boundary. The default
+    /// implementation maps each entry without entering any per-bar path, so it cannot perturb
+    /// backtest throughput. It never throws.
+    /// </para>
+    /// </remarks>
+    IReadOnlyDictionary<DateOnly, Money> EquityCurveAsMoney
+    {
+        get
+        {
+            var result = new Dictionary<DateOnly, Money>(EquityCurve.Count);
+            foreach (var (timestamp, value) in EquityCurve)
+            {
+                result[timestamp] = new Money(value, BaseCurrency);
+            }
+
+            return result;
+        }
+    }
 
     /// <summary>
     /// Asynchronously handles the specified event, processing it using the portfolio's event processor.
@@ -118,12 +152,61 @@ public interface IPortfolio
     /// </summary>
     /// <param name="asset">The asset symbol for which the dividend event occurred.</param>
     /// <param name="dividendPerShare">The amount of dividend received per share.</param>
-    /// <param name="currentPrice">The current Close price of the asset, used for DRIP reinvestment. Default 0 disables reinvestment.</param>
+    /// <param name="currentPrice">The current Close price of the asset, used for DRIP reinvestment. Pass 0 to disable reinvestment.</param>
     /// <exception cref="System.ArgumentException">Thrown when the asset parameter is null, empty, or consists only of white-space characters.</exception>
     void UpdateCashForDividend(
         Symbol asset,
         decimal dividendPerShare,
-        decimal currentPrice = 0m);
+        decimal currentPrice);
+
+    /// <summary>
+    /// Updates the cash balance for each strategy holding <paramref name="asset"/> in response to a
+    /// dividend event, using currency-tagged <see cref="Money"/> amounts. The additive
+    /// <see cref="Money"/> companion to
+    /// <see cref="UpdateCashForDividend(Symbol, decimal, decimal)"/>.
+    /// </summary>
+    /// <param name="asset">The asset symbol for which the dividend event occurred.</param>
+    /// <param name="dividendPerShare">
+    /// The per-share dividend as a currency-tagged <see cref="Money"/>. Its
+    /// <see cref="Money.Currency"/> must equal the asset's native currency
+    /// (<see cref="GetAssetCurrency"/>).
+    /// </param>
+    /// <param name="currentPrice">
+    /// The current Close price of the asset as a currency-tagged <see cref="Money"/>, used for DRIP
+    /// reinvestment; must be the same currency as <paramref name="dividendPerShare"/>.
+    /// </param>
+    /// <exception cref="System.ArgumentException">Thrown when the asset parameter is null, empty, or consists only of white-space characters.</exception>
+    /// <exception cref="Boutquin.Domain.Exceptions.CurrencyMismatchException">
+    /// Thrown when <paramref name="dividendPerShare"/> or <paramref name="currentPrice"/> does not
+    /// match the asset's native currency, so a dividend is never credited to the wrong currency.
+    /// </exception>
+    /// <remarks>
+    /// <para>
+    /// Validates both <see cref="Money"/> currencies against the asset's native currency, then routes
+    /// to the <see cref="decimal"/> core
+    /// <see cref="UpdateCashForDividend(Symbol, decimal, decimal)"/>. The per-strategy dividend
+    /// crediting and DRIP arithmetic remain <see cref="decimal"/>; <see cref="Money"/> is the
+    /// construction-boundary guard only.
+    /// </para>
+    /// </remarks>
+    void UpdateCashForDividend(
+        Symbol asset,
+        Money dividendPerShare,
+        Money currentPrice)
+    {
+        var assetCurrency = GetAssetCurrency(asset);
+        if (dividendPerShare.Currency != assetCurrency)
+        {
+            throw new CurrencyMismatchException(assetCurrency, dividendPerShare.Currency);
+        }
+
+        if (currentPrice.Currency != assetCurrency)
+        {
+            throw new CurrencyMismatchException(assetCurrency, currentPrice.Currency);
+        }
+
+        UpdateCashForDividend(asset, dividendPerShare.Amount, currentPrice.Amount);
+    }
 
     /// <summary>
     /// Submits an order based on an OrderEvent.
@@ -138,6 +221,23 @@ public interface IPortfolio
     /// before creating and submitting the order to the brokerage.
     /// </remarks>
     Task<bool> SubmitOrderAsync(OrderEvent orderEvent, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Submits a spot FX conversion between two of a strategy's cash buckets to the brokerage, as
+    /// <see cref="SubmitOrderAsync"/> submits an asset order. The conversion fills on the next bar and
+    /// returns through the portfolio's event pipeline as an <see cref="FxFillEvent"/>.
+    /// </summary>
+    /// <param name="fxOrderEvent">The conversion to submit.</param>
+    /// <param name="cancellationToken">A token to cancel the async operation.</param>
+    /// <returns>A task whose result indicates whether the brokerage accepted the order.</returns>
+    /// <exception cref="System.ArgumentNullException">Thrown when <paramref name="fxOrderEvent"/> is null.</exception>
+    /// <exception cref="NotSupportedException">
+    /// Thrown by the default implementation, and by any brokerage that does not trade FX. A portfolio
+    /// implementation that routes FX orders overrides this member; <c>Portfolio</c> does.
+    /// </exception>
+    Task<bool> SubmitFxOrderAsync(FxOrderEvent fxOrderEvent, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException(
+            $"{GetType().Name} does not route FX orders. Override IPortfolio.SubmitFxOrderAsync, or use an FxFundingPolicy of None.");
 
     /// <summary>
     /// Generates trading signals for each strategy in the portfolio based on updated market data.
@@ -176,15 +276,46 @@ public interface IPortfolio
     /// <param name="currency">The currency of the cash balance to be updated.</param>
     /// <param name="amount">The amount to be updated.</param>
     /// <exception cref="System.ArgumentException">Thrown when the strategyName parameter is null, empty, or consists only of white-space characters.</exception>
-    /// <exception cref="System.ArgumentOutOfRangeException">Thrown when the currency parameter is not a defined value of the CurrencyCode enumeration.</exception>
+    /// <exception cref="System.ArgumentOutOfRangeException">Thrown when the currency parameter is not a defined value of the Currency enumeration.</exception>
     /// <remarks>
     /// This method is called when the cash balance for a specific strategy and currency needs to be updated.
     /// The method implementation should ensure that the cash balance is updated correctly and that the new cash balance does not lead to an inconsistent portfolio state.
     /// </remarks>
     void UpdateCash(
         string strategyName,
-        CurrencyCode currency,
+        Currency currency,
         decimal amount);
+
+    /// <summary>
+    /// Updates the cash balance for a specific strategy by a currency-tagged <see cref="Money"/>
+    /// amount, taking the currency from <see cref="Money.Currency"/>. The additive <see cref="Money"/>
+    /// companion to <see cref="UpdateCash(string, Currency, decimal)"/>.
+    /// </summary>
+    /// <param name="strategyName">The name of the strategy.</param>
+    /// <param name="amount">
+    /// The signed amount to add to the named strategy's cash bucket identified by
+    /// <see cref="Money.Currency"/>. Its currency must already be an existing cash bucket of that
+    /// strategy, so the wrong bucket is never silently created or credited.
+    /// </param>
+    /// <exception cref="System.ArgumentException">Thrown when the <paramref name="strategyName"/> parameter is null, empty, or consists only of white-space characters.</exception>
+    /// <exception cref="Boutquin.Domain.Exceptions.CurrencyMismatchException">
+    /// Thrown when <paramref name="amount"/>'s currency is not one of the named strategy's existing
+    /// cash buckets (a wrong-currency credit).
+    /// </exception>
+    /// <remarks>
+    /// <para>
+    /// Routes to the strategy's currency-validating <see cref="IStrategy.UpdateCash(Money)"/>, which
+    /// rejects a wrong-currency credit and otherwise forwards to the <see cref="decimal"/> core.
+    /// Construction-boundary guard only; the stored cash collection stays <see cref="decimal"/>.
+    /// </para>
+    /// </remarks>
+    void UpdateCash(
+        string strategyName,
+        Money amount)
+    {
+        var strategy = GetStrategy(strategyName);
+        strategy.UpdateCash(amount);
+    }
 
     /// <summary>
     /// Updates the equity curve for the portfolio.
@@ -238,6 +369,22 @@ public interface IPortfolio
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Processes pending asset and FX orders from the previous bar against the current bar, in the
+    /// order asset sells → FX conversions → asset buys. The default implementation forwards to the
+    /// asset-only overload and ignores <paramref name="fxRates"/>; <c>Portfolio</c> overrides it to
+    /// hand the bar's FX table to the brokerage so pending conversions can fill.
+    /// </summary>
+    /// <param name="date">The current bar's date.</param>
+    /// <param name="dayData">The current bar's market data for all assets.</param>
+    /// <param name="fxRates">The bar's resolved FX table: base-currency units per 1 unit of each keyed currency (see <see cref="Helpers.FxConversion"/>).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task ProcessPendingOrdersAsync(
+        DateOnly date,
+        SortedDictionary<Symbol, Bar> dayData,
+        SortedDictionary<Currency, decimal> fxRates,
+        CancellationToken cancellationToken = default) => ProcessPendingOrdersAsync(date, dayData, cancellationToken);
+
+    /// <summary>
     /// Retrieves a strategy based on its name.
     /// </summary>
     /// <param name="strategyName">The name of the strategy to retrieve.</param>
@@ -259,18 +406,41 @@ public interface IPortfolio
     /// This method is called when the currency of a specific asset needs to be retrieved.
     /// The method implementation should ensure that the correct currency is returned, or an appropriate error is thrown if the currency cannot be found.
     /// </remarks>
-    CurrencyCode GetAssetCurrency(Symbol asset);
+    Currency GetAssetCurrency(Symbol asset);
 
     /// <summary>
     /// Calculates the total value of the portfolio.
     /// </summary>
     /// <param name="timestamp">The timestamp for which the total value is calculated.</param>
     /// <returns>The total value of the portfolio.</returns>
-    /// <exception cref="System.ArgumentOutOfRangeException">Thrown when the baseCurrency parameter is not a defined value of the CurrencyCode enumeration.</exception>
+    /// <exception cref="System.ArgumentOutOfRangeException">Thrown when the baseCurrency parameter is not a defined value of the Currency enumeration.</exception>
     /// <remarks>
     /// This method is called when the total value of the portfolio needs to be calculated.
     /// The method implementation should ensure that the calculation is accurate and that it correctly reflects the current state of the portfolio.
     /// </remarks>
     decimal CalculateTotalPortfolioValue(
         DateOnly timestamp);
+
+    /// <summary>
+    /// Calculates the total value of the portfolio as a currency-tagged <see cref="Money"/> in the
+    /// portfolio's <see cref="BaseCurrency"/>. The additive <see cref="Money"/> companion to
+    /// <see cref="CalculateTotalPortfolioValue"/>.
+    /// </summary>
+    /// <param name="timestamp">The timestamp for which the total value is calculated.</param>
+    /// <returns>
+    /// A <see cref="Money"/> whose <see cref="Money.Amount"/> equals
+    /// <see cref="CalculateTotalPortfolioValue"/> for the same timestamp and whose
+    /// <see cref="Money.Currency"/> is <see cref="BaseCurrency"/>.
+    /// </returns>
+    /// <remarks>
+    /// <para>
+    /// This is a boundary projection: the default implementation tags the existing
+    /// <see cref="decimal"/> total with <see cref="BaseCurrency"/>. The per-strategy aggregation
+    /// inside <see cref="CalculateTotalPortfolioValue"/> remains <see cref="decimal"/>;
+    /// <see cref="Money"/> appears only at the reporting boundary.
+    /// </para>
+    /// </remarks>
+    Money CalculateTotalPortfolioValueAsMoney(
+        DateOnly timestamp)
+        => new(CalculateTotalPortfolioValue(timestamp), BaseCurrency);
 }

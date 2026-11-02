@@ -1,8 +1,10 @@
 # Boutquin.Trading
 
 [![NuGet](https://img.shields.io/nuget/v/Boutquin.Trading.Domain.svg)](https://www.nuget.org/packages/Boutquin.Trading.Domain)
-[![License](https://img.shields.io/github/license/boutquin/Boutquin.Trading)](https://github.com/boutquin/Boutquin.Trading/blob/main/LICENSE.txt)
+[![License](https://img.shields.io/github/license/boutquin/Boutquin.Trading)](https://github.com/boutquin/Boutquin.Trading/blob/v2.3.1/LICENSE.txt)
 [![Build](https://github.com/boutquin/Boutquin.Trading/actions/workflows/pr-verify.yml/badge.svg)](https://github.com/boutquin/Boutquin.Trading/actions/workflows/pr-verify.yml)
+
+> **2.3.1:** targets .NET 10, `Boutquin.MarketData` 2.0.1 and `Boutquin.Numerics` 2.0.0 from NuGet.org. Install the explicit version below to keep the package family aligned. See the [changelog](https://github.com/boutquin/Boutquin.Trading/blob/v2.3.1/CHANGELOG.md) and [build verification](https://github.com/boutquin/Boutquin.Trading/blob/v2.3.1/docs/runner-dependencies.md).
 
 A production-ready, multi-asset, multi-strategy, event-driven quantitative trading framework for backtesting long-only ETF and equity strategies. Features 21 portfolio construction models, 13 covariance estimators, risk management, performance analytics, and cross-language verification against Python reference implementations. Built with clean architecture, .NET 10, and strict code quality standards.
 
@@ -114,8 +116,8 @@ A production-ready, multi-asset, multi-strategy, event-driven quantitative tradi
 ### Risk Management
 - **Composite risk manager** — Evaluates all rules; first rejection short-circuits
 - **MaxDrawdownRule** — Rejects orders when equity curve drawdown exceeds limit
-- **MaxPositionSizeRule** — Rejects when single position exceeds % of portfolio
-- **MaxSectorExposureRule** — Rejects when asset class exposure exceeds threshold
+- **MaxPositionSizeRule** — Rejects when a single position would exceed its % of portfolio by more than one share (share-granularity tolerance, floored at 1 bp)
+- **MaxSectorExposureRule** — Rejects when an asset class would exceed its threshold by more than one share per holding (floored at 10 bp)
 - **DrawdownCircuitBreaker** — `IDrawdownControl` for dynamic drawdown-based risk intervention with safe peak initialization
 
 ### Reporting
@@ -147,15 +149,15 @@ Available adapters (in `Boutquin.MarketData.Adapter`):
 - **12 verification suites** — calculations, backtests, edge cases, covariance estimators, construction models (basic + advanced + remaining + PCA), risk measures, analytics, indicators/regime, integration
 - **Three-layer cross-checks** — library cross-references, analytical solutions, property-based invariants
 - **Python pytest** validates self-consistency; C# xUnit validates cross-language correctness
-- See [tests/Verification/README.md](tests/Verification/README.md) for details
+- See [tests/Verification/README.md](https://github.com/boutquin/Boutquin.Trading/blob/v2.3.1/tests/Verification/README.md) for details
 
 ## Quick Start
 
 ### Installation
 
 ```sh
-dotnet add package Boutquin.Trading.Domain
-dotnet add package Boutquin.Trading.Application
+dotnet add package Boutquin.Trading.Domain --version 2.3.1
+dotnet add package Boutquin.Trading.Application --version 2.3.1
 ```
 
 ### Dependency Injection Setup
@@ -253,14 +255,14 @@ Configuration via `appsettings.json`:
 
 The architecture follows the dependency inversion principle — the Domain layer defines contracts, and Application and Recipes layers provide implementations that can be swapped independently. Data ingestion is fully delegated to the `Boutquin.MarketData` ecosystem.
 
-For detailed architecture including component navigation and data flow, see [docs/architecture.md](docs/architecture.md).
+For detailed architecture including component navigation and data flow, see [docs/architecture.md](https://github.com/boutquin/Boutquin.Trading/blob/v2.3.1/docs/architecture.md).
 
 ## Directory Structure
 
 ```
 Boutquin.Trading/
 ├── src/                    # Source projects (6)
-│   ├── Domain/             # 39 interfaces, events, 9 backtest enums, tax engine records, value objects
+│   ├── Domain/             # 38 interfaces, events, 11 backtest enums, tax engine records, value objects
 │   ├── Application/        # Engine, 21 construction models, 13 estimators, analytics, risk, DI
 │   ├── Recipes/            # IBacktestDataset, BacktestDatasetBuilder (MarketData kernel bridge)
 │   ├── DataAccess/         # EF Core data access (SecurityMaster)
@@ -274,14 +276,13 @@ Boutquin.Trading/
 │   └── BenchMark/          # BenchmarkDotNet suite
 ├── docs/                   # Documentation
 │   └── examples/           # Worked examples (buy-and-hold → attribution)
-├── specs/                  # Internal specifications (gitignored in public release)
 ├── hooks/                  # Git hooks (pre-commit)
 └── Resources/              # Shared assets (icon)
 ```
 
 ## Contributing
 
-Contributions are welcome! Please read the [contributing guidelines](CONTRIBUTING.md) and [code of conduct](CODE_OF_CONDUCT.md) first.
+Contributions are welcome! Please read the [contributing guidelines](https://github.com/boutquin/Boutquin.Trading/blob/v2.3.1/CONTRIBUTING.md) and [code of conduct](https://github.com/boutquin/Boutquin.Trading/blob/v2.3.1/CODE_OF_CONDUCT.md) first.
 
 ### Reporting Bugs
 
@@ -297,7 +298,7 @@ If you find a bug, please report it by opening an issue on the [Issues](https://
 1. Fork the repository and clone locally
 2. Create a feature branch: `git checkout -b feature-name`
 3. Install git hooks: `./hooks/install.sh`
-4. Make your changes following the [style guides](CONTRIBUTING.md)
+4. Make your changes following the [style guides](https://github.com/boutquin/Boutquin.Trading/blob/v2.3.1/CONTRIBUTING.md)
 5. Commit with clear messages: `git commit -m "Add feature X"`
 6. Push and open a pull request
 
@@ -307,14 +308,14 @@ The Domain layer includes interfaces for jurisdiction-aware tax computation, des
 
 | Interface | Purpose |
 |-----------|---------|
-| `ICostBasisMethod` | Lot-level cost basis tracking (FIFO, ACB, Specific ID) |
-| `ITaxJurisdiction` | Jurisdiction-specific gain/loss and dividend tax computation |
+| `ICostBasisMethod` | Lot-level cost basis tracking, including per-disposition Specific ID elections |
+| `ITaxJurisdiction` | Jurisdiction-specific gain/loss and dividend tax computation, with an income-aware rate-band overload |
 | `IDividendClassifier` | Classify dividends by tax treatment (qualified, eligible, foreign, ROC) |
 | `ILossHarvestingRule` | Wash sale (US) and superficial loss (Canada) detection |
 | `IWithholdingTaxSchedule` | Cross-border withholding tax rates by account type |
-| `ITaxFxRateProvider` | Official FX rates for tax purposes (e.g., Bank of Canada noon rate) |
+| `ITaxFxRateProvider` | Official FX rates for tax purposes, including the Bank of Canada daily-average series |
 
-Domain records (`TaxLot`, `LotDisposal`, `TaxImpact`, `DividendRecord`, etc.) are included in the open-source package.
+Domain records (`TaxLot`, `LotIdentification`, `LotDisposal`, `TaxImpact`, `DividendRecord`, etc.) are included in the open-source package. `LossHarvestingResult` distinguishes losses added to replacement basis from the IRA/Roth IRA wash-sale case where the deduction is permanently lost.
 
 **Boutquin.Trading.TaxEngine** — A separately licensed implementation providing full US and Canadian tax-aware backtesting (cost basis methods, capital gains classification, wash sale/superficial loss rules, multi-account withholding, and tax-loss harvesting optimization) is available under a commercial license. Contact the author for details.
 
@@ -328,7 +329,7 @@ The software authors are not registered investment advisers, portfolio managers,
 
 ## License
 
-This project is licensed under the Apache 2.0 License — see the [LICENSE](LICENSE.txt) file for details.
+This project is licensed under the Apache 2.0 License — see the [LICENSE](https://github.com/boutquin/Boutquin.Trading/blob/v2.3.1/LICENSE.txt) file for details.
 
 ## Contact
 

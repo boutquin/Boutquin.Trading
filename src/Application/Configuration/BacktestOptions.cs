@@ -41,32 +41,40 @@ public sealed class BacktestOptions
     /// <summary>
     /// The covariance estimator to use for construction models that require one.
     /// Valid values: Sample, EWMA, LedoitWolf, LedoitWolfConstantCorrelation,
-    /// LedoitWolfSingleFactor, OAS, QIS, Denoised, DenoisedLW, TracyWidomDenoised,
-    /// Detoned, NERCOME, POET, DoublySparse.
+    /// LedoitWolfSingleFactor, OAS, QIS, Denoised, DenoisedLW, Gerber, FactorGraphicalLasso,
+    /// DccNl, TracyWidomDenoised, Detoned, NERCOME, POET, DoublySparse.
     /// Defaults to "LedoitWolfConstantCorrelation" — a well-suited equity target.
     /// </summary>
+    /// <remarks>
+    /// Per-estimator hyperparameters (e.g. EWMA decay, DCC-NL <c>(alpha, beta)</c> and the
+    /// <c>estimateParameters</c> opt-out) are configured declaratively via
+    /// <see cref="CovarianceParameters"/>; an unset hyperparameter defers to the estimator's
+    /// own constructor default.
+    /// </remarks>
     public string CovarianceEstimator { get; set; } = "LedoitWolfConstantCorrelation";
 
     /// <summary>
-    /// When true, dividends are automatically reinvested into the paying asset
-    /// at the current Close price (whole shares only, fractional cash remains).
-    /// Only effective in live mode where raw Close is used for valuation.
-    /// In backtest mode, AdjustedClose already embeds dividend returns.
+    /// Declarative hyperparameters for the selected <see cref="CovarianceEstimator"/>, bound from
+    /// the <c>Backtest:CovarianceParameters</c> subsection. Pre-initialized so it is never
+    /// <see langword="null"/>; every inner property is itself nullable and defers to the
+    /// estimator's constructor default when unset.
     /// </summary>
-    public bool EnableDividendReinvestment { get; set; }
+    public CovarianceEstimatorParameters CovarianceParameters { get; set; } = new();
 
     /// <summary>
-    /// Default annual expense ratio in basis points (e.g., 20 = 0.20% per year).
-    /// Applied to all assets that do not have a per-asset override in <see cref="AssetExpenseRatiosBps"/>.
-    /// Deducted daily (annualRate / 252) from each strategy's cash proportional
-    /// to position value, before the equity curve is updated.
+    /// The expected-return estimator that return-aware construction models use as the mean input to
+    /// their optimization objective. Valid values: <c>HistoricalMean</c> | <c>YieldAnchored</c>.
+    /// Defaults to <c>"HistoricalMean"</c> — the behavior-preserving rear-view sample mean.
     /// </summary>
-    public decimal AnnualExpenseRatioBps { get; set; }
-
-    /// <summary>
-    /// Per-asset annual expense ratios in basis points, keyed by ticker symbol.
-    /// Overrides <see cref="AnnualExpenseRatioBps"/> for the specified assets.
-    /// Example: <c>{ "VTI": 3, "VXUS": 7, "BND": 3 }</c> for Vanguard ETFs.
-    /// </summary>
-    public Dictionary<string, decimal> AssetExpenseRatiosBps { get; set; } = [];
+    /// <remarks>
+    /// Bound from <c>Backtest:ExpectedReturnEstimator</c> and resolved to an
+    /// <see cref="Boutquin.Trading.Domain.Interfaces.IExpectedReturnEstimator"/> by
+    /// <see cref="ServiceCollectionExtensions.AddBoutquinTrading"/>, mirroring
+    /// <see cref="CovarianceEstimator"/>'s factory pattern (a bad name throws at resolution — no silent
+    /// default). <c>YieldAnchored</c> requires a per-run asset-class map and constructor-bound auxiliary
+    /// series that configuration cannot express, so — like <c>BlackLitterman</c> — it cannot be built via
+    /// DI: selecting it throws, directing the caller to construct
+    /// <c>YieldAnchoredExpectedReturnEstimator</c> manually with the current universe's data.
+    /// </remarks>
+    public string ExpectedReturnEstimator { get; set; } = "HistoricalMean";
 }

@@ -1,0 +1,94 @@
+{
+  "cases": {
+    "three_asset_strictly_decreasing": {
+      "volatility_window": 4,
+      "trading_days_per_year": 252,
+      "n_assets": 3,
+      "returns": [
+        [
+          0.0,
+          0.01,
+          0.0,
+          0.01
+        ],
+        [
+          0.0,
+          0.02,
+          0.0,
+          0.02
+        ],
+        [
+          0.0,
+          0.04,
+          0.0,
+          0.04
+        ]
+      ],
+      "scores": [
+        1.0690449676496976,
+        0.26726124191242434,
+        -1.3363062095621219
+      ]
+    },
+    "equal_vol_two_tie": {
+      "volatility_window": 4,
+      "trading_days_per_year": 252,
+      "n_assets": 3,
+      "returns": [
+        [
+          0.0,
+          0.02,
+          0.0,
+          0.02
+        ],
+        [
+          0.02,
+          0.0,
+          0.02,
+          0.0
+        ],
+        [
+          0.0,
+          0.05,
+          0.0,
+          0.05
+        ]
+      ],
+      "scores": [
+        0.7071067811865477,
+        0.7071067811865477,
+        -1.414213562373095
+      ]
+    },
+    "insufficient_history": {
+      "volatility_window": 4,
+      "trading_days_per_year": 252,
+      "n_assets": 3,
+      "returns": [
+        [
+          0.0,
+          0.03,
+          0.0,
+          0.03
+        ],
+        [
+          0.0,
+          0.01,
+          0.0,
+          0.01
+        ],
+        [
+          0.0,
+          0.02,
+          0.0
+        ]
+      ],
+      "scores": [
+        -1.0000000000000002,
+        1.0,
+        null
+      ]
+    }
+  },
+  "notes": "LowVolatilitySignal (Baker-Bradley-Wurgler 2011, low-volatility anomaly): per-rebalance score = -z(realized sigma over the lookback) -- reuse own-formula realized_volatility for each asset's OWN trailing sigma, then cross-sectional POPULATION z-score (divide-by-N) and NEGATE, so a higher realized sigma => a strictly LOWER score (a tilt TOWARD individually low-vol assets). A cross-sectional characteristic sort of each asset's own realized risk, NOT portfolio-variance minimization over a covariance matrix. None score => omitted asset (insufficient history). Own-formula reference; PrecisionNumeric (1e-6)."
+}

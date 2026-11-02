@@ -1,0 +1,185 @@
+{
+  "historical_mean": {
+    "cases": {
+      "single_asset": {
+        "n_assets": 1,
+        "returns": [
+          [
+            0.01,
+            0.02,
+            0.03,
+            -0.01,
+            0.05
+          ]
+        ],
+        "expected": [
+          0.02
+        ]
+      },
+      "three_asset": {
+        "n_assets": 3,
+        "returns": [
+          [
+            0.01,
+            -0.02,
+            0.03,
+            0.0,
+            0.015
+          ],
+          [
+            0.005,
+            0.005,
+            0.005,
+            0.005,
+            0.005
+          ],
+          [
+            -0.01,
+            0.04,
+            -0.03,
+            0.02,
+            0.01
+          ]
+        ],
+        "expected": [
+          0.006999999999999999,
+          0.005,
+          0.006
+        ]
+      }
+    }
+  },
+  "yield_anchored": {
+    "real_growth_id": "REALGROWTH",
+    "inflation_id": "T10YIE",
+    "cases": {
+      "multi_class": {
+        "n_assets": 2,
+        "asset_classes": [
+          "Bond",
+          "Equity"
+        ],
+        "per_asset_series": [
+          [
+            0.038,
+            0.04
+          ],
+          [
+            0.019,
+            0.02
+          ]
+        ],
+        "market_series": {
+          "REALGROWTH": [
+            0.014,
+            0.015
+          ],
+          "T10YIE": [
+            0.024,
+            0.025
+          ]
+        },
+        "returns": [
+          [
+            0.1,
+            -0.3,
+            0.22,
+            -0.05,
+            0.4
+          ],
+          [
+            -0.2,
+            0.33,
+            -0.11,
+            0.08,
+            -0.02
+          ]
+        ],
+        "expected": [
+          0.04,
+          0.060000000000000005
+        ]
+      },
+      "bond_pair": {
+        "n_assets": 2,
+        "asset_classes": [
+          "Bond",
+          "Bond"
+        ],
+        "per_asset_series": [
+          [
+            0.03
+          ],
+          [
+            0.045
+          ]
+        ],
+        "market_series": {},
+        "returns": [
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        ],
+        "expected": [
+          0.03,
+          0.045
+        ]
+      },
+      "equity_pair": {
+        "n_assets": 2,
+        "asset_classes": [
+          "Equity",
+          "Equity"
+        ],
+        "per_asset_series": [
+          [
+            0.015
+          ],
+          [
+            0.028
+          ]
+        ],
+        "market_series": {
+          "REALGROWTH": [
+            0.012
+          ],
+          "T10YIE": [
+            0.02
+          ]
+        },
+        "returns": [
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        ],
+        "expected": [
+          0.047,
+          0.06
+        ]
+      }
+    }
+  },
+  "notes": "M-7 expected-return estimators (Ilmanen 2012). HistoricalMean: E[r_i] = sample mean of returns[i]. YieldAnchored building blocks by class -- Bond = current yield (last obs of the asset's per-symbol yield series); Equity/REIT = income yield (per-asset) + trend real growth (market-wide REALGROWTH) + inflation (market-wide T10YIE), all last observations. No term reads the realized-return series. Own-formula reference; PrecisionExact (1e-10)."
+}

@@ -55,7 +55,9 @@ public sealed class SecurityPrice
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(volume);
         Guard.AgainstNegative(() => dividend); // Throws ArgumentOutOfRangeException
 
-        _id = -1;
+        // Assign the CLR default (0) so EF Core's on-add value generation assigns the
+        // database-generated key (a non-default sentinel would suppress generation).
+        _id = 0;
         TradeDate = tradeDate;
         SecurityId = securityId;
         OpenPrice = openPrice;
@@ -72,42 +74,42 @@ public sealed class SecurityPrice
     private readonly int _id; // Private key for EF
 
     /// <summary>
-    /// Gets the trade date.
+    /// The trade date.
     /// </summary>
     public DateOnly TradeDate { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the security identifier.
+    /// The security identifier.
     /// </summary>
     public int SecurityId { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the open price.
+    /// The open price.
     /// </summary>
     public decimal OpenPrice { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the high price.
+    /// The high price.
     /// </summary>
     public decimal HighPrice { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the low price.
+    /// The low price.
     /// </summary>
     public decimal LowPrice { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the close price.
+    /// The close price.
     /// </summary>
     public decimal ClosePrice { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the volume.
+    /// The volume.
     /// </summary>
     public long Volume { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the dividend.
+    /// The dividend.
     /// </summary>
     public decimal Dividend { get; private set; } // Setter is for EF
 

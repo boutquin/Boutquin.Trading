@@ -22,7 +22,7 @@ namespace Boutquin.Trading.Application.PositionSizing;
 public sealed class FixedWeightPositionSizer : IPositionSizer
 {
     private readonly IReadOnlyDictionary<Symbol, decimal> _fixedAssetWeights;
-    private readonly CurrencyCode _baseCurrency;
+    private readonly Currency _baseCurrency;
     private readonly decimal _cashBufferPercent;
     private readonly bool _renormalizeForSignaledAssets;
 
@@ -42,7 +42,7 @@ public sealed class FixedWeightPositionSizer : IPositionSizer
     /// </exception>
     public FixedWeightPositionSizer(
         IReadOnlyDictionary<Symbol, decimal> fixedAssetWeights,
-        CurrencyCode baseCurrency,
+        Currency baseCurrency,
         decimal cashBufferPercent = 0m,
         bool renormalizeForSignaledAssets = false)
     {
@@ -90,7 +90,7 @@ public sealed class FixedWeightPositionSizer : IPositionSizer
         IReadOnlyDictionary<Symbol, SignalType> signalType,
         IStrategy strategy,
         IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> historicalMarketData,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Currency, decimal>> historicalFxConversionRates)
     {
         // Validate parameters
         Guard.AgainstNull(() => signalType); // Throws ArgumentNullException
@@ -137,22 +137,42 @@ public sealed class FixedWeightPositionSizer : IPositionSizer
 
             var desiredAssetValue = allocatableValue * assetWeight * renormFactor;
 
-            // BUG-A08: Null-check inner dictionary before access
-            if (!historicalMarketData.TryGetValue(timestamp, out var marketDataForDate) ||
-                marketDataForDate == null ||
-                !marketDataForDate.TryGetValue(asset, out var marketData))
+            // BUG-A08: Null-check inner dictionary before access.
+            // Cross-calendar fallback: when portfolio calendar differs from asset listing
+            // calendar (e.g. CA portfolio holding US ETFs on the 2001-09-11 → 2001-09-14
+            // NYSE closure), exact-date lookup may fail even though the asset is incepted.
+            // See <see cref="HistoricalMarketDataLookup.TryFindMostRecentBar"/>.
+            Bar? marketData = null;
+            if (historicalMarketData.TryGetValue(timestamp, out var marketDataForDate) &&
+                marketDataForDate is not null &&
+                marketDataForDate.TryGetValue(asset, out var exactBar))
+            {
+                marketData = exactBar;
+            }
+            else
+            {
+                marketData = Strategies.HistoricalMarketDataLookup.TryFindMostRecentBar(
+                    historicalMarketData, asset, timestamp);
+            }
+            if (marketData is null)
             {
                 throw new InvalidOperationException($"Market data not found for asset \'{asset}\' on {timestamp}.");
             }
 
             // BUG-A09: Guard against division by zero on AdjustedClose
-            if (marketData.AdjustedClose == 0)
+            if (marketData.Value.AdjustedClose == 0)
             {
                 throw new InvalidOperationException($"AdjustedClose is zero for asset \'{asset}\' on {timestamp}.");
             }
 
+            // The target value is in base currency and the price in the asset's currency:
+            // convert the value before dividing, or a CAD target over a USD price buys
+            // fx[USD]× too many shares.
+            var desiredValueInAssetCurrency = FxConversion.FromBase(
+                desiredAssetValue, strategy.Assets[asset], _baseCurrency, historicalFxConversionRates, timestamp);
+
             // M10: Round instead of truncate to avoid systematic downward bias
-            var positionSize = (int)Math.Round(desiredAssetValue / marketData.AdjustedClose, MidpointRounding.AwayFromZero);
+            var positionSize = (int)Math.Round(desiredValueInAssetCurrency / marketData.Value.AdjustedClose, MidpointRounding.AwayFromZero);
             positionSizes[asset] = positionSize;
         }
 

@@ -36,7 +36,7 @@ public sealed class SimpleMovingAverage : IIndicator
     /// <inheritdoc />
     public decimal Compute(decimal[] values)
     {
-        Guard.AgainstNullOrEmptyArray(() => values);
+        Guard.AgainstEmptyOrNullArray(() => values);
         if (values.Length < _period)
         {
             throw new InsufficientDataException(

@@ -138,7 +138,9 @@ public static class PrincipalPortfolioAnalyzer
             var weightSum = rawWeights.Sum();
             var weights = new decimal[n];
 
-            if (Math.Abs(weightSum) > 1e-20m)
+            // 1e-20 is below decimal's ~28-digit precision — any non-zero sum
+            // will pass. Use a threshold meaningful at portfolio-weight scale.
+            if (Math.Abs(weightSum) > 1e-12m)
             {
                 for (var i = 0; i < n; i++)
                 {

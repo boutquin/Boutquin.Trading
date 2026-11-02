@@ -47,7 +47,7 @@ public sealed class R2AppCoreReviewFixesTests
         var mockStrategy = new Mock<IStrategy>();
         var mockPortfolio = new Mock<IPortfolio>();
         mockPortfolio.Setup(p => p.GetStrategy(strategyName)).Returns(mockStrategy.Object);
-        mockPortfolio.Setup(p => p.GetAssetCurrency(s_aapl)).Returns(CurrencyCode.USD);
+        mockPortfolio.Setup(p => p.GetAssetCurrency(s_aapl)).Returns(Currency.USD);
 
         var sellFill = new FillEvent(s_today, s_aapl, strategyName, TradeAction.Sell, 100m, 50, 10m);
         var handler = new FillEventHandler();
@@ -69,10 +69,10 @@ public sealed class R2AppCoreReviewFixesTests
         var strategyName = "TestStrategy";
         var mockStrategy = new Mock<IStrategy>();
         mockStrategy.Setup(s => s.Cash).Returns(
-            new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 100000m } });
+            new SortedDictionary<Currency, decimal> { { Currency.USD, 100000m } });
         var mockPortfolio = new Mock<IPortfolio>();
         mockPortfolio.Setup(p => p.GetStrategy(strategyName)).Returns(mockStrategy.Object);
-        mockPortfolio.Setup(p => p.GetAssetCurrency(s_aapl)).Returns(CurrencyCode.USD);
+        mockPortfolio.Setup(p => p.GetAssetCurrency(s_aapl)).Returns(Currency.USD);
 
         var buyFill = new FillEvent(s_today, s_aapl, strategyName, TradeAction.Buy, 100m, 50, 10m);
         var handler = new FillEventHandler();
@@ -95,7 +95,7 @@ public sealed class R2AppCoreReviewFixesTests
         var mockStrategy = new Mock<IStrategy>();
         var mockPortfolio = new Mock<IPortfolio>();
         mockPortfolio.Setup(p => p.GetStrategy(strategyName)).Returns(mockStrategy.Object);
-        mockPortfolio.Setup(p => p.GetAssetCurrency(s_aapl)).Returns(CurrencyCode.USD);
+        mockPortfolio.Setup(p => p.GetAssetCurrency(s_aapl)).Returns(Currency.USD);
 
         // 50 shares at $100, $10 commission → credit = 5000 - 10 = 4990
         var sellFill = new FillEvent(s_today, s_aapl, strategyName, TradeAction.Sell, 100m, 50, 10m);
@@ -105,7 +105,7 @@ public sealed class R2AppCoreReviewFixesTests
         await handler.HandleEventAsync(mockPortfolio.Object, sellFill, CancellationToken.None).ConfigureAwait(true);
 
         // Assert
-        mockStrategy.Verify(s => s.UpdateCash(CurrencyCode.USD, 4990m), Times.Once);
+        mockStrategy.Verify(s => s.UpdateCash(Currency.USD, 4990m), Times.Once);
     }
 
     #endregion
@@ -278,24 +278,27 @@ public sealed class R2AppCoreReviewFixesTests
     #region R2C-05: ComputeCurrentWeights FX rate throw
 
     /// <summary>
-    /// R2C-05: When FX rate is missing for a multi-currency portfolio, GenerateSignals should
-    /// NOT throw (M9 catch handles it) and should still produce rebalance signals.
+    /// R2C-05, revised 2026-09-21: a missing FX rate for a foreign-listed holding is a data error the
+    /// strategy must surface, not paper over. Construction-model returns are extracted in base currency,
+    /// so the conversion fails loudly at return extraction — before the M9 catch around
+    /// <c>ComputeCurrentWeights</c> — naming the currency. In production this cannot happen: the
+    /// backtest's FX resolver hands every bar a complete table or aborts the run.
     /// </summary>
     [Fact]
-    public void GenerateSignals_MissingFxRate_FallsBackToEmptyWeights()
+    public void GenerateSignals_MissingFxRateForForeignAsset_ThrowsNamingTheCurrency()
     {
         // Arrange: 2 assets — one USD, one EUR. FX rates missing EUR.
         var vti = new Symbol("VTI");
         var dax = new Symbol("DAX");
-        var assets = new Dictionary<Symbol, CurrencyCode>
+        var assets = new Dictionary<Symbol, Currency>
         {
-            [vti] = CurrencyCode.USD,
-            [dax] = CurrencyCode.EUR
+            [vti] = Currency.USD,
+            [dax] = Currency.EUR
         };
-        var cash = new SortedDictionary<CurrencyCode, decimal> { [CurrencyCode.USD] = 100_000m };
+        var cash = new SortedDictionary<Currency, decimal> { [Currency.USD] = 100_000m };
 
         var orderPriceCalc = new ClosePriceOrderPriceCalculationStrategy();
-        var positionSizer = new DynamicWeightPositionSizer(CurrencyCode.USD);
+        var positionSizer = new DynamicWeightPositionSizer(Currency.USD);
         var constructionModel = new EqualWeightConstruction();
 
         var strategy = new ConstructionModelStrategy(
@@ -316,26 +319,21 @@ public sealed class R2AppCoreReviewFixesTests
         }
 
         // FX rates: only USD, missing EUR
-        var fxRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>();
+        var fxRates = new Dictionary<DateOnly, SortedDictionary<Currency, decimal>>();
         for (var i = 0; i < 10; i++)
         {
             var date = baseDate.AddDays(i);
-            fxRates[date] = new SortedDictionary<CurrencyCode, decimal>
+            fxRates[date] = new SortedDictionary<Currency, decimal>
             {
-                [CurrencyCode.USD] = 1.0m
+                [Currency.USD] = 1.0m
                 // EUR intentionally missing
             };
         }
 
-        // First call sets _lastRebalancingDate
-        strategy.GenerateSignals(baseDate, CurrencyCode.USD, marketData, fxRates);
+        var act = () => strategy.GenerateSignals(baseDate.AddDays(1), Currency.USD, marketData, fxRates);
 
-        // Act — second call hits ComputeCurrentWeights with missing EUR FX rate
-        var nextDay = baseDate.AddDays(1);
-        var act = () => strategy.GenerateSignals(nextDay, CurrencyCode.USD, marketData, fxRates);
-
-        // Assert — M9 catch prevents throw; strategy proceeds with rebalance
-        act.Should().NotThrow("M9 catch should handle InvalidOperationException from missing FX rate");
+        act.Should().Throw<InvalidOperationException>().WithMessage("*EUR*",
+            "the EUR asset's prices cannot be expressed in the USD base without a rate; optimizing on its EUR returns would be silently wrong");
     }
 
     #endregion
@@ -354,7 +352,7 @@ public sealed class R2AppCoreReviewFixesTests
         {
             { s_aapl, new Bar(date, 100m, 105m, 99m, 104m, 104m, 1000) }
         };
-        var fxRates = new SortedDictionary<CurrencyCode, decimal>();
+        var fxRates = new SortedDictionary<Currency, decimal>();
         var marketEvent = new MarketEvent(date, marketData, fxRates);
 
         var signal1 = new SignalEvent(date, "S1", new Dictionary<Symbol, SignalType>
@@ -398,7 +396,7 @@ public sealed class R2AppCoreReviewFixesTests
         {
             { s_aapl, new Bar(date, 100m, 105m, 99m, 104m, 104m, 1000) }
         };
-        var fxRates = new SortedDictionary<CurrencyCode, decimal>();
+        var fxRates = new SortedDictionary<Currency, decimal>();
         var marketEvent = new MarketEvent(date, marketData, fxRates);
 
         var mockPortfolio = new Mock<IPortfolio>();

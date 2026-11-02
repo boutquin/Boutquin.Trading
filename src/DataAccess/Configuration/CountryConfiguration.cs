@@ -81,17 +81,17 @@ public sealed class CountryConfiguration : IEntityTypeConfiguration<Country>
 
         // Seed the Countries table with some sample data
         builder.HasData(
-            new Country(CountryCode.CA, "Canada", 124, CurrencyCode.CAD, ContinentCode.NA),
-            new Country(CountryCode.CN, "China", 156, CurrencyCode.CNY, ContinentCode.AS),
-            new Country(CountryCode.FR, "France", 250, CurrencyCode.EUR, ContinentCode.EU),
-            new Country(CountryCode.DE, "Germany", 276, CurrencyCode.EUR, ContinentCode.EU),
-            new Country(CountryCode.HK, "Hong Kong", 344, CurrencyCode.HKD, ContinentCode.AS),
-            new Country(CountryCode.IN, "India", 356, CurrencyCode.INR, ContinentCode.AS),
-            new Country(CountryCode.JP, "Japan", 392, CurrencyCode.JPY, ContinentCode.AS),
-            new Country(CountryCode.RU, "Russia", 643, CurrencyCode.RUB, ContinentCode.EU),
-            new Country(CountryCode.KR, "South Korea", 410, CurrencyCode.KRW, ContinentCode.AS),
-            new Country(CountryCode.GB, "United Kingdom", 826, CurrencyCode.GBP, ContinentCode.EU),
-            new Country(CountryCode.US, "United States", 840, CurrencyCode.USD, ContinentCode.NA)
+            new Country(CountryCode.CA, "Canada", 124, DomainCurrency.CAD, ContinentCode.NA),
+            new Country(CountryCode.CN, "China", 156, DomainCurrency.CNY, ContinentCode.AS),
+            new Country(CountryCode.FR, "France", 250, DomainCurrency.EUR, ContinentCode.EU),
+            new Country(CountryCode.DE, "Germany", 276, DomainCurrency.EUR, ContinentCode.EU),
+            new Country(CountryCode.HK, "Hong Kong", 344, DomainCurrency.HKD, ContinentCode.AS),
+            new Country(CountryCode.IN, "India", 356, DomainCurrency.INR, ContinentCode.AS),
+            new Country(CountryCode.JP, "Japan", 392, DomainCurrency.JPY, ContinentCode.AS),
+            new Country(CountryCode.RU, "Russia", 643, DomainCurrency.RUB, ContinentCode.EU),
+            new Country(CountryCode.KR, "South Korea", 410, DomainCurrency.KRW, ContinentCode.AS),
+            new Country(CountryCode.GB, "United Kingdom", 826, DomainCurrency.GBP, ContinentCode.EU),
+            new Country(CountryCode.US, "United States", 840, DomainCurrency.USD, ContinentCode.NA)
         );
 
     }

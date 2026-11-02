@@ -44,7 +44,11 @@ public sealed class Security
         Guard.AgainstUndefinedEnumValue(() => assetClassCode); // Throws ArgumentOutOfRangeException
         Guard.AgainstNull(() => exchange); // Throws ArgumentNullException
 
-        _id = -1;
+        // Assign the CLR default (0) so EF Core's on-add value generation assigns the
+        // database-generated key. A non-default sentinel (e.g. -1) is treated by EF as a
+        // caller-provided key, suppressing generation so the key can never be read back
+        // through the public Id accessor.
+        _id = 0;
         Name = name;
         AssetClassCode = assetClassCode;
         Exchange = exchange;
@@ -65,22 +69,22 @@ public sealed class Security
     private readonly int _id;
 
     /// <summary>
-    /// Gets the identifier of the security.
+    /// The identifier of the security.
     /// </summary>
     public SecurityId Id => SecurityId.Create(_id);
 
     /// <summary>
-    /// Gets the name of the security.
+    /// The name of the security.
     /// </summary>
     public string Name { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the identifier of the asset class.
+    /// The identifier of the asset class.
     /// </summary>
     public AssetClassCode AssetClassCode { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets ISO 10383 market identifier code of the exchange.
+    /// ISO 10383 market identifier code of the exchange.
     /// </summary>
     public Exchange Exchange { get; private set; } // Setter is for EF
 

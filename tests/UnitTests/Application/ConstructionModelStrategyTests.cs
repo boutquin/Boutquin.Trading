@@ -30,15 +30,15 @@ public sealed class ConstructionModelStrategyTests
     private static readonly Symbol s_vti = new("VTI");
     private static readonly Symbol s_tlt = new("TLT");
 
-    private static IReadOnlyDictionary<Symbol, CurrencyCode> TestAssets =>
-        new Dictionary<Symbol, CurrencyCode>
+    private static IReadOnlyDictionary<Symbol, Currency> TestAssets =>
+        new Dictionary<Symbol, Currency>
         {
-            [s_vti] = CurrencyCode.USD,
-            [s_tlt] = CurrencyCode.USD
+            [s_vti] = Currency.USD,
+            [s_tlt] = Currency.USD
         };
 
-    private static SortedDictionary<CurrencyCode, decimal> TestCash =>
-        new() { [CurrencyCode.USD] = 100_000m };
+    private static SortedDictionary<Currency, decimal> TestCash =>
+        new() { [Currency.USD] = 100_000m };
 
     private static IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> BuildMarketData()
     {
@@ -67,17 +67,17 @@ public sealed class ConstructionModelStrategyTests
         return data;
     }
 
-    private static IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> BuildFxRates()
+    private static IReadOnlyDictionary<DateOnly, SortedDictionary<Currency, decimal>> BuildFxRates()
     {
-        var data = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>();
+        var data = new Dictionary<DateOnly, SortedDictionary<Currency, decimal>>();
         var baseDate = new DateOnly(2024, 1, 2);
 
         for (var i = 0; i < 70; i++)
         {
             var date = baseDate.AddDays(i);
-            data[date] = new SortedDictionary<CurrencyCode, decimal>
+            data[date] = new SortedDictionary<Currency, decimal>
             {
-                [CurrencyCode.USD] = 1.0m
+                [Currency.USD] = 1.0m
             };
         }
 
@@ -88,7 +88,7 @@ public sealed class ConstructionModelStrategyTests
     public void Strategy_WithRiskParity_ShouldProduceDifferentWeightsOverTime()
     {
         var orderPriceCalc = new ClosePriceOrderPriceCalculationStrategy();
-        var positionSizer = new DynamicWeightPositionSizer(CurrencyCode.USD);
+        var positionSizer = new DynamicWeightPositionSizer(Currency.USD);
         var constructionModel = new RiskParityConstruction();
 
         var strategy = new ConstructionModelStrategy(
@@ -106,7 +106,7 @@ public sealed class ConstructionModelStrategyTests
 
         // Generate signals on first day
         var firstDate = new DateOnly(2024, 1, 2);
-        var firstSignals = strategy.GenerateSignals(firstDate, CurrencyCode.USD, marketData, fxRates);
+        var firstSignals = strategy.GenerateSignals(firstDate, Currency.USD, marketData, fxRates);
 
         // First call should generate signals (Underweight for initial buy since not enough data)
         firstSignals.Signals.Should().NotBeEmpty("First call should generate signals");
@@ -116,7 +116,7 @@ public sealed class ConstructionModelStrategyTests
     public void Strategy_WithEqualWeight_ShouldComputeEqualWeights()
     {
         var orderPriceCalc = new ClosePriceOrderPriceCalculationStrategy();
-        var positionSizer = new DynamicWeightPositionSizer(CurrencyCode.USD);
+        var positionSizer = new DynamicWeightPositionSizer(Currency.USD);
         var constructionModel = new EqualWeightConstruction();
 
         var strategy = new ConstructionModelStrategy(
@@ -134,11 +134,11 @@ public sealed class ConstructionModelStrategyTests
 
         // Wait until we have enough data — generate at day 30 to have lookback data
         var rebalDate = new DateOnly(2024, 1, 2);
-        strategy.GenerateSignals(rebalDate, CurrencyCode.USD, marketData, fxRates);
+        strategy.GenerateSignals(rebalDate, Currency.USD, marketData, fxRates);
 
         // After first rebalance date with enough data
         var laterDate = new DateOnly(2024, 2, 5);
-        strategy.GenerateSignals(laterDate, CurrencyCode.USD, marketData, fxRates);
+        strategy.GenerateSignals(laterDate, Currency.USD, marketData, fxRates);
 
         if (strategy.LastComputedWeights is not null)
         {
@@ -151,7 +151,7 @@ public sealed class ConstructionModelStrategyTests
     public void Strategy_NotRebalancingDate_ShouldReturnEmptySignals()
     {
         var orderPriceCalc = new ClosePriceOrderPriceCalculationStrategy();
-        var positionSizer = new DynamicWeightPositionSizer(CurrencyCode.USD);
+        var positionSizer = new DynamicWeightPositionSizer(Currency.USD);
         var constructionModel = new EqualWeightConstruction();
 
         var strategy = new ConstructionModelStrategy(
@@ -169,11 +169,11 @@ public sealed class ConstructionModelStrategyTests
 
         // First call triggers
         var firstDate = new DateOnly(2024, 1, 2);
-        strategy.GenerateSignals(firstDate, CurrencyCode.USD, marketData, fxRates);
+        strategy.GenerateSignals(firstDate, Currency.USD, marketData, fxRates);
 
         // Next day is not a rebalancing date
         var nextDay = new DateOnly(2024, 1, 3);
-        var signals = strategy.GenerateSignals(nextDay, CurrencyCode.USD, marketData, fxRates);
+        var signals = strategy.GenerateSignals(nextDay, Currency.USD, marketData, fxRates);
 
         signals.Signals.Should().BeEmpty("Day after initial rebalance is not a rebalance date");
     }
@@ -182,7 +182,7 @@ public sealed class ConstructionModelStrategyTests
     public void Strategy_WithThresholdTrigger_NoRebalanceWhenWithinBand()
     {
         var orderPriceCalc = new ClosePriceOrderPriceCalculationStrategy();
-        var positionSizer = new DynamicWeightPositionSizer(CurrencyCode.USD);
+        var positionSizer = new DynamicWeightPositionSizer(Currency.USD);
         var constructionModel = new EqualWeightConstruction();
         var trigger = new ThresholdRebalancingTrigger(0.90m); // Very wide band — suppresses rebalance
 
@@ -202,13 +202,13 @@ public sealed class ConstructionModelStrategyTests
 
         // First call always triggers (initial buy)
         var firstDate = new DateOnly(2024, 1, 2);
-        var firstSignals = strategy.GenerateSignals(firstDate, CurrencyCode.USD, marketData, fxRates);
+        var firstSignals = strategy.GenerateSignals(firstDate, Currency.USD, marketData, fxRates);
         firstSignals.Signals.Should().NotBeEmpty("First call should always generate signals");
 
         // On a rebalance date, threshold trigger with 90% band should suppress
         // because drift (|0% - 50%| = 50%) does not exceed 90% threshold
         var rebalDate = new DateOnly(2024, 2, 5);
-        var signals = strategy.GenerateSignals(rebalDate, CurrencyCode.USD, marketData, fxRates);
+        var signals = strategy.GenerateSignals(rebalDate, Currency.USD, marketData, fxRates);
 
         signals.Signals.Should().BeEmpty("50% drift does not exceed 90% threshold — no rebalance");
     }
@@ -217,7 +217,7 @@ public sealed class ConstructionModelStrategyTests
     public void EndToEnd_ConstructionModelStrategy_CompletesWithoutError()
     {
         var orderPriceCalc = new ClosePriceOrderPriceCalculationStrategy();
-        var positionSizer = new DynamicWeightPositionSizer(CurrencyCode.USD);
+        var positionSizer = new DynamicWeightPositionSizer(Currency.USD);
         var constructionModel = new EqualWeightConstruction();
 
         var strategy = new ConstructionModelStrategy(
@@ -240,7 +240,7 @@ public sealed class ConstructionModelStrategyTests
             for (var i = 0; i < 70; i++)
             {
                 var date = baseDate.AddDays(i);
-                strategy.GenerateSignals(date, CurrencyCode.USD, marketData, fxRates);
+                strategy.GenerateSignals(date, Currency.USD, marketData, fxRates);
             }
         };
 
@@ -258,7 +258,7 @@ public sealed class ConstructionModelStrategyTests
     public void Strategy_ThresholdSuppressed_ShouldNotLeakDailyEvaluations()
     {
         var orderPriceCalc = new ClosePriceOrderPriceCalculationStrategy();
-        var positionSizer = new DynamicWeightPositionSizer(CurrencyCode.USD);
+        var positionSizer = new DynamicWeightPositionSizer(Currency.USD);
         var constructionModel = new EqualWeightConstruction();
         // 90% band = threshold will never fire after initial allocation
         var trigger = new ThresholdRebalancingTrigger(0.90m);
@@ -279,16 +279,16 @@ public sealed class ConstructionModelStrategyTests
 
         // Day 1: initial allocation (always triggers)
         var firstDate = new DateOnly(2024, 1, 2);
-        strategy.GenerateSignals(firstDate, CurrencyCode.USD, marketData, fxRates);
+        strategy.GenerateSignals(firstDate, Currency.USD, marketData, fxRates);
 
         // Monthly date: threshold suppresses rebalance (drift < 90%)
         var monthlyDate = new DateOnly(2024, 2, 5);
-        var suppressed = strategy.GenerateSignals(monthlyDate, CurrencyCode.USD, marketData, fxRates);
+        var suppressed = strategy.GenerateSignals(monthlyDate, Currency.USD, marketData, fxRates);
         suppressed.Signals.Should().BeEmpty("threshold suppressed the rebalance");
 
         // Day after the suppressed monthly date: frequency gate must block this
         var dayAfter = new DateOnly(2024, 2, 6);
-        var leaked = strategy.GenerateSignals(dayAfter, CurrencyCode.USD, marketData, fxRates);
+        var leaked = strategy.GenerateSignals(dayAfter, Currency.USD, marketData, fxRates);
         leaked.Signals.Should().BeEmpty(
             "frequency gate must block non-scheduled dates even after a suppressed rebalance");
 
@@ -306,7 +306,7 @@ public sealed class ConstructionModelStrategyTests
     public void Strategy_ThresholdSuppressed_NextScheduledDateShouldStillEvaluate()
     {
         var orderPriceCalc = new ClosePriceOrderPriceCalculationStrategy();
-        var positionSizer = new DynamicWeightPositionSizer(CurrencyCode.USD);
+        var positionSizer = new DynamicWeightPositionSizer(Currency.USD);
         var constructionModel = new EqualWeightConstruction();
         // Tight band: 1% = trigger will fire on scheduled dates (drift from 0 → 50% target)
         var trigger = new ThresholdRebalancingTrigger(0.01m);
@@ -327,21 +327,21 @@ public sealed class ConstructionModelStrategyTests
 
         // Day 1: initial allocation
         var firstDate = new DateOnly(2024, 1, 2);
-        strategy.GenerateSignals(firstDate, CurrencyCode.USD, marketData, fxRates);
+        strategy.GenerateSignals(firstDate, Currency.USD, marketData, fxRates);
 
         // First monthly date: trigger fires (1% band, large drift)
         var month1 = new DateOnly(2024, 2, 5);
-        var signals1 = strategy.GenerateSignals(month1, CurrencyCode.USD, marketData, fxRates);
+        var signals1 = strategy.GenerateSignals(month1, Currency.USD, marketData, fxRates);
         signals1.Signals.Should().NotBeEmpty("tight threshold should trigger on monthly date");
 
         // Day after: blocked by frequency gate
         var dayAfterMonth1 = new DateOnly(2024, 2, 6);
-        var blocked = strategy.GenerateSignals(dayAfterMonth1, CurrencyCode.USD, marketData, fxRates);
+        var blocked = strategy.GenerateSignals(dayAfterMonth1, Currency.USD, marketData, fxRates);
         blocked.Signals.Should().BeEmpty("day after rebalance must be blocked by frequency gate");
 
         // Second monthly date: trigger should evaluate again
         var month2 = new DateOnly(2024, 3, 8);
-        var signals2 = strategy.GenerateSignals(month2, CurrencyCode.USD, marketData, fxRates);
+        var signals2 = strategy.GenerateSignals(month2, Currency.USD, marketData, fxRates);
         signals2.Signals.Should().NotBeEmpty("next scheduled date should evaluate trigger normally");
     }
 
@@ -353,7 +353,7 @@ public sealed class ConstructionModelStrategyTests
     public void Strategy_TargetWeightHistory_OnlyRecordsActualRebalances()
     {
         var orderPriceCalc = new ClosePriceOrderPriceCalculationStrategy();
-        var positionSizer = new DynamicWeightPositionSizer(CurrencyCode.USD);
+        var positionSizer = new DynamicWeightPositionSizer(Currency.USD);
         var constructionModel = new EqualWeightConstruction();
         // Calendar trigger: always fires, so every scheduled date is a rebalance
         var calendarTrigger = new CalendarRebalancingTrigger();
@@ -377,7 +377,7 @@ public sealed class ConstructionModelStrategyTests
         for (var i = 0; i < 70; i++)
         {
             var date = baseDate.AddDays(i);
-            strategy.GenerateSignals(date, CurrencyCode.USD, marketData, fxRates);
+            strategy.GenerateSignals(date, Currency.USD, marketData, fxRates);
         }
 
         // With monthly frequency over ~70 days, expect exactly 3 entries:
@@ -394,7 +394,7 @@ public sealed class ConstructionModelStrategyTests
     public void Strategy_WithNeverFrequency_ShouldOnlyRebalanceOnce()
     {
         var orderPriceCalc = new ClosePriceOrderPriceCalculationStrategy();
-        var positionSizer = new DynamicWeightPositionSizer(CurrencyCode.USD);
+        var positionSizer = new DynamicWeightPositionSizer(Currency.USD);
         var constructionModel = new EqualWeightConstruction();
 
         var strategy = new ConstructionModelStrategy(
@@ -412,12 +412,12 @@ public sealed class ConstructionModelStrategyTests
 
         // First call triggers
         var firstDate = new DateOnly(2024, 1, 2);
-        var firstSignals = strategy.GenerateSignals(firstDate, CurrencyCode.USD, marketData, fxRates);
+        var firstSignals = strategy.GenerateSignals(firstDate, Currency.USD, marketData, fxRates);
         firstSignals.Signals.Should().NotBeEmpty("First call should generate signals");
 
         // All subsequent calls should return empty signals (Never = DateOnly.MaxValue)
         var laterDate = new DateOnly(2024, 3, 15);
-        var laterSignals = strategy.GenerateSignals(laterDate, CurrencyCode.USD, marketData, fxRates);
+        var laterSignals = strategy.GenerateSignals(laterDate, Currency.USD, marketData, fxRates);
         laterSignals.Signals.Should().BeEmpty("RebalancingFrequency.Never should suppress all subsequent rebalances");
     }
 
@@ -432,7 +432,7 @@ public sealed class ConstructionModelStrategyTests
         // for the current timestamp, ComputeCurrentWeights would previously throw. After M9,
         // it catches InvalidOperationException and falls back.
         var orderPriceCalc = new ClosePriceOrderPriceCalculationStrategy();
-        var positionSizer = new DynamicWeightPositionSizer(CurrencyCode.USD);
+        var positionSizer = new DynamicWeightPositionSizer(Currency.USD);
         var constructionModel = new EqualWeightConstruction();
 
         var strategy = new ConstructionModelStrategy(
@@ -450,12 +450,12 @@ public sealed class ConstructionModelStrategyTests
 
         // First call to set _lastRebalancingDate
         var firstDate = new DateOnly(2024, 1, 2);
-        strategy.GenerateSignals(firstDate, CurrencyCode.USD, marketData, fxRates);
+        strategy.GenerateSignals(firstDate, Currency.USD, marketData, fxRates);
 
         // Second call on next day — ComputeCurrentWeights may fail due to missing position data,
         // but the strategy should not throw (M9 fix: catch + fallback)
         var nextDay = new DateOnly(2024, 1, 3);
-        var act = () => strategy.GenerateSignals(nextDay, CurrencyCode.USD, marketData, fxRates);
+        var act = () => strategy.GenerateSignals(nextDay, Currency.USD, marketData, fxRates);
         act.Should().NotThrow("M9: ComputeCurrentWeights failure should be caught, not propagated");
     }
 }

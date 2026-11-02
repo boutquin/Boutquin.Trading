@@ -31,7 +31,9 @@ public sealed class DrawdownCircuitBreakerTests
         Dictionary<string, IStrategy>? strategies = null)
     {
         var mock = new Mock<IPortfolio>();
-        mock.Setup(p => p.EquityCurve).Returns(equityCurve);
+        mock.Setup(p => p.EquityCurve).Returns(new SortedDictionary<DateOnly, decimal>());
+        mock.Setup(p => p.CalculateTotalPortfolioValue(It.IsAny<DateOnly>()))
+            .Returns((DateOnly date) => equityCurve[date]);
         mock.Setup(p => p.Strategies)
             .Returns((IReadOnlyDictionary<string, IStrategy>)(strategies ?? new Dictionary<string, IStrategy>()));
         mock.Setup(p => p.SubmitOrderAsync(It.IsAny<OrderEvent>(), It.IsAny<CancellationToken>()))
@@ -164,7 +166,8 @@ public sealed class DrawdownCircuitBreakerTests
             [new DateOnly(2026, 1, 3)] = 65m, // still in drawdown
         };
 
-        var strategy = CreateStrategyMock(new Dictionary<Symbol, int> { [s_vti] = 50 });
+        var positions = new Dictionary<Symbol, int> { [s_vti] = 50 };
+        var strategy = CreateStrategyMock(positions);
         var strategies = new Dictionary<string, IStrategy> { ["Main"] = strategy.Object };
         var portfolio = CreatePortfolioMock(equityCurve, strategies);
 
@@ -172,6 +175,7 @@ public sealed class DrawdownCircuitBreakerTests
 
         await breaker.CheckAsync(portfolio.Object, new DateOnly(2026, 1, 1));
         await breaker.CheckAsync(portfolio.Object, new DateOnly(2026, 1, 2)); // triggers
+        positions[s_vti] = 0; // the next-bar fill has actually closed the holding
         await breaker.CheckAsync(portfolio.Object, new DateOnly(2026, 1, 3)); // cooldown day 1
 
         breaker.LiquidationCount.Should().Be(1); // no duplicate
@@ -236,7 +240,7 @@ public sealed class DrawdownCircuitBreakerTests
     }
 
     [Fact]
-    public async Task CheckAsync_FirstValueZeroThenRecovers_NoDivByZero()
+    public async Task CheckAsync_FirstValueZero_FailsClosedBeforePeakInitialization()
     {
         var equityCurve = new SortedDictionary<DateOnly, decimal>
         {
@@ -247,8 +251,8 @@ public sealed class DrawdownCircuitBreakerTests
         var portfolio = CreatePortfolioMock(equityCurve);
         var breaker = new DrawdownCircuitBreaker(0.25m);
 
-        // Should not throw — peak should be set to 50 on day 2
-        await breaker.CheckAsync(portfolio.Object, new DateOnly(2026, 1, 1));
+        // An invalid current NAV fails explicitly; a later valid valuation can initialize the peak.
+        await Assert.ThrowsAsync<InvalidOperationException>(() => breaker.CheckAsync(portfolio.Object, new DateOnly(2026, 1, 1)));
         await breaker.CheckAsync(portfolio.Object, new DateOnly(2026, 1, 2));
         await breaker.CheckAsync(portfolio.Object, new DateOnly(2026, 1, 3));
 

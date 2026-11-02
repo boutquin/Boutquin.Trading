@@ -22,22 +22,22 @@ namespace Boutquin.Trading.DataAccess.Entities;
 public sealed class Position
 {
     /// <summary>
-    /// Gets the symbol of the trading position.
+    /// The symbol of the trading position.
     /// </summary>
     public string Symbol { get; }
 
     /// <summary>
-    /// Gets the quantity of shares in the trading position.
+    /// The quantity of shares in the trading position.
     /// </summary>
     public int Quantity { get; private set; }
 
     /// <summary>
-    /// Gets the book value of the trading position.
+    /// The book value of the trading position.
     /// </summary>
     public decimal BookValue { get; private set; }
 
     /// <summary>
-    /// Gets the market value of the trading position.
+    /// The market value of the trading position.
     /// </summary>
     public decimal MarketValue { get; private set; }
 
@@ -63,16 +63,16 @@ public sealed class Position
     /// <summary>
     /// Buys additional shares for the position.
     /// </summary>
-    /// <param name="shares">The number of shares to buy.</param>
+    /// <param name="shares">The number of shares to buy. Must be strictly positive.</param>
     /// <param name="price">The price per share.</param>
     /// <param name="transactionFee">The transaction fee.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown if shares, price, or transactionFee is negative.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if shares is zero or negative, or if price or transactionFee is negative.</exception>
     public void Buy(
         int shares,
         decimal price,
         decimal transactionFee)
     {
-        Guard.AgainstNegative(() => shares); // Throws ArgumentOutOfRangeException
+        Guard.AgainstNegativeOrZero(() => shares); // Throws ArgumentOutOfRangeException
         Guard.AgainstNegative(() => price); // Throws ArgumentOutOfRangeException
         Guard.AgainstNegative(() => transactionFee); // Throws ArgumentOutOfRangeException
 

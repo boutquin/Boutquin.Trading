@@ -123,6 +123,32 @@ public sealed class CovarianceEstimatorTests
     }
 
     [Fact]
+    public void SampleCovariance_NullFirstInnerArray_ShouldThrowArgumentException()
+    {
+        // RED (M-SCVR): ValidateReturns guards outer null but not inner.
+        // Passing [null] currently throws NullReferenceException at returns[0].Length.
+        // After the fix it must throw ArgumentException.
+        var estimator = new SampleCovarianceEstimator();
+
+        var act = () => estimator.Estimate(new decimal[][] { null! });
+
+        act.Should().Throw<ArgumentException>("a null inner series is an invalid argument, not a runtime fault");
+    }
+
+    [Fact]
+    public void SampleCovariance_NullLaterInnerArray_ShouldThrowArgumentException()
+    {
+        // RED (M-SCVR): second dereference site — returns[i].Length at the loop.
+        // Passing [goodSeries, null] currently throws NullReferenceException.
+        // After the fix it must throw ArgumentException.
+        var estimator = new SampleCovarianceEstimator();
+
+        var act = () => estimator.Estimate(new decimal[][] { new[] { 0.01m, 0.02m }, null! });
+
+        act.Should().Throw<ArgumentException>("a null inner series anywhere in the array is an invalid argument");
+    }
+
+    [Fact]
     public void SampleCovariance_DiagonalShouldBeNonNegative()
     {
         var estimator = new SampleCovarianceEstimator();
@@ -131,6 +157,54 @@ public sealed class CovarianceEstimatorTests
 
         cov[0, 0].Should().BeGreaterThanOrEqualTo(0m);
         cov[1, 1].Should().BeGreaterThanOrEqualTo(0m);
+    }
+
+    // --- NercomeCovarianceEstimator Tests ---
+    // F-NERC-VAL: inner package returns degenerate output at T=2 and T=3 without throwing.
+    // Probe confirmed: T=2 → result[0,0]=5e-5, T=3 → result[0,0]=1e-4 (both silent).
+    // Wrapper must guard T<4 and throw ArgumentException.
+
+    [Theory]
+    [InlineData(2)]
+    [InlineData(3)]
+    public void Nercome_FewerThanFourObservations_ShouldThrowArgumentException(int observations)
+    {
+        // RED (F-NERC-VAL): class doc says "Requires at least 4 observations (2 per half)".
+        // Inner package silently returns degenerate output at T=2/3.
+        // Wrapper must throw ArgumentException before delegating.
+        var returns = new decimal[2][];
+        for (var i = 0; i < 2; i++)
+        {
+            returns[i] = new decimal[observations];
+            for (var j = 0; j < observations; j++)
+            {
+                returns[i][j] = 0.01m * (i + 1) * (j + 1);
+            }
+        }
+
+        var act = () => new NercomeCovarianceEstimator().Estimate(returns);
+
+        act.Should().Throw<ArgumentException>(
+            $"NercomeCovarianceEstimator requires at least 4 observations but got T={observations}");
+    }
+
+    [Fact]
+    public void Nercome_FourObservations_ShouldNotThrow()
+    {
+        // Regression guard: T=4 is the documented minimum; must succeed.
+        var returns = new decimal[2][];
+        for (var i = 0; i < 2; i++)
+        {
+            returns[i] = new decimal[4];
+            for (var j = 0; j < 4; j++)
+            {
+                returns[i][j] = 0.01m * (i + 1) * (j + 1);
+            }
+        }
+
+        var act = () => new NercomeCovarianceEstimator().Estimate(returns);
+
+        act.Should().NotThrow("T=4 meets the documented minimum of 4 observations");
     }
 
     // --- ExponentiallyWeightedCovarianceEstimator Tests ---

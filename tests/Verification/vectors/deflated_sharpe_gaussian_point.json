@@ -1,0 +1,11 @@
+{
+  "description": "Gaussian comparison point, paper p. 10",
+  "num_trials": 88,
+  "variance_of_trial_sharpes_annualized": 0.5,
+  "num_observations": 1250,
+  "annualized_sharpe": 2.5,
+  "skewness": 0.0,
+  "full_kurtosis": 3.0,
+  "trading_days_per_year": 250,
+  "dsr": 0.9504908166761022
+}

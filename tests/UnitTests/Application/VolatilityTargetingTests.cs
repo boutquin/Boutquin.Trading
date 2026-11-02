@@ -78,6 +78,17 @@ public sealed class VolatilityTargetingTests
     }
 
     [Fact]
+    public void VolTarget_NullAssets_ShouldThrowArgumentNullException()
+    {
+        var baseModel = new Mock<IPortfolioConstructionModel>();
+        var volTarget = new VolatilityTargetingConstruction(baseModel.Object, 0.10m);
+
+        var act = () => volTarget.ComputeTargetWeights(null!, Array.Empty<decimal[]>());
+
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
     public void VolTarget_EmptyAssets_ShouldReturnEmpty()
     {
         var baseModel = new Mock<IPortfolioConstructionModel>();

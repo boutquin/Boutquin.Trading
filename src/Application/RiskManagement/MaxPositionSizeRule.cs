@@ -19,15 +19,29 @@ namespace Boutquin.Trading.Application.RiskManagement;
 using Domain.ValueObjects;
 
 /// <summary>
-/// Rejects orders that would cause any single position to exceed a configured
-/// percentage of total portfolio value.
+/// Rejects orders that would cause any single position to exceed a configured percentage of total
+/// portfolio value, with the position valued in the portfolio's base currency at the decision-date bar.
 /// </summary>
+/// <remarks>
+/// <para>Risk NAV is calculated from current holdings and all currency cash at the decision date;
+/// reporting equity and its burn-in window do not control admission. Nonpositive NAV throws
+/// <see cref="InvalidOperationException"/>; unavailable valuation inputs propagate their existing errors.</para>
+/// <para><b>Share-granularity tolerance:</b> the cap is enforced to within one share. Position sizing
+/// rounds share counts with <see cref="MidpointRounding.AwayFromZero"/>, so a target exactly at the cap
+/// overshoots it by up to half a share on roughly half of all rebalances; one 100-unit share of a
+/// 100,000 portfolio is 0.1%, ten times the fixed tolerance. The rule therefore rejects only when the
+/// projected weight exceeds <c>cap + max(Tolerance, w₁)</c>, where <c>w₁</c> is one share's weight in
+/// base currency at the decision-date <c>AdjustedClose</c>. The fixed tolerance stays binding whenever a share
+/// is worth less than it, the half-share rounding overshoot always fits inside the bound, and anything
+/// more than one share over the cap is rejected. The sizers never round toward the cap.</para>
+/// <para><b>Fail-safe under missing data:</b> a single order whose asset has no bar on the decision date is
+/// rejected rather than admitted; a batch skips an asset without a bar because it cannot value it.</para>
+/// </remarks>
 public sealed class MaxPositionSizeRule : IRiskRule
 {
     /// <summary>
-    /// Tolerance for percentage comparison (1 basis point = 0.01%).
-    /// Discrete share quantities make exact percentage targets impossible;
-    /// without tolerance, a computed 25.0000001% rejects against a 25% limit.
+    /// Floor of the comparison tolerance (1 basis point = 0.01%). The tolerance actually applied is
+    /// <c>max(Tolerance, one share's weight)</c> — see the class remarks.
     /// </summary>
     private const decimal Tolerance = 0.0001m;
 
@@ -58,29 +72,29 @@ public sealed class MaxPositionSizeRule : IRiskRule
     /// <inheritdoc />
     public string Name => "MaxPositionSize";
 
-    /// <inheritdoc />
+    /// <summary>Checks the proposed exposure using current holdings and currency cash valued at the order's decision date.</summary>
+    /// <param name="order">The proposed order, whose timestamp selects the marks and FX.</param>
+    /// <param name="portfolio">The current portfolio; reporting equity is neither read nor changed.</param>
+    /// <returns>The existing cap/tolerance decision or a missing-input rejection.</returns>
+    /// <exception cref="ArgumentNullException">An argument is null.</exception>
+    /// <exception cref="InvalidOperationException">Current NAV is nonpositive, or a required valuation input is unavailable.</exception>
     public RiskEvaluation Evaluate(Order order, IPortfolio portfolio)
     {
         Guard.AgainstNull(() => order);
         Guard.AgainstNull(() => portfolio);
 
-        var equityCurve = portfolio.EquityCurve;
-        if (equityCurve.Count == 0)
-        {
-            return RiskEvaluation.Allowed;
-        }
+        var date = order.Timestamp;
+        var totalPortfolioValue = RiskValuation.PositiveNav(portfolio, date);
 
-        var totalPortfolioValue = equityCurve.Values.Last();
-        if (totalPortfolioValue <= 0)
-        {
-            return RiskEvaluation.Allowed;
-        }
-
-        // Estimate the value of the proposed order
-        var latestMarketData = portfolio.HistoricalMarketData.Values.LastOrDefault();
+        // Estimate the value of the proposed order.
+        // Missing market data means we cannot evaluate the rule; reject rather than
+        // silently admit (consistent with MaxSectorExposureRule). Fail-safe under
+        // uncertainty: better to skip an order than to bypass risk limits.
+        portfolio.HistoricalMarketData.TryGetValue(date, out var latestMarketData);
         if (latestMarketData is null || !latestMarketData.TryGetValue(order.Symbol, out var marketData))
         {
-            return RiskEvaluation.Allowed;
+            return RiskEvaluation.Rejected(
+                $"No market data available for {order.Symbol}; cannot evaluate position size.");
         }
 
         // Get existing position value for this asset across all strategies
@@ -100,16 +114,8 @@ public sealed class MaxPositionSizeRule : IRiskRule
             ? order.Quantity
             : -order.Quantity;
         var postOrderQuantity = existingQuantity + orderQuantity;
-        var postOrderValue = Math.Abs(postOrderQuantity * marketData.AdjustedClose);
-        var positionPercent = postOrderValue / totalPortfolioValue;
 
-        if (positionPercent > _maxPositionPercent + Tolerance)
-        {
-            return RiskEvaluation.Rejected(
-                $"Position in {order.Symbol} would be {positionPercent:P2} of portfolio, exceeding maximum {_maxPositionPercent:P2}.");
-        }
-
-        return RiskEvaluation.Allowed;
+        return CheckProjectedPosition(portfolio, date, order.Symbol, postOrderQuantity, marketData.AdjustedClose, totalPortfolioValue, when: string.Empty);
     }
 
     /// <summary>
@@ -117,27 +123,31 @@ public sealed class MaxPositionSizeRule : IRiskRule
     /// Computes the net delta for each asset across the entire batch, then checks
     /// whether any resulting position exceeds the limit.
     /// </summary>
+    /// <param name="orders">Orders sharing one decision date; an empty batch is allowed and mixed dates are rejected.</param>
+    /// <param name="portfolio">The current portfolio; risk NAV is independent of reporting equity.</param>
+    /// <returns>The netted cap/tolerance decision, or a diagnostic rejection.</returns>
+    /// <exception cref="ArgumentNullException">An argument is null.</exception>
+    /// <exception cref="InvalidOperationException">Current NAV is nonpositive, or a required valuation input is unavailable.</exception>
     public RiskEvaluation EvaluateBatch(IReadOnlyList<Order> orders, IPortfolio portfolio)
     {
         Guard.AgainstNull(() => orders);
         Guard.AgainstNull(() => portfolio);
 
-        var equityCurve = portfolio.EquityCurve;
-        if (equityCurve.Count == 0)
+        if (orders.Count == 0)
         {
             return RiskEvaluation.Allowed;
         }
-
-        var totalPortfolioValue = equityCurve.Values.Last();
-        if (totalPortfolioValue <= 0)
+        var date = orders[0].Timestamp;
+        if (orders.Any(order => order.Timestamp != date))
         {
-            return RiskEvaluation.Allowed;
+            return RiskEvaluation.Rejected("Risk batch contains mixed decision dates; cannot select a causal valuation date.");
         }
+        var totalPortfolioValue = RiskValuation.PositiveNav(portfolio, date);
 
-        var latestMarketData = portfolio.HistoricalMarketData.Values.LastOrDefault();
+        portfolio.HistoricalMarketData.TryGetValue(date, out var latestMarketData);
         if (latestMarketData is null)
         {
-            return RiskEvaluation.Allowed;
+            return RiskEvaluation.Rejected($"No market data available on {date:yyyy-MM-dd}; cannot evaluate position size.");
         }
 
         // 1. Collect current positions across all strategies
@@ -168,16 +178,46 @@ public sealed class MaxPositionSizeRule : IRiskRule
                 continue;
             }
 
-            var currentQty = currentPositions.GetValueOrDefault(asset);
-            var projectedQty = currentQty + delta;
-            var projectedValue = Math.Abs(projectedQty * marketData.AdjustedClose);
-            var positionPercent = projectedValue / totalPortfolioValue;
-
-            if (positionPercent > _maxPositionPercent + Tolerance)
+            var projectedQty = currentPositions.GetValueOrDefault(asset) + delta;
+            var result = CheckProjectedPosition(portfolio, date, asset, projectedQty, marketData.AdjustedClose, totalPortfolioValue, when: " after batch");
+            if (!result.IsAllowed)
             {
-                return RiskEvaluation.Rejected(
-                    $"Position in {asset} would be {positionPercent:P2} of portfolio after batch, exceeding maximum {_maxPositionPercent:P2}.");
+                return result;
             }
+        }
+
+        return RiskEvaluation.Allowed;
+    }
+
+    /// <summary>
+    /// Compares a projected position's base-currency weight against the cap plus the share-granularity
+    /// tolerance <c>max(Tolerance, one share's weight)</c>; see the class remarks.
+    /// </summary>
+    /// <param name="portfolio">The portfolio whose base currency, asset currencies and FX tables apply.</param>
+    /// <param name="asset">The asset whose projected position is checked.</param>
+    /// <param name="projectedQuantity">The asset's signed quantity after the order(s) under evaluation.</param>
+    /// <param name="price">The asset's decision-date <c>AdjustedClose</c> in its own currency.</param>
+    /// <param name="date">The order batch decision date used for marks and FX.</param>
+    /// <param name="totalPortfolioValue">The current marked holdings and currency-cash NAV in base currency; positive.</param>
+    /// <param name="when">Suffix naming the evaluation context in the rejection message (empty, or " after batch").</param>
+    private RiskEvaluation CheckProjectedPosition(
+        IPortfolio portfolio,
+        DateOnly date,
+        Symbol asset,
+        int projectedQuantity,
+        decimal price,
+        decimal totalPortfolioValue,
+        string when)
+    {
+        var projectedValue = PositionValuation.AbsoluteValueInBase(portfolio, date, asset, projectedQuantity, price);
+        var positionPercent = projectedValue / totalPortfolioValue;
+        var tolerance = Math.Max(Tolerance, PositionValuation.OneShareWeight(portfolio, date, asset, price, totalPortfolioValue));
+
+        if (positionPercent > _maxPositionPercent + tolerance)
+        {
+            return RiskEvaluation.Rejected(
+                $"Position in {asset} would be {positionPercent:P2} of portfolio{when}, exceeding maximum {_maxPositionPercent:P2} " +
+                $"by more than the {tolerance:P4} tolerance (the larger of {Tolerance:P2} and one share of {asset} at the latest close).");
         }
 
         return RiskEvaluation.Allowed;

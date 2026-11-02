@@ -30,7 +30,7 @@ public sealed class StrategyTests
         // Arrange
         IStrategy strategy = new TestStrategy();
         var timestamp = new DateOnly(2024, 1, 15);
-        var baseCurrency = CurrencyCode.USD;
+        var baseCurrency = Currency.USD;
         var marketData = new SortedDictionary<Symbol, Bar>
         {
             { new Symbol("AAPL"),
@@ -44,17 +44,17 @@ public sealed class StrategyTests
                     Volume: 1000000)
             }
         };
-        var fxRates = new SortedDictionary<CurrencyCode, decimal>
+        var fxRates = new SortedDictionary<Currency, decimal>
         {
-            { CurrencyCode.EUR, 0.85m }
+            { Currency.EUR, 0.85m }
         };
 
         strategy.SetPosition(new Symbol("AAPL"), 10);
-        ((TestStrategy)strategy).Assets = new Dictionary<Symbol, CurrencyCode> { { new Symbol("AAPL"), CurrencyCode.USD } };
-        strategy.UpdateCash(CurrencyCode.USD, 1000);
+        ((TestStrategy)strategy).Assets = new Dictionary<Symbol, Currency> { { new Symbol("AAPL"), Currency.USD } };
+        strategy.UpdateCash(Currency.USD, 1000);
 
         var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Symbol, Bar>> { { timestamp, marketData } };
-        var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> { { timestamp, fxRates } };
+        var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<Currency, decimal>> { { timestamp, fxRates } };
 
         // Act
         var totalValue = strategy.ComputeTotalValue(timestamp, baseCurrency, historicalMarketData, historicalFxConversionRates);
@@ -72,17 +72,17 @@ public sealed class StrategyTests
         // Arrange
         IStrategy strategy = new TestStrategy();
         var date = new DateOnly(2024, 1, 15);
-        var baseCurrency = CurrencyCode.USD;
-        var fxRates = new SortedDictionary<CurrencyCode, decimal>
+        var baseCurrency = Currency.USD;
+        var fxRates = new SortedDictionary<Currency, decimal>
         {
-            { CurrencyCode.EUR, 0.85m }
+            { Currency.EUR, 0.85m }
         };
 
         strategy.SetPosition(new Symbol("AAPL"), 10);
-        ((TestStrategy)strategy).Assets = new Dictionary<Symbol, CurrencyCode> { { new Symbol("AAPL"), CurrencyCode.USD } };
+        ((TestStrategy)strategy).Assets = new Dictionary<Symbol, Currency> { { new Symbol("AAPL"), Currency.USD } };
 
         var historicalMarketData = new Dictionary<DateOnly, SortedDictionary<Symbol, Bar>>();
-        var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> { { date, fxRates } };
+        var historicalFxConversionRates = new Dictionary<DateOnly, SortedDictionary<Currency, decimal>> { { date, fxRates } };
 
         // Act
         Action act = () => strategy.ComputeTotalValue(date, baseCurrency, historicalMarketData, historicalFxConversionRates);
@@ -100,7 +100,7 @@ public sealed class StrategyTests
     {
         // Arrange
         IStrategy strategy = new TestStrategy();
-        var currency = CurrencyCode.USD;
+        var currency = Currency.USD;
 
         // Act
         strategy.UpdateCash(currency, 1000);
@@ -117,14 +117,17 @@ public sealed class StrategyTests
     {
         // Arrange
         IStrategy strategy = new TestStrategy();
-        var currency = (CurrencyCode)999;
+        // 12345 is not a defined ISO 4217 numeric code in Boutquin.Domain.Currency.
+        // (999 = ISO "XXX" is now a defined member of the unified 177-member enum, so
+        // it is a valid currency and no longer exercises the undefined-value guard.)
+        var currency = (Currency)12345;
 
         // Act
         var act = () => strategy.UpdateCash(currency, 1000);
 
         // Assert
         act.Should().Throw<ArgumentOutOfRangeException>()
-            .WithMessage("Parameter 'currency' has an undefined value '999' for enum 'CurrencyCode'. (Parameter 'currency')");
+            .WithMessage("Parameter 'currency' has an undefined value '12345' for enum 'Currency'. (Parameter 'currency')");
     }
 
     /// <summary>

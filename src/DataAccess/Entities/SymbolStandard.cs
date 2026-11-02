@@ -52,12 +52,12 @@ public sealed class SymbolStandard
     }
 
     /// <summary>
-    /// Gets the Id of the security symbol standard.
+    /// The Id of the security symbol standard.
     /// </summary>
     public SecuritySymbolStandard Id { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the description of the security symbol standard.
+    /// The description of the security symbol standard.
     /// </summary>
     public string Description { get; private set; } // Setter is for EF
 }

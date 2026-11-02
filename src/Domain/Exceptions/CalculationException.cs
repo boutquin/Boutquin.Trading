@@ -19,7 +19,7 @@ namespace Boutquin.Trading.Domain.Exceptions;
 /// <summary>
 /// Represents errors that occur during the calculation of trading performance metrics.
 /// </summary>
-public sealed class CalculationException : Exception
+public class CalculationException : Exception
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="CalculationException"/> class.

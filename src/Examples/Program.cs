@@ -69,6 +69,7 @@ static SortedDictionary<string, ExampleEntry> BuildExampleRegistry()
         ["03"] = Sync("03", "Cost and slippage model comparison", Example03CostAndSlippage),
         ["04"] = Sync("04", "Covariance estimator comparison", Example04CovarianceEstimators),
         ["05"] = Async("05", "Post-backtest analytics and attribution", Example05Analytics),
+        ["06"] = Async("06", "Signal-Tilt composition (XS momentum + carry over a base model)", Example06SignalTilt),
     };
 }
 
@@ -121,10 +122,10 @@ static async Task Example01BuyAndHold()
 {
     Console.WriteLine("── Example 01: Buy-and-hold backtest (SPY, 1 year) ──");
 
-    const CurrencyCode baseCurrency = CurrencyCode.USD;
+    const Currency baseCurrency = Currency.USD;
     var spy = new Symbol("SPY");
     Symbol[] assets = [spy];
-    var assetCurrencies = new Dictionary<Symbol, CurrencyCode> { { spy, CurrencyCode.USD } };
+    var assetCurrencies = new Dictionary<Symbol, Currency> { { spy, Currency.USD } };
 
     // 1 year of synthetic SPY prices (annualised vol ~16%, drift ~10%)
     var dataset = BuildSyntheticDataset(
@@ -136,7 +137,7 @@ static async Task Example01BuyAndHold()
         annualDrifts: [0.10],
         seed: 42);
 
-    var initialCash = new SortedDictionary<CurrencyCode, decimal> { { baseCurrency, 100_000m } };
+    var initialCash = new SortedDictionary<Currency, decimal> { { baseCurrency, 100_000m } };
     var handlers = BuildHandlers();
     var broker = new SimulatedBrokerage(commissionRate: 0.001m);
 
@@ -154,7 +155,7 @@ static async Task Example01BuyAndHold()
     var benchmarkStrategy = new BuyAndHoldStrategy(
         name: "Benchmark-SPY",
         assets: assetCurrencies,
-        cash: new SortedDictionary<CurrencyCode, decimal>(initialCash),
+        cash: new SortedDictionary<Currency, decimal>(initialCash),
         initialTimestamp: dataset.Prices.Keys.First(),
         orderPriceCalculationStrategy: new ClosePriceOrderPriceCalculationStrategy(),
         positionSizer: positionSizer);
@@ -176,16 +177,16 @@ static async Task Example02RiskParity()
 {
     Console.WriteLine("── Example 02: Minimum variance backtest (SPY/TLT/GLD, 2 years) ──");
 
-    const CurrencyCode baseCurrency = CurrencyCode.USD;
+    const Currency baseCurrency = Currency.USD;
     var spy = new Symbol("SPY");
     var tlt = new Symbol("TLT");
     var gld = new Symbol("GLD");
     Symbol[] assets = [spy, tlt, gld];
-    var assetCurrencies = new Dictionary<Symbol, CurrencyCode>
+    var assetCurrencies = new Dictionary<Symbol, Currency>
     {
-        { spy, CurrencyCode.USD },
-        { tlt, CurrencyCode.USD },
-        { gld, CurrencyCode.USD },
+        { spy, Currency.USD },
+        { tlt, Currency.USD },
+        { gld, Currency.USD },
     };
 
     var dataset = BuildSyntheticDataset(
@@ -197,7 +198,7 @@ static async Task Example02RiskParity()
         annualDrifts: [0.10, 0.04, 0.06],
         seed: 42);
 
-    var initialCash = new SortedDictionary<CurrencyCode, decimal> { { baseCurrency, 100_000m } };
+    var initialCash = new SortedDictionary<Currency, decimal> { { baseCurrency, 100_000m } };
     var handlers = BuildHandlers();
     var broker = new SimulatedBrokerage(commissionRate: 0.001m);
 
@@ -223,7 +224,7 @@ static async Task Example02RiskParity()
     var benchmarkStrategy = new BuyAndHoldStrategy(
         name: "Benchmark-EqualWeight",
         assets: assetCurrencies,
-        cash: new SortedDictionary<CurrencyCode, decimal>(initialCash),
+        cash: new SortedDictionary<Currency, decimal>(initialCash),
         initialTimestamp: dataset.Prices.Keys.First(),
         orderPriceCalculationStrategy: new ClosePriceOrderPriceCalculationStrategy(),
         positionSizer: benchmarkSizer);
@@ -341,14 +342,14 @@ static async Task Example05Analytics()
     Console.WriteLine("── Example 05: Post-backtest analytics and attribution ──");
 
     // Run a quick 2-asset backtest to get real equity curves and returns
-    const CurrencyCode baseCurrency = CurrencyCode.USD;
+    const Currency baseCurrency = Currency.USD;
     var spy = new Symbol("SPY");
     var tlt = new Symbol("TLT");
     Symbol[] assets = [spy, tlt];
-    var assetCurrencies = new Dictionary<Symbol, CurrencyCode>
+    var assetCurrencies = new Dictionary<Symbol, Currency>
     {
-        { spy, CurrencyCode.USD },
-        { tlt, CurrencyCode.USD },
+        { spy, Currency.USD },
+        { tlt, Currency.USD },
     };
 
     var dataset = BuildSyntheticDataset(
@@ -360,7 +361,7 @@ static async Task Example05Analytics()
         annualDrifts: [0.10, 0.04],
         seed: 99);
 
-    var initialCash = new SortedDictionary<CurrencyCode, decimal> { { baseCurrency, 100_000m } };
+    var initialCash = new SortedDictionary<Currency, decimal> { { baseCurrency, 100_000m } };
     var handlers = BuildHandlers();
 
     var positionSizer60_40 = new FixedWeightPositionSizer(
@@ -374,14 +375,14 @@ static async Task Example05Analytics()
         orderPriceCalculationStrategy: new ClosePriceOrderPriceCalculationStrategy(),
         positionSizer: positionSizer60_40);
 
-    var benchmarkAssetCurrencies = new ReadOnlyDictionary<Symbol, CurrencyCode>(
-        new Dictionary<Symbol, CurrencyCode> { { spy, CurrencyCode.USD } });
+    var benchmarkAssetCurrencies = new ReadOnlyDictionary<Symbol, Currency>(
+        new Dictionary<Symbol, Currency> { { spy, Currency.USD } });
     var benchmarkSizer = new FixedWeightPositionSizer(
         new Dictionary<Symbol, decimal> { { spy, 1m } }, baseCurrency);
     var benchmarkStrategy = new BuyAndHoldStrategy(
         name: "Benchmark-SPY",
         assets: benchmarkAssetCurrencies,
-        cash: new SortedDictionary<CurrencyCode, decimal>(initialCash),
+        cash: new SortedDictionary<Currency, decimal>(initialCash),
         initialTimestamp: dataset.Prices.Keys.First(),
         orderPriceCalculationStrategy: new ClosePriceOrderPriceCalculationStrategy(),
         positionSizer: benchmarkSizer);
@@ -454,6 +455,133 @@ static async Task Example05Analytics()
     Console.WriteLine();
 }
 
+// ── Example 06 — Signal-Tilt composition (anti-dormancy) ─────────────────────
+
+// Proves the factor-premia signal layer is reachable END-TO-END through the production path:
+// a SignalTiltConstruction wraps a base construction model with real cross-sectional signals
+// (XS momentum + carry) and drives a full backtest through ConstructionModelStrategy. This is the
+// M-9 anti-dormancy demonstration — the signal layer is composed and live, not dormant scaffolding.
+//
+// NOTE ON DATA: this example uses a SYNTHETIC price dataset and SYNTHETIC (constant) auxiliary yield
+// series so it runs deterministically with no external keys. It demonstrates that the composition
+// COMPOSES AND RUNS; it is NOT a live-market-data validation. The real FRED/Tiingo end-to-end
+// production validation (fetching DGS10/DGS2 and per-asset income yields via the Recipes pipeline)
+// requires live data keys (see CLAUDE.local.md) and is an operational step performed separately.
+static async Task Example06SignalTilt()
+{
+    Console.WriteLine("── Example 06: Signal-Tilt composition (XS momentum + carry) ──");
+    Console.WriteLine("  Composed model: Signal-Tilt (XS momentum + carry) over EqualWeight base.");
+    Console.WriteLine("  Data: SYNTHETIC prices + SYNTHETIC date-indexed yield series bound once as a");
+    Console.WriteLine("        DatedAuxiliarySeries and sliced per rebalance (demonstration, not a");
+    Console.WriteLine("        live-data validation — live FRED/Tiingo keys drive the real production path).");
+
+    const Currency baseCurrency = Currency.USD;
+    var spy = new Symbol("SPY");   // equity sleeve
+    var tlt = new Symbol("TLT");   // bond sleeve
+    Symbol[] assets = [spy, tlt];
+    var assetCurrencies = new Dictionary<Symbol, Currency>
+    {
+        { spy, Currency.USD },
+        { tlt, Currency.USD },
+    };
+
+    // Auxiliary (non-price) series the carry signal reads, in the dataset's own date-indexed
+    // EconomicSeries shape: a few dated observations per key across the backtest window. The dataset
+    // carries them exactly as a live BacktestDatasetBuilder would deliver FRED series.
+    var startDate = new DateOnly(2023, 1, 3);
+    var economicSeries = new Dictionary<string, SortedDictionary<DateOnly, decimal>>
+    {
+        // SPY trailing income (dividend) yield — equity carry (per-asset key)
+        ["SPY"] = new()
+        {
+            [startDate] = 0.018m,
+            [startDate.AddMonths(6)] = 0.017m,
+        },
+        // FRED 10y Treasury — bond long curve point
+        ["DGS10"] = new()
+        {
+            [startDate] = 0.040m,
+            [startDate.AddMonths(4)] = 0.045m,
+            [startDate.AddMonths(8)] = 0.050m,
+        },
+        // FRED 2y Treasury — bond short curve point
+        ["DGS2"] = new()
+        {
+            [startDate] = 0.043m,
+            [startDate.AddMonths(4)] = 0.043m,
+            [startDate.AddMonths(8)] = 0.044m,
+        },
+    };
+
+    var dataset = BuildSyntheticDataset(
+        assets,
+        startDate: startDate,
+        tradingDays: 320,
+        startPrices: [380m, 100m],
+        annualVols: [0.16, 0.08],
+        annualDrifts: [0.10, 0.03],
+        seed: 42,
+        economicSeries: economicSeries);
+
+    // Date-indexed binding: one DatedAuxiliarySeries composed straight from the dataset's
+    // EconomicSeries (no date→positional flattening), bound once for the whole run. At every
+    // rebalance the engine's date-aware path slices it to the observations known at that date, so
+    // the carry signal's latest-observation reads can never see past the decision point.
+    var datedAuxiliarySeries = DatedAuxiliarySeries.FromEconomicSeries(
+        dataset.EconomicSeries.ToDictionary(kv => new Symbol(kv.Key), kv => kv.Value));
+
+    var baseModel = new EqualWeightConstruction();
+    var momentumSignal = new CrossSectionalMomentumSignal(lookbackMonths: 6, skipMonths: 1);
+    var carrySignal = new CarrySignal(new Dictionary<Symbol, CarryAssetClass>
+    {
+        { spy, CarryAssetClass.Equity },
+        { tlt, CarryAssetClass.Bond },
+    });
+
+    var signalTilt = new SignalTiltConstruction(
+        baseModel,
+        [(momentumSignal, 0.15m), (carrySignal, 0.15m)],
+        datedAuxiliarySeries);
+
+    var initialCash = new SortedDictionary<Currency, decimal> { { baseCurrency, 100_000m } };
+    var handlers = BuildHandlers();
+    var broker = new SimulatedBrokerage(commissionRate: 0.001m);
+    var positionSizer = new DynamicWeightPositionSizer(baseCurrency);
+
+    var strategy = new ConstructionModelStrategy(
+        name: "SignalTilt-Momentum-Carry",
+        assets: assetCurrencies,
+        cash: initialCash,
+        orderPriceCalculationStrategy: new ClosePriceOrderPriceCalculationStrategy(),
+        positionSizer: positionSizer,
+        constructionModel: signalTilt,
+        rebalancingFrequency: RebalancingFrequency.Monthly,
+        rebalancingTrigger: new CalendarRebalancingTrigger(),
+        lookbackWindow: 160);
+
+    var benchmarkWeights = new Dictionary<Symbol, decimal> { { spy, 0.5m }, { tlt, 0.5m } };
+    var benchmarkSizer = new FixedWeightPositionSizer(benchmarkWeights, baseCurrency);
+    var benchmarkStrategy = new BuyAndHoldStrategy(
+        name: "Benchmark-EqualWeight",
+        assets: assetCurrencies,
+        cash: new SortedDictionary<Currency, decimal>(initialCash),
+        initialTimestamp: dataset.Prices.Keys.First(),
+        orderPriceCalculationStrategy: new ClosePriceOrderPriceCalculationStrategy(),
+        positionSizer: benchmarkSizer);
+
+    var portfolio = BuildPortfolio(baseCurrency, strategy, assetCurrencies, handlers, broker);
+    var benchmark = BuildPortfolio(baseCurrency, benchmarkStrategy, assetCurrencies, handlers,
+        new SimulatedBrokerage(commissionRate: 0.00001m));
+
+    var backtest = new BackTest(portfolio, benchmark, baseCurrency);
+    Tearsheet ts = await backtest.RunAsync(dataset, ignoreDataQualityIssues: true).ConfigureAwait(false);
+
+    Console.WriteLine();
+    Console.WriteLine("  Signal-Tilt strategy tearsheet (composition ran end-to-end):");
+    PrintTearsheet(ts);
+    Console.WriteLine();
+}
+
 // ── Shared helpers ────────────────────────────────────────────────────────────
 
 static FakeBacktestDataset BuildSyntheticDataset(
@@ -463,7 +591,8 @@ static FakeBacktestDataset BuildSyntheticDataset(
     decimal[] startPrices,
     double[] annualVols,
     double[]? annualDrifts = null,
-    int seed = 42)
+    int seed = 42,
+    IReadOnlyDictionary<string, SortedDictionary<DateOnly, decimal>>? economicSeries = null)
 {
     var rng = new Random(seed);
     var prices = new SortedDictionary<DateOnly, SortedDictionary<Symbol, Bar>>();
@@ -496,7 +625,9 @@ static FakeBacktestDataset BuildSyntheticDataset(
         date = date.AddDays(1);
     }
 
-    return new FakeBacktestDataset { Prices = prices };
+    return economicSeries is null
+        ? new FakeBacktestDataset { Prices = prices }
+        : new FakeBacktestDataset { Prices = prices, EconomicSeries = economicSeries };
 }
 
 static IReadOnlyDictionary<Type, IEventHandler> BuildHandlers() =>
@@ -506,12 +637,14 @@ static IReadOnlyDictionary<Type, IEventHandler> BuildHandlers() =>
         { typeof(MarketEvent), new MarketEventHandler() },
         { typeof(FillEvent),   new FillEventHandler() },
         { typeof(SignalEvent), new SignalEventHandler() },
+        { typeof(FxOrderEvent), new FxOrderEventHandler() },
+        { typeof(FxFillEvent),  new FxFillEventHandler() },
     };
 
 static Portfolio BuildPortfolio(
-    CurrencyCode baseCurrency,
+    Currency baseCurrency,
     IStrategy strategy,
-    IReadOnlyDictionary<Symbol, CurrencyCode> assetCurrencies,
+    IReadOnlyDictionary<Symbol, Currency> assetCurrencies,
     IReadOnlyDictionary<Type, IEventHandler> handlers,
     IBrokerage broker) =>
     new(baseCurrency,
@@ -543,9 +676,14 @@ static decimal[] ComputeDailyReturns(SortedDictionary<DateOnly, decimal> equityC
         return [];
     }
 
-    return Enumerable.Range(1, values.Length - 1)
-        .Select(i => values[i - 1] == 0m ? 0m : (values[i] - values[i - 1]) / values[i - 1])
-        .ToArray();
+    // Consistent with EquityCurveExtensions: a zero prior-period equity (total loss)
+    // makes the return undefined. Surface rather than silently return 0 — "no change"
+    // is the wrong signal for a blown-up portfolio.
+    return [.. Enumerable.Range(1, values.Length - 1)
+        .Select(i => values[i - 1] == 0m
+            ? throw new Boutquin.Trading.Domain.Exceptions.CalculationException(
+                "Previous-period equity is zero; daily return is undefined.")
+            : (values[i] - values[i - 1]) / values[i - 1])];
 }
 
 static decimal[] ComputeAssetDailyReturns(FakeBacktestDataset dataset, Symbol asset)

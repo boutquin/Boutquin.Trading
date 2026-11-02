@@ -14,6 +14,7 @@
 //   limitations under the License.
 //
 
+global using Boutquin.Domain.Enumerations;
 global using Boutquin.Domain.Exceptions;
 global using Boutquin.Domain.Helpers;
 global using Boutquin.MarketData.Abstractions.Calendars;

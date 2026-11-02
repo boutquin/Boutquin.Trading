@@ -57,6 +57,25 @@ public static class CorrelationAnalyzer
                 nameof(weights));
         }
 
+        // Diversification ratio is only meaningful for a fully-invested portfolio;
+        // partial-investment weights underreport portfolio volatility and inflate DR.
+        // Tolerance allows for rounding in computed weights.
+        if (assetNames.Count > 0)
+        {
+            var weightSum = 0m;
+            for (var i = 0; i < weights.Length; i++)
+            {
+                weightSum += weights[i];
+            }
+
+            if (Math.Abs(weightSum - 1m) > 1e-6m)
+            {
+                throw new ArgumentException(
+                    $"Weights must sum to 1.0 (got {weightSum}); diversification ratio is undefined otherwise.",
+                    nameof(weights));
+            }
+        }
+
         if (assetNames.Count > 0 && returns[0].Length < 2)
         {
             throw new ArgumentException(
@@ -127,6 +146,11 @@ public static class CorrelationAnalyzer
     /// <param name="returnsB">Second asset return series.</param>
     /// <param name="windowSize">The rolling window size.</param>
     /// <returns>An array of rolling correlation values. Length = T - windowSize + 1.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="returnsA"/> or <paramref name="returnsB"/> is <see langword="null"/>.</exception>
     public static decimal[] RollingCorrelation(decimal[] returnsA, decimal[] returnsB, int windowSize)
-        => NumericsStats.PearsonCorrelation.Rolling(returnsA, returnsB, windowSize);
+    {
+        ArgumentNullException.ThrowIfNull(returnsA);
+        ArgumentNullException.ThrowIfNull(returnsB);
+        return NumericsStats.PearsonCorrelation.Rolling(returnsA, returnsB, windowSize);
+    }
 }

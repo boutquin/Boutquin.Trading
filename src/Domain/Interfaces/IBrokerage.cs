@@ -63,4 +63,51 @@ public interface IBrokerage
         DateOnly date,
         SortedDictionary<Symbol, Bar> dayData,
         CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+    /// <summary>
+    /// Submits a spot FX conversion between two of a strategy's cash buckets. It fills on the next
+    /// bar, after that bar's asset sells and before its asset buys, at the bar's resolved FX rate.
+    /// </summary>
+    /// <param name="order">The conversion to queue.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns><see langword="true"/> when the order was accepted.</returns>
+    /// <exception cref="NotSupportedException">
+    /// Thrown by the default implementation: a brokerage that does not override this member cannot
+    /// trade FX, and a multi-currency strategy routed to it must fail loudly rather than run
+    /// unfunded. <c>SimulatedBrokerage</c> overrides it.
+    /// </exception>
+    Task<bool> SubmitFxOrderAsync(FxOrder order, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException(
+            $"{GetType().Name} does not support FX orders. A strategy that holds assets in a currency other than " +
+            "its funding currency needs a brokerage that implements IBrokerage.SubmitFxOrderAsync (SimulatedBrokerage does), " +
+            "or an FxFundingPolicy of None.");
+
+    /// <summary>
+    /// Raised when an FX conversion fills, providing the <see cref="FxFillEvent"/> to subscribers.
+    /// The default implementation never raises: a brokerage that does not trade FX has no FX fills.
+    /// </summary>
+    event Func<object, FxFillEvent, Task> FxFillOccurred
+    {
+        add { }
+        remove { }
+    }
+
+    /// <summary>
+    /// Processes pending asset and FX orders from the previous bar against the current bar. Fills
+    /// run in the order <b>asset sells → FX conversions → asset buys</b>, so sale proceeds are in
+    /// hand when a conversion sells them on and converted cash is in hand when a buy draws on it.
+    /// The default implementation forwards to the asset-only overload and ignores
+    /// <paramref name="fxRates"/>.
+    /// </summary>
+    /// <param name="date">The current bar's date.</param>
+    /// <param name="dayData">The current bar's market data for all assets.</param>
+    /// <param name="baseCurrency">The portfolio's base currency; the one currency <paramref name="fxRates"/> never keys.</param>
+    /// <param name="fxRates">The bar's resolved FX table: base-currency units per 1 unit of each keyed currency (see <see cref="Helpers.FxConversion"/>).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task ProcessPendingOrdersAsync(
+        DateOnly date,
+        SortedDictionary<Symbol, Bar> dayData,
+        Currency baseCurrency,
+        SortedDictionary<Currency, decimal> fxRates,
+        CancellationToken cancellationToken = default) => ProcessPendingOrdersAsync(date, dayData, cancellationToken);
 }

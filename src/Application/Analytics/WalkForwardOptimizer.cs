@@ -115,4 +115,101 @@ public sealed class WalkForwardOptimizer
 
         return results;
     }
+
+    /// <summary>
+    /// Runs walk-forward optimization and additionally reports, per fold, the number of trials
+    /// evaluated and the <b>Deflated Sharpe Ratio</b> of the selected parameter set.
+    /// </summary>
+    /// <remarks>
+    /// This is an additive overload of <see cref="Run"/>: the fold selection and out-of-sample
+    /// evaluation are identical (each returned <see cref="WalkForwardTrialsResult.Fold"/> equals
+    /// the corresponding <see cref="Run"/> result). For each fold it further computes the Deflated
+    /// Sharpe Ratio (Bailey &amp; López de Prado 2014) of the in-sample-selected parameter, treating
+    /// the <paramref name="parameterCount"/> in-sample trials as the trial count <c>N</c> and their
+    /// sample variance as <c>V[{ŜR_n}]</c> — the Harvey, Liu &amp; Zhu (2016) multiple-testing
+    /// discipline the raw path lacks (it picks max in-sample Sharpe with no trial-count penalty).
+    /// Higher moments come from the in-sample return series via
+    /// <see cref="DeflatedSharpeRatio.FromReturns"/>, which applies the excess→full kurtosis conversion.
+    /// </remarks>
+    /// <param name="datedReturns">Daily returns keyed by date, sorted chronologically.</param>
+    /// <param name="parameterEvaluator">
+    /// Function that takes (returns array, parameter index) and returns a Sharpe ratio, at the
+    /// <paramref name="tradingDaysPerYear"/> annualization.
+    /// </param>
+    /// <param name="parameterCount">The number of parameter sets to evaluate (must be ≥ 2 for the DSR).</param>
+    /// <param name="tradingDaysPerYear">
+    /// The annualization of the evaluator's Sharpe ratio (must be ≥ 1; default 1 = per-period).
+    /// </param>
+    /// <returns>A list of trials-aware walk-forward results, one per fold.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="parameterCount"/> &lt; 2 (a trial-Sharpe variance requires at least
+    /// two trials) or <paramref name="tradingDaysPerYear"/> &lt; 1.
+    /// </exception>
+    public IReadOnlyList<WalkForwardTrialsResult> RunWithTrials(
+        SortedDictionary<DateOnly, decimal> datedReturns,
+        Func<decimal[], int, decimal> parameterEvaluator,
+        int parameterCount,
+        int tradingDaysPerYear = 1)
+    {
+        Guard.AgainstNull(() => datedReturns);
+        Guard.AgainstNull(() => parameterEvaluator);
+
+        if (parameterCount < 2)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(parameterCount), parameterCount,
+                "At least two trials are required to compute the Deflated Sharpe Ratio of the selected parameter.");
+        }
+
+        if (tradingDaysPerYear < 1)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(tradingDaysPerYear), tradingDaysPerYear, "Trading days per year must be at least 1.");
+        }
+
+        var folds = Run(datedReturns, parameterEvaluator, parameterCount);
+        var returns = datedReturns.Values.ToArray();
+
+        var results = new List<WalkForwardTrialsResult>(folds.Count);
+        var start = 0;
+
+        foreach (var fold in folds)
+        {
+            var inSampleReturns = returns[start..(start + _inSampleDays)];
+
+            // Re-run the in-sample trials to obtain the trial-Sharpe distribution for the variance.
+            var trialSharpes = new decimal[parameterCount];
+            for (var p = 0; p < parameterCount; p++)
+            {
+                trialSharpes[p] = parameterEvaluator(inSampleReturns, p);
+            }
+
+            var mean = trialSharpes.Average();
+            var variance = trialSharpes.Sum(s => (s - mean) * (s - mean)) / (parameterCount - 1);
+
+            var deflatedSharpe = DeflatedSharpeRatio.FromReturns(
+                inSampleReturns, fold.InSampleSharpe, parameterCount, variance, tradingDaysPerYear);
+
+            results.Add(new WalkForwardTrialsResult(fold, parameterCount, deflatedSharpe));
+
+            start += _outOfSampleDays; // Same roll-forward as Run.
+        }
+
+        return results;
+    }
 }
+
+/// <summary>
+/// A walk-forward fold augmented with the trials-aware overfitting diagnostics: the number of
+/// parameter trials evaluated and the Deflated Sharpe Ratio of the selected parameter set.
+/// </summary>
+/// <param name="Fold">The underlying walk-forward fold (identical to the raw <see cref="WalkForwardOptimizer.Run"/> result).</param>
+/// <param name="TrialsCount">The number of parameter sets evaluated in-sample for this fold.</param>
+/// <param name="DeflatedSharpe">
+/// The Deflated Sharpe Ratio (Bailey &amp; López de Prado 2014) of the in-sample-selected
+/// parameter, in <c>(0, 1)</c> — a probability corrected for the trial count.
+/// </param>
+public sealed record WalkForwardTrialsResult(
+    WalkForwardResult Fold,
+    int TrialsCount,
+    decimal DeflatedSharpe);

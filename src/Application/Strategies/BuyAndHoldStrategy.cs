@@ -33,8 +33,8 @@ public sealed class BuyAndHoldStrategy : StrategyBase
     /// <param name="positionSizer">An instance of IPositionSizer to compute position sizes.</param>
     public BuyAndHoldStrategy(
         string name,
-        IReadOnlyDictionary<Symbol, CurrencyCode> assets,
-        SortedDictionary<CurrencyCode, decimal> cash,
+        IReadOnlyDictionary<Symbol, Currency> assets,
+        SortedDictionary<Currency, decimal> cash,
         DateOnly initialTimestamp,
         IOrderPriceCalculationStrategy orderPriceCalculationStrategy,
         IPositionSizer positionSizer)
@@ -48,9 +48,9 @@ public sealed class BuyAndHoldStrategy : StrategyBase
     /// </summary>
     public override SignalEvent GenerateSignals(
         DateOnly timestamp,
-        CurrencyCode baseCurrency,
+        Currency baseCurrency,
         IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> historicalMarketData,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Currency, decimal>> historicalFxConversionRates)
     {
         Guard.AgainstUndefinedEnumValue(() => baseCurrency);
         Guard.AgainstEmptyOrNullReadOnlyDictionary(() => historicalMarketData);

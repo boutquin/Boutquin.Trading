@@ -1,0 +1,61 @@
+{
+  "description": "Block-diagonal exactness: NCO == analytic nested min-var.",
+  "reference": "Lopez de Prado (2019), SSRN 3469961 \u2014 block-diagonal accuracy contract.",
+  "inputs": {
+    "covariance": [
+      [
+        0.0001,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0004,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.000225,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0009
+      ]
+    ],
+    "fixed_labels": [
+      0,
+      0,
+      1,
+      1
+    ]
+  },
+  "expected": {
+    "intra_weights": [
+      0.8,
+      0.2,
+      0.7999999999999999,
+      0.19999999999999998
+    ],
+    "reduced_cov_diag": [
+      8.000000000000002e-05,
+      0.00017999999999999998
+    ],
+    "inter_weights": [
+      0.6923076923076923,
+      0.30769230769230776
+    ],
+    "analytic_weights": [
+      0.5538461538461539,
+      0.13846153846153847,
+      0.2461538461538462,
+      0.06153846153846155
+    ],
+    "weights_sum": 1.0
+  }
+}

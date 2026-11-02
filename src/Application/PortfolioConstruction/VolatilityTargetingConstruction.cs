@@ -68,7 +68,27 @@ public sealed class VolatilityTargetingConstruction : ILeveragedConstructionMode
     public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
         IReadOnlyList<Symbol> assets,
         decimal[][] returns)
+        => ComputeTargetWeightsCore(assets, returns, asOf: null);
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// Forwards <paramref name="asOf"/> to the base model's own date-aware overload (the decorator
+    /// obligation of <see cref="IPortfolioConstructionModel"/>), so a date-aware model deeper in the
+    /// composed chain receives the evaluation date; the volatility-targeting arithmetic itself is
+    /// date-free.
+    /// </remarks>
+    public IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeights(
+        IReadOnlyList<Symbol> assets,
+        decimal[][] returns,
+        DateOnly asOf)
+        => ComputeTargetWeightsCore(assets, returns, asOf);
+
+    private IReadOnlyDictionary<Symbol, decimal> ComputeTargetWeightsCore(
+        IReadOnlyList<Symbol> assets,
+        decimal[][] returns,
+        DateOnly? asOf)
     {
+        Guard.AgainstNull(() => assets);
         ArgumentNullException.ThrowIfNull(returns);
 
         if (assets.Count == 0)
@@ -76,7 +96,7 @@ public sealed class VolatilityTargetingConstruction : ILeveragedConstructionMode
             return new Dictionary<Symbol, decimal>();
         }
 
-        var baseWeights = _baseModel.ComputeTargetWeights(assets, returns);
+        var baseWeights = _baseModel.ComputeTargetWeightsAsOf(assets, returns, asOf);
 
         // Validate base model returned weights for all input assets
         foreach (var asset in assets)

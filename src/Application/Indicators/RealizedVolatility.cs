@@ -46,7 +46,7 @@ public sealed class RealizedVolatility : IIndicator
     /// <inheritdoc />
     public decimal Compute(decimal[] returns)
     {
-        Guard.AgainstNullOrEmptyArray(() => returns);
+        Guard.AgainstEmptyOrNullArray(() => returns);
         if (returns.Length < _window)
         {
             throw new InsufficientDataException(

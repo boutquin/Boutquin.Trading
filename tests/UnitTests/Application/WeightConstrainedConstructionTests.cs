@@ -136,6 +136,17 @@ public sealed class WeightConstrainedConstructionTests
     // ============================================================
 
     [Fact]
+    public void ComputeTargetWeights_NullAssets_ShouldThrowArgumentNullException()
+    {
+        var inner = new EqualWeightConstruction();
+        var sut = new WeightConstrainedConstruction(inner);
+
+        var act = () => sut.ComputeTargetWeights(null!, []);
+
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
     public void ComputeTargetWeights_EmptyAssets_ShouldReturnEmptyWeights()
     {
         var inner = new EqualWeightConstruction();
@@ -177,6 +188,30 @@ public sealed class WeightConstrainedConstructionTests
         var caps = new Dictionary<Symbol, decimal> { [s_vti] = 1.5m };
 
         var act = () => new WeightConstrainedConstruction(inner, caps: caps);
+        act.Should().Throw<ArgumentException>();
+    }
+
+    // ============================================================
+    // Infeasible caps: caps summing below 1.0 must not be silently violated
+    // ============================================================
+
+    [Fact]
+    public void ComputeTargetWeights_CapsSumBelowOne_ShouldNotSilentlyViolateCaps()
+    {
+        var inner = new EqualWeightConstruction(); // 1/3 each
+        // Every asset capped at 0.2 → Σcaps = 0.6 < 1.0 → infeasible.
+        var caps = new Dictionary<Symbol, decimal>
+        {
+            [s_vti] = 0.20m,
+            [s_tlt] = 0.20m,
+            [s_gld] = 0.20m,
+        };
+
+        var sut = new WeightConstrainedConstruction(inner, caps: caps);
+        var assets = new List<Symbol> { s_vti, s_tlt, s_gld };
+
+        var act = () => sut.ComputeTargetWeights(assets, ThreeAssetReturns);
+
         act.Should().Throw<ArgumentException>();
     }
 

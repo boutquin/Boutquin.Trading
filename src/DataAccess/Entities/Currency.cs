@@ -30,7 +30,7 @@ public sealed class Currency
     /// <param name="symbol">The symbol of the currency.</param>
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when <paramref name="code"/> is not defined in 
-    /// the <see cref="CurrencyCode"/> enumeration or when <paramref name="numericCode"/>
+    /// the <see cref="Boutquin.Domain.Enumerations.Currency"/> enumeration or when <paramref name="numericCode"/>
     /// is non-positive.
     /// </exception>
     /// <exception cref="ArgumentException">
@@ -38,7 +38,7 @@ public sealed class Currency
     /// longer than the allowed length.
     /// </exception>
     public Currency(
-        CurrencyCode code,
+        DomainCurrency code,
         int numericCode,
         string name,
         string symbol)
@@ -58,22 +58,22 @@ public sealed class Currency
     }
 
     /// <summary>
-    /// Gets the ISO 4217 currency code.
+    /// The ISO 4217 currency code.
     /// </summary>
-    public CurrencyCode Code { get; private set; } // Setter is for EF
+    public DomainCurrency Code { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the ISO 4217 currency numeric code.
+    /// The ISO 4217 currency numeric code.
     /// </summary>
     public int NumericCode { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the currency name.
+    /// The currency name.
     /// </summary>
     public string Name { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the currency symbol.
+    /// The currency symbol.
     /// </summary>
     public string Symbol { get; private set; } // Setter is for EF
 }

@@ -53,7 +53,7 @@ public sealed class MonteCarloSimulator
     /// <returns>A <see cref="MonteCarloResult"/> with the distribution of Sharpe ratios.</returns>
     public MonteCarloResult Run(decimal[] dailyReturns)
     {
-        Guard.AgainstNullOrEmptyArray(() => dailyReturns);
+        Guard.AgainstEmptyOrNullArray(() => dailyReturns);
         if (dailyReturns.Length < 2)
         {
             throw new InsufficientDataException(
@@ -62,10 +62,21 @@ public sealed class MonteCarloSimulator
 
         var sqrtDays = (decimal)Math.Sqrt(_tradingDaysPerYear);
 
-        decimal AnnualizedSharpe(decimal[] r)
+        decimal AnnualizedSharpe(ReadOnlySpan<decimal> r)
         {
-            var mean = r.Average();
-            var sumSq = r.Sum(x => (x - mean) * (x - mean));
+            decimal sum = 0m;
+            foreach (var x in r)
+            {
+                sum += x;
+            }
+
+            var mean = sum / r.Length;
+            decimal sumSq = 0m;
+            foreach (var x in r)
+            {
+                sumSq += (x - mean) * (x - mean);
+            }
+
             var std = (decimal)Math.Sqrt((double)(sumSq / (r.Length - 1)));
             return std == 0m ? 0m : (mean / std) * sqrtDays;
         }

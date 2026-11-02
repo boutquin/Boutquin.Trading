@@ -41,7 +41,7 @@ public sealed class Country
         CountryCode code,
         string name,
         int numericCode,
-        CurrencyCode currencyCode,
+        DomainCurrency currencyCode,
         ContinentCode continentCode)
     {
         // Validate parameters
@@ -60,27 +60,27 @@ public sealed class Country
     }
 
     /// <summary>
-    /// Gets the ISO 3166-1:2020 alpha-2 code of the country.
+    /// The ISO 3166-1:2020 alpha-2 code of the country.
     /// </summary>
     public CountryCode Code { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the name of the country.
+    /// The name of the country.
     /// </summary>
     public string Name { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the numeric code of the country.
+    /// The numeric code of the country.
     /// </summary>
     public int NumericCode { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the ISO 4217 currency code of the country.
+    /// The ISO 4217 currency code of the country.
     /// </summary>
-    public CurrencyCode CurrencyCode { get; private set; } // Setter is for EF
+    public DomainCurrency CurrencyCode { get; private set; } // Setter is for EF
 
     /// <summary>
-    /// Gets the continent code of the country.
+    /// The continent code of the country.
     /// </summary>
     public ContinentCode ContinentCode { get; private set; } // Setter is for EF
 }

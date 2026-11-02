@@ -23,6 +23,23 @@ public sealed class TacticalOverlayTests
     private const decimal Precision = 1e-6m;
 
     [Fact]
+    public void TacticalOverlay_NullAssets_ShouldThrowArgumentNullException()
+    {
+        var baseModel = new Mock<IPortfolioConstructionModel>();
+        var regimeTilts = new Dictionary<EconomicRegime, IReadOnlyDictionary<Symbol, decimal>>
+        {
+            [EconomicRegime.RisingGrowthRisingInflation] = new Dictionary<Symbol, decimal>(),
+        };
+
+        var overlay = new TacticalOverlayConstruction(
+            baseModel.Object, regimeTilts, EconomicRegime.RisingGrowthRisingInflation);
+
+        var act = () => overlay.ComputeTargetWeights(null!, []);
+
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
     public void TacticalOverlay_RiskOffRegime_ShouldReduceEquityWeight()
     {
         var vti = new Symbol("VTI");

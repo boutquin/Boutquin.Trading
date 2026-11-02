@@ -120,6 +120,23 @@ public sealed class RegimeWeightConstrainedConstructionTests
     // ============================================================
 
     [Fact]
+    public void ComputeTargetWeights_NullAssets_ShouldThrowArgumentNullException()
+    {
+        var inner = new EqualWeightConstruction();
+        var regime = EconomicRegime.RisingGrowthRisingInflation;
+        var regimeConstraints = new Dictionary<EconomicRegime, AssetWeightConstraints>
+        {
+            [regime] = new AssetWeightConstraints(),
+        };
+
+        var sut = new RegimeWeightConstrainedConstruction(inner, regimeConstraints, regime);
+
+        var act = () => sut.ComputeTargetWeights(null!, []);
+
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
     public void Constructor_MissingRegime_ShouldThrow()
     {
         var inner = new EqualWeightConstruction();

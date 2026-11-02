@@ -27,7 +27,7 @@ public sealed class EventProcessorTests
     private static MarketEvent CreateMarketEvent() =>
         new(s_testDate,
             new SortedDictionary<Symbol, Bar>(),
-            new SortedDictionary<CurrencyCode, decimal>());
+            new SortedDictionary<Currency, decimal>());
 
     [Fact]
     public async Task ProcessEventAsync_MarketEvent_DelegatesToCorrectHandler()

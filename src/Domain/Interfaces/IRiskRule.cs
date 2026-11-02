@@ -25,7 +25,7 @@ using ValueObjects;
 public interface IRiskRule
 {
     /// <summary>
-    /// Gets the name of this risk rule for logging and diagnostics.
+    /// The name of this risk rule for logging and diagnostics.
     /// </summary>
     string Name { get; }
 

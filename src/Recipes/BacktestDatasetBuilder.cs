@@ -14,13 +14,13 @@
 //   limitations under the License.
 //
 
+using Boutquin.Domain.Enumerations;
 using Boutquin.MarketData.Abstractions.Contracts;
 using Boutquin.MarketData.Abstractions.Diagnostics;
 using Boutquin.MarketData.Abstractions.Records;
 using Boutquin.MarketData.Abstractions.ReferenceData;
 using Boutquin.MarketData.Abstractions.Requests;
 using Boutquin.MarketData.Abstractions.Results;
-
 using Microsoft.Extensions.Logging;
 
 namespace Boutquin.Trading.Recipes;
@@ -58,6 +58,7 @@ public sealed class BacktestDatasetBuilder
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(spec);
+        ArgumentOutOfRangeException.ThrowIfNegative(spec.FxLeadDays);
 
         var allProvenance = new List<DataProvenance>();
         var allIssues = new List<DataIssue>();
@@ -69,7 +70,18 @@ public sealed class BacktestDatasetBuilder
         {
             foreach (var asset in spec.Symbols)
             {
+                // Per-symbol venue hint: when the spec's SymbolExchanges dictionary is
+                // populated and the ticker is keyed, propagate the ExchangeCode to the
+                // outgoing request so adapter-selection orchestration can filter by venue
+                // (e.g. route XIC to TwelveData's mic_code=XTSE path instead of Tiingo,
+                // which does not cover TSX-listed ETFs). Absent hint → venue-neutral
+                // request, matching pre-1.1.0 behaviour.
                 var singleRequest = new PriceHistoryRequest([new Symbol(asset.Ticker)], range);
+                if (spec.SymbolExchanges is not null &&
+                    spec.SymbolExchanges.TryGetValue(asset.Ticker, out var venue))
+                {
+                    singleRequest = singleRequest with { Exchange = venue };
+                }
                 DataEnvelope<IReadOnlyList<Bar>> singleEnvelope;
                 try
                 {
@@ -101,15 +113,25 @@ public sealed class BacktestDatasetBuilder
             }
         }
 
-        // 2. Fetch FX rates
-        var fxRates = new SortedDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>();
-        if (spec.ForeignCurrencies.Count > 0)
+        // 2. Fetch FX rates — one request per pair.
+        //    The currency pair no longer rides on the FxRate body (it now lives on the
+        //    request / dataset key), so a single multi-pair request can no longer be
+        //    demultiplexed by a row field. Fetch each pair on its own and key the day-rate
+        //    map by the foreign currency the request was built for.
+        //
+        //    Orientation is load-bearing: the dataset's FX map holds BASE units per 1 unit
+        //    of the keyed foreign currency (see FxConversion), so the pair requested is
+        //    FOREIGN/BASE — "1 unit of the pair's base (the foreign currency) equals Rate
+        //    units of its quote (our base)". For base CAD and foreign USD that is USD/CAD
+        //    (≈1.3 CAD per USD), the series Bank of Canada publishes as FXUSDCAD. Requesting
+        //    BASE/FOREIGN here stored the reciprocal (≈0.77) under USD and every consumer
+        //    then multiplied a USD amount by it, valuing a USD holding at ~59% of its worth.
+        var fxRates = new SortedDictionary<DateOnly, SortedDictionary<Currency, decimal>>();
+        var fxRange = new DateRange(spec.StartDate.AddDays(-spec.FxLeadDays), spec.EndDate);
+        foreach (var fc in spec.ForeignCurrencies)
         {
-            var pairs = spec.ForeignCurrencies
-                .Select(fc => new FxPair(spec.BaseCurrency, fc))
-                .ToList();
-
-            var fxRequest = new FxHistoryRequest(pairs, range);
+            var pair = new FxPair(fc, spec.BaseCurrency);
+            var fxRequest = new FxHistoryRequest([pair], fxRange);
             try
             {
                 var fxEnvelope = await _pipeline
@@ -123,18 +145,18 @@ public sealed class BacktestDatasetBuilder
                 {
                     if (!fxRates.TryGetValue(rate.Date, out var dayRates))
                     {
-                        dayRates = new SortedDictionary<CurrencyCode, decimal>();
+                        dayRates = new SortedDictionary<Currency, decimal>();
                         fxRates[rate.Date] = dayRates;
                     }
 
-                    dayRates[rate.QuoteCurrency] = rate.Rate;
+                    dayRates[fc] = rate.Rate;
                 }
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                _logger.LogWarning(ex, "Failed to fetch FX rates");
+                _logger.LogWarning(ex, "Failed to fetch FX rates for {Pair}", pair);
                 allIssues.Add(new DataIssue(new IssueCode("FX_FETCH_FAILED"), IssueSeverity.Error,
-                    $"No FX rate data: {ex.Message}"));
+                    $"No FX rate data for {pair}: {ex.Message}"));
             }
         }
 
@@ -186,10 +208,22 @@ public sealed class BacktestDatasetBuilder
                 allProvenance.AddRange(factorEnvelope.Provenance);
                 PropagateIssues(factorEnvelope.Issues, allIssues, datasetName);
 
+                // FactorObservation is now one record per (date, factor); fold them back into
+                // a per-date factor map for the dataset's downstream consumers.
                 var series = new SortedDictionary<DateOnly, IReadOnlyDictionary<string, decimal>>();
                 foreach (var obs in factorEnvelope.Payload)
                 {
-                    series[obs.Date] = obs.Factors;
+                    if (series.TryGetValue(obs.Date, out var existing))
+                    {
+                        ((Dictionary<string, decimal>)existing)[obs.FactorName] = obs.Value;
+                    }
+                    else
+                    {
+                        series[obs.Date] = new Dictionary<string, decimal>(StringComparer.Ordinal)
+                        {
+                            [obs.FactorName] = obs.Value,
+                        };
+                    }
                 }
 
                 factorSeries[datasetName] = series;

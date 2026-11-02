@@ -38,8 +38,8 @@ public sealed class RebalancingBuyAndHoldStrategy : StrategyBase
     /// <param name="universeSelector">Optional universe selector for dynamic universe support (ETFs enter at inception).</param>
     public RebalancingBuyAndHoldStrategy(
         string name,
-        IReadOnlyDictionary<Symbol, CurrencyCode> assets,
-        SortedDictionary<CurrencyCode, decimal> cash,
+        IReadOnlyDictionary<Symbol, Currency> assets,
+        SortedDictionary<Currency, decimal> cash,
         IOrderPriceCalculationStrategy orderPriceCalculationStrategy,
         IPositionSizer positionSizer,
         RebalancingFrequency rebalancingFrequency,
@@ -57,9 +57,9 @@ public sealed class RebalancingBuyAndHoldStrategy : StrategyBase
     /// </summary>
     public override SignalEvent GenerateSignals(
         DateOnly timestamp,
-        CurrencyCode baseCurrency,
+        Currency baseCurrency,
         IReadOnlyDictionary<DateOnly, SortedDictionary<Symbol, Bar>> historicalMarketData,
-        IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> historicalFxConversionRates)
+        IReadOnlyDictionary<DateOnly, SortedDictionary<Currency, decimal>> historicalFxConversionRates)
     {
         Guard.AgainstUndefinedEnumValue(() => baseCurrency);
         Guard.AgainstEmptyOrNullReadOnlyDictionary(() => historicalMarketData);

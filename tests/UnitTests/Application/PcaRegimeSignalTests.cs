@@ -153,6 +153,34 @@ public sealed class PcaRegimeSignalTests
     }
 
     /// <summary>
+    /// F-PCARS-PAIR: when the two correlation matrices share the same underlying principal
+    /// directions but the eigenvalues swap rank (the regime-shift case this method targets,
+    /// e.g. the 2022 stocks-bonds flip), the eigenvectors must be matched by maximum |cosine|,
+    /// not by sorted position. The dominant direction [1,1] in A is identical to direction
+    /// [1,1] in B (which becomes B's PC2 after the eigenvalue swap), so PC1 stability is 1.0.
+    /// Position-pairing would report 0.0 here — maximum instability for an identical structure.
+    /// </summary>
+    [Fact]
+    public void ComputeEigenvectorStability_RankSwappedSameDirections_ReturnsOne()
+    {
+        // A: positive correlation → PC1 = [1,1]/√2 (λ=1.8), PC2 = [1,-1]/√2 (λ=0.2).
+        var corrA = new decimal[2, 2];
+        corrA[0, 0] = 1m; corrA[0, 1] = 0.8m;
+        corrA[1, 0] = 0.8m; corrA[1, 1] = 1m;
+
+        // B: negative correlation → PC1 = [1,-1]/√2 (λ=1.8), PC2 = [1,1]/√2 (λ=0.2).
+        // Same two orthogonal directions; only their eigenvalue rank swapped.
+        var corrB = new decimal[2, 2];
+        corrB[0, 0] = 1m; corrB[0, 1] = -0.8m;
+        corrB[1, 0] = -0.8m; corrB[1, 1] = 1m;
+
+        var stability = PcaRegimeSignal.ComputeEigenvectorStability(corrA, corrB);
+
+        stability.Pc1CosineSimilarity.Should().BeApproximately(1m, 0.01m,
+            "the dominant direction in A is identical to a direction in B; matching by max |cosine| recovers it");
+    }
+
+    /// <summary>
     /// Single-asset correlation matrix should return PC1 share of 1.
     /// </summary>
     [Fact]

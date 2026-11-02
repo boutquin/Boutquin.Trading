@@ -32,9 +32,9 @@ public sealed class ExpenseRatioTests
         var (portfolioZero, benchmarkZero, dataset) = CreateSetup();
         var (portfolioBase, benchmarkBase, _) = CreateSetup();
 
-        var btZero = new BackTest(portfolioZero, benchmarkZero, CurrencyCode.USD,
+        var btZero = new BackTest(portfolioZero, benchmarkZero, Currency.USD,
             NullLogger<BackTest>.Instance, 0m, null, null, annualExpenseRatioBps: 0m);
-        var btBase = new BackTest(portfolioBase, benchmarkBase, CurrencyCode.USD);
+        var btBase = new BackTest(portfolioBase, benchmarkBase, Currency.USD);
 
         // Act
         await btZero.RunAsync(dataset);
@@ -54,9 +54,9 @@ public sealed class ExpenseRatioTests
         var (portfolioFee, benchmarkFee, dataset) = CreateSetup();
         var (portfolioNoFee, benchmarkNoFee, _) = CreateSetup();
 
-        var btFee = new BackTest(portfolioFee, benchmarkFee, CurrencyCode.USD,
+        var btFee = new BackTest(portfolioFee, benchmarkFee, Currency.USD,
             NullLogger<BackTest>.Instance, 0m, null, null, annualExpenseRatioBps: 100m);
-        var btNoFee = new BackTest(portfolioNoFee, benchmarkNoFee, CurrencyCode.USD);
+        var btNoFee = new BackTest(portfolioNoFee, benchmarkNoFee, Currency.USD);
 
         // Act
         await btFee.RunAsync(dataset);
@@ -76,9 +76,9 @@ public sealed class ExpenseRatioTests
         var (portfolioFee, benchmarkFee, dataset) = CreateSetup();
         var (portfolioNoFee, benchmarkNoFee, _) = CreateSetup();
 
-        var btFee = new BackTest(portfolioFee, benchmarkFee, CurrencyCode.USD,
+        var btFee = new BackTest(portfolioFee, benchmarkFee, Currency.USD,
             NullLogger<BackTest>.Instance, 0m, null, null, annualExpenseRatioBps: 100m);
-        var btNoFee = new BackTest(portfolioNoFee, benchmarkNoFee, CurrencyCode.USD);
+        var btNoFee = new BackTest(portfolioNoFee, benchmarkNoFee, Currency.USD);
 
         // Act
         await btFee.RunAsync(dataset);
@@ -94,7 +94,7 @@ public sealed class ExpenseRatioTests
     public void Constructor_NegativeExpenseRatio_ShouldThrow()
     {
         var (portfolio, benchmark, _) = CreateSetup();
-        var act = () => new BackTest(portfolio, benchmark, CurrencyCode.USD,
+        var act = () => new BackTest(portfolio, benchmark, Currency.USD,
             NullLogger<BackTest>.Instance, 0m, null, null, annualExpenseRatioBps: -10m);
         act.Should().Throw<ArgumentOutOfRangeException>();
     }
@@ -103,7 +103,7 @@ public sealed class ExpenseRatioTests
     public void Constructor_ExcessiveExpenseRatio_ShouldThrow()
     {
         var (portfolio, benchmark, _) = CreateSetup();
-        var act = () => new BackTest(portfolio, benchmark, CurrencyCode.USD,
+        var act = () => new BackTest(portfolio, benchmark, Currency.USD,
             NullLogger<BackTest>.Instance, 0m, null, null, annualExpenseRatioBps: 1001m);
         act.Should().Throw<ArgumentOutOfRangeException>();
     }
@@ -113,7 +113,7 @@ public sealed class ExpenseRatioTests
     {
         var (portfolio, benchmark, _) = CreateSetup();
         var perAsset = new Dictionary<string, decimal> { { "AAPL", -5m } };
-        var act = () => new BackTest(portfolio, benchmark, CurrencyCode.USD,
+        var act = () => new BackTest(portfolio, benchmark, Currency.USD,
             NullLogger<BackTest>.Instance, 0m, null, null, annualExpenseRatioBps: 10m, assetExpenseRatiosBps: perAsset);
         act.Should().Throw<ArgumentOutOfRangeException>();
     }
@@ -125,9 +125,9 @@ public sealed class ExpenseRatioTests
         var (portfolioFee, benchmarkFee, dataset) = CreateSetup();
         var (_, benchmarkNoFee, _) = CreateSetup();
 
-        var btFee = new BackTest(portfolioFee, benchmarkFee, CurrencyCode.USD,
+        var btFee = new BackTest(portfolioFee, benchmarkFee, Currency.USD,
             NullLogger<BackTest>.Instance, 0m, null, null, annualExpenseRatioBps: 100m);
-        var btNoFee = new BackTest(portfolioFee, benchmarkNoFee, CurrencyCode.USD);
+        var btNoFee = new BackTest(portfolioFee, benchmarkNoFee, Currency.USD);
 
         // Act
         await btFee.RunAsync(dataset);
@@ -149,11 +149,11 @@ public sealed class ExpenseRatioTests
 
         var perAssetRates = new Dictionary<string, decimal> { { "AAPL", 50m } };
 
-        var btPerAsset = new BackTest(portfolioPerAsset, benchmarkPerAsset, CurrencyCode.USD,
+        var btPerAsset = new BackTest(portfolioPerAsset, benchmarkPerAsset, Currency.USD,
             NullLogger<BackTest>.Instance, 0m, null, null,
             annualExpenseRatioBps: 10m, assetExpenseRatiosBps: perAssetRates);
 
-        var btDefault = new BackTest(portfolioDefault, benchmarkDefault, CurrencyCode.USD,
+        var btDefault = new BackTest(portfolioDefault, benchmarkDefault, Currency.USD,
             NullLogger<BackTest>.Instance, 0m, null, null,
             annualExpenseRatioBps: 10m);
 
@@ -175,11 +175,11 @@ public sealed class ExpenseRatioTests
 
         var perAssetRates = new Dictionary<string, decimal> { { "AAPL", 0m } };
 
-        var btZeroOverride = new BackTest(portfolioZeroOverride, benchmarkZeroOverride, CurrencyCode.USD,
+        var btZeroOverride = new BackTest(portfolioZeroOverride, benchmarkZeroOverride, Currency.USD,
             NullLogger<BackTest>.Instance, 0m, null, null,
             annualExpenseRatioBps: 50m, assetExpenseRatiosBps: perAssetRates);
 
-        var btNoFee = new BackTest(portfolioNoFee, benchmarkNoFee, CurrencyCode.USD);
+        var btNoFee = new BackTest(portfolioNoFee, benchmarkNoFee, Currency.USD);
 
         // Act
         await btZeroOverride.RunAsync(dataset);
@@ -227,9 +227,9 @@ public sealed class ExpenseRatioTests
         {
             Name = "Main",
             Positions = new SortedDictionary<Symbol, int> { { assetPortfolio, 100 } },
-            Cash = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 10_000m } },
-            Assets = new Dictionary<Symbol, CurrencyCode> { { assetPortfolio, CurrencyCode.USD } },
-            PositionSizer = new FixedWeightPositionSizer(portfolioWeights, CurrencyCode.USD),
+            Cash = new SortedDictionary<Currency, decimal> { { Currency.USD, 10_000m } },
+            Assets = new Dictionary<Symbol, Currency> { { assetPortfolio, Currency.USD } },
+            PositionSizer = new FixedWeightPositionSizer(portfolioWeights, Currency.USD),
             OrderPriceCalculationStrategy = orderPriceCalc
         };
 
@@ -237,22 +237,22 @@ public sealed class ExpenseRatioTests
         {
             Name = "Benchmark",
             Positions = new SortedDictionary<Symbol, int> { { assetBenchmark, 100 } },
-            Cash = new SortedDictionary<CurrencyCode, decimal> { { CurrencyCode.USD, 10_000m } },
-            Assets = new Dictionary<Symbol, CurrencyCode> { { assetBenchmark, CurrencyCode.USD } },
-            PositionSizer = new FixedWeightPositionSizer(benchmarkWeights, CurrencyCode.USD),
+            Cash = new SortedDictionary<Currency, decimal> { { Currency.USD, 10_000m } },
+            Assets = new Dictionary<Symbol, Currency> { { assetBenchmark, Currency.USD } },
+            PositionSizer = new FixedWeightPositionSizer(benchmarkWeights, Currency.USD),
             OrderPriceCalculationStrategy = orderPriceCalc
         };
 
         var portfolio = new Portfolio(
-            CurrencyCode.USD,
+            Currency.USD,
             new ReadOnlyDictionary<string, IStrategy>(new Dictionary<string, IStrategy> { { "Main", strategy } }),
-            new Dictionary<Symbol, CurrencyCode> { { assetPortfolio, CurrencyCode.USD } },
+            new Dictionary<Symbol, Currency> { { assetPortfolio, Currency.USD } },
             handlers, mockBroker.Object, isLive: false);
 
         var benchmark = new Portfolio(
-            CurrencyCode.USD,
+            Currency.USD,
             new ReadOnlyDictionary<string, IStrategy>(new Dictionary<string, IStrategy> { { "Benchmark", bmStrategy } }),
-            new Dictionary<Symbol, CurrencyCode> { { assetBenchmark, CurrencyCode.USD } },
+            new Dictionary<Symbol, Currency> { { assetBenchmark, Currency.USD } },
             handlers, mockBroker.Object, isLive: false);
 
         // Different price series → non-zero tracking error

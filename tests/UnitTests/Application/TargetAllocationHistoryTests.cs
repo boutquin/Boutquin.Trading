@@ -28,15 +28,15 @@ public sealed class TargetAllocationHistoryTests
     private static readonly Symbol s_vti = new("VTI");
     private static readonly Symbol s_bnd = new("BND");
 
-    private static IReadOnlyDictionary<Symbol, CurrencyCode> TestAssets =>
-        new Dictionary<Symbol, CurrencyCode>
+    private static IReadOnlyDictionary<Symbol, Currency> TestAssets =>
+        new Dictionary<Symbol, Currency>
         {
-            [s_vti] = CurrencyCode.USD,
-            [s_bnd] = CurrencyCode.USD
+            [s_vti] = Currency.USD,
+            [s_bnd] = Currency.USD
         };
 
-    private static SortedDictionary<CurrencyCode, decimal> TestCash =>
-        new() { [CurrencyCode.USD] = 100_000m };
+    private static SortedDictionary<Currency, decimal> TestCash =>
+        new() { [Currency.USD] = 100_000m };
 
     /// <summary>
     /// Builds 120 days of market data starting from 2024-01-02 so we have enough
@@ -66,17 +66,17 @@ public sealed class TargetAllocationHistoryTests
         return data;
     }
 
-    private static IReadOnlyDictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>> BuildFxRates(int days = 120)
+    private static IReadOnlyDictionary<DateOnly, SortedDictionary<Currency, decimal>> BuildFxRates(int days = 120)
     {
-        var data = new Dictionary<DateOnly, SortedDictionary<CurrencyCode, decimal>>();
+        var data = new Dictionary<DateOnly, SortedDictionary<Currency, decimal>>();
         var baseDate = new DateOnly(2024, 1, 2);
 
         for (var i = 0; i < days; i++)
         {
             var date = baseDate.AddDays(i);
-            data[date] = new SortedDictionary<CurrencyCode, decimal>
+            data[date] = new SortedDictionary<Currency, decimal>
             {
-                [CurrencyCode.USD] = 1.0m
+                [Currency.USD] = 1.0m
             };
         }
 
@@ -88,7 +88,7 @@ public sealed class TargetAllocationHistoryTests
         int lookbackWindow = 3)
     {
         var orderPriceCalc = new ClosePriceOrderPriceCalculationStrategy();
-        var positionSizer = new DynamicWeightPositionSizer(CurrencyCode.USD);
+        var positionSizer = new DynamicWeightPositionSizer(Currency.USD);
         var constructionModel = new EqualWeightConstruction();
 
         return new ConstructionModelStrategy(
@@ -119,7 +119,7 @@ public sealed class TargetAllocationHistoryTests
         var fxRates = BuildFxRates(10);
 
         var firstDate = new DateOnly(2024, 1, 2);
-        strategy.GenerateSignals(firstDate, CurrencyCode.USD, marketData, fxRates);
+        strategy.GenerateSignals(firstDate, Currency.USD, marketData, fxRates);
 
         strategy.TargetWeightHistory.Should().HaveCount(1,
             "first call with insufficient data should record the equal-weight fallback");
@@ -139,11 +139,11 @@ public sealed class TargetAllocationHistoryTests
 
         // First call: insufficient data triggers equal-weight fallback
         var firstDate = new DateOnly(2024, 1, 2);
-        strategy.GenerateSignals(firstDate, CurrencyCode.USD, marketData, fxRates);
+        strategy.GenerateSignals(firstDate, Currency.USD, marketData, fxRates);
 
         // Monthly rebalance: Feb 5 is > 1 month after Jan 2
         var rebalDate = new DateOnly(2024, 2, 5);
-        strategy.GenerateSignals(rebalDate, CurrencyCode.USD, marketData, fxRates);
+        strategy.GenerateSignals(rebalDate, Currency.USD, marketData, fxRates);
 
         strategy.TargetWeightHistory.Should().ContainKey(rebalDate,
             "rebalance date should be recorded in history");
@@ -174,7 +174,7 @@ public sealed class TargetAllocationHistoryTests
         for (var i = 0; i < 65; i++)
         {
             var date = baseDate.AddDays(i);
-            strategy.GenerateSignals(date, CurrencyCode.USD, marketData, fxRates);
+            strategy.GenerateSignals(date, Currency.USD, marketData, fxRates);
         }
 
         strategy.TargetWeightHistory.Count.Should().BeGreaterThanOrEqualTo(3,
@@ -192,7 +192,7 @@ public sealed class TargetAllocationHistoryTests
         for (var i = 0; i < 65; i++)
         {
             var date = baseDate.AddDays(i);
-            strategy.GenerateSignals(date, CurrencyCode.USD, marketData, fxRates);
+            strategy.GenerateSignals(date, Currency.USD, marketData, fxRates);
         }
 
         var keys = strategy.TargetWeightHistory.Keys.ToList();
@@ -207,7 +207,7 @@ public sealed class TargetAllocationHistoryTests
         var fxRates = BuildFxRates(10);
 
         var firstDate = new DateOnly(2024, 1, 2);
-        strategy.GenerateSignals(firstDate, CurrencyCode.USD, marketData, fxRates);
+        strategy.GenerateSignals(firstDate, Currency.USD, marketData, fxRates);
 
         // The property returns IReadOnlyDictionary — attempting to cast and mutate should either
         // fail at compile time or at runtime. We verify the type does not expose Add.
@@ -232,7 +232,7 @@ public sealed class TargetAllocationHistoryTests
         for (var i = 0; i < 65; i++)
         {
             var date = baseDate.AddDays(i);
-            strategy.GenerateSignals(date, CurrencyCode.USD, marketData, fxRates);
+            strategy.GenerateSignals(date, Currency.USD, marketData, fxRates);
         }
 
         strategy.LastComputedWeights.Should().NotBeNull("weights should have been computed");
@@ -252,12 +252,12 @@ public sealed class TargetAllocationHistoryTests
 
         // First call triggers initial rebalance
         var firstDate = new DateOnly(2024, 1, 2);
-        strategy.GenerateSignals(firstDate, CurrencyCode.USD, marketData, fxRates);
+        strategy.GenerateSignals(firstDate, Currency.USD, marketData, fxRates);
         var countAfterFirst = strategy.TargetWeightHistory.Count;
 
         // Next day is NOT a rebalance date (monthly frequency)
         var nextDay = new DateOnly(2024, 1, 3);
-        strategy.GenerateSignals(nextDay, CurrencyCode.USD, marketData, fxRates);
+        strategy.GenerateSignals(nextDay, Currency.USD, marketData, fxRates);
 
         strategy.TargetWeightHistory.Count.Should().Be(countAfterFirst,
             "non-rebalance date should not add a new history entry");
