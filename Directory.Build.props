@@ -70,8 +70,10 @@
 
   <!-- Public API snapshot: enforce explicit declaration of all public type and member additions.
        Note: PublicApiAnalyzers 3.x auto-includes PublicAPI.Shipped.txt and PublicAPI.Unshipped.txt
-       via its own .props file — do NOT add <AdditionalFiles> here or they will be registered twice. -->
-  <ItemGroup Condition="$([System.String]::Copy('$(MSBuildProjectDirectory)').Contains('/src/')) and '$(IsPackable)' != 'false'">
+       via its own .props file — do NOT add <AdditionalFiles> here or they will be registered twice.
+       The path separator is normalized so the condition also matches on Windows, where
+       MSBuildProjectDirectory uses backslashes; without it the analyzer silently never ran there. -->
+  <ItemGroup Condition="$([System.String]::Copy('$(MSBuildProjectDirectory)').Replace('\', '/').Contains('/src/')) and '$(IsPackable)' != 'false'">
     <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="All" />
   </ItemGroup>
 </Project>
