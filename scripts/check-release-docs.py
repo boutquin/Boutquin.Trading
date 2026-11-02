@@ -50,6 +50,16 @@ def check(root, version):
     if stale_links:
         errors.append('README.md links to other source tags: ' + ', '.join(stale_links))
 
+    # Packages that ship their own README (src/<Package>/doc/README.md) are published to the NuGet gallery:
+    # links must be absolute and pinned to this release's tag.
+    for path in sorted(root.glob('src/*/doc/README.md')):
+        text = path.read_text(encoding='utf-8')
+        if re.findall(r'\]\((?!https://|#)[^)]+\)', text):
+            errors.append(f'{path.relative_to(root).as_posix()} has relative links that break on the NuGet gallery')
+        other = sorted(set(re.findall(r'/blob/([^/]+)/', text)) - {f'v{version}'})
+        if other:
+            errors.append(f'{path.relative_to(root).as_posix()} links to other source refs: ' + ', '.join(other))
+
     for path in sorted((root / 'docs').glob('*.md')) + [root / 'README.md']:
         text = path.read_text(encoding='utf-8').lower()
         for phrase in STALE_PHRASES:

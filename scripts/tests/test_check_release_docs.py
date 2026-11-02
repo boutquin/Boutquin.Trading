@@ -57,6 +57,19 @@ class ReleaseDocsTests(unittest.TestCase):
         errors = self.errors(changelog=GOOD_CHANGELOG + '- Old note (superseded in Unreleased by a later change).\n')
         self.assertTrue(any('still refers to an unreleased state' in e for e in errors))
 
+    def test_package_readmes_must_pin_to_the_release_tag(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            make(root)
+            package = root / 'src' / 'Pkg' / 'doc'
+            package.mkdir(parents=True)
+            (package / 'README.md').write_text('[a](https://github.com/x/y/blob/v2.0.1/LICENSE.txt)', encoding='utf-8')
+            self.assertEqual([], check.check(root, '2.0.1'))
+            (package / 'README.md').write_text('[a](https://github.com/x/y/blob/main/LICENSE.txt)', encoding='utf-8')
+            self.assertTrue(any('other source refs' in e for e in check.check(root, '2.0.1')))
+            (package / 'README.md').write_text('[a](docs/guide.md)', encoding='utf-8')
+            self.assertTrue(any('relative links' in e for e in check.check(root, '2.0.1')))
+
     def test_rejects_non_stable_version(self):
         self.assertEqual(2, check.main(['2.0.0-rc.1']))
 

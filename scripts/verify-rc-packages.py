@@ -66,7 +66,7 @@ def verify(feed: Path, version: str, commit: str, manifest: Path, inspector: Pat
         with manifest.open("x", encoding="utf-8") as stream:
             json.dump(identity, stream, indent=2)
             stream.write("\n")
-    readme = source_bytes(commit, "README.md")
+    readmes = {name: source_bytes(commit, f"src/{name.rsplit('.', 1)[-1]}/doc/README.md") for name in IDS}
     dependency_lock = json.loads(source_bytes(commit, "dependency-source.json"))
     dependency_versions = {item["id"]: item["version"] for item in dependency_lock.get("publishedPackages", [])}
     central_xml = ET.fromstring(source_bytes(commit, "Directory.Packages.props"))
@@ -113,7 +113,7 @@ def verify(feed: Path, version: str, commit: str, manifest: Path, inspector: Pat
                 license_element = metadata.find("{*}license")
                 require(license_element is not None and license_element.get("type") == "expression"
                         and license_element.text == "Apache-2.0", f"Wrong license: {name}")
-                require(archive.read(metadata.findtext("{*}readme")) == readme, f"README differs from source: {name}")
+                require(archive.read(metadata.findtext("{*}readme")) == readmes[name], f"README differs from source: {name}")
                 groups = metadata.findall("./{*}dependencies/{*}group")
                 require(len(groups) == 1 and groups[0].get("targetFramework") == "net10.0",
                         f"Wrong dependency framework groups: {name}")

@@ -34,6 +34,7 @@ class PackageCorruptionTests(unittest.TestCase):
         self.sources = {'README.md': b'Committed readme', 'dependency-source.json': b'{"packages":[]}',
                         'Directory.Packages.props': b'<Project><ItemGroup><PackageVersion Include="Boutquin.Domain" Version="[1.0.0]"/></ItemGroup></Project>'}
         for name in VERIFY.IDS:
+            self.sources[f"src/{name.rsplit('.', 1)[-1]}/doc/README.md"] = self.sources['README.md']
             dependencies = '' if name.endswith('.Domain') else '<ProjectReference Include="../Boutquin.Trading.Domain/Boutquin.Trading.Domain.csproj"/>'
             dependencies += '<PackageReference Include="Boutquin.Domain"/>'
             self.sources[f"src/{name.rsplit('.', 1)[-1]}/{name}.csproj"] = f'<Project><ItemGroup>{dependencies}</ItemGroup></Project>'.encode()

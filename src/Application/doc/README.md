@@ -86,8 +86,8 @@ The software authors are not registered investment advisers, portfolio managers,
 
 ## Contributing
 
-Please read the [contributing guidelines](https://github.com/boutquin/Boutquin.Trading/blob/main/CONTRIBUTING.md) first.
+Please read the [contributing guidelines](https://github.com/boutquin/Boutquin.Trading/blob/v2.3.1/CONTRIBUTING.md) first.
 
 ## License
 
-This project is licensed under the Apache 2.0 License. See the [LICENSE file](https://github.com/boutquin/Boutquin.Trading/blob/main/LICENSE.txt) for details.
+This project is licensed under the Apache 2.0 License. See the [LICENSE file](https://github.com/boutquin/Boutquin.Trading/blob/v2.3.1/LICENSE.txt) for details.
