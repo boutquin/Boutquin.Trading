@@ -9,7 +9,7 @@
     <PackageVersion Include="Boutquin.Numerics" Version="[2.0.0]" />
 
     <!-- MarketData kernel -->
-    <PackageVersion Include="Boutquin.MarketData.Abstractions" Version="[2.0.1]" />
+    <PackageVersion Include="Boutquin.MarketData.Abstractions" Version="[3.0.0]" />
     <PackageVersion Include="Boutquin.MarketData.Calendars" Version="[2.0.1]" />
     <PackageVersion Include="Boutquin.MarketData.Orchestration" Version="[2.0.1]" />
     <PackageVersion Include="Boutquin.MarketData.DependencyInjection" Version="[2.0.1]" />

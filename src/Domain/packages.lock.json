@@ -10,9 +10,9 @@
       },
       "Boutquin.MarketData.Abstractions": {
         "type": "Direct",
-        "requested": "[2.0.1, 2.0.1]",
-        "resolved": "2.0.1",
-        "contentHash": "R2piTf5wYylrMtjmK4z+eMqaGi/hd9lrIZPDkn36N4WfW7PFetqvc6qW7A7YawoAODjwm2qTrXv74SHEJPDhAA==",
+        "requested": "[3.0.0, 3.0.0]",
+        "resolved": "3.0.0",
+        "contentHash": "eAkotKSpmLLycKC+i18WElkVPNMpMnWCeyxN+WjcbJVWtIc3gEIY7xuAb3mk081htVP8hFj2tobMIZUHfrsRBA==",
         "dependencies": {
           "Boutquin.Domain": "1.0.1",
           "Boutquin.Storage.Domain": "2.0.1"
