@@ -49,14 +49,14 @@
       },
       "Boutquin.MarketData.Adapter.Fred": {
         "type": "Direct",
-        "requested": "[2.0.1, 2.0.1]",
-        "resolved": "2.0.1",
-        "contentHash": "iEqxuCEXtO0cJEPtau8JS16PrCMET/ReS3ChGE0WTIdodPaZuglJVOLXeyN1Nf4czi8RWvHXgN4N1dROsErIeg==",
+        "requested": "[3.0.0, 3.0.0]",
+        "resolved": "3.0.0",
+        "contentHash": "LCTpP2KYEaVOthEFjvsQkPRj5fviSD2N/+1PNSTZWnOUcKSHTCTsrBzBqB6EcsX+EdpLpZ1nWbTrzXTFAp8nYg==",
         "dependencies": {
-          "Boutquin.MarketData.Abstractions": "2.0.1",
-          "Boutquin.MarketData.Adapter.Shared": "2.0.1",
-          "Boutquin.MarketData.Storage": "2.0.1",
-          "Boutquin.MarketData.Transport": "2.0.1",
+          "Boutquin.MarketData.Abstractions": "3.0.0",
+          "Boutquin.MarketData.Adapter.Shared": "3.0.0",
+          "Boutquin.MarketData.Storage": "3.0.0",
+          "Boutquin.MarketData.Transport": "3.0.0",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.14",
           "Microsoft.Extensions.Logging.Abstractions": "10.0.14",
           "Microsoft.Extensions.Options": "10.0.14"
@@ -164,12 +164,12 @@
       },
       "Boutquin.MarketData.Adapter.Shared": {
         "type": "Transitive",
-        "resolved": "2.0.1",
-        "contentHash": "aIIhhqULjfuWwYqGdHVEmxtHbRDt8dnXX/fZ3YTPGZSQu87jDrU72dU+hme/EBiCWwFdMOCG1sXsluPjEJpGUw==",
+        "resolved": "3.0.0",
+        "contentHash": "FwB1adi073pFkMhivCoMNo4J5gaaYewd9AcuRIfqnfPulxS1HIj5fVtISYFXhTLiO0nKSnBH3R1WkgvrockZwQ==",
         "dependencies": {
           "Boutquin.Domain": "1.0.1",
-          "Boutquin.MarketData.Abstractions": "2.0.1",
-          "Boutquin.MarketData.Calendars": "2.0.1"
+          "Boutquin.MarketData.Abstractions": "3.0.0",
+          "Boutquin.MarketData.Calendars": "3.0.0"
         }
       },
       "Boutquin.MarketData.Cache": {
@@ -203,19 +203,19 @@
       },
       "Boutquin.MarketData.Storage": {
         "type": "Transitive",
-        "resolved": "2.0.1",
-        "contentHash": "LLyZc+T4BNNrQqtTr+l/KL/8ayGMZ69xv3ugrjO6Xc8LDYWJ/14pMZWjxQZ6PRbNMIMbeh6gD0vCyQNfo/7T8A==",
+        "resolved": "3.0.0",
+        "contentHash": "SUTbVaOIgL8Uwqq7MVr+s5qgVbSkjn9EzWISXJmsSLYUlxBr/7tmsjai6usR9NkjSBeClb/4FWIAjvQA+X10hw==",
         "dependencies": {
-          "Boutquin.MarketData.Abstractions": "2.0.1",
+          "Boutquin.MarketData.Abstractions": "3.0.0",
           "Boutquin.Storage.Infrastructure": "2.0.1"
         }
       },
       "Boutquin.MarketData.Transport": {
         "type": "Transitive",
-        "resolved": "2.0.1",
-        "contentHash": "6lXhH4+hoIOr7/I++d4BSejFI9DbuGw9WlZt3KUw+UxKieLpJLfYPQz9IgNNtrzDX9QXTzvGkTD8ts0i7i7BKg==",
+        "resolved": "3.0.0",
+        "contentHash": "56I7WXXeGKwhbspXVRDmhuWWQPndY7cF8X0bOQhotF2vqhQsSTyRBpFGity80oW9XIncqv/CL5/Pey2LxKUGAw==",
         "dependencies": {
-          "Boutquin.MarketData.Abstractions": "2.0.1",
+          "Boutquin.MarketData.Abstractions": "3.0.0",
           "Microsoft.Extensions.Logging.Abstractions": "10.0.14",
           "Polly.Core": "8.9.0",
           "Polly.RateLimiting": "8.9.0",
@@ -581,20 +581,11 @@
       "Boutquin.MarketData.Abstractions": {
         "type": "CentralTransitive",
         "requested": "[2.0.1, 2.0.1]",
-        "resolved": "2.0.1",
-        "contentHash": "R2piTf5wYylrMtjmK4z+eMqaGi/hd9lrIZPDkn36N4WfW7PFetqvc6qW7A7YawoAODjwm2qTrXv74SHEJPDhAA==",
+        "resolved": "3.0.0",
+        "contentHash": "eAkotKSpmLLycKC+i18WElkVPNMpMnWCeyxN+WjcbJVWtIc3gEIY7xuAb3mk081htVP8hFj2tobMIZUHfrsRBA==",
         "dependencies": {
           "Boutquin.Domain": "1.0.1",
           "Boutquin.Storage.Domain": "2.0.1"
-        }
-      },
-      "Boutquin.MarketData.Calendars": {
-        "type": "CentralTransitive",
-        "requested": "[2.0.1, 2.0.1]",
-        "resolved": "2.0.1",
-        "contentHash": "Xd2e6/9r1EI3rZwKyF5fwwI5wQVF6pvCWDtZRCnAc7hkjX9Memjd13GdxHRO3eM3qEyLnPqH4UCctl198MR6lg==",
-        "dependencies": {
-          "Boutquin.MarketData.Abstractions": "2.0.1"
         }
       },
       "Boutquin.MarketData.Orchestration": {
