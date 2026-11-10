@@ -20,7 +20,7 @@
     <PackageVersion Include="Boutquin.MarketData.Adapter.Fred" Version="[2.0.1]" />
     <PackageVersion Include="Boutquin.MarketData.Adapter.FamaFrench" Version="[2.0.1]" />
     <PackageVersion Include="Boutquin.MarketData.Adapter.TwelveData" Version="[2.0.1]" />
-    <PackageVersion Include="Boutquin.MarketData.Adapter.BankOfCanada" Version="[2.0.1]" />
+    <PackageVersion Include="Boutquin.MarketData.Adapter.BankOfCanada" Version="[3.0.0]" />
 
     <!-- Entity Framework Core -->
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="[10.0.14]" />
