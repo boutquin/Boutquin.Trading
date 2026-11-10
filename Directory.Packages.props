@@ -16,7 +16,7 @@
 
     <!-- MarketData adapters -->
     <PackageVersion Include="Boutquin.MarketData.Adapter.Tiingo" Version="[2.0.1]" />
-    <PackageVersion Include="Boutquin.MarketData.Adapter.Frankfurter" Version="[2.0.1]" />
+    <PackageVersion Include="Boutquin.MarketData.Adapter.Frankfurter" Version="[3.0.0]" />
     <PackageVersion Include="Boutquin.MarketData.Adapter.Fred" Version="[2.0.1]" />
     <PackageVersion Include="Boutquin.MarketData.Adapter.FamaFrench" Version="[2.0.1]" />
     <PackageVersion Include="Boutquin.MarketData.Adapter.TwelveData" Version="[2.0.1]" />
