@@ -32,17 +32,17 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="[10.0.14]" />
 
     <!-- Microsoft Extensions -->
-    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="[10.0.14]" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="[10.0.14]" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="[10.0.14]" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="[10.0.14]" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[10.0.14]" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="[10.0.14]" />
-    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="[10.0.14]" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="[11.0.0]" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="[11.0.0]" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="[11.0.0]" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="[11.0.0]" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[11.0.0]" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="[11.0.0]" />
+    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="[11.0.0]" />
 
     <!-- Build infrastructure -->
     <PackageVersion Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="[5.6.0]" />
-    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="[10.0.403]" />
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="[11.0.100]" />
     <PackageVersion Include="MinVer" Version="[8.0.0]" />
 
     <!-- Data access -->
@@ -53,7 +53,7 @@
     <!-- Testing -->
     <PackageVersion Include="coverlet.collector" Version="[10.1.0]" />
     <PackageVersion Include="FluentAssertions" Version="[8.11.0]" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="[18.11.0]" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="[18.12.0]" />
     <PackageVersion Include="Moq" Version="[4.21.0]" />
     <PackageVersion Include="NetArchTest.eNhancedEdition" Version="[1.4.5]" />
     <PackageVersion Include="xunit" Version="[2.9.3]" />
