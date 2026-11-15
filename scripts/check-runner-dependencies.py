@@ -78,7 +78,7 @@ def verify(packages=None):
             raise ValueError("Locked dependencies must come from nuget.org")
     central = ET.parse(ROOT / "Directory.Packages.props")
     for item in central.iter("PackageVersion"):
-        name = item.attrib["Include"]
+        name = (item.get("Include") or item.get("Update"))
         if name.startswith(FAMILY):
             # A pin no project restores is harmless: using it later fails the assets scan below.
             if name in declared and item.attrib["Version"] != "[" + declared[name] + "]":
