@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <PackageReference Include="Boutquin.MarketData.Abstractions" />
+    <PackageReference Include="Boutquin.MarketData.Calendars" />
     <PackageReference Include="Boutquin.MarketData.Orchestration" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="MinVer" PrivateAssets="All" />
