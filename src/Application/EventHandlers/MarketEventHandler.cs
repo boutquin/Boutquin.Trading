@@ -74,7 +74,8 @@ public sealed class MarketEventHandler : IEventHandler
 
             // Dividend and split handling requires DividendPayment and CorporateAction
             // records from the kernel's IBacktestDataset. Until adapters emit these,
-            // both features are unavailable. In backtest mode, AdjustedClose already
+            // Both features are unavailable. Backtest datasets require total-return prices;
+            // do not apply dividend or split events again. AdjustedClose already
             // incorporates dividends and splits — no double-counting occurs.
         }
 

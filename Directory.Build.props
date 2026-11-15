@@ -27,7 +27,7 @@
     <PackageIcon>icon.png</PackageIcon>
     <MinVerTagPrefix>v</MinVerTagPrefix>
     <!-- Package identity for builds without an explicit override. Release builds pass -p:MinVerVersionOverride=<version> and the sibling-package pins in Directory.Build.targets follow it; bump this default after each release. -->
-    <MinVerVersionOverride Condition="'$(MinVerVersionOverride)' == ''">2.3.1</MinVerVersionOverride>
+    <MinVerVersionOverride Condition="'$(MinVerVersionOverride)' == ''">3.0.0-alpha.0</MinVerVersionOverride>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <MinVerDefaultPreReleaseIdentifiers>beta</MinVerDefaultPreReleaseIdentifiers>
     <PackageVersion>$(PackageVersion)$(MinVerBuildMetadata)</PackageVersion>

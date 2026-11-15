@@ -16,6 +16,7 @@
 
 using Boutquin.Domain.Enumerations;
 using Boutquin.MarketData.Abstractions.ReferenceData;
+using Boutquin.MarketData.Abstractions.Requests;
 
 namespace Boutquin.Trading.Recipes;
 
@@ -96,4 +97,14 @@ public sealed record BacktestDatasetSpec
     /// tickers) can include only those keys and leave US tickers unhinted.
     /// </remarks>
     public IReadOnlyDictionary<string, ExchangeCode>? SymbolExchanges { get; init; }
+
+    /// <summary>Explicit total-return price basis for every ticker in <see cref="Symbols"/>.</summary>
+    /// <remarks>
+    /// Keys follow the caller's ticker normalization. Missing entries and non-total-return bases
+    /// are rejected before any fetch. Extra keys are ignored. An empty symbol list needs no map.
+    /// The builder snapshots selected values before asynchronous reads; callers own this map.
+    /// </remarks>
+    public IReadOnlyDictionary<string, PriceBasis> SymbolPriceBases { get; init; } =
+        new Dictionary<string, PriceBasis>(StringComparer.Ordinal);
+
 }

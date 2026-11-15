@@ -157,6 +157,7 @@ var datasetBuilder = sp.GetRequiredService<BacktestDatasetBuilder>();
 var spec = new BacktestDatasetSpec
 {
     Symbols = symbols,
+    SymbolPriceBases = symbols.ToDictionary(s => s.Ticker, _ => TiingoPriceBarAdapter.DeliveredPriceBasis, StringComparer.Ordinal),
     StartDate = startDate,
     EndDate = endDate,
     BaseCurrency = baseCurrency,

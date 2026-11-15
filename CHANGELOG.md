@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Adopt the complete published MarketData and Adapter 3.0.0 family. `BacktestDatasetSpec.SymbolPriceBases` declares a total-return price basis for every ticker before any fetch.
+- Propagate typed price-basis failures instead of recording them as ordinary provider outages. Preserve non-kernel deliveries with an explicit `PRICE_BASIS_UNPROVEN` warning when provenance is absent.
+- Keep dividend/split records informational for total-return adjusted datasets to prevent duplicate application of those actions. Retain published Numerics 2.0.0 and both .NET 10/.NET 11 targets.
+
 ### Added
 
 - .NET 11 builds alongside .NET 10, with target-specific stable dependency versions and tests for both frameworks.
