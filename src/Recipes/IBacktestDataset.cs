@@ -48,12 +48,12 @@ public interface IBacktestDataset
     SortedDictionary<DateOnly, SortedDictionary<Currency, decimal>> FxRates { get; }
 
     /// <summary>
-    /// Dividend payments per asset. Empty until adapters support DividendPayment records.
+    /// Dividend payments per asset. Informational for total-return datasets; never apply them again to adjusted prices.
     /// </summary>
     IReadOnlyDictionary<Symbol, IReadOnlyList<DividendPayment>> Dividends { get; }
 
     /// <summary>
-    /// Corporate actions per asset. Empty until adapters support CorporateAction records.
+    /// Corporate actions per asset. Informational for total-return datasets; never apply them again to adjusted prices.
     /// </summary>
     IReadOnlyDictionary<Symbol, IReadOnlyList<CorporateAction>> CorporateActions { get; }
 

@@ -1,1 +1,3 @@
 #nullable enable
+Boutquin.Trading.Recipes.BacktestDatasetSpec.SymbolPriceBases.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Boutquin.MarketData.Abstractions.Requests.PriceBasis>!
+Boutquin.Trading.Recipes.BacktestDatasetSpec.SymbolPriceBases.init -> void

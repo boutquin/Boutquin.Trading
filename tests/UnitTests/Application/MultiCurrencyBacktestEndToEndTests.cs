@@ -15,6 +15,7 @@
 //
 
 using Boutquin.MarketData.Abstractions.Contracts;
+using Boutquin.MarketData.Abstractions.Provenance;
 using Boutquin.MarketData.Abstractions.Requests;
 using Boutquin.MarketData.Abstractions.Results;
 using Boutquin.MarketData.Abstractions.Snapshots;
@@ -376,6 +377,11 @@ public sealed class MultiCurrencyBacktestEndToEndTests
         var spec = new BacktestDatasetSpec
         {
             Symbols = [s_vgsh, s_benchmark],
+            SymbolPriceBases = new Dictionary<string, PriceBasis>
+            {
+                [s_vgsh.Ticker] = new(PriceAdjustment.All, AdjustedCloseSource.ProviderSupplied, PriceAdjustment.None),
+                [s_benchmark.Ticker] = new(PriceAdjustment.All, AdjustedCloseSource.ProviderSupplied, PriceAdjustment.None),
+            },
             StartDate = s_usdCad.Keys.First(),
             EndDate = s_usdCad.Keys.Last(),
             BaseCurrency = Currency.CAD,
@@ -577,7 +583,10 @@ public sealed class MultiCurrencyBacktestEndToEndTests
 
             var records = (IReadOnlyList<TRecord>)payload;
             return Task.FromResult(new DataEnvelope<IReadOnlyList<TRecord>>(
-                records, new DataCoverage(records.Count, records.Count, 0, 1.0m), [], []));
+                records, new DataCoverage(records.Count, records.Count, 0, 1.0m), [],
+                request is PriceHistoryRequest priceRequest
+                    ? [new DataProvenance(new ProviderCode("fixture"), "total-return", LicenseType.Free, RetrievalMode.Fixture, FreshnessClass.Live, DateTimeOffset.UnixEpoch, null) { PriceBasis = priceRequest.Basis }]
+                    : []));
         }
 
         public Task<IReadOnlyDictionary<TDatasetKey, DataEnvelope<IReadOnlyList<TRecord>>>>

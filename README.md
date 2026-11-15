@@ -338,3 +338,7 @@ This project is licensed under the Apache 2.0 License — see the [LICENSE](http
 ## Contact
 
 For inquiries, please open an issue or reach out via [GitHub Discussions](https://github.com/boutquin/Boutquin.Trading/discussions).
+
+## MarketData 3 migration
+
+Current source uses the published MarketData/Adapter 3.0.0 contracts. Every backtest dataset request supplies `BacktestDatasetSpec.SymbolPriceBases` for its symbols. Choose the provider's declared total-return basis; preserve provenance and handle typed basis failures separately from provider availability. See [the migration guide](https://github.com/boutquin/Boutquin.Trading/blob/main/docs/migration-3.0.md). Existing 2.3.1 packages retain their original dependency graph; this source migration does not publish a new Trading package.

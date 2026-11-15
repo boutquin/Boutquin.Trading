@@ -17,6 +17,7 @@
 using Boutquin.Domain.Enumerations;
 using Boutquin.MarketData.Abstractions.Contracts;
 using Boutquin.MarketData.Abstractions.Diagnostics;
+using Boutquin.MarketData.Abstractions.Exceptions;
 using Boutquin.MarketData.Abstractions.Records;
 using Boutquin.MarketData.Abstractions.ReferenceData;
 using Boutquin.MarketData.Abstractions.Requests;
@@ -52,13 +53,44 @@ public sealed class BacktestDatasetBuilder
     /// </summary>
     /// <param name="spec">Declarative specification of required data.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>A fully materialized <see cref="IBacktestDataset"/>.</returns>
+    /// <returns>Completes after all requested series are materialized or recorded as ordinary fetch issues.</returns>
+    /// <exception cref="ArgumentException">A symbol has no basis or requests non-total-return adjusted prices.</exception>
+    /// <exception cref="ArgumentNullException">The specification or basis map is null.</exception>
+    /// <exception cref="PriceBasisMismatchException">The pipeline reports a mismatch, or provenance states non-total-return prices.</exception>
+    /// <exception cref="PriceBasisNotSupportedException">The pipeline cannot serve the requested basis.</exception>
+    /// <remarks>Basis-integrity failures abort construction; ordinary exhausted provider failures remain fetch issues.</remarks>
     public async Task<IBacktestDataset> BuildAsync(
         BacktestDatasetSpec spec,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(spec);
         ArgumentOutOfRangeException.ThrowIfNegative(spec.FxLeadDays);
+        ArgumentNullException.ThrowIfNull(spec.SymbolPriceBases);
+
+        var priceBases = new Dictionary<string, PriceBasis>(StringComparer.Ordinal);
+        var missing = new List<string>();
+        var nonTotalReturn = new List<string>();
+        foreach (var symbol in spec.Symbols)
+        {
+            if (!spec.SymbolPriceBases.TryGetValue(symbol.Ticker, out var basis))
+            {
+                missing.Add(symbol.Ticker);
+                continue;
+            }
+            priceBases[symbol.Ticker] = basis;
+            if (basis.AdjustedClose != PriceAdjustment.All)
+            {
+                nonTotalReturn.Add(symbol.Ticker);
+            }
+        }
+        if (missing.Count > 0)
+        {
+            throw new ArgumentException($"Missing price basis for: {string.Join(", ", missing.Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal))}.", nameof(spec));
+        }
+        if (nonTotalReturn.Count > 0)
+        {
+            throw new ArgumentException($"A total-return price basis is required for: {string.Join(", ", nonTotalReturn.Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal))}.", nameof(spec));
+        }
 
         var allProvenance = new List<DataProvenance>();
         var allIssues = new List<DataIssue>();
@@ -76,7 +108,10 @@ public sealed class BacktestDatasetBuilder
                 // (e.g. route XIC to TwelveData's mic_code=XTSE path instead of Tiingo,
                 // which does not cover TSX-listed ETFs). Absent hint → venue-neutral
                 // request, matching pre-1.1.0 behaviour.
-                var singleRequest = new PriceHistoryRequest([new Symbol(asset.Ticker)], range);
+                var singleRequest = new PriceHistoryRequest([new Symbol(asset.Ticker)], range)
+                {
+                    Basis = priceBases[asset.Ticker],
+                };
                 if (spec.SymbolExchanges is not null &&
                     spec.SymbolExchanges.TryGetValue(asset.Ticker, out var venue))
                 {
@@ -89,12 +124,26 @@ public sealed class BacktestDatasetBuilder
                         .ExecuteAsync<PriceHistoryRequest, Bar>(singleRequest, cancellationToken)
                         .ConfigureAwait(false);
                 }
-                catch (Exception ex) when (ex is not OperationCanceledException)
+                catch (Exception ex) when (ex is not OperationCanceledException
+                    and not PriceBasisMismatchException and not PriceBasisNotSupportedException)
                 {
                     _logger.LogWarning(ex, "Failed to fetch price data for {Symbol}", asset.Ticker);
                     allIssues.Add(new DataIssue(new IssueCode("PRICE_FETCH_FAILED"), IssueSeverity.Error,
                         $"No price data for {asset.Ticker}: {ex.Message}"));
                     continue;
+                }
+
+                foreach (var provenance in singleEnvelope.Provenance)
+                {
+                    if (provenance.PriceBasis is { } delivered && delivered.AdjustedClose != PriceAdjustment.All)
+                    {
+                        throw new PriceBasisMismatchException(singleRequest.Basis, delivered, provenance.Provider.Value);
+                    }
+                }
+                if (singleEnvelope.Payload.Count > 0 && !singleEnvelope.Provenance.Any(p => p.PriceBasis.HasValue))
+                {
+                    allIssues.Add(new DataIssue(new IssueCode("PRICE_BASIS_UNPROVEN"), IssueSeverity.Warning,
+                        $"The price basis for {asset.Ticker} is not stated by the supplied pipeline."));
                 }
 
                 allProvenance.AddRange(singleEnvelope.Provenance);

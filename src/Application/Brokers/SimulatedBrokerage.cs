@@ -303,6 +303,8 @@ public sealed class SimulatedBrokerage : IBrokerage
     /// Market orders fill at the next bar's adjusted open price (eliminates look-ahead bias).
     /// Uses AdjustedOpen = Open × (AdjustedClose / Close) so that fill prices are consistent
     /// with position sizing and equity valuation, both of which use AdjustedClose.
+    /// This factor is valid when OHLC adjustments are a subset of adjusted-close actions.
+    /// Total-return datasets include splits and dividends; those events must not be applied again.
     /// When AdjustedClose == Close (no dividend adjustment), this reduces to raw Open.
     /// </summary>
     private async Task<bool> HandleMarketOrder(DateOnly fillDate, Order order, Bar marketData, CancellationToken cancellationToken)
