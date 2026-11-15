@@ -32,17 +32,17 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="[10.0.14]" />
 
     <!-- Microsoft Extensions -->
-    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="[10.0.14]" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="[10.0.14]" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="[10.0.14]" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="[10.0.14]" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[10.0.14]" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="[10.0.14]" />
-    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="[10.0.14]" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="[11.0.0]" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="[11.0.0]" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="[11.0.0]" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="[11.0.0]" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[11.0.0]" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="[11.0.0]" />
+    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="[11.0.0]" />
 
     <!-- Build infrastructure -->
     <PackageVersion Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="[5.6.0]" />
-    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="[10.0.403]" />
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="[11.0.100]" />
     <PackageVersion Include="MinVer" Version="[8.0.0]" />
 
     <!-- Data access -->
@@ -53,7 +53,7 @@
     <!-- Testing -->
     <PackageVersion Include="coverlet.collector" Version="[10.1.0]" />
     <PackageVersion Include="FluentAssertions" Version="[8.11.0]" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="[18.11.0]" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="[18.12.0]" />
     <PackageVersion Include="Moq" Version="[4.21.0]" />
     <PackageVersion Include="NetArchTest.eNhancedEdition" Version="[1.4.5]" />
     <PackageVersion Include="xunit" Version="[2.9.3]" />
@@ -61,5 +61,25 @@
 
     <!-- Benchmarking -->
     <PackageVersion Include="BenchmarkDotNet" Version="[0.15.8]" />
+  </ItemGroup>
+  <!-- Latest stable packages for the .NET 11 target, verified against NuGet.org on 2026-11-14. -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net11.0'">
+    <PackageVersion Update="Microsoft.EntityFrameworkCore" Version="[11.0.0]" />
+    <PackageVersion Update="Microsoft.EntityFrameworkCore.Design" Version="[11.0.0]" />
+    <PackageVersion Update="Microsoft.EntityFrameworkCore.InMemory" Version="[11.0.0]" />
+    <PackageVersion Update="Microsoft.EntityFrameworkCore.Relational" Version="[11.0.0]" />
+    <PackageVersion Update="Microsoft.EntityFrameworkCore.Sqlite" Version="[11.0.0]" />
+    <PackageVersion Update="Microsoft.EntityFrameworkCore.SqlServer" Version="[11.0.0]" />
+    <PackageVersion Update="Microsoft.EntityFrameworkCore.Tools" Version="[11.0.0]" />
+    <PackageVersion Update="Microsoft.Extensions.Configuration" Version="[11.0.0]" />
+    <PackageVersion Update="Microsoft.Extensions.Configuration.Json" Version="[11.0.0]" />
+    <PackageVersion Update="Microsoft.Extensions.Hosting" Version="[11.0.0]" />
+    <PackageVersion Update="Microsoft.Extensions.DependencyInjection" Version="[11.0.0]" />
+    <PackageVersion Update="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[11.0.0]" />
+    <PackageVersion Update="Microsoft.Extensions.Logging.Abstractions" Version="[11.0.0]" />
+    <PackageVersion Update="Microsoft.Extensions.Options.ConfigurationExtensions" Version="[11.0.0]" />
+    <PackageVersion Update="Microsoft.SourceLink.GitHub" Version="[11.0.100]" />
+    <PackageVersion Update="System.Security.Cryptography.Pkcs" Version="[11.0.0]" />
+    <PackageVersion Update="Microsoft.NET.Test.Sdk" Version="[18.12.0]" />
   </ItemGroup>
 </Project>
